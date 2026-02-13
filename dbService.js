@@ -59,7 +59,6 @@ export const dbService = {
   }
 };
 
-
   // Aggiungi un nuovo rapportino
   addRapportino(r: Rapportino) {
     db.rapportini.push(r);
