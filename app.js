@@ -23,7 +23,7 @@ function renderReports() {
   const reports = dbService.getReports();
   list.innerHTML = "";
 
-  reports.forEach((r, index) => {
+  reports.forEach((r) => {
     const item = document.createElement("div");
     item.className = "report-item";
     item.innerHTML = `
@@ -33,6 +33,10 @@ function renderReports() {
     `;
     list.appendChild(item);
   });
+}
+
+renderReports();
+
 }
 
 renderReports();
