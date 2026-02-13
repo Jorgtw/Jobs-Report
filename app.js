@@ -36,8 +36,3 @@ function renderReports() {
 }
 
 renderReports();
-
-}
-
-renderReports();
-
