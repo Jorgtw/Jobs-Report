@@ -1,4 +1,4 @@
-// dbService.ts
+// dbService.js
 // Servizio dati con LocalStorage + struttura pronta per Supabase
 
 // Chiave unica per LocalStorage
