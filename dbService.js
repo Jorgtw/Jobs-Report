@@ -47,12 +47,18 @@ let db = loadData();
 // -----------------------------
 // API PUBBLICHE
 // -----------------------------
-
 export const dbService = {
-  // Ottieni tutti i rapportini
-  getRapportini(): Rapportino[] {
-    return [...db.rapportini];
+  getReports() {
+    return JSON.parse(localStorage.getItem("reports") || "[]");
   },
+
+  saveReport(report) {
+    const reports = this.getReports();
+    reports.push(report);
+    localStorage.setItem("reports", JSON.stringify(reports));
+  }
+};
+
 
   // Aggiungi un nuovo rapportino
   addRapportino(r: Rapportino) {
