@@ -55,6 +55,7 @@ Sistema professionale di gestione lavori, progetti e rapportini.
 
 ## 💾 Dati
 
+
 I dati sono salvati nel localStorage del browser.
 
 ---
