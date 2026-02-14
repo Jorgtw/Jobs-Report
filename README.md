@@ -9,6 +9,7 @@ Sistema professionale di gestione lavori, progetti e rapportini.
 - Account GitHub
 - Repository GitHub chiamato `Jobs-Report`
 
+
 ### Istruzioni
 
 1. **Clona il tuo repository:**
