@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
+import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { 
   FileText, 
@@ -14,7 +14,6 @@ import {
   User as UserIcon,
   Globe,
   HardHat,
-  Receipt,
   Building2,
   FileDown,
   FileSpreadsheet,
@@ -1327,7 +1326,7 @@ const App: React.FC = () => {
       </LanguageContext.Provider>
     );
   }
-
+export default App;
   return (
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
