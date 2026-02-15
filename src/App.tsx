@@ -1298,7 +1298,6 @@ const LoginView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
     </div>
   );
 };
-
 // --- Main App Component ---
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
@@ -1326,7 +1325,7 @@ const App: React.FC = () => {
       </LanguageContext.Provider>
     );
   }
-export default App;
+
   return (
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
@@ -1346,4 +1345,6 @@ export default App;
     </LanguageContext.Provider>
   );
 };
-export default App;
+
+export default App;   // ✔ QUI È IL POSTO GIUSTO
+
