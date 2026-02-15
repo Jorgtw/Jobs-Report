@@ -1,4 +1,4 @@
-import { User, Client, Project, WorkReport, Role, ReportSummary, Subcontractor } from '../types';
+import { User, Client, Project, WorkReport, Role, ReportSummary } from '../types';
 
 const INITIAL_SUBS = [
   { id: 's1', name: 'Impresa Gamma Srl', vatNumber: '09876543210', contactPerson: 'Sig. Rossi', phone: '02-555666', email: 'info@impresagamma.it', createdAt: Date.now() }
