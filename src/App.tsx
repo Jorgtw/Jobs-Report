@@ -1346,3 +1346,4 @@ export default App;
     </LanguageContext.Provider>
   );
 };
+export default App;
