@@ -1,4 +1,5 @@
 import { User, Client, Project, WorkReport, Role, ReportSummary } from '../types';
+import { supabase } from './supabaseClient';
 
 const INITIAL_SUBS = [
   { id: 's1', name: 'Impresa Gamma Srl', vatNumber: '09876543210', contactPerson: 'Sig. Rossi', phone: '02-555666', email: 'info@impresagamma.it', createdAt: Date.now() }
@@ -219,3 +220,13 @@ class DBService {
 }
 
 export const db = new DBService();
+export async function getWorkers() {
+  const { data, error } = await supabase
+    .from('workers')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
