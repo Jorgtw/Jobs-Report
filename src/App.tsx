@@ -1519,17 +1519,14 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
         const newUser = await db.registerCompany(companyName, adminName, username, password);
         onLogin(newUser);
       } else {
-        const users = await db.getUsers();
+        const user = await db.loginUser(username);
 
-        const user = users.find(
-          (u: any) => u.username === username && u.password === password
-        );
-
-        if (!user) {
+        if (!user || user.password !== password) {
           setError(t('invalidCredentials'));
           return;
         }
 
+        // Note: active status is already checked inside db.loginUser, but we keep this for consistency if needed.
         if (user.status === 'inactive') {
           setError(t('accountDisabled'));
           return;

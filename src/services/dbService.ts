@@ -135,6 +135,25 @@ class DBService {
     return this.mapSupabaseWorker(userData[0]);
   }
 
+  async loginUser(username: string) {
+    // We cannot use getUsers() during login because requireCompanyId() would throw.
+    // We must query the database directly by username.
+    const { data, error } = await supabase
+      .from('workers')
+      .select('*')
+      .eq('username', username)
+      .eq('status', 'active')
+      .limit(1);
+
+    if (error) {
+      console.error('Login error:', error);
+      return null;
+    }
+
+    if (!data || data.length === 0) return null;
+    return this.mapSupabaseWorker(data[0]);
+  }
+
   async addUser(user: any) {
     const sbObj = {
       ...this.mapAppWorkerToSupabase(user),
