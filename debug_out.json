@@ -1,0 +1,18 @@
+[
+  "id",
+  "created_at",
+  "rapportino_id",
+  "worker_id",
+  "hours",
+  "extra_desc",
+  "startTime",
+  "endTime",
+  "breakHours",
+  "hourly_rate",
+  "tal_cost",
+  "erson_name",
+  "person_role",
+  "membership_type",
+  "subcontractor_id",
+  "is_manual_override"
+]
