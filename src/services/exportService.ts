@@ -39,16 +39,16 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
   autoTable(doc, {
     startY: 40,
     head: [[
-      'Data',
-      'Clienti',
-      'Progetto',
-      'Personale',
-      'Ore',
-      'Importo Costo (€/h)',
-      'Totale Costo (€)',
-      'Importo Vendita (€/h)',
-      'Totale Vendita (€)',
-      'Situazione'
+      t('date'),
+      t('clients'),
+      t('project'),
+      t('personnel'),
+      t('hours'),
+      t('hourlyCost') + ' (€/h)', // Using hourlyCost key, ensuring it exists in translations.ts
+      t('personnelCost') + ' (€)', // mapped to Costo Personale
+      t('subcontractorCost') + ' (€/h)', // Placeholder for Revenue / Vendita
+      t('grandTotal') + ' (€)', // Placeholder for Revenue / Vendita
+      t('statusLabel')
     ]],
     body: tableData,
     theme: 'grid',
@@ -64,16 +64,16 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
   try {
     const t = getT(lang);
     const worksheetData = exportRows.map(r => ({
-      'Data': r.date,
-      'Clienti': r.clientName,
-      'Progetto': r.projectName,
-      'Personale': r.workerName,
-      'Ore': r.hours,
-      'Importo Costo (€/h)': r.hourlyCost || 0,
-      'Totale Costo (€)': r.cost || 0,
-      'Importo Vendita (€/h)': r.hourlyRevenue || 0,
-      'Totale Vendita (€)': r.revenue || 0,
-      'Situazione': r.paid
+      [t('date')]: r.date,
+      [t('clients')]: r.clientName,
+      [t('project')]: r.projectName,
+      [t('personnel')]: r.workerName,
+      [t('hours')]: r.hours,
+      [t('hourlyCost') + ' (€/h)']: r.hourlyCost || 0,
+      [t('personnelCost') + ' (€)']: r.cost || 0,
+      [t('subcontractorCost') + ' (€/h)']: r.hourlyRevenue || 0,
+      [t('grandTotal') + ' (€)']: r.revenue || 0,
+      [t('statusLabel')]: r.paid
     }));
 
     const worksheet = utils.json_to_sheet(worksheetData);
