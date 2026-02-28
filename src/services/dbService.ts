@@ -172,6 +172,10 @@ class DBService {
   }
 
   async deleteUser(id: string) {
+    // 1. Remove references from rapportini_workers to avoid foreign key constraints
+    await supabase.from('rapportini_workers').delete().eq('worker_id', id);
+
+    // 2. Delete the user
     const { error } = await supabase.from('workers').delete().eq('id', id);
     if (error) throw error;
   }
