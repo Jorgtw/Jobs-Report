@@ -439,7 +439,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-4 font-bold text-blue-600 whitespace-nowrap capitalize">{
                     p.dateDisplay !== 'Periodo'
-                      ? new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
+                      ? new Intl.DateTimeFormat(lang, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
                       : t('summaryPeriod')
                   }</td>
                   <td className="px-4 py-4 font-bold text-slate-900">{p.name}</td>
@@ -1184,7 +1184,7 @@ const SubcontractorsView: React.FC = () => {
 };
 
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
-  const { t } = useTranslation();
+  const { lang, t } = useTranslation();
   const [reports, setReports] = useState<WorkReport[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -1348,7 +1348,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               {reports.map(r => {
                 const proj = projects.find(p => p.id === r.projectId);
                 const dateObj = new Date(r.date);
-                const formattedDate = new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
+                const formattedDate = new Intl.DateTimeFormat(lang, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
                 const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
                 const totalCombinedHours = (r.totalHours + (r.additionalWorkers || []).reduce((s, aw) => s + aw.totalHours, 0)).toFixed(2);
 

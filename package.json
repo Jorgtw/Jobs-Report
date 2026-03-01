@@ -27,5 +27,18 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
-  }
+  },
+  "description": "Sistema professionale di gestione lavori, progetti e rapportini.",
+  "main": "postcss.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jorgtw/Jobs-Report.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jorgtw/Jobs-Report/issues"
+  },
+  "homepage": "https://github.com/Jorgtw/Jobs-Report#readme"
 }
