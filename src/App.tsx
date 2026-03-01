@@ -42,6 +42,15 @@ const LanguageContext = createContext<{
 
 const useTranslation = () => useContext(LanguageContext);
 
+export const localeMap: Record<string, string> = {
+  it: 'it-IT',
+  en: 'en-US',
+  es: 'es-ES',
+  pl: 'pl-PL',
+  tr: 'tr-TR',
+  da: 'da-DK'
+};
+
 // --- Shared Styles ---
 const inputClasses = "flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
 const modalClasses = "bg-white rounded-2xl p-5 w-full max-w-4xl relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh]";
@@ -439,7 +448,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-4 font-bold text-blue-600 whitespace-nowrap capitalize">{
                     p.dateDisplay !== 'Periodo'
-                      ? new Intl.DateTimeFormat(lang, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
+                      ? new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
                       : t('summaryPeriod')
                   }</td>
                   <td className="px-4 py-4 font-bold text-slate-900">{p.name}</td>
@@ -1348,7 +1357,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               {reports.map(r => {
                 const proj = projects.find(p => p.id === r.projectId);
                 const dateObj = new Date(r.date);
-                const formattedDate = new Intl.DateTimeFormat(lang, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
+                const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
                 const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
                 const totalCombinedHours = (r.totalHours + (r.additionalWorkers || []).reduce((s, aw) => s + aw.totalHours, 0)).toFixed(2);
 
