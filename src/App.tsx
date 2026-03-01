@@ -338,7 +338,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5 flex flex-col">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-            <Menu size={14} /> Filtri e Dati
+            <Menu size={14} /> {t('filtersAndData')}
           </h3>
           <button onClick={() => setFilters({ clientId: '', projectId: '', userId: '', subcontractorId: '', dateFrom: '', dateTo: '' })} className="text-[10px] items-center font-bold px-3 py-1 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors uppercase">
             {t('clearFilters')}
