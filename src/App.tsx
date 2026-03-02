@@ -1683,14 +1683,14 @@ const CompaniesView: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right flex justify-end gap-2">
-                    <button onClick={() => handleToggleStatus(c.id, c.status)} className="p-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors" title={c.status === 'active' ? t('deactivate') : t('activate')}>
-                      {c.status === 'active' ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <button onClick={() => handleToggleStatus(c.id, c.status)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('deactivate') : t('activate')}>
+                      {c.status === 'active' ? <><EyeOff size={16} /> Disattiva</> : <><Eye size={16} /> Attiva</>}
                     </button>
-                    <button onClick={() => handleEdit(c)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}>
-                      <Pencil size={16} />
+                    <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('edit')}>
+                      <Pencil size={16} /> Modifica
                     </button>
-                    <button onClick={() => handleDelete(c.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}>
-                      <Trash2 size={16} />
+                    <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('delete')}>
+                      <Trash2 size={16} /> Elimina
                     </button>
                   </td>
                 </tr>
