@@ -222,7 +222,14 @@ export const translations = {
     summarySubcontractorCompany: "Ditta Subappalto",
     summaryAllCompanies: "Tutte le Ditte",
     superAdminPanel: "Pannello Super Admin",
-    createCompanyBtn: "Crea Nuova Ditta"
+    createCompanyBtn: "Crea Nuova Ditta",
+    companiesManagement: "Gestione Ditte",
+    editCompany: "Modifica Ditta",
+    confirmDeleteCompany: "Sei sicuro di voler eliminare questa ditta? Verranno persi tutti i dati.",
+    activate: "Attiva",
+    deactivate: "Disattiva",
+    companyStatus: "Stato Ditta",
+    companies: "Ditte"
   },
   en: {
     dashboard: "Dashboard",
@@ -445,7 +452,14 @@ export const translations = {
     summarySubcontractorCompany: "Subcontractor Company",
     summaryAllCompanies: "All Companies",
     superAdminPanel: "Super Admin Panel",
-    createCompanyBtn: "Create New Company"
+    createCompanyBtn: "Create New Company",
+    companiesManagement: "Companies Management",
+    editCompany: "Edit Company",
+    confirmDeleteCompany: "Are you sure you want to delete this company? All data will be lost.",
+    activate: "Activate",
+    deactivate: "Deactivate",
+    companyStatus: "Company Status",
+    companies: "Companies"
   },
   da: {
     dashboard: "Oversigt",
@@ -669,7 +683,14 @@ export const translations = {
     summarySubcontractorCompany: "Underleverandørfirma",
     summaryAllCompanies: "Alle firmaer",
     superAdminPanel: "Super Admin Panel",
-    createCompanyBtn: "Opret Nyt Firma"
+    createCompanyBtn: "Opret Nyt Firma",
+    companiesManagement: "Virksomhedsstyring",
+    editCompany: "Rediger Firma",
+    confirmDeleteCompany: "Er du sikker på, at du vil slette dette firma? Alle data vil gå tabt.",
+    activate: "Aktiver",
+    deactivate: "Deaktiver",
+    companyStatus: "Firmastatus",
+    companies: "Firmaer"
   },
   es: {
     dashboard: "Panel",
@@ -893,7 +914,14 @@ export const translations = {
     summarySubcontractorCompany: "Empresa Subcontratista",
     summaryAllCompanies: "Todas las Empresas",
     superAdminPanel: "Panel Super Admin",
-    createCompanyBtn: "Crear Nueva Empresa"
+    createCompanyBtn: "Crear Nueva Empresa",
+    companiesManagement: "Gestión de Empresas",
+    editCompany: "Editar Empresa",
+    confirmDeleteCompany: "¿Estás seguro de que deseas eliminar esta empresa? Se perderán todos los datos.",
+    activate: "Activar",
+    deactivate: "Desactivar",
+    companyStatus: "Estado Empresa",
+    companies: "Empresas"
   },
   pl: {
     dashboard: "Panel",
@@ -1117,7 +1145,14 @@ export const translations = {
     summarySubcontractorCompany: "Firma podwykonawcza",
     summaryAllCompanies: "Wszystkie firmy",
     superAdminPanel: "Panel Super Administratora",
-    createCompanyBtn: "Utwórz Nową Firmę"
+    createCompanyBtn: "Utwórz Nową Firmę",
+    companiesManagement: "Zarządzanie Firmami",
+    editCompany: "Edytuj Firmę",
+    confirmDeleteCompany: "Czy na pewno chcesz usunąć tę firmę? Wszystkie dane zostaną utracone.",
+    activate: "Aktywuj",
+    deactivate: "Dezaktywuj",
+    companyStatus: "Status Firmy",
+    companies: "Firmy"
   },
   tr: {
     dashboard: "Panel",
@@ -1340,6 +1375,13 @@ export const translations = {
     summarySubcontractorCompany: "Taşeron Firma",
     summaryAllCompanies: "Tüm Firmalar",
     superAdminPanel: "Süper Admin Paneli",
-    createCompanyBtn: "Yeni Şirket Oluştur"
+    createCompanyBtn: "Yeni Şirket Oluştur",
+    companiesManagement: "Şirket Yönetimi",
+    editCompany: "Şirketi Düzenle",
+    confirmDeleteCompany: "Bu şirketi silmek istediğinizden emin misiniz? Tüm veriler kaybolacak.",
+    activate: "Etkinleştir",
+    deactivate: "Devre Dışı Bırak",
+    companyStatus: "Şirket Durumu",
+    companies: "Şirketler"
   }
 };

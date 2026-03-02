@@ -63,14 +63,20 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 );
 
 // --- Navigation Config ---
-const getNavLinks = (t: any) => [
-  { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
-  { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
-  { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
-  { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
-  { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
-  { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
-];
+const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
+  const links = [
+    { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
+    { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
+    { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
+    { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
+    { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
+    { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
+  ];
+  if (isSuperAdmin) {
+    links.push({ name: t('companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' });
+  }
+  return links;
+};
 
 // --- Language Selector ---
 const LanguageSelector: React.FC = () => {
@@ -100,12 +106,12 @@ const LanguageSelector: React.FC = () => {
 };
 
 // --- Layout ---
-const AppLayout: React.FC<{ user: User, onLogout: () => void, children: React.ReactNode }> = ({ user, onLogout, children }) => {
+const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => void, children: React.ReactNode }> = ({ user, isSuperAdmin, onLogout, children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { t } = useTranslation();
 
-  const navLinks = getNavLinks(t);
+  const navLinks = getNavLinks(t, isSuperAdmin);
   const filteredLinks = navLinks.filter(link => link.roles.includes(user.role));
 
   const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
@@ -173,9 +179,9 @@ const AppLayout: React.FC<{ user: User, onLogout: () => void, children: React.Re
 };
 
 // --- Home View (Launcher) ---
-const HomeView: React.FC<{ user: User }> = ({ user }) => {
+const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
-  const links = getNavLinks(t).filter(l => l.roles.includes(user.role));
+  const links = getNavLinks(t, isSuperAdmin).filter(l => l.roles.includes(user.role));
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -1577,10 +1583,22 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
 };
 
 
-// --- SuperAdmin Component ---
-const SuperAdminPanel: React.FC = () => {
+// --- Companies Management View (SuperAdmin Only) ---
+const CompaniesView: React.FC = () => {
   const { t } = useTranslation();
+  const [companies, setCompanies] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadCompanies();
+  }, []);
+
+  const loadCompanies = async () => {
+    const data = await db.getAllCompanies();
+    setCompanies(data);
+  };
+
   const [formData, setFormData] = useState({
     companyName: '',
     adminName: '',
@@ -1589,14 +1607,40 @@ const SuperAdminPanel: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleEdit = (c: any) => {
+    setEditingId(c.id);
+    setFormData({
+      companyName: c.name,
+      adminName: '',
+      username: '',
+      password: ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm(t('confirmDeleteCompany'))) {
+      await db.deleteCompany(id);
+      loadCompanies();
+    }
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    await db.toggleCompanyStatus(id, currentStatus);
+    loadCompanies();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
-      alert('Ditta creata con successo!');
+      if (editingId) {
+        await db.updateCompany(editingId, { name: formData.companyName });
+      } else {
+        await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
+      }
       setIsModalOpen(false);
-      setFormData({ companyName: '', adminName: '', username: '', password: '' });
+      loadCompanies();
     } catch (err: any) {
       alert(`Errore: ${err.message}`);
     } finally {
@@ -1604,51 +1648,101 @@ const SuperAdminPanel: React.FC = () => {
     }
   };
 
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData({ companyName: '', adminName: '', username: '', password: '' });
+    setIsModalOpen(true);
+  };
+
   return (
-    <>
-      <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 group">
-        <div className="bg-purple-100 p-2 rounded-lg text-purple-600 group-hover:bg-purple-200 transition-colors">
-          <ShieldAlert className="w-5 h-5" />
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-900">{t('companiesManagement')}</h1>
+        <button onClick={resetForm} className="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl shadow-lg hover:bg-purple-700 transition-all">
+          <Plus size={16} className="mr-2 inline" /> {t('createCompanyBtn')}
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('companyName')}</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('companyStatus')}</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {companies.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
+                  <td className="px-5 py-4">
+                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${c.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                      {c.status === 'active' ? t('active') : t('inactive')}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-right flex justify-end gap-2">
+                    <button onClick={() => handleToggleStatus(c.id, c.status)} className="p-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors" title={c.status === 'active' ? t('deactivate') : t('activate')}>
+                      {c.status === 'active' ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                    <button onClick={() => handleEdit(c)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}>
+                      <Pencil size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(c.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}>
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {companies.length === 0 && (
+                <tr>
+                  <td colSpan={3} className="px-5 py-8 text-center text-slate-500 italic">{t('noData')}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-        <div className="text-left hidden sm:block">
-          <p className="text-sm font-bold text-purple-700 group-hover:text-purple-800 tracking-tight">{t('superAdminPanel')}</p>
-        </div>
-      </button>
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h2 className="text-xl font-bold text-slate-900">{t('createCompanyBtn')}</h2>
+              <h2 className="text-xl font-bold text-slate-900">{editingId ? t('editCompany') : t('createCompanyBtn')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FullWidthField label="Nome Ditta">
+                <FullWidthField label={t('companyName')}>
                   <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder="Es. Edilizia Rossi srl" />
                 </FullWidthField>
-                <FullWidthField label="Nome Amministratore Ditta">
-                  <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
-                </FullWidthField>
-                <FullWidthField label="Username Amministratore">
-                  <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
-                </FullWidthField>
-                <FullWidthField label="Password Amministratore">
-                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
-                </FullWidthField>
+                {!editingId && (
+                  <>
+                    <FullWidthField label="Nome Amministratore Ditta">
+                      <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
+                    </FullWidthField>
+                    <FullWidthField label="Username Amministratore">
+                      <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
+                    </FullWidthField>
+                    <FullWidthField label="Password Amministratore">
+                      <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
+                    </FullWidthField>
+                  </>
+                )}
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
                 <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
-                  {isSubmitting ? 'Creazione in corso...' : t('createCompanyBtn')}
+                  {isSubmitting ? '...' : (editingId ? t('update') : t('createCompanyBtn'))}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
@@ -1707,20 +1801,16 @@ const App: React.FC = () => {
   return (
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
-        <AppLayout user={user} onLogout={handleLogout}>
-          {isSuperAdmin && (
-            <div className="fixed top-20 right-8 z-[60] bg-white rounded-2xl shadow-xl border-2 border-purple-200 p-2">
-              <SuperAdminPanel />
-            </div>
-          )}
+        <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
           <Routes>
-            <Route path="/" element={<HomeView user={user} />} />
+            <Route path="/" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
             <Route path="/reports" element={<ReportsView user={user} />} />
             <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
             <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
             <Route path="/projects" element={user.role === 'admin' ? <ProjectsView /> : <Navigate to="/" />} />
             <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
             <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView /> : <Navigate to="/" />} />
+            <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AppLayout>

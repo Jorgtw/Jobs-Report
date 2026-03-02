@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS public.companies (
     vat_number TEXT,
     email TEXT,
     phone TEXT,
+    status TEXT DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 
 -- 2. Add company_id to existing tables (if not exists)
 DO $$

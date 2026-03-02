@@ -114,7 +114,7 @@ class DBService {
     // 1. Create company
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
-      .insert([{ name: companyName }])
+      .insert([{ name: companyName, status: 'active' }])
       .select();
     if (companyError) throw companyError;
     const newCompanyId = companyData[0].id;
@@ -135,6 +135,43 @@ class DBService {
     return this.mapSupabaseWorker(userData[0]);
   }
 
+  // --- Company Management Methods (SuperAdmin Only) ---
+  private mapSupabaseCompany(c: any): any {
+    return {
+      id: c.id,
+      name: c.name,
+      status: c.status || 'active',
+      createdAt: new Date(c.created_at).getTime()
+    };
+  }
+
+  async getAllCompanies() {
+    const { data, error } = await supabase.from('companies').select('*');
+    if (error) {
+      console.error('Error fetching companies:', error);
+      return [];
+    }
+    return data.map(c => this.mapSupabaseCompany(c));
+  }
+
+  async updateCompany(id: string, updates: any) {
+    const { error } = await supabase.from('companies').update(updates).eq('id', id);
+    if (error) throw error;
+  }
+
+  async toggleCompanyStatus(id: string, currentStatus: string) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const { error } = await supabase.from('companies').update({ status: newStatus }).eq('id', id);
+    if (error) throw error;
+    return newStatus;
+  }
+
+  async deleteCompany(id: string) {
+    const { error } = await supabase.from('companies').delete().eq('id', id);
+    if (error) throw error;
+  }
+  // ----------------------------------------------------
+
   async loginUser(username: string) {
     // We cannot use getUsers() during login because requireCompanyId() would throw.
     // We must query the database directly by username.
@@ -151,6 +188,15 @@ class DBService {
     }
 
     if (!data || data.length === 0) return null;
+
+    // Controlla se l'azienda a cui appartiene è disattivata (per bloccare il login)
+    if (data[0].company_id) {
+      const { data: compData, error: compErr } = await supabase.from('companies').select('status').eq('id', data[0].company_id).single();
+      if (!compErr && compData && compData.status === 'inactive') {
+        throw new Error('Company is inactive');
+      }
+    }
+
     return this.mapSupabaseWorker(data[0]);
   }
 
