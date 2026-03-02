@@ -118,6 +118,7 @@ class DBService {
       .eq('username', adminUsername)
       .maybeSingle();
 
+    if (checkErr) throw checkErr;
     if (existingUser) {
       throw new Error(`L'username '${adminUsername}' è già in uso. Scegline un altro.`);
     }
