@@ -111,7 +111,18 @@ class DBService {
   }
 
   async registerCompany(companyName: string, adminName: string, adminUsername: string, adminPassword: string) {
-    // 1. Create company
+    // 1. Check if username already exists globally
+    const { data: existingUser, error: checkErr } = await supabase
+      .from('workers')
+      .select('id')
+      .eq('username', adminUsername)
+      .maybeSingle();
+
+    if (existingUser) {
+      throw new Error(`L'username '${adminUsername}' è già in uso. Scegline un altro.`);
+    }
+
+    // 2. Create company
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
       .insert([{ name: companyName, status: 'active' }])
@@ -119,11 +130,11 @@ class DBService {
     if (companyError) throw companyError;
     const newCompanyId = companyData[0].id;
 
-    // 2. Create admin worker
+    // 3. Create admin worker
     const sbObj = {
       name: adminName,
       username: adminUsername,
-      password_hash: adminPassword,
+      password: adminPassword,
       role: 'admin',
       status: 'active',
       company_id: newCompanyId,
