@@ -264,7 +264,7 @@ class DBService {
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) return false;
     return data.role === 'superadmin';
