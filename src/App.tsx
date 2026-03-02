@@ -1506,9 +1506,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
 // --- Login & Registration View ---
 const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [companyName, setCompanyName] = useState('');
-  const [adminName, setAdminName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -1520,29 +1517,20 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
     setError('');
 
     try {
-      if (isRegistering) {
-        if (!companyName || !adminName || !username || !password) {
-          setError('Tutti i campi sono obbligatori');
-          return;
-        }
-        const newUser = await db.registerCompany(companyName, adminName, username, password);
-        onLogin(newUser);
-      } else {
-        const user = await db.loginUser(username);
+      const user = await db.loginUser(username);
 
-        if (!user || user.password !== password) {
-          setError(t('invalidCredentials'));
-          return;
-        }
-
-        // Note: active status is already checked inside db.loginUser, but we keep this for consistency if needed.
-        if (user.status === 'inactive') {
-          setError(t('accountDisabled'));
-          return;
-        }
-
-        onLogin(user);
+      if (!user || user.password !== password) {
+        setError(t('invalidCredentials'));
+        return;
       }
+
+      // Note: active status is already checked inside db.loginUser, but we keep this for consistency if needed.
+      if (user.status === 'inactive') {
+        setError(t('accountDisabled'));
+        return;
+      }
+
+      onLogin(user);
     } catch (err: any) {
       console.error(err);
       setError(err?.message || 'Errore di connessione al server');
@@ -1565,19 +1553,6 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></h1>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {isRegistering && (
-            <>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nome Ditta</label>
-                <input type="text" required value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700" placeholder="Mia Ditta Srl" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Il tuo Nome</label>
-                <input type="text" required value={adminName} onChange={e => setAdminName(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700" placeholder="Mario Rossi" />
-              </div>
-            </>
-          )}
-
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">{t('username')}</label>
             <input type="text" required value={username} onChange={e => setUsername(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700" placeholder={t('username')} />
@@ -1592,18 +1567,88 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
             </div>
           </div>
           {error && <p className="text-red-500 text-sm font-bold text-center bg-red-50 py-3 rounded-xl border border-red-100">{error}</p>}
-          <button type="submit" disabled={!username || !password || (isRegistering && (!companyName || !adminName))} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 text-lg">
-            {isRegistering ? 'Crea Ditta e Accedi' : t('loginBtn')}
+          <button type="submit" disabled={!username || !password} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 text-lg">
+            {t('loginBtn')}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <button type="button" onClick={() => { setIsRegistering(!isRegistering); setError(''); }} className="text-sm text-blue-600 font-bold hover:underline">
-            {isRegistering ? 'Hai già una ditta? Accedi' : 'Nuova Ditta? Registrati ora'}
-          </button>
-        </div>
       </div>
     </div>
+  );
+};
+
+
+// --- SuperAdmin Component ---
+const SuperAdminPanel: React.FC = () => {
+  const { t } = useTranslation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    companyName: '',
+    adminName: '',
+    username: '',
+    password: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
+      alert('Ditta creata con successo!');
+      setIsModalOpen(false);
+      setFormData({ companyName: '', adminName: '', username: '', password: '' });
+    } catch (err: any) {
+      alert(`Errore: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 group">
+        <div className="bg-purple-100 p-2 rounded-lg text-purple-600 group-hover:bg-purple-200 transition-colors">
+          <ShieldAlert className="w-5 h-5" />
+        </div>
+        <div className="text-left hidden sm:block">
+          <p className="text-sm font-bold text-purple-700 group-hover:text-purple-800 tracking-tight">{t('superAdminPanel')}</p>
+        </div>
+      </button>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+          <div className={modalClasses}>
+            <div className="flex justify-between items-center mb-6 border-b pb-4">
+              <h2 className="text-xl font-bold text-slate-900">{t('createCompanyBtn')}</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FullWidthField label="Nome Ditta">
+                  <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder="Es. Edilizia Rossi srl" />
+                </FullWidthField>
+                <FullWidthField label="Nome Amministratore Ditta">
+                  <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
+                </FullWidthField>
+                <FullWidthField label="Username Amministratore">
+                  <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
+                </FullWidthField>
+                <FullWidthField label="Password Amministratore">
+                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
+                </FullWidthField>
+              </div>
+              <div className="flex justify-end gap-3 pt-6 border-t mt-4">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
+                  {isSubmitting ? 'Creazione in corso...' : t('createCompanyBtn')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -1619,9 +1664,18 @@ const App: React.FC = () => {
     }
     return null;
   });
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
 
   useEffect(() => { localStorage.setItem('ws_lang', lang); }, [lang]);
+
+  useEffect(() => {
+    if (user && user.id) {
+      db.checkIsSuperAdmin(user.id).then(setIsSuperAdmin).catch(console.error);
+    } else {
+      setIsSuperAdmin(false);
+    }
+  }, [user]);
 
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);
@@ -1632,6 +1686,7 @@ const App: React.FC = () => {
     db.setCompanyId(null);
     setUser(null);
     localStorage.removeItem('ws_auth');
+    setIsSuperAdmin(false);
   };
 
   const t = (key: keyof typeof translations['it']): string => {
@@ -1653,6 +1708,11 @@ const App: React.FC = () => {
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
         <AppLayout user={user} onLogout={handleLogout}>
+          {isSuperAdmin && (
+            <div className="fixed top-20 right-8 z-[60] bg-white rounded-2xl shadow-xl border-2 border-purple-200 p-2">
+              <SuperAdminPanel />
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<HomeView user={user} />} />
             <Route path="/reports" element={<ReportsView user={user} />} />

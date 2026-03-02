@@ -62,3 +62,22 @@ BEGIN
     -- ALTER TABLE public.subcontractors ALTER COLUMN company_id SET NOT NULL;
     -- ALTER TABLE public.reports ALTER COLUMN company_id SET NOT NULL;
 END $$;
+
+-- 5. Create user_roles table for superadmin authorization
+CREATE TABLE IF NOT EXISTS public.user_roles (
+    user_id UUID PRIMARY KEY REFERENCES public.workers(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK (role IN ('superadmin')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS on user_roles (Optional, but good practice)
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+-- Only authenticated users can read roles (or at least their own, but reading all is often needed for admin checks)
+CREATE POLICY "Enable read access for authenticated users on user_roles"
+    ON public.user_roles FOR SELECT
+    TO authenticated
+    USING (true);
+
+-- (To actually grant superadmin privileges, you will need to manually insert a row into user_roles linking your worker id to 'superadmin')
+

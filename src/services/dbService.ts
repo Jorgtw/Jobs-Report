@@ -213,6 +213,17 @@ class DBService {
     return obj;
   }
 
+  async checkIsSuperAdmin(userId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !data) return false;
+    return data.role === 'superadmin';
+  }
+
   private mapSupabaseClient(c: any): Client {
     return {
       id: c.id,

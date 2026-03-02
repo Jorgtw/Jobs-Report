@@ -220,7 +220,9 @@ export const translations = {
     summaryPeriod: "Periodo",
     summaryTotalCost: "Costo Totale",
     summarySubcontractorCompany: "Ditta Subappalto",
-    summaryAllCompanies: "Tutte le Ditte"
+    summaryAllCompanies: "Tutte le Ditte",
+    superAdminPanel: "Pannello Super Admin",
+    createCompanyBtn: "Crea Nuova Ditta"
   },
   en: {
     dashboard: "Dashboard",
@@ -441,7 +443,9 @@ export const translations = {
     summaryPeriod: "Period",
     summaryTotalCost: "Total Cost",
     summarySubcontractorCompany: "Subcontractor Company",
-    summaryAllCompanies: "All Companies"
+    summaryAllCompanies: "All Companies",
+    superAdminPanel: "Super Admin Panel",
+    createCompanyBtn: "Create New Company"
   },
   da: {
     dashboard: "Oversigt",
@@ -663,7 +667,9 @@ export const translations = {
     summaryPeriod: "Periode",
     summaryTotalCost: "Samlede omkostninger",
     summarySubcontractorCompany: "Underleverandørfirma",
-    summaryAllCompanies: "Alle firmaer"
+    summaryAllCompanies: "Alle firmaer",
+    superAdminPanel: "Super Admin Panel",
+    createCompanyBtn: "Opret Nyt Firma"
   },
   es: {
     dashboard: "Panel",
@@ -885,7 +891,9 @@ export const translations = {
     summaryPeriod: "Período",
     summaryTotalCost: "Costo Total",
     summarySubcontractorCompany: "Empresa Subcontratista",
-    summaryAllCompanies: "Todas las Empresas"
+    summaryAllCompanies: "Todas las Empresas",
+    superAdminPanel: "Panel Super Admin",
+    createCompanyBtn: "Crear Nueva Empresa"
   },
   pl: {
     dashboard: "Panel",
@@ -1107,7 +1115,9 @@ export const translations = {
     summaryPeriod: "Okres",
     summaryTotalCost: "Całkowity koszt",
     summarySubcontractorCompany: "Firma podwykonawcza",
-    summaryAllCompanies: "Wszystkie firmy"
+    summaryAllCompanies: "Wszystkie firmy",
+    superAdminPanel: "Panel Super Administratora",
+    createCompanyBtn: "Utwórz Nową Firmę"
   },
   tr: {
     dashboard: "Panel",
@@ -1328,6 +1338,8 @@ export const translations = {
     summaryPeriod: "Dönem",
     summaryTotalCost: "Toplam Maliyet",
     summarySubcontractorCompany: "Taşeron Firma",
-    summaryAllCompanies: "Tüm Firmalar"
+    summaryAllCompanies: "Tüm Firmalar",
+    superAdminPanel: "Süper Admin Paneli",
+    createCompanyBtn: "Yeni Şirket Oluştur"
   }
 };
