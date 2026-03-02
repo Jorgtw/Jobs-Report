@@ -576,6 +576,11 @@ class DBService {
     }
   }
   async deleteReport(id: string) {
+    // 1. Delete associated workers and expenses first to avoid foreign key constraints
+    await supabase.from('rapportini_workers').delete().eq('report_id', id);
+    await supabase.from('rapportini_expenses').delete().eq('report_id', id);
+
+    // 2. Delete the main report
     const { error } = await supabase.from('reports').delete().eq('id', id);
     if (error) throw error;
   }
