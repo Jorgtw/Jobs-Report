@@ -1765,7 +1765,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (user && user.id) {
-      db.checkIsSuperAdmin(user.id).then(setIsSuperAdmin).catch(console.error);
+      if ((user.role as any) === 'superadmin') {
+        setIsSuperAdmin(true);
+      } else {
+        db.checkIsSuperAdmin(user.id).then(setIsSuperAdmin).catch(console.error);
+      }
     } else {
       setIsSuperAdmin(false);
     }

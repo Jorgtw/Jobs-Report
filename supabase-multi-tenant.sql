@@ -77,9 +77,9 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 -- Only authenticated users can read roles (or at least their own, but reading all is often needed for admin checks)
 DROP POLICY IF EXISTS "Enable read access for authenticated users on user_roles" ON public.user_roles;
-CREATE POLICY "Enable read access for authenticated users on user_roles"
+DROP POLICY IF EXISTS "Enable read access for all users on user_roles" ON public.user_roles;
+CREATE POLICY "Enable read access for all users on user_roles"
     ON public.user_roles FOR SELECT
-    TO authenticated
     USING (true);
 
 -- (To actually grant superadmin privileges, you will need to manually insert a row into user_roles linking your worker id to 'superadmin')
