@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS public.companies (
     vat_number TEXT,
     email TEXT,
     phone TEXT,
+    status TEXT DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 
 -- 2. Add company_id to existing tables (if not exists)
 DO $$
@@ -74,9 +76,10 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 -- Only authenticated users can read roles (or at least their own, but reading all is often needed for admin checks)
-CREATE POLICY "Enable read access for authenticated users on user_roles"
+DROP POLICY IF EXISTS "Enable read access for authenticated users on user_roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Enable read access for all users on user_roles" ON public.user_roles;
+CREATE POLICY "Enable read access for all users on user_roles"
     ON public.user_roles FOR SELECT
-    TO authenticated
     USING (true);
 
 -- (To actually grant superadmin privileges, you will need to manually insert a row into user_roles linking your worker id to 'superadmin')

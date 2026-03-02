@@ -1,6 +1,13 @@
 export type Role = 'admin' | 'operator' | 'supervisor';
 export type UserStatus = 'active' | 'inactive';
 
+export interface Company {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  createdAt: number;
+}
+
 export interface Subcontractor {
   id: string;
   name: string;
