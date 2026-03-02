@@ -112,7 +112,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
   const { t } = useTranslation();
 
   const navLinks = getNavLinks(t, isSuperAdmin);
-  const filteredLinks = navLinks.filter(link => link.roles.includes(user.role));
+  const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.includes(user.role));
 
   const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
     <div className="flex flex-col h-full py-6">
@@ -181,7 +181,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
-  const links = getNavLinks(t, isSuperAdmin).filter(l => l.roles.includes(user.role));
+  const links = getNavLinks(t, isSuperAdmin).filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
