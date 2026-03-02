@@ -1360,7 +1360,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {reports.map(r => {
+              {[...reports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
                 const proj = projects.find(p => p.id === r.projectId);
                 const dateObj = new Date(r.date);
                 const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
