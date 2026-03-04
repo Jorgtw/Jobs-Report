@@ -23,18 +23,43 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
   doc.text(`${t('generatedOn')}: ${now}`, 14, 33);
 
   const NumberFormat = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const tableData = exportRows.map(r => [
-    r.date,
-    r.clientName,
-    r.projectName,
-    r.workerName,
-    NumberFormat.format(r.hours),
-    `€ ${NumberFormat.format(r.hourlyCost || 0)}`,
-    `€ ${NumberFormat.format(r.cost || 0)}`,
-    `€ ${NumberFormat.format(r.hourlyRevenue || 0)}`,
-    `€ ${NumberFormat.format(r.revenue || 0)}`,
-    r.paid
+
+  let totalHours = 0;
+  let totalCost = 0;
+  let totalRevenue = 0;
+
+  const tableData = exportRows.map(r => {
+    totalHours += r.hours;
+    totalCost += r.cost || 0;
+    totalRevenue += r.revenue || 0;
+
+    return [
+      r.date,
+      r.clientName,
+      r.projectName,
+      r.workerName,
+      NumberFormat.format(r.hours),
+      `€ ${NumberFormat.format(r.hourlyCost || 0)}`,
+      `€ ${NumberFormat.format(r.cost || 0)}`,
+      `€ ${NumberFormat.format(r.hourlyRevenue || 0)}`,
+      `€ ${NumberFormat.format(r.revenue || 0)}`,
+      r.paid
+    ];
+  });
+
+  tableData.push([
+    '',
+    '',
+    '',
+    t('grandTotal').toUpperCase(),
+    NumberFormat.format(totalHours),
+    '',
+    `€ ${NumberFormat.format(totalCost)}`,
+    '',
+    `€ ${NumberFormat.format(totalRevenue)}`,
+    ''
   ]);
+
 
   autoTable(doc, {
     startY: 40,
@@ -52,9 +77,13 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
     ]],
     body: tableData,
     theme: 'grid',
-    styles: { fontSize: 7, cellPadding: 2 },
-    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
-    margin: { top: 40, left: 10, right: 10 }
+    bodyStyles: { fontSize: 7, cellPadding: 2 },
+    didParseCell: function (data) {
+      if (data.row.index === tableData.length - 1) {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [240, 240, 240];
+      }
+    }
   });
 
   doc.save(`JobsReport_Dettaglio_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -63,18 +92,43 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
 export const exportToExcel = (exportRows: any[], lang: Language) => {
   try {
     const t = getT(lang);
-    const worksheetData = exportRows.map(r => ({
-      [t('date')]: r.date,
-      [t('clients')]: r.clientName,
-      [t('project')]: r.projectName,
-      [t('personnel')]: r.workerName,
-      [t('hours')]: r.hours,
-      [t('hourlyCost') + ' (€/h)']: r.hourlyCost || 0,
-      [t('personnelCost') + ' (€)']: r.cost || 0,
-      [t('subcontractorCost') + ' (€/h)']: r.hourlyRevenue || 0,
-      [t('grandTotal') + ' (€)']: r.revenue || 0,
-      [t('statusLabel')]: r.paid
-    }));
+
+    let totalHours = 0;
+    let totalCost = 0;
+    let totalRevenue = 0;
+
+    const worksheetData = exportRows.map(r => {
+      totalHours += r.hours;
+      totalCost += r.cost || 0;
+      totalRevenue += r.revenue || 0;
+
+      return {
+        [t('date')]: r.date,
+        [t('clients')]: r.clientName,
+        [t('project')]: r.projectName,
+        [t('personnel')]: r.workerName,
+        [t('hours')]: r.hours,
+        [t('hourlyCost') + ' (€/h)']: r.hourlyCost || 0,
+        [t('personnelCost') + ' (€)']: r.cost || 0,
+        [t('subcontractorCost') + ' (€/h)']: r.hourlyRevenue || 0,
+        [t('grandTotal') + ' (€)']: r.revenue || 0,
+        [t('statusLabel')]: r.paid
+      };
+    });
+
+    worksheetData.push({
+      [t('date')]: '',
+      [t('clients')]: '',
+      [t('project')]: '',
+      [t('personnel')]: t('grandTotal').toUpperCase(),
+      [t('hours')]: totalHours,
+      [t('hourlyCost') + ' (€/h)']: '',
+      [t('personnelCost') + ' (€)']: totalCost,
+      [t('subcontractorCost') + ' (€/h)']: '',
+      [t('grandTotal') + ' (€)']: totalRevenue,
+      [t('statusLabel')]: ''
+    });
+
 
     const worksheet = utils.json_to_sheet(worksheetData);
     const workbook = utils.book_new();
