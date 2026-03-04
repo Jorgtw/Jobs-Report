@@ -19,7 +19,6 @@ import {
   FileSpreadsheet,
   ClipboardList,
   ShieldAlert,
-  UserPlus,
   Eye,
   EyeOff,
   ChevronRight
@@ -1222,6 +1221,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   }, []);
   const [formData, setFormData] = useState({
     projectId: '',
+    userId: user.id,
     date: new Date().toISOString().split('T')[0],
     startTime: '08:00',
     endTime: '17:00',
@@ -1292,7 +1292,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...formData, userId: user.id, notes: '', teamTotalHours: globalTotalHours };
+    const payload = { ...formData, notes: '', teamTotalHours: globalTotalHours };
     try {
       if (editingId) await db.updateReport(editingId, payload as any); else await db.addReport(payload as any);
       setReports(await db.getReports(user.id, user.role));
@@ -1307,6 +1307,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     setEditingId(r.id);
     setFormData({
       projectId: r.projectId,
+      userId: r.userId,
       date: r.date,
       startTime: r.startTime,
       endTime: r.endTime,
@@ -1335,6 +1336,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
           setEditingId(null);
           setFormData({
             projectId: '',
+            userId: user.id,
             date: new Date().toISOString().split('T')[0],
             startTime: '08:00',
             endTime: '17:00',
@@ -1442,83 +1444,83 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </div>
                 )}
 
-                <div className="md:col-span-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">
-                      {editingId ? (personnel.find(u => u.id === reports.find(r => r.id === editingId)?.userId)?.name || t('mainWorker')) : user.name}
+                <div className="md:col-span-2 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
+                    <h3 className="text-sm font-bold text-slate-800 uppercase flex items-center gap-2">
+                      <Users size={16} className="text-blue-500" /> SQUADRA E COLLABORATORI
                     </h3>
-
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto">
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">{t('startTime')}:</label>
-                        <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-24`} />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">{t('endTime')}:</label>
-                        <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-24`} />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">{t('breakHoursLabel')}:</label>
-                        <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-16`} />
-                      </div>
-                      <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">{t('totalHoursLabel')}:</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''}
-                          onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
-                          placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)}
-                          className="w-20 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-black text-blue-600 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sezione Collaboratori */}
-                <div className="md:col-span-2 space-y-4 border-t pt-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                      <UserPlus size={16} className="text-blue-500" /> {t('teamLabel')}
-                    </h3>
-                    <button type="button" onClick={addWorker} className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors">
+                    <button type="button" onClick={addWorker} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1">
                       <Plus size={14} /> {t('addWorker')}
                     </button>
                   </div>
-                  <div className="space-y-3">
-                    {formData.additionalWorkers.map((aw, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap sm:flex-nowrap gap-3 items-center shadow-sm relative pr-10">
-                        <div className="flex-1 min-w-[150px]">
-                          <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}><option value="">{t('workerLabel')}...</option>{personnel.filter(u => u.id !== user.id).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Inizio</label>
-                          <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-20 px-2`} />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Fine</label>
-                          <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-20 px-2`} />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Pausa</label>
-                          <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-16 px-2`} />
-                        </div>
-                        <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-                          <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Tot</label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''}
-                            onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
-                            placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)}
-                            className="w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
-                          />
-                        </div>
-                        <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+
+                  {/* Riga Autore Principale */}
+                  <div className="bg-white p-3 rounded-xl border border-blue-200 flex flex-wrap sm:flex-nowrap gap-3 items-center shadow-sm relative pr-[3.25rem]">
+                    <div className="flex-1 min-w-[150px]">
+                      <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
+                        {personnel.find(u => u.id === formData.userId)?.name || t('mainWorker')} (Autore)
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Inizio</label>
+                      <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-20 px-2`} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Fine</label>
+                      <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-20 px-2`} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Pausa</label>
+                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-16 px-2`} />
+                    </div>
+                    <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                      <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Tot</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''}
+                        onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
+                        placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)}
+                        className="w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                      />
+                    </div>
                   </div>
+
+                  {/* Righe Collaboratori */}
+                  {formData.additionalWorkers.map((aw, idx) => (
+                    <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap sm:flex-nowrap gap-3 items-center shadow-sm relative pr-10">
+                      <div className="flex-1 min-w-[150px]">
+                        <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}>
+                          <option value="">{t('workerLabel')}...</option>
+                          {personnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                        </select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Inizio</label>
+                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-20 px-2`} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Fine</label>
+                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-20 px-2`} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Pausa</label>
+                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-16 px-2`} />
+                      </div>
+                      <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase hidden sm:block">Tot</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''}
+                          onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
+                          placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)}
+                          className="w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                        />
+                      </div>
+                      <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Box Totale Complessivo */}
