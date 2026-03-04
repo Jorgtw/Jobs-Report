@@ -1325,6 +1325,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     if (confirm(t('confirmDelete'))) {
       await db.deleteReport(id);
       setReports(await db.getReports(user.id, user.role));
+      if (editingId === id) {
+        setIsModalOpen(false);
+        setEditingId(null);
+      }
     }
   };
 
@@ -1455,34 +1459,34 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </div>
 
                   {/* Intestazioni (visibili solo su schermi non troppo piccoli, o allineate) */}
-                  <div className="hidden sm:flex items-center gap-3 px-3 pr-[3.25rem] mb-1">
-                    <div className="flex-1 min-w-[150px]"></div>
-                    <div className="w-20 px-2 text-[10px] font-extrabold text-slate-400 uppercase text-center">Inizio</div>
-                    <div className="w-20 px-2 text-[10px] font-extrabold text-slate-400 uppercase text-center">Fine</div>
-                    <div className="w-16 px-2 text-[10px] font-extrabold text-slate-400 uppercase text-center">Pausa</div>
-                    <div className="w-16 px-2 text-[10px] font-extrabold text-slate-400 uppercase text-center pl-2 ml-2">Tot</div>
+                  <div className="hidden sm:flex items-center gap-2 px-2 pr-[3.25rem] mb-1">
+                    <div className="flex-1 min-w-[120px]"></div>
+                    <div className="w-20 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Inizio</div>
+                    <div className="w-20 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Fine</div>
+                    <div className="w-16 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Pausa</div>
+                    <div className="w-16 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center pl-1 ml-1">Tot</div>
                   </div>
 
                   {/* Riga Autore Principale */}
-                  <div className="bg-white p-3 rounded-xl border border-blue-200 flex flex-wrap sm:flex-nowrap gap-3 items-center shadow-sm relative pr-[3.25rem]">
-                    <div className="flex-1 min-w-[150px]">
-                      <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
+                  <div className="bg-white p-2 rounded-xl border border-blue-200 flex flex-wrap sm:flex-nowrap gap-2 items-center shadow-sm relative pr-[3.25rem]">
+                    <div className="flex-1 min-w-[120px]">
+                      <div className="px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
                         {personnel.find(u => u.id === formData.userId)?.name || t('mainWorker')} (Autore)
                       </div>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-0">
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Inizio</label>
-                      <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-2 text-center`} />
+                      <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
                     </div>
                     <div className="flex items-center gap-2 sm:gap-0">
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Fine</label>
-                      <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-2 text-center`} />
+                      <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
                     </div>
                     <div className="flex items-center gap-2 sm:gap-0">
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Pausa</label>
-                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-2 text-center`} />
+                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-1 text-center pl-3`} />
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-0 sm:pl-2 sm:ml-2 sm:border-l sm:border-slate-200">
+                    <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Tot</label>
                       <input
                         type="number"
@@ -1490,33 +1494,33 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''}
                         onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
                         placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)}
-                        className="w-full sm:w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                        className="w-full sm:w-16 px-1 py-1.5 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
                       />
                     </div>
                   </div>
 
                   {/* Righe Collaboratori */}
                   {formData.additionalWorkers.map((aw, idx) => (
-                    <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap sm:flex-nowrap gap-3 items-center shadow-sm relative pr-10">
-                      <div className="flex-1 min-w-[150px]">
-                        <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}>
+                    <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 flex flex-wrap sm:flex-nowrap gap-2 items-center shadow-sm relative pr-10">
+                      <div className="flex-1 min-w-[120px]">
+                        <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full px-2"}>
                           <option value="">{t('workerLabel')}...</option>
                           {personnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
                       </div>
                       <div className="flex items-center gap-2 sm:gap-0">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Inizio</label>
-                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-2 text-center`} />
+                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
                       </div>
                       <div className="flex items-center gap-2 sm:gap-0">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Fine</label>
-                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-2 text-center`} />
+                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
                       </div>
                       <div className="flex items-center gap-2 sm:gap-0">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Pausa</label>
-                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-2 text-center`} />
+                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-1 text-center pl-3`} />
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-0 sm:pl-2 sm:ml-2 sm:border-l sm:border-slate-200">
+                      <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Tot</label>
                         <input
                           type="number"
@@ -1524,7 +1528,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''}
                           onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
                           placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)}
-                          className="w-full sm:w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                          className="w-full sm:w-16 px-1 py-1.5 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
                         />
                       </div>
                       <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
@@ -1545,7 +1549,19 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t mt-8"><button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button><button type="submit" className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">{editingId ? t('update') : t('save')}</button></div>
+              <div className="flex justify-between items-center pt-6 border-t mt-8">
+                <div>
+                  {editingId && user.role === 'admin' && (
+                    <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2">
+                      <Trash2 size={16} /> Eliminare
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                  <button type="submit" className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">{editingId ? t('update') : t('save')}</button>
+                </div>
+              </div>
             </form>
           </div>
         </div>
