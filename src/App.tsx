@@ -1553,7 +1553,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <div>
                   {editingId && user.role === 'admin' && (
                     <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2">
-                      <Trash2 size={16} /> Eliminare
+                      <Trash2 size={16} /> Elimina
                     </button>
                   )}
                 </div>
