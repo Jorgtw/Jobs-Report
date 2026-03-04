@@ -27,6 +27,7 @@ import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
 import { translations, Language } from './translations';
 import { exportToPDF, exportToExcel } from './services/exportService';
+import logoImg from './assets/logo.png';
 
 // --- i18n Context ---
 const LanguageContext = createContext<{
@@ -1614,7 +1615,7 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
       <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md animate-in zoom-in-95 duration-300 border border-slate-100">
         <div className="flex flex-col items-center mb-10">
           <div className="mb-4">
-            <img src="/logo.png" alt="JobsReport Logo" className="w-24 h-24 object-contain shadow-lg rounded-2xl" />
+            <img src={logoImg} alt="JobsReport Logo" className="w-24 h-24 object-contain shadow-sm rounded-xl drop-shadow-md" />
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></h1>
         </div>
