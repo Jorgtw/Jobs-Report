@@ -1599,22 +1599,19 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         }}
                         className={`${inputClasses} flex-1 min-w-[120px]`}
                       />
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-slate-400 font-bold text-sm">€</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          value={exp.amount || ''}
-                          onChange={e => {
-                            const updated = [...formData.expenses] as any[];
-                            updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
-                            setFormData({ ...formData, expenses: updated });
-                          }}
-                          className={`${inputClasses} w-24 text-right`}
-                        />
-                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={exp.amount || ''}
+                        onChange={e => {
+                          const updated = [...formData.expenses] as any[];
+                          updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
+                          setFormData({ ...formData, expenses: updated });
+                        }}
+                        className={`${inputClasses} w-24 text-right`}
+                      />
                       <input
                         type="text"
                         placeholder={t('placeholderExpenseNotes')}
