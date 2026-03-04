@@ -494,7 +494,7 @@ class DBService {
     const compId = this.requireCompanyId();
     let query = supabase
       .from('reports')
-      .select(`*, additionalWorkers:rapportini_workers(*), expenseItems:rapportini_expenses(*)`)
+      .select(`*, additionalWorkers:rapportini_workers(*)`)
       .eq('company_id', compId);
 
     if (role !== 'admin' && userId) {
@@ -521,7 +521,6 @@ class DBService {
     const totalHours = this.calculateTotalHours(report.startTime, report.endTime, report.breakHours, report.manualTotalHours);
 
     const additionalWorkers = report.additionalWorkers || [];
-    const expenses = report.expenses || [];
     delete report.additionalWorkers;
     delete report.expenses;
 
@@ -577,7 +576,7 @@ class DBService {
       }
     }
 
-    return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenseItems: expenses });
+    return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenseItems: [] });
   }
   async updateReport(id: string, updates: any) {
     const additionalWorkers = updates.additionalWorkers;
@@ -636,8 +635,8 @@ class DBService {
   }
   async deleteReport(id: string) {
     // 1. Delete associated workers and expenses first to avoid foreign key constraints
-    await supabase.from('rapportini_workers').delete().eq('report_id', id);
-    await supabase.from('rapportini_expenses').delete().eq('report_id', id);
+    await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
+    await supabase.from('rapportini_expenses').delete().eq('rapportino_id', id);
 
     // 2. Delete the main report
     const { error } = await supabase.from('reports').delete().eq('id', id);
