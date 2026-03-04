@@ -453,6 +453,10 @@ class DBService {
   }
 
   private mapSupabaseReport(r: any): any {
+    // expenses from rapportini_expenses join (array of {type,amount,notes})
+    const expensesList = Array.isArray(r.expenseItems)
+      ? r.expenseItems.map((e: any) => ({ type: e.type || e.category || '', amount: Number(e.amount) || 0, notes: e.notes || '' }))
+      : [];
     return {
       id: r.id,
       projectId: r.project_id,
@@ -465,7 +469,7 @@ class DBService {
       manualTotalHours: r.manual_total_hours != null ? Number(r.manual_total_hours) : undefined,
       description: r.description || '',
       notes: r.Notes || '',
-      expenses: r.expenses || [],
+      expenses: expensesList,
       additionalWorkers: (r.additionalWorkers || []).map((aw: any) => ({
         userId: aw.worker_id,
         startTime: aw.startTime ? (aw.startTime.includes('T') ? aw.startTime.split('T')[1].substring(0, 5) : aw.startTime) : '',
@@ -488,7 +492,10 @@ class DBService {
 
   async getReports(userId?: string, role?: Role) {
     const compId = this.requireCompanyId();
-    let query = supabase.from('reports').select(`*, additionalWorkers:rapportini_workers(*)`).eq('company_id', compId);
+    let query = supabase
+      .from('reports')
+      .select(`*, additionalWorkers:rapportini_workers(*), expenseItems:rapportini_expenses(*)`)
+      .eq('company_id', compId);
 
     if (role !== 'admin' && userId) {
       const { data, error } = await query;
@@ -529,7 +536,6 @@ class DBService {
       manual_total_hours: report.manualTotalHours !== undefined ? report.manualTotalHours : null,
       description: report.description,
       "Notes": report.notes,
-      expenses: expenses,
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
     };
@@ -571,11 +577,10 @@ class DBService {
       }
     }
 
-    return this.mapSupabaseReport({ ...data[0], additionalWorkers });
+    return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenseItems: expenses });
   }
   async updateReport(id: string, updates: any) {
     const additionalWorkers = updates.additionalWorkers;
-    const expenses = updates.expenses || [];
     delete updates.additionalWorkers;
     delete updates.expenses;
     updates.totalHours = this.calculateTotalHours(updates.startTime, updates.endTime, updates.breakHours, updates.manualTotalHours);
@@ -590,8 +595,7 @@ class DBService {
       total_hours: updates.totalHours,
       manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
       description: updates.description,
-      "Notes": updates.notes,
-      expenses: expenses
+      "Notes": updates.notes
     };
 
     const { error } = await supabase.from('reports').update(sbObj).eq('id', id);
