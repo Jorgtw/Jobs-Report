@@ -655,6 +655,9 @@ class DBService {
 
       const user = workers.find((u: any) => u.id === r.userId);
       const workerCost = (r.totalHours * (user?.hourlyRate || 0)) + (user?.extraCost || 0);
+      const reportExpenses = Array.isArray(r.expenses)
+        ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
+        : 0;
 
       summaries.push({
         id: r.id + '_main',
@@ -667,7 +670,7 @@ class DBService {
         userId: r.userId,
         subcontractorId: user?.subcontractorId || null,
         totalHours: r.totalHours,
-        totalExpenses: 0,
+        totalExpenses: reportExpenses,
         description: r.description,
         revenue: r.totalHours * sellingPrice,
         hourlyRevenue: sellingPrice,

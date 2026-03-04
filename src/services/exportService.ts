@@ -27,11 +27,13 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
   let totalHours = 0;
   let totalCost = 0;
   let totalRevenue = 0;
+  let totalExpenses = 0;
 
   const tableData = exportRows.map(r => {
     totalHours += r.hours;
     totalCost += r.cost || 0;
     totalRevenue += r.revenue || 0;
+    totalExpenses += r.expenses || 0;
 
     return [
       r.date,
@@ -41,6 +43,7 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
       NumberFormat.format(r.hours),
       NumberFormat.format(r.hourlyCost || 0),
       NumberFormat.format(r.cost || 0),
+      NumberFormat.format(r.expenses || 0),
       NumberFormat.format(r.hourlyRevenue || 0),
       NumberFormat.format(r.revenue || 0),
       r.paid
@@ -55,11 +58,11 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
     NumberFormat.format(totalHours),
     '',
     NumberFormat.format(totalCost),
+    NumberFormat.format(totalExpenses),
     '',
     NumberFormat.format(totalRevenue),
     ''
   ]);
-
 
   autoTable(doc, {
     startY: 40,
@@ -69,10 +72,11 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
       t('project'),
       t('personnel'),
       t('hours'),
-      t('hourlyCost'), // Using hourlyCost key, ensuring it exists in translations.ts
-      t('personnelCost'), // mapped to Costo Personale
-      t('subcontractorCost'), // Placeholder for Revenue / Vendita
-      t('grandTotal'), // Placeholder for Revenue / Vendita
+      t('hourlyCost'),
+      t('personnelCost'),
+      t('expenses'),
+      t('hourlyRevenue'),
+      t('totalRevenue'),
       t('statusLabel')
     ]],
     body: tableData,
@@ -96,11 +100,13 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     let totalHours = 0;
     let totalCost = 0;
     let totalRevenue = 0;
+    let totalExpenses = 0;
 
     const worksheetData = exportRows.map(r => {
       totalHours += r.hours;
       totalCost += r.cost || 0;
       totalRevenue += r.revenue || 0;
+      totalExpenses += r.expenses || 0;
 
       return {
         [t('date')]: r.date,
@@ -110,8 +116,9 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
         [t('hours')]: r.hours,
         [t('hourlyCost')]: r.hourlyCost || 0,
         [t('personnelCost')]: r.cost || 0,
-        [t('subcontractorCost')]: r.hourlyRevenue || 0,
-        [t('grandTotal')]: r.revenue || 0,
+        [t('expenses')]: r.expenses || 0,
+        [t('hourlyRevenue')]: r.hourlyRevenue || 0,
+        [t('totalRevenue')]: r.revenue || 0,
         [t('statusLabel')]: r.paid
       };
     });
@@ -124,11 +131,11 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
       [t('hours')]: totalHours,
       [t('hourlyCost')]: '',
       [t('personnelCost')]: totalCost,
-      [t('subcontractorCost')]: '',
-      [t('grandTotal')]: totalRevenue,
+      [t('expenses')]: totalExpenses,
+      [t('hourlyRevenue')]: '',
+      [t('totalRevenue')]: totalRevenue,
       [t('statusLabel')]: ''
     });
-
 
     const worksheet = utils.json_to_sheet(worksheetData);
     const workbook = utils.book_new();

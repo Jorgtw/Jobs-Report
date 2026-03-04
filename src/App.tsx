@@ -268,8 +268,9 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       hours: acc.hours + s.totalHours,
       personnelCost: acc.personnelCost + (s.personnelCost || 0),
       subcontractCost: acc.subcontractCost + (s.subcontractorCost || 0),
-      totalCost: acc.totalCost + s.cost
-    }), { hours: 0, personnelCost: 0, subcontractCost: 0, totalCost: 0 });
+      totalCost: acc.totalCost + s.cost,
+      totalExpenses: acc.totalExpenses + (s.totalExpenses || 0)
+    }), { hours: 0, personnelCost: 0, subcontractCost: 0, totalCost: 0, totalExpenses: 0 });
   }, [filteredData]);
 
   const groupedByProject = useMemo(() => {
@@ -309,6 +310,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         hours: s.totalHours,
         hourlyCost: s.hourlyCost || 0,
         cost: s.cost || 0,
+        expenses: s.totalExpenses || 0,
         hourlyRevenue: s.hourlyRevenue || 0,
         revenue: s.revenue || 0,
         paid: s.invoiceStatus === 'Pending' ? t('statusPending') : (s.invoiceStatus === 'Fatturato' ? t('statusInvoiced') : (s.invoiceStatus === 'Pagato' ? t('statusPaid') : (s.invoiceStatus || t('statusPending'))))
@@ -329,6 +331,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         hours: s.totalHours,
         hourlyCost: s.hourlyCost || 0,
         cost: s.cost || 0,
+        expenses: s.totalExpenses || 0,
         hourlyRevenue: s.hourlyRevenue || 0,
         revenue: s.revenue || 0,
         paid: s.invoiceStatus === 'Pending' ? t('statusPending') : (s.invoiceStatus === 'Fatturato' ? t('statusInvoiced') : (s.invoiceStatus === 'Pagato' ? t('statusPaid') : (s.invoiceStatus || t('statusPending'))))
@@ -427,6 +430,11 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('summarySubcontractCost')}</span>
           <span className="text-lg font-black text-slate-800">{formatCurrency(totals.subcontractCost)}</span>
+        </div>
+        <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
+        <div className="flex flex-col flex-1">
+          <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">{t('totalExpenses')}</span>
+          <span className="text-lg font-black text-amber-600">{formatCurrency(totals.totalExpenses)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
