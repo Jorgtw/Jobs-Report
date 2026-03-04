@@ -1925,8 +1925,9 @@ const App: React.FC = () => {
 
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);
-    setUser(u);
     localStorage.setItem('ws_auth', JSON.stringify(u));
+    window.location.hash = '/'; // sempre schermata benvenuto dopo login
+    setUser(u);
   };
   const handleLogout = () => {
     db.setCompanyId(null);
