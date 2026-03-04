@@ -514,8 +514,8 @@ class DBService {
     const totalHours = this.calculateTotalHours(report.startTime, report.endTime, report.breakHours, report.manualTotalHours);
 
     const additionalWorkers = report.additionalWorkers || [];
+    const expenses = report.expenses || [];
     delete report.additionalWorkers;
-    report.expenses || [];
     delete report.expenses;
 
     const newReport: any = {
@@ -529,6 +529,7 @@ class DBService {
       manual_total_hours: report.manualTotalHours !== undefined ? report.manualTotalHours : null,
       description: report.description,
       "Notes": report.notes,
+      expenses: expenses,
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
     };
@@ -574,8 +575,8 @@ class DBService {
   }
   async updateReport(id: string, updates: any) {
     const additionalWorkers = updates.additionalWorkers;
+    const expenses = updates.expenses || [];
     delete updates.additionalWorkers;
-    updates.expenses;
     delete updates.expenses;
     updates.totalHours = this.calculateTotalHours(updates.startTime, updates.endTime, updates.breakHours, updates.manualTotalHours);
 
@@ -589,7 +590,8 @@ class DBService {
       total_hours: updates.totalHours,
       manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
       description: updates.description,
-      "Notes": updates.notes
+      "Notes": updates.notes,
+      expenses: expenses
     };
 
     const { error } = await supabase.from('reports').update(sbObj).eq('id', id);

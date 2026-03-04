@@ -1556,6 +1556,91 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <span className="text-lg font-bold text-slate-800 ml-1">h</span>
                   </div>
                 </div>
+
+                {/* Sezione Spese Extra */}
+                <div className="md:col-span-2 space-y-3 bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                  <div className="flex justify-between items-center border-b border-amber-200 pb-3 mb-4">
+                    <h3 className="text-sm font-bold text-amber-800 uppercase flex items-center gap-2">
+                      <FileText size={16} className="text-amber-500" /> {t('extraExpensesLabel')}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      {formData.expenses.length > 0 && (
+                        <span className="text-sm font-black text-amber-700">
+                          Tot: € {formData.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({
+                          ...formData,
+                          expenses: [...formData.expenses, { type: '', amount: 0, notes: '' } as any]
+                        })}
+                        className="text-xs font-bold text-amber-700 bg-white border border-amber-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1"
+                      >
+                        <Plus size={14} /> {t('addExpense')}
+                      </button>
+                    </div>
+                  </div>
+
+                  {formData.expenses.length === 0 && (
+                    <p className="text-xs text-amber-600 text-center py-2 opacity-60">{t('noData')}</p>
+                  )}
+
+                  {formData.expenses.map((exp: any, idx: number) => (
+                    <div key={idx} className="bg-white p-2 rounded-xl border border-amber-200 flex flex-wrap sm:flex-nowrap gap-2 items-center shadow-sm relative pr-10">
+                      <input
+                        type="text"
+                        placeholder={t('placeholderExpenseType')}
+                        value={exp.type || ''}
+                        onChange={e => {
+                          const updated = [...formData.expenses] as any[];
+                          updated[idx] = { ...updated[idx], type: e.target.value };
+                          setFormData({ ...formData, expenses: updated });
+                        }}
+                        className={`${inputClasses} flex-1 min-w-[120px]`}
+                      />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-slate-400 font-bold text-sm">€</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          value={exp.amount || ''}
+                          onChange={e => {
+                            const updated = [...formData.expenses] as any[];
+                            updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
+                            setFormData({ ...formData, expenses: updated });
+                          }}
+                          className={`${inputClasses} w-24 text-right`}
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={t('placeholderExpenseNotes')}
+                        value={exp.notes || ''}
+                        onChange={e => {
+                          const updated = [...formData.expenses] as any[];
+                          updated[idx] = { ...updated[idx], notes: e.target.value };
+                          setFormData({ ...formData, expenses: updated });
+                        }}
+                        className={`${inputClasses} flex-1 min-w-[100px]`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...formData.expenses];
+                          updated.splice(idx, 1);
+                          setFormData({ ...formData, expenses: updated });
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
               </div>
 
               <div className="flex justify-between items-center pt-6 border-t mt-8">
