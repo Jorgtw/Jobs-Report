@@ -39,10 +39,10 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
       r.projectName,
       r.workerName,
       NumberFormat.format(r.hours),
-      `€ ${NumberFormat.format(r.hourlyCost || 0)}`,
-      `€ ${NumberFormat.format(r.cost || 0)}`,
-      `€ ${NumberFormat.format(r.hourlyRevenue || 0)}`,
-      `€ ${NumberFormat.format(r.revenue || 0)}`,
+      NumberFormat.format(r.hourlyCost || 0),
+      NumberFormat.format(r.cost || 0),
+      NumberFormat.format(r.hourlyRevenue || 0),
+      NumberFormat.format(r.revenue || 0),
       r.paid
     ];
   });
@@ -54,9 +54,9 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
     t('grandTotal').toUpperCase(),
     NumberFormat.format(totalHours),
     '',
-    `€ ${NumberFormat.format(totalCost)}`,
+    NumberFormat.format(totalCost),
     '',
-    `€ ${NumberFormat.format(totalRevenue)}`,
+    NumberFormat.format(totalRevenue),
     ''
   ]);
 
@@ -69,10 +69,10 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
       t('project'),
       t('personnel'),
       t('hours'),
-      t('hourlyCost') + ' (€/h)', // Using hourlyCost key, ensuring it exists in translations.ts
-      t('personnelCost') + ' (€)', // mapped to Costo Personale
-      t('subcontractorCost') + ' (€/h)', // Placeholder for Revenue / Vendita
-      t('grandTotal') + ' (€)', // Placeholder for Revenue / Vendita
+      t('hourlyCost'), // Using hourlyCost key, ensuring it exists in translations.ts
+      t('personnelCost'), // mapped to Costo Personale
+      t('subcontractorCost'), // Placeholder for Revenue / Vendita
+      t('grandTotal'), // Placeholder for Revenue / Vendita
       t('statusLabel')
     ]],
     body: tableData,
@@ -108,10 +108,10 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
         [t('project')]: r.projectName,
         [t('personnel')]: r.workerName,
         [t('hours')]: r.hours,
-        [t('hourlyCost') + ' (€/h)']: r.hourlyCost || 0,
-        [t('personnelCost') + ' (€)']: r.cost || 0,
-        [t('subcontractorCost') + ' (€/h)']: r.hourlyRevenue || 0,
-        [t('grandTotal') + ' (€)']: r.revenue || 0,
+        [t('hourlyCost')]: r.hourlyCost || 0,
+        [t('personnelCost')]: r.cost || 0,
+        [t('subcontractorCost')]: r.hourlyRevenue || 0,
+        [t('grandTotal')]: r.revenue || 0,
         [t('statusLabel')]: r.paid
       };
     });
@@ -122,10 +122,10 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
       [t('project')]: '',
       [t('personnel')]: t('grandTotal').toUpperCase(),
       [t('hours')]: totalHours,
-      [t('hourlyCost') + ' (€/h)']: '',
-      [t('personnelCost') + ' (€)']: totalCost,
-      [t('subcontractorCost') + ' (€/h)']: '',
-      [t('grandTotal') + ' (€)']: totalRevenue,
+      [t('hourlyCost')]: '',
+      [t('personnelCost')]: totalCost,
+      [t('subcontractorCost')]: '',
+      [t('grandTotal')]: totalRevenue,
       [t('statusLabel')]: ''
     });
 
