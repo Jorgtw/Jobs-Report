@@ -158,17 +158,64 @@ class DBService {
   }
 
   async getAllCompanies() {
-    const { data, error } = await supabase.from('companies').select('*');
+    const { data: companies, error } = await supabase.from('companies').select('*');
     if (error) {
       console.error('Error fetching companies:', error);
       return [];
     }
-    return data.map(c => this.mapSupabaseCompany(c));
+
+    const { data: workers, error: wError } = await supabase.from('workers').select('*').eq('role', 'admin');
+
+    return companies.map(c => {
+      const comp = this.mapSupabaseCompany(c);
+      if (!wError && workers) {
+        const admin = workers.find((w: any) => w.company_id === c.id);
+        if (admin) {
+          comp.adminId = admin.id;
+          comp.adminName = admin.name;
+          comp.username = admin.username;
+          comp.password = admin.password_hash || admin.password || '';
+        }
+      }
+      return comp;
+    });
   }
 
   async updateCompany(id: string, updates: any) {
     const { error } = await supabase.from('companies').update(updates).eq('id', id);
     if (error) throw error;
+  }
+
+  async updateCompanyAndAdmin(companyId: string, companyName: string, adminId?: string, adminName?: string, username?: string, password?: string) {
+    if (username && adminId) {
+      const { data: existingUser, error: checkErr } = await supabase
+        .from('workers')
+        .select('id')
+        .eq('username', username)
+        .neq('id', adminId)
+        .maybeSingle();
+
+      if (checkErr) throw checkErr;
+      if (existingUser) throw new Error(`L'username '${username}' è già in uso.`);
+    }
+
+    const { error: cError } = await supabase.from('companies').update({ name: companyName }).eq('id', companyId);
+    if (cError) throw cError;
+
+    if (adminId) {
+      const userUpdates: any = {};
+      if (adminName) userUpdates.name = adminName;
+      if (username) userUpdates.username = username;
+      if (password) {
+        userUpdates.password = password;
+        userUpdates.password_hash = password;
+      }
+
+      if (Object.keys(userUpdates).length > 0) {
+        const { error: uError } = await supabase.from('workers').update(userUpdates).eq('id', adminId);
+        if (uError) throw uError;
+      }
+    }
   }
 
   async toggleCompanyStatus(id: string, currentStatus: string) {

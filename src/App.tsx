@@ -64,7 +64,12 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 
 // --- Navigation Config ---
 const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
-  const links = [
+  if (isSuperAdmin) {
+    return [
+      { name: t('companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' }
+    ];
+  }
+  return [
     { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
     { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
     { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
@@ -72,10 +77,6 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
     { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
   ];
-  if (isSuperAdmin) {
-    links.push({ name: t('companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' });
-  }
-  return links;
 };
 
 // --- Language Selector ---
@@ -1601,6 +1602,7 @@ const CompaniesView: React.FC = () => {
 
   const [formData, setFormData] = useState({
     companyName: '',
+    adminId: '',
     adminName: '',
     username: '',
     password: ''
@@ -1611,9 +1613,10 @@ const CompaniesView: React.FC = () => {
     setEditingId(c.id);
     setFormData({
       companyName: c.name,
-      adminName: '',
-      username: '',
-      password: ''
+      adminId: c.adminId || '',
+      adminName: c.adminName || '',
+      username: c.username || '',
+      password: c.password || ''
     });
     setIsModalOpen(true);
   };
@@ -1635,7 +1638,7 @@ const CompaniesView: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (editingId) {
-        await db.updateCompany(editingId, { name: formData.companyName });
+        await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password);
       } else {
         await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
       }
@@ -1650,7 +1653,7 @@ const CompaniesView: React.FC = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ companyName: '', adminName: '', username: '', password: '' });
+    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '' });
     setIsModalOpen(true);
   };
 
@@ -1718,19 +1721,15 @@ const CompaniesView: React.FC = () => {
                 <FullWidthField label={t('companyName')}>
                   <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder="Es. Edilizia Rossi srl" />
                 </FullWidthField>
-                {!editingId && (
-                  <>
-                    <FullWidthField label="Nome Amministratore Ditta">
-                      <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
-                    </FullWidthField>
-                    <FullWidthField label="Username Amministratore">
-                      <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
-                    </FullWidthField>
-                    <FullWidthField label="Password Amministratore">
-                      <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
-                    </FullWidthField>
-                  </>
-                )}
+                <FullWidthField label="Nome Amministratore Ditta">
+                  <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
+                </FullWidthField>
+                <FullWidthField label="Username Amministratore">
+                  <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
+                </FullWidthField>
+                <FullWidthField label="Password Amministratore">
+                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
+                </FullWidthField>
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
