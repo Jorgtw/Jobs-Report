@@ -263,13 +263,15 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   }, [summary, filters, projects]);
 
   const totals = useMemo(() => {
-    return filteredData.reduce((acc, s) => ({
+    const base = filteredData.reduce((acc, s) => ({
       hours: acc.hours + s.totalHours,
       personnelCost: acc.personnelCost + (s.personnelCost || 0),
       subcontractCost: acc.subcontractCost + (s.subcontractorCost || 0),
       totalCost: acc.totalCost + s.cost,
-      totalExpenses: acc.totalExpenses + (s.totalExpenses || 0)
-    }), { hours: 0, personnelCost: 0, subcontractCost: 0, totalCost: 0, totalExpenses: 0 });
+      totalExpenses: acc.totalExpenses + (s.totalExpenses || 0),
+      revenue: acc.revenue + (s.revenue || 0),
+    }), { hours: 0, personnelCost: 0, subcontractCost: 0, totalCost: 0, totalExpenses: 0, revenue: 0 });
+    return { ...base, margin: base.revenue - base.totalCost - base.totalExpenses };
   }, [filteredData]);
 
   const groupedByProject = useMemo(() => {
@@ -282,17 +284,22 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         clientName: s.clientName,
         hours: 0,
         totalCost: 0,
+        totalExpenses: 0,
+        revenue: 0,
         dates: new Set<string>()
       });
       const proj = map.get(key);
       proj.hours += s.totalHours;
       proj.totalCost += s.cost;
+      proj.totalExpenses += (s.totalExpenses || 0);
+      proj.revenue += (s.revenue || 0);
       proj.dates.add(s.date);
     });
     return Array.from(map.values()).map(p => ({
       ...p,
+      margin: p.revenue - p.totalCost - p.totalExpenses,
       dateDisplay: p.dates.size === 1 ? Array.from(p.dates)[0] : 'Periodo'
-    })).sort((a, b) => b.totalCost - a.totalCost);
+    })).sort((a, b) => b.revenue - a.revenue);
   }, [filteredData]);
 
   const formatCurrency = (val: number) => val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -438,7 +445,17 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{t('summaryTotalGeneral')}</span>
-          <span className="text-2xl font-black text-blue-600">{formatCurrency(totals.totalCost)}</span>
+          <span className="text-lg font-black text-blue-600">{formatCurrency(totals.totalCost)}</span>
+        </div>
+        <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
+        <div className="flex flex-col flex-1">
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{t('totalRevenue')}</span>
+          <span className="text-lg font-black text-indigo-600">{formatCurrency(totals.revenue)}</span>
+        </div>
+        <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
+        <div className="flex flex-col flex-1">
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{t('margin')}</span>
+          <span className={`text-2xl font-black ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(totals.margin)}</span>
         </div>
       </div>
 
@@ -455,6 +472,8 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                 <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider">{t('headerClient')}</th>
                 <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('totalHours')}</th>
                 <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('summaryTotalCost')}</th>
+                <th className="px-4 py-3 font-bold text-indigo-400 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('totalRevenue')}</th>
+                <th className="px-4 py-3 font-bold text-emerald-500 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('margin')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -469,9 +488,18 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                   <td className="px-4 py-4 text-slate-600 text-xs font-semibold">{p.clientName}</td>
                   <td className="px-4 py-4 font-black text-slate-700 text-right">{p.hours.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} h</td>
                   <td className="px-4 py-4 font-black text-slate-900 text-right">{formatCurrency(p.totalCost)}</td>
+                  <td className="px-4 py-4 font-black text-indigo-600 text-right">{formatCurrency(p.revenue)}</td>
+                  <td className="px-4 py-4 font-black text-right">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black ${p.margin > 0 ? 'bg-emerald-50 text-emerald-700' :
+                        p.margin < 0 ? 'bg-red-50 text-red-700' :
+                          'bg-slate-100 text-slate-500'
+                      }`}>
+                      {p.margin > 0 ? '+' : ''}{formatCurrency(p.margin)}
+                    </span>
+                  </td>
                 </tr>
               )) : (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-slate-400 font-medium">{t('noData')}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-400 font-medium">{t('noData')}</td></tr>
               )}
             </tbody>
           </table>
