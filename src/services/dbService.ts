@@ -238,7 +238,7 @@ class DBService {
     // 2. Elimina i report della ditta
     await supabase.from('reports').delete().eq('company_id', id);
     // 3. Elimina utenti, subappaltatori, progetti, clienti
-    await supabase.from('users').delete().eq('company_id', id);
+    await supabase.from('workers').delete().eq('company_id', id);
     await supabase.from('subcontractors').delete().eq('company_id', id);
     await supabase.from('projects').delete().eq('company_id', id);
     await supabase.from('clients').delete().eq('company_id', id);
