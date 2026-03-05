@@ -1772,8 +1772,12 @@ const CompaniesView: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (confirm(t('confirmDeleteCompany'))) {
-      await db.deleteCompany(id);
-      loadCompanies();
+      try {
+        await db.deleteCompany(id);
+        loadCompanies();
+      } catch (err: any) {
+        alert('Errore durante l\'eliminazione: ' + (err.message || JSON.stringify(err)));
+      }
     }
   };
 

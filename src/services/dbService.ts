@@ -226,6 +226,23 @@ class DBService {
   }
 
   async deleteCompany(id: string) {
+    // 1. Trova tutti i report della ditta
+    const { data: reports } = await supabase.from('reports').select('id').eq('company_id', id);
+    if (reports && reports.length > 0) {
+      const reportIds = reports.map((r: any) => r.id);
+      // Elimina workers e spese dei rapportini
+      await supabase.from('rapportini_workers').delete().in('rapportino_id', reportIds);
+      // Prova anche con report_id (per sicurezza)
+      await supabase.from('rapportini_workers').delete().in('report_id', reportIds);
+    }
+    // 2. Elimina i report della ditta
+    await supabase.from('reports').delete().eq('company_id', id);
+    // 3. Elimina utenti, subappaltatori, progetti, clienti
+    await supabase.from('users').delete().eq('company_id', id);
+    await supabase.from('subcontractors').delete().eq('company_id', id);
+    await supabase.from('projects').delete().eq('company_id', id);
+    await supabase.from('clients').delete().eq('company_id', id);
+    // 4. Elimina la ditta
     const { error } = await supabase.from('companies').delete().eq('id', id);
     if (error) throw error;
   }
