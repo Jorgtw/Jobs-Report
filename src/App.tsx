@@ -571,7 +571,7 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
     e.preventDefault();
     try {
       await db.updateUser(user.id, profileForm);
-      setProfileMessage({ text: t('passwordChanged'), type: 'success' });
+      setProfileMessage({ text: t('profileUpdated'), type: 'success' });
     } catch (err) {
       setProfileMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
     }
