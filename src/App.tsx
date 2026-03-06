@@ -539,10 +539,10 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
           return rDate >= startOfMonth;
         });
 
-        const total = filtered.reduce((sum, r) => {
+        const total = filtered.reduce((sum: number, r: any) => {
           let h = 0;
           if (r.userId === user.id) h += (r.totalHours || 0);
-          const aw = r.additionalWorkers?.find(w => w.userId === user.id);
+          const aw = r.additionalWorkers?.find((w: any) => w.userId === user.id);
           if (aw) h += (aw.totalHours || 0);
           return sum + h;
         }, 0);
