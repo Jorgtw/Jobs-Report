@@ -518,7 +518,13 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
 const ProfileView: React.FC<{ user: User }> = ({ user }) => {
   const { t } = useTranslation();
   const [passForm, setPassForm] = useState({ newPass: '', confirmPass: '' });
+  const [profileForm, setProfileForm] = useState({
+    email: user.email || '',
+    phone: user.phone || '',
+    address: user.address || ''
+  });
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [profileMessage, setProfileMessage] = useState({ text: '', type: '' });
   const [monthlyHours, setMonthlyHours] = useState<number | null>(null);
 
   useEffect(() => {
@@ -553,6 +559,16 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await db.updateUser(user.id, profileForm);
+      setProfileMessage({ text: t('passwordChanged'), type: 'success' });
+    } catch (err) {
+      setProfileMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
@@ -582,6 +598,51 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
           </div>
         )}
 
+        {/* Contact Information Form */}
+        <form onSubmit={handleProfileUpdate} className="space-y-4 mb-10 pb-10 border-b border-slate-50">
+          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <UserIcon size={16} className="text-blue-500" /> {t('personnel')}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('email')}:</label>
+              <input
+                type="email"
+                value={profileForm.email}
+                onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('phone')}:</label>
+              <input
+                type="tel"
+                value={profileForm.phone}
+                onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('address')}:</label>
+              <input
+                type="text"
+                value={profileForm.address}
+                onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
+          </div>
+          {profileMessage.text && (
+            <p className={`text-xs font-bold p-3 rounded-xl transition-all ${profileMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+              {profileMessage.text}
+            </p>
+          )}
+          <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-black transition-all mt-2">
+            {t('save')}
+          </button>
+        </form>
+
+        {/* Password Change Form */}
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
             <ShieldAlert size={16} className="text-blue-500" /> {t('changePassword')}
