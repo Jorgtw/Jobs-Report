@@ -17,6 +17,14 @@ class DBService {
     return this.currentCompanyId;
   }
 
+  private async hashPassword(password: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   public calculateTotalHours(startTime: string, endTime: string, breakHours: number, manualTotal?: number): number {
     if (manualTotal !== undefined && manualTotal !== null && manualTotal > 0) {
       return Number(manualTotal);
@@ -132,22 +140,22 @@ class DBService {
     const newCompanyId = companyData[0].id;
 
     // 3. Create admin worker
+    const hashedPassword = await this.hashPassword(adminPassword);
     const sbObj = {
       ...this.mapAppWorkerToSupabase({
         name: adminName,
         username: adminUsername,
-        password: adminPassword,
+        password: hashedPassword,
         role: 'admin',
         status: 'active',
         companyId: newCompanyId
       }),
       created_at: new Date().toISOString()
     };
-    // Ensure both fields are set if for some reason one is expected over the other
-    if (adminPassword) {
-      sbObj.password = adminPassword;
-      sbObj.password_hash = adminPassword;
-    }
+    // Ensure both fields are set
+    sbObj.password = hashedPassword;
+    sbObj.password_hash = hashedPassword;
+
     const { data: userData, error: userError } = await supabase.from('workers').insert([sbObj]).select();
     if (userError) throw userError;
 
@@ -214,8 +222,9 @@ class DBService {
       if (adminName) userUpdates.name = adminName;
       if (username) userUpdates.username = username;
       if (password) {
-        userUpdates.password = password;
-        userUpdates.password_hash = password;
+        const hashedPassword = await this.hashPassword(password);
+        userUpdates.password = hashedPassword;
+        userUpdates.password_hash = hashedPassword;
       }
 
       if (Object.keys(userUpdates).length > 0) {
@@ -255,7 +264,7 @@ class DBService {
   }
   // ----------------------------------------------------
 
-  async loginUser(username: string) {
+  async loginUser(username: string, password?: string) {
     // We cannot use getUsers() during login because requireCompanyId() would throw.
     // We must query the database directly by username.
     const { data, error } = await supabase
@@ -272,18 +281,34 @@ class DBService {
 
     if (!data || data.length === 0) return null;
 
+    const dbUser = data[0];
+
+    // Password verification logic
+    if (password) {
+      const hashedInput = await this.hashPassword(password);
+      const storedHash = dbUser.password_hash || dbUser.password;
+
+      // If the stored password matches the hash OR the plain text password (for migration)
+      if (storedHash !== hashedInput && storedHash !== password) {
+        return null;
+      }
+    }
+
     // Controlla se l'azienda a cui appartiene è disattivata (per bloccare il login)
-    if (data[0].company_id) {
-      const { data: compData, error: compErr } = await supabase.from('companies').select('status').eq('id', data[0].company_id).single();
+    if (dbUser.company_id) {
+      const { data: compData, error: compErr } = await supabase.from('companies').select('status').eq('id', dbUser.company_id).single();
       if (!compErr && compData && compData.status === 'inactive') {
         throw new Error('Company is inactive');
       }
     }
 
-    return this.mapSupabaseWorker(data[0]);
+    return this.mapSupabaseWorker(dbUser);
   }
 
   async addUser(user: any) {
+    if (user.password) {
+      user.password = await this.hashPassword(user.password);
+    }
     const sbObj = {
       ...this.mapAppWorkerToSupabase(user),
       company_id: this.requireCompanyId(),
@@ -295,6 +320,9 @@ class DBService {
   }
 
   async updateUser(id: string, updates: any) {
+    if (updates.password) {
+      updates.password = await this.hashPassword(updates.password);
+    }
     const sbObj = this.mapAppWorkerToSupabase(updates);
     const { error } = await supabase.from('workers').update(sbObj).eq('id', id);
     if (error) throw error;

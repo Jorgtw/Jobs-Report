@@ -63,19 +63,23 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 
 // --- Navigation Config ---
 const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
-  if (isSuperAdmin) {
-    return [
-      { name: t('companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' }
-    ];
-  }
-  return [
+  const links = [
     { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
     { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
     { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
     { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
+    { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
   ];
+
+  if (isSuperAdmin) {
+    return [
+      { name: t('companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' },
+      { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
+    ];
+  }
+  return links;
 };
 
 // --- Language Selector ---
@@ -509,6 +513,114 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   );
 };
 
+
+// --- Profile View ---
+const ProfileView: React.FC<{ user: User }> = ({ user }) => {
+  const { t } = useTranslation();
+  const [passForm, setPassForm] = useState({ newPass: '', confirmPass: '' });
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [monthlyHours, setMonthlyHours] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (user.role === 'operator' || user.role === 'supervisor') {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      db.getReports().then(reports => {
+        const filtered = reports.filter(r => {
+          const rDate = new Date(r.date);
+          return rDate >= startOfMonth && (r.userId === user.id || r.operatorId === user.id);
+        });
+        const total = filtered.reduce((sum, r) => sum + (r.totalHours || 0), 0);
+        setMonthlyHours(total);
+      }).catch(console.error);
+    }
+  }, [user.id, user.role]);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passForm.newPass !== passForm.confirmPass) {
+      setMessage({ text: t('passwordMismatch'), type: 'error' });
+      return;
+    }
+    try {
+      await db.updateUser(user.id, { password: passForm.newPass });
+      setMessage({ text: t('passwordChanged'), type: 'success' });
+      setPassForm({ newPass: '', confirmPass: '' });
+    } catch (err) {
+      setMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-50">
+          <div className="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
+            <UserIcon size={40} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{user.name}</h1>
+            <p className="text-sm font-bold text-blue-600 uppercase tracking-widest mt-1">{t(user.role as any)}</p>
+            <p className="text-xs text-slate-400 font-medium mt-1">@{user.username}</p>
+          </div>
+        </div>
+
+        {monthlyHours !== null && (
+          <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('monthlySummary')}</h3>
+                <p className="text-sm text-slate-500 mt-1">{t('currentMonth')}</p>
+              </div>
+              <div className="text-right">
+                <span className="text-3xl font-black text-blue-600">{monthlyHours.toFixed(2)}</span>
+                <span className="text-lg font-bold text-blue-600 ml-1">h</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <ShieldAlert size={16} className="text-blue-500" /> {t('changePassword')}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('newPassword')}:</label>
+              <input
+                type="password"
+                required
+                value={passForm.newPass}
+                onChange={e => setPassForm({ ...passForm, newPass: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('confirmPassword')}:</label>
+              <input
+                type="password"
+                required
+                value={passForm.confirmPass}
+                onChange={e => setPassForm({ ...passForm, confirmPass: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
+          </div>
+          {message.text && (
+            <p className={`text-xs font-bold p-3 rounded-xl transition-all ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+              {message.text}
+            </p>
+          )}
+          <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all mt-2">
+            {t('update')}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 // --- Personnel View ---
 const PersonnelView: React.FC = () => {
@@ -1847,9 +1959,9 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
     setError('');
 
     try {
-      const user = await db.loginUser(username);
+      const user = await db.loginUser(username, password);
 
-      if (!user || user.password !== password) {
+      if (!user) {
         setError(t('invalidCredentials'));
         return;
       }
@@ -2151,6 +2263,7 @@ const App: React.FC = () => {
             <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
             <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView /> : <Navigate to="/" />} />
             <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
+            <Route path="/profile" element={<ProfileView user={user} />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AppLayout>
