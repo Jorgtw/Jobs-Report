@@ -1694,13 +1694,15 @@ const ForgotPasswordLink: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ username: '', email: '' });
   const [sent, setSent] = useState(false);
+  const { t } = useTranslation();
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent('[JobsReport] Richiesta reset password');
-    const body = encodeURIComponent(
-      `Ciao,\n\nHo dimenticato la mia password e chiedo assistenza.\n\nUsername: ${form.username}\nEmail di contatto: ${form.email}\n\nGrazie`
-    );
+    const subject = encodeURIComponent(t('forgotPasswordEmailSubject'));
+    let bodyText = t('forgotPasswordEmailBody')
+      .replace('{username}', form.username)
+      .replace('{email}', form.email);
+    const body = encodeURIComponent(bodyText);
     window.location.href = `mailto:jtw@live.it?subject=${subject}&body=${body}`;
     setSent(true);
   };
@@ -1709,38 +1711,38 @@ const ForgotPasswordLink: React.FC = () => {
     <>
       <button onClick={() => { setOpen(true); setSent(false); setForm({ username: '', email: '' }); }}
         className="text-sm text-blue-600 hover:underline font-semibold">
-        Password dimenticata?
+        {t('forgotPassword')}
       </button>
       {open && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-5">
-              <h2 className="text-lg font-bold text-slate-900">🔑 Password dimenticata</h2>
+              <h2 className="text-lg font-bold text-slate-900">🔑 {t('forgotPasswordTitle')}</h2>
               <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             {sent ? (
               <div className="text-center py-4 space-y-3">
                 <div className="text-4xl">✅</div>
-                <p className="font-bold text-slate-800">Richiesta inviata!</p>
-                <p className="text-sm text-slate-500">Il tuo client email si è aperto con il messaggio pre-compilato. Invialo e sarai contattato dall'amministratore.</p>
-                <button onClick={() => setOpen(false)} className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">Chiudi</button>
+                <p className="font-bold text-slate-800">{t('requestSent')}</p>
+                <p className="text-sm text-slate-500">{t('forgotPasswordSuccess')}</p>
+                <button onClick={() => setOpen(false)} className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">{t('cancel')}</button>
               </div>
             ) : (
               <>
-                <p className="text-sm text-slate-500 mb-4">Inserisci il tuo username e la tua email. Verrà aperto il tuo client di posta con un messaggio pre-compilato da inviare all'amministratore.</p>
+                <p className="text-sm text-slate-500 mb-4">{t('forgotPasswordDesc')}</p>
                 <form onSubmit={handleSend} className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Username</label>
-                    <input required value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="il-tuo-username" />
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('username')}</label>
+                    <input required value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder={t('username')} />
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Email di contatto</label>
-                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="tua@email.com" />
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('contactEmailLabel')}</label>
+                    <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="email@esempio.com" />
                   </div>
                   <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm">Annulla</button>
-                    <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">Invia richiesta</button>
+                    <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm">{t('cancel')}</button>
+                    <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">{t('sendRequest')}</button>
                   </div>
                 </form>
               </>
@@ -1757,13 +1759,18 @@ const RegistrationRequestLink: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ companyName: '', contactName: '', email: '', phone: '', notes: '' });
   const [sent, setSent] = useState(false);
+  const { t } = useTranslation();
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent('[JobsReport] Richiesta nuova registrazione');
-    const body = encodeURIComponent(
-      `Salve,\n\nVorrei registrare la mia azienda su JobsReport.\n\nNome azienda: ${form.companyName}\nReferente: ${form.contactName}\nEmail: ${form.email}\nTelefono: ${form.phone}\nNote: ${form.notes || '—'}\n\nGrazie`
-    );
+    const subject = encodeURIComponent(t('registrationEmailSubject'));
+    let bodyText = t('registrationEmailBody')
+      .replace('{companyName}', form.companyName)
+      .replace('{contactName}', form.contactName)
+      .replace('{email}', form.email)
+      .replace('{phone}', form.phone || t('no'))
+      .replace('{notes}', form.notes || '—');
+    const body = encodeURIComponent(bodyText);
     window.location.href = `mailto:jtw@live.it?subject=${subject}&body=${body}`;
     setSent(true);
   };
@@ -1772,50 +1779,50 @@ const RegistrationRequestLink: React.FC = () => {
     <>
       <button onClick={() => { setOpen(true); setSent(false); setForm({ companyName: '', contactName: '', email: '', phone: '', notes: '' }); }}
         className="text-blue-600 hover:underline font-bold">
-        Registrati
+        {t('registerLink')}
       </button>
       {open && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-5">
-              <h2 className="text-lg font-bold text-slate-900">🏢 Richiesta di registrazione</h2>
+              <h2 className="text-lg font-bold text-slate-900">🏢 {t('registrationTitle')}</h2>
               <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             {sent ? (
               <div className="text-center py-4 space-y-3">
                 <div className="text-4xl">✅</div>
-                <p className="font-bold text-slate-800">Richiesta inviata!</p>
-                <p className="text-sm text-slate-500">Il tuo client email si è aperto con il messaggio pre-compilato. Invialo e sarai contattato dall'amministratore entro 24-48 ore lavorative.</p>
-                <button onClick={() => setOpen(false)} className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">Chiudi</button>
+                <p className="font-bold text-slate-800">{t('requestSent')}</p>
+                <p className="text-sm text-slate-500">{t('registrationSuccess')}</p>
+                <button onClick={() => setOpen(false)} className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">{t('cancel')}</button>
               </div>
             ) : (
               <>
-                <p className="text-sm text-slate-500 mb-4">Compila il modulo. Verrà aperto il tuo client di posta con la richiesta pre-compilata da inviare all'amministratore.</p>
+                <p className="text-sm text-slate-500 mb-4">{t('registrationDesc')}</p>
                 <form onSubmit={handleSend} className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Nome Azienda *</label>
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('companyName')} *</label>
                     <input required value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Es. Edilizia Rossi Srl" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Nome Referente *</label>
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('contactNameLabel')} *</label>
                     <input required value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Mario Rossi" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Email *</label>
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('email')} *</label>
                     <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="info@azienda.it" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Telefono</label>
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('phone')}</label>
                     <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="+39 02 1234567" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Note aggiuntive</label>
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('additionalNotes')}</label>
                     <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none" placeholder="N. dipendenti, tipo di attività..." />
                   </div>
                   <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm">Annulla</button>
-                    <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">Invia richiesta</button>
+                    <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm">{t('cancel')}</button>
+                    <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">{t('sendRequest')}</button>
                   </div>
                 </form>
               </>
@@ -1899,7 +1906,7 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
         <div className="mt-6 flex flex-col items-center gap-3">
           <ForgotPasswordLink />
           <p className="text-sm text-slate-500">
-            Non hai un account?{' '}
+            {t('noAccount')}{' '}
             <RegistrationRequestLink />
           </p>
         </div>
