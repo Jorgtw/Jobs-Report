@@ -533,12 +533,20 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      db.getReports().then(reports => {
+      db.getReports(user.id, user.role).then(reports => {
         const filtered = reports.filter(r => {
           const rDate = new Date(r.date);
-          return rDate >= startOfMonth && (r.userId === user.id || r.operatorId === user.id);
+          return rDate >= startOfMonth;
         });
-        const total = filtered.reduce((sum, r) => sum + (r.totalHours || 0), 0);
+
+        const total = filtered.reduce((sum, r) => {
+          let h = 0;
+          if (r.userId === user.id) h += (r.totalHours || 0);
+          const aw = r.additionalWorkers?.find(w => w.userId === user.id);
+          if (aw) h += (aw.totalHours || 0);
+          return sum + h;
+        }, 0);
+
         setMonthlyHours(total);
       }).catch(console.error);
     }
