@@ -135,7 +135,7 @@ class DBService {
     const sbObj = {
       name: adminName,
       username: adminUsername,
-      password: adminPassword,
+      password_hash: adminPassword,
       role: 'admin',
       status: 'active',
       company_id: newCompanyId,
