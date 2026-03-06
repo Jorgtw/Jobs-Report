@@ -133,14 +133,21 @@ class DBService {
 
     // 3. Create admin worker
     const sbObj = {
-      name: adminName,
-      username: adminUsername,
-      password_hash: adminPassword,
-      role: 'admin',
-      status: 'active',
-      company_id: newCompanyId,
+      ...this.mapAppWorkerToSupabase({
+        name: adminName,
+        username: adminUsername,
+        password: adminPassword,
+        role: 'admin',
+        status: 'active',
+        companyId: newCompanyId
+      }),
       created_at: new Date().toISOString()
     };
+    // Ensure both fields are set if for some reason one is expected over the other
+    if (adminPassword) {
+      sbObj.password = adminPassword;
+      sbObj.password_hash = adminPassword;
+    }
     const { data: userData, error: userError } = await supabase.from('workers').insert([sbObj]).select();
     if (userError) throw userError;
 
