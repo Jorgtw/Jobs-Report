@@ -1593,7 +1593,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <div className="flex items-center gap-3">
                       {formData.expenses.length > 0 && (
                         <span className="text-sm font-black text-amber-700">
-                          Tot: € {formData.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Tot: {formData.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       )}
                       <button
