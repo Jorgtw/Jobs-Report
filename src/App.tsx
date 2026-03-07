@@ -390,11 +390,13 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
     const rows = filteredData.map(s => {
       const [y, m, d] = (s.date || '').split('-');
       const formattedDate = y && m && d ? `${d}/${m}/${y.substring(2)}` : s.date;
+      const subName = s.subcontractorId ? subcontractors.find(sub => sub.id === s.subcontractorId)?.name : '';
       return {
         date: formattedDate,
         projectName: s.projectName,
         clientName: s.clientName,
         workerName: s.userName,
+        subcontractorName: subName,
         hours: s.totalHours,
         hourlyCost: s.hourlyCost || 0,
         cost: s.cost || 0,

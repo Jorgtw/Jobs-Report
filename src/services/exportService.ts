@@ -113,6 +113,7 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
         [t('clients')]: r.clientName,
         [t('project')]: r.projectName,
         [t('personnel')]: r.workerName,
+        [t('subcontractorLabel')]: r.subcontractorName || '',
         [t('hours')]: r.hours,
         [t('hourlyCost')]: r.hourlyCost || 0,
         [t('personnelCost')]: r.cost || 0,
@@ -128,6 +129,7 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
       [t('clients')]: '',
       [t('project')]: '',
       [t('personnel')]: t('grandTotal').toUpperCase(),
+      [t('subcontractorLabel')]: '',
       [t('hours')]: totalHours,
       [t('hourlyCost')]: '',
       [t('personnelCost')]: totalCost,
@@ -138,6 +140,18 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     });
 
     const worksheet = utils.json_to_sheet(worksheetData);
+
+    // Auto-fit columns
+    const maxWidths = worksheetData.reduce((acc: any, row: any) => {
+      Object.keys(row).forEach((key, i) => {
+        const value = row[key] ? row[key].toString() : '';
+        const length = value.length > key.length ? value.length : key.length;
+        if (!acc[i] || length > acc[i]) acc[i] = length;
+      });
+      return acc;
+    }, []);
+    worksheet['!cols'] = maxWidths.map((w: number) => ({ w: w + 2 }));
+
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, t('workSummary'));
 
