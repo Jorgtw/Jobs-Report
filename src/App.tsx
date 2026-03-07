@@ -23,7 +23,8 @@ import {
   ChevronRight,
   Download,
   Copy,
-  Search
+  Search,
+  Filter
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -55,6 +56,7 @@ export const localeMap: Record<string, string> = {
 
 // --- Shared Styles ---
 const inputClasses = "flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
+const filterInputClasses = "flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-xs disabled:bg-slate-50";
 const modalClasses = "bg-white rounded-2xl p-5 w-full max-w-4xl relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh]";
 
 const FullWidthField: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({ label, children, className = "" }) => (
@@ -419,63 +421,63 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5 flex flex-col">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-            <Menu size={14} /> {t('filtersAndData')}
+      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <Menu size={12} /> {t('filtersAndData')}
           </h3>
-          <button onClick={() => setFilters({ clientId: '', projectId: '', userId: '', subcontractorId: '', dateFrom: '', dateTo: '' })} className="text-[10px] items-center font-bold px-3 py-1 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors uppercase">
+          <button onClick={() => setFilters({ clientId: '', projectId: '', userId: '', subcontractorId: '', dateFrom: '', dateTo: '' })} className="text-[9px] items-center font-extrabold px-2 py-0.5 bg-slate-50 text-slate-400 rounded-md hover:bg-slate-100 transition-colors uppercase">
             {t('clearFilters')}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('client')}</label>
-            <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value })} className={inputClasses}>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('client')}</label>
+            <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value })} className={filterInputClasses}>
               <option value="">{t('allClients')}</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('project')}</label>
-            <select value={filters.projectId} onChange={e => setFilters({ ...filters, projectId: e.target.value })} className={inputClasses}>
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('project')}</label>
+            <select value={filters.projectId} onChange={e => setFilters({ ...filters, projectId: e.target.value })} className={filterInputClasses}>
               <option value="">{t('allProjects')}</option>
               {projects.filter(p => !filters.clientId || p.clientId === filters.clientId).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('workerLabel')}</label>
-            <select value={filters.userId} onChange={e => setFilters({ ...filters, userId: e.target.value })} className={inputClasses}>
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('workerLabel')}</label>
+            <select value={filters.userId} onChange={e => setFilters({ ...filters, userId: e.target.value })} className={filterInputClasses}>
               <option value="">{t('allWorkers')}</option>
               {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('summarySubcontractorCompany')}</label>
-            <select value={filters.subcontractorId} onChange={e => setFilters({ ...filters, subcontractorId: e.target.value })} className={inputClasses}>
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('summarySubcontractorCompany')}</label>
+            <select value={filters.subcontractorId} onChange={e => setFilters({ ...filters, subcontractorId: e.target.value })} className={filterInputClasses}>
               <option value="">{t('summaryAllCompanies')}</option>
               {subcontractors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('dateFrom')}</label>
-            <input type="date" value={filters.dateFrom} onChange={e => setFilters({ ...filters, dateFrom: e.target.value })} className={inputClasses} />
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('dateFrom')}</label>
+            <input type="date" value={filters.dateFrom} onChange={e => setFilters({ ...filters, dateFrom: e.target.value })} className={filterInputClasses} />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('dateTo')}</label>
-            <input type="date" value={filters.dateTo} onChange={e => setFilters({ ...filters, dateTo: e.target.value })} className={inputClasses} />
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('dateTo')}</label>
+            <input type="date" value={filters.dateTo} onChange={e => setFilters({ ...filters, dateTo: e.target.value })} className={filterInputClasses} />
           </div>
         </div>
 
-        <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight shrink-0">{t('adminStatusTitle')}</label>
-            <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
-              <button onClick={() => setAdminStatus('Tutti')} className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${adminStatus === 'Tutti' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusAll')}</button>
-              <button onClick={() => setAdminStatus('Fatturato')} className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${adminStatus === 'Fatturato' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusInvoiced')}</button>
-              <button onClick={() => setAdminStatus('Pagato')} className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${adminStatus === 'Pagato' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusPaid')}</button>
-              <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusPending')}</button>
+        <div className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-tight shrink-0">{t('adminStatusTitle')}</label>
+            <div className="flex bg-slate-50 p-0.5 rounded-lg w-full sm:w-auto border border-slate-100">
+              <button onClick={() => setAdminStatus('Tutti')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Tutti' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusAll')}</button>
+              <button onClick={() => setAdminStatus('Fatturato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Fatturato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusInvoiced')}</button>
+              <button onClick={() => setAdminStatus('Pagato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pagato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusPaid')}</button>
+              <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusPending')}</button>
             </div>
           </div>
         </div>
@@ -1492,6 +1494,8 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     load();
   }, []);
 
+
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     projectId: '',
     userId: '',
@@ -1686,116 +1690,132 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900">{t('reports')}</h1>
-        <button onClick={() => {
-          setEditingId(null);
-          setFormData({
-            projectId: '',
-            userId: user.id,
-            date: new Date().toISOString().split('T')[0],
-            startTime: '08:00',
-            endTime: '17:00',
-            breakHours: 1,
-            manualTotalHours: undefined,
-            description: '',
-            expenses: [],
-            additionalWorkers: [],
-            invoiceStatus: 'Pending'
-          });
-          setIsModalOpen(true);
-        }} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"><Plus size={16} className="mr-2 inline" /> {t('newReport')}</button>
-      </div>
-
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-            <Search size={14} /> {t('filters')}
-          </h3>
-          <button
-            onClick={() => setFilters({ projectId: '', userId: '', search: '', dateRange: 'all', dateFrom: '', dateTo: '' })}
-            className="text-[10px] items-center font-bold px-3 py-1 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors uppercase"
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setShowFilters(!showFilters)} 
+            className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`}
+            title={t('filters')}
           >
-            {t('clearFilters')}
+            <Filter size={20} />
+          </button>
+          <button onClick={() => {
+            setEditingId(null);
+            setFormData({
+              projectId: '',
+              userId: user.id,
+              date: new Date().toISOString().split('T')[0],
+              startTime: '08:00',
+              endTime: '17:00',
+              breakHours: 1,
+              manualTotalHours: undefined,
+              description: '',
+              expenses: [],
+              additionalWorkers: [],
+              invoiceStatus: 'Pending'
+            });
+            setIsModalOpen(true);
+          }} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all">
+            <Plus size={16} className="mr-2 inline" /> 
+            <span className="hidden sm:inline">{t('newReport')}</span>
+            <span className="sm:hidden">{t('addBtn')}</span>
           </button>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('project')}</label>
-            <select
-              value={filters.projectId}
-              onChange={e => setFilters({ ...filters, projectId: e.target.value })}
-              className={inputClasses}
-            >
-              <option value="">{t('allProjects')}</option>
-              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('workerLabel')}</label>
-            <select
-              value={filters.userId}
-              onChange={e => setFilters({ ...filters, userId: e.target.value })}
-              className={inputClasses}
-            >
-              <option value="">{t('allWorkers')}</option>
-              {personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('filterByRange')}</label>
-            <select
-              value={filters.dateRange}
-              onChange={e => setFilters({ ...filters, dateRange: e.target.value as any })}
-              className={inputClasses}
-            >
-              <option value="all">{t('statusAll')}</option>
-              <option value="today">{t('today')}</option>
-              <option value="week">{t('thisWeek')}</option>
-              <option value="month">{t('thisMonth')}</option>
-              <option value="custom">{t('customRange')}</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('filters')}</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={filters.search}
-                onChange={e => setFilters({ ...filters, search: e.target.value })}
-                placeholder={t('placeholderSearch')}
-                className={inputClasses + " pl-9"}
-              />
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            </div>
-          </div>
-
-          {filters.dateRange === 'custom' && (
-            <div className="col-span-1 md:col-span-2 lg:col-span-4 grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('dateFrom')}</label>
-                <input
-                  type="date"
-                  value={filters.dateFrom}
-                  onChange={e => setFilters({ ...filters, dateFrom: e.target.value })}
-                  className={inputClasses}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('dateTo')}</label>
-                <input
-                  type="date"
-                  value={filters.dateTo}
-                  onChange={e => setFilters({ ...filters, dateTo: e.target.value })}
-                  className={inputClasses}
-                />
-              </div>
-            </div>
-          )}
-        </div>
       </div>
+
+      {showFilters && (
+        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+              <Search size={12} /> {t('filters')}
+            </h3>
+            <button
+              onClick={() => setFilters({ projectId: '', userId: '', search: '', dateRange: 'all', dateFrom: '', dateTo: '' })}
+              className="text-[9px] items-center font-extrabold px-2 py-0.5 bg-slate-50 text-slate-400 rounded-md hover:bg-slate-100 transition-colors uppercase"
+            >
+              {t('clearFilters')}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            <div className="flex flex-col gap-0.5">
+              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('project')}</label>
+              <select
+                value={filters.projectId}
+                onChange={e => setFilters({ ...filters, projectId: e.target.value })}
+                className={filterInputClasses}
+              >
+                <option value="">{t('allProjects')}</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('workerLabel')}</label>
+              <select
+                value={filters.userId}
+                onChange={e => setFilters({ ...filters, userId: e.target.value })}
+                className={filterInputClasses}
+              >
+                <option value="">{t('allWorkers')}</option>
+                {personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('filterByRange')}</label>
+              <select
+                value={filters.dateRange}
+                onChange={e => setFilters({ ...filters, dateRange: e.target.value as any })}
+                className={filterInputClasses}
+              >
+                <option value="all">{t('statusAll')}</option>
+                <option value="today">{t('today')}</option>
+                <option value="week">{t('thisWeek')}</option>
+                <option value="month">{t('thisMonth')}</option>
+                <option value="custom">{t('customRange')}</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('filters')}</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={filters.search}
+                  onChange={e => setFilters({ ...filters, search: e.target.value })}
+                  placeholder={t('placeholderSearch')}
+                  className={filterInputClasses + " pl-7"}
+                />
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              </div>
+            </div>
+
+            {filters.dateRange === 'custom' && (
+              <div className="col-span-2 lg:col-span-4 grid grid-cols-2 gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex flex-col gap-0.5">
+                  <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('dateFrom')}</label>
+                  <input
+                    type="date"
+                    value={filters.dateFrom}
+                    onChange={e => setFilters({ ...filters, dateFrom: e.target.value })}
+                    className={filterInputClasses}
+                  />
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('dateTo')}</label>
+                  <input
+                    type="date"
+                    value={filters.dateTo}
+                    onChange={e => setFilters({ ...filters, dateTo: e.target.value })}
+                    className={filterInputClasses}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -1851,6 +1871,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
           </table>
         </div>
       </div>
+
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>

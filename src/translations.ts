@@ -264,7 +264,7 @@ export const translations = {
     thisWeek: "Questa settimana",
     thisMonth: "Questo mese",
     customRange: "Intervallo personalizzato",
-    filterByRange: "Filtra per periodo"
+    filterByRange: "Filtra per intervallo"
   },
   en: {
     dashboard: "Dashboard",
@@ -1061,7 +1061,7 @@ export const translations = {
     thisWeek: "Esta semana",
     thisMonth: "Este mes",
     customRange: "Rango personalizado",
-    filterByRange: "Filtrer por rango"
+    filterByRange: "Filtrar por rango"
   },
   pl: {
     dashboard: "Panel",
