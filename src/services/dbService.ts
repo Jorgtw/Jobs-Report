@@ -728,6 +728,9 @@ class DBService {
         ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
         : 0;
 
+        const isReportInternal = r.activityType !== 'work' || project?.isInternal;
+        const revenue = isReportInternal ? 0 : r.totalHours * sellingPrice;
+
         summaries.push({
           id: r.id + '_main',
           date: r.date,
@@ -741,8 +744,8 @@ class DBService {
           totalHours: r.totalHours,
           totalExpenses: reportExpenses,
           description: r.description,
-          revenue: r.totalHours * sellingPrice,
-          hourlyRevenue: sellingPrice,
+          revenue: revenue,
+          hourlyRevenue: isReportInternal ? 0 : sellingPrice,
           cost: workerCost,
           hourlyCost: user?.hourlyRate || 0,
           personnelCost: user?.subcontractorId ? 0 : workerCost,
@@ -757,6 +760,7 @@ class DBService {
         additionalWorkers.forEach((aw: any, idx: number) => {
           const awUser = workers.find((u: any) => u.id === aw.userId);
           const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + (awUser?.extraCost || 0);
+          const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
 
           summaries.push({
             id: r.id + '_aw_' + idx,
@@ -771,8 +775,8 @@ class DBService {
             totalHours: aw.totalHours,
             totalExpenses: 0,
             description: r.description,
-            revenue: aw.totalHours * sellingPrice,
-            hourlyRevenue: sellingPrice,
+            revenue: awRevenue,
+            hourlyRevenue: isReportInternal ? 0 : sellingPrice,
             cost: awCost,
             hourlyCost: awUser?.hourlyRate || 0,
             personnelCost: awUser?.subcontractorId ? 0 : awCost,

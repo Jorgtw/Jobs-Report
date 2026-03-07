@@ -333,14 +333,13 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
 
   const totals = useMemo(() => {
     const baseTotals = filteredData.reduce((acc, s) => {
-      const isInternal = s.activityType !== 'work' || s.isInternal;
       return {
         hours: acc.hours + s.totalHours,
         personnelCost: acc.personnelCost + (s.subcontractorId ? 0 : s.cost),
         subcontractCost: acc.subcontractCost + (s.subcontractorId ? s.cost : 0),
         totalExpenses: acc.totalExpenses + (s.totalExpenses || 0),
         totalCost: acc.totalCost + s.cost + (s.totalExpenses || 0),
-        revenue: acc.revenue + (isInternal ? 0 : (s.revenue || 0))
+        revenue: acc.revenue + (s.revenue || 0)
       };
     }, { hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0 });
     return { ...baseTotals, margin: baseTotals.revenue - baseTotals.totalCost };
@@ -361,12 +360,11 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         dates: new Set<string>()
       });
       const proj = map.get(key);
-      const isInternal = s.activityType !== 'work' || s.isInternal;
       
       proj.hours += s.totalHours;
       proj.totalCost += s.cost;
       proj.totalExpenses += (s.totalExpenses || 0);
-      proj.revenue += (isInternal ? 0 : (s.revenue || 0));
+      proj.revenue += (s.revenue || 0);
       proj.dates.add(s.date);
       if (s.isInternal) proj.isInternal = true;
     });
