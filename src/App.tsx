@@ -20,7 +20,8 @@ import {
   ShieldAlert,
   Eye,
   EyeOff,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -109,6 +110,57 @@ const LanguageSelector: React.FC = () => {
   );
 };
 
+// --- PWA Install Hook ---
+const usePWAInstall = () => {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const install = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+    }
+  };
+
+  return { isInstallable, install };
+};
+
+const InstallButton: React.FC<{ variant?: 'sidebar' | 'login' }> = ({ variant = 'login' }) => {
+  const { isInstallable, install } = usePWAInstall();
+  const { t } = useTranslation();
+
+  if (!isInstallable) return null;
+
+  if (variant === 'sidebar') {
+    return (
+      <button onClick={install} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-blue-600 hover:bg-blue-50 transition-all font-bold mt-2 border border-blue-100">
+        <Download className="w-5 h-5" />
+        <span>{t('installApp')}</span>
+      </button>
+    );
+  }
+
+  return (
+    <button onClick={install} className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-emerald-50 text-emerald-700 font-bold rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-all text-sm mb-4">
+      <Download className="w-4 h-4" />
+      {t('installApp')}
+    </button>
+  );
+};
+
 // --- Layout ---
 const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => void, children: React.ReactNode }> = ({ user, isSuperAdmin, onLogout, children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -144,6 +196,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
           <LogOut className="w-5 h-5" />
           <span className="font-medium">{t('logout')}</span>
         </button>
+        <InstallButton variant="sidebar" />
       </div>
     </div>
   );
@@ -2063,6 +2116,7 @@ const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></h1>
         </div>
+        <InstallButton variant="login" />
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">{t('username')}</label>
