@@ -454,6 +454,7 @@ class DBService {
       status: p.status,
       financialAgreement: p.economic_type || 'hourly',
       sellingPrice: Number(p.hourly_sale_price) || Number(p.total_amount) || 0,
+      isInternal: p.is_internal || false,
       notes: p.internal_note || '',
       createdAt: new Date(p.created_at).getTime()
     };
@@ -468,7 +469,8 @@ class DBService {
       status: p.status,
       economic_type: p.financialAgreement,
       hourly_sale_price: p.financialAgreement === 'hourly' ? p.sellingPrice : null,
-      total_amount: p.financialAgreement === 'fixed' ? p.sellingPrice : null
+      total_amount: p.financialAgreement === 'fixed' ? p.sellingPrice : null,
+      is_internal: p.isInternal || false
     };
   }
 
@@ -537,6 +539,7 @@ class DBService {
         subcontractorId: aw.subcontractor_id,
         isManualOverride: aw.is_manual_override || false
       })),
+      activityType: r.activity_type || 'work',
       invoiceStatus: r.invoice_status || 'Pending',
       createdAt: new Date(r.created_at).getTime()
     };
@@ -587,6 +590,7 @@ class DBService {
       manual_total_hours: report.manualTotalHours !== undefined ? report.manualTotalHours : null,
       description: report.description,
       "Notes": report.notes,
+      activity_type: report.activityType || 'work',
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
     };
@@ -646,7 +650,8 @@ class DBService {
       total_hours: updates.totalHours,
       manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
       description: updates.description,
-      "Notes": updates.notes
+      "Notes": updates.notes,
+      activity_type: updates.activityType || 'work'
     };
 
     const { error } = await supabase.from('reports').update(sbObj).eq('id', id);
@@ -723,57 +728,57 @@ class DBService {
         ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
         : 0;
 
-      summaries.push({
-        id: r.id + '_main',
-        date: r.date,
-        projectName: project?.name || 'Sconosciuto',
-        projectId: project?.id,
-        projectStatus: project?.status || 'Attivo',
-        clientName: client?.name || 'Sconosciuto',
-        userName: user?.name || 'Sconosciuto',
-        userId: r.userId,
-        subcontractorId: user?.subcontractorId || null,
-        totalHours: r.totalHours,
-        totalExpenses: reportExpenses,
-        description: r.description,
-        revenue: r.totalHours * sellingPrice,
-        hourlyRevenue: sellingPrice,
-        cost: workerCost,
-        hourlyCost: user?.hourlyRate || 0,
-        personnelCost: user?.subcontractorId ? 0 : workerCost,
-        subcontractorCost: user?.subcontractorId ? workerCost : 0,
-        invoiceStatus: r.invoice_status || 'Pending',
-        createdAt: r.createdAt
-      });
-
-      const additionalWorkers = r.additionalWorkers || [];
-      additionalWorkers.forEach((aw: any, idx: number) => {
-        const awUser = workers.find((u: any) => u.id === aw.userId);
-        const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + (awUser?.extraCost || 0);
-
         summaries.push({
-          id: r.id + '_aw_' + idx,
+          id: r.id + '_main',
           date: r.date,
           projectName: project?.name || 'Sconosciuto',
           projectId: project?.id,
           projectStatus: project?.status || 'Attivo',
           clientName: client?.name || 'Sconosciuto',
-          userName: awUser?.name || aw.personName || 'Sconosciuto',
-          userId: aw.userId,
-          subcontractorId: awUser?.subcontractorId || null,
-          totalHours: aw.totalHours,
-          totalExpenses: 0,
+          userName: user?.name || 'Sconosciuto',
+          userId: r.userId,
+          subcontractorId: user?.subcontractorId || null,
+          totalHours: r.totalHours,
+          totalExpenses: reportExpenses,
           description: r.description,
-          revenue: aw.totalHours * sellingPrice,
+          revenue: r.totalHours * sellingPrice,
           hourlyRevenue: sellingPrice,
-          cost: awCost,
-          hourlyCost: awUser?.hourlyRate || 0,
-          personnelCost: awUser?.subcontractorId ? 0 : awCost,
-          subcontractorCost: awUser?.subcontractorId ? awCost : 0,
-          invoiceStatus: r.invoice_status || 'Pending',
+          cost: workerCost,
+          hourlyCost: user?.hourlyRate || 0,
+          personnelCost: user?.subcontractorId ? 0 : workerCost,
+          subcontractorCost: user?.subcontractorId ? workerCost : 0,
+          invoiceStatus: r.invoiceStatus || 'Pending',
           createdAt: r.createdAt
         });
-      });
+
+        const additionalWorkers = r.additionalWorkers || [];
+        additionalWorkers.forEach((aw: any, idx: number) => {
+          const awUser = workers.find((u: any) => u.id === aw.userId);
+          const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + (awUser?.extraCost || 0);
+
+          summaries.push({
+            id: r.id + '_aw_' + idx,
+            date: r.date,
+            projectName: project?.name || 'Sconosciuto',
+            projectId: project?.id,
+            projectStatus: project?.status || 'Attivo',
+            clientName: client?.name || 'Sconosciuto',
+            userName: awUser?.name || aw.personName || 'Sconosciuto',
+            userId: aw.userId,
+            subcontractorId: awUser?.subcontractorId || null,
+            totalHours: aw.totalHours,
+            totalExpenses: 0,
+            description: r.description,
+            revenue: aw.totalHours * sellingPrice,
+            hourlyRevenue: sellingPrice,
+            cost: awCost,
+            hourlyCost: awUser?.hourlyRate || 0,
+            personnelCost: awUser?.subcontractorId ? 0 : awCost,
+            subcontractorCost: awUser?.subcontractorId ? awCost : 0,
+            invoiceStatus: r.invoiceStatus || 'Pending',
+            createdAt: r.createdAt
+          });
+        });
 
       return summaries;
     }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());

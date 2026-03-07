@@ -332,15 +332,18 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   }, [summary, filters, projects]);
 
   const totals = useMemo(() => {
-    const base = filteredData.reduce((acc, s) => ({
-      hours: acc.hours + s.totalHours,
-      personnelCost: acc.personnelCost + (s.personnelCost || 0),
-      subcontractCost: acc.subcontractCost + (s.subcontractorCost || 0),
-      totalCost: acc.totalCost + s.cost,
-      totalExpenses: acc.totalExpenses + (s.totalExpenses || 0),
-      revenue: acc.revenue + (s.revenue || 0),
-    }), { hours: 0, personnelCost: 0, subcontractCost: 0, totalCost: 0, totalExpenses: 0, revenue: 0 });
-    return { ...base, margin: base.revenue - base.totalCost - base.totalExpenses };
+    const baseTotals = filteredData.reduce((acc, s) => {
+      const isInternal = s.activityType !== 'work' || s.isInternal;
+      return {
+        hours: acc.hours + s.totalHours,
+        personnelCost: acc.personnelCost + (s.subcontractorId ? 0 : s.cost),
+        subcontractCost: acc.subcontractCost + (s.subcontractorId ? s.cost : 0),
+        totalExpenses: acc.totalExpenses + (s.totalExpenses || 0),
+        totalCost: acc.totalCost + s.cost + (s.totalExpenses || 0),
+        revenue: acc.revenue + (isInternal ? 0 : (s.revenue || 0))
+      };
+    }, { hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0 });
+    return { ...baseTotals, margin: baseTotals.revenue - baseTotals.totalCost };
   }, [filteredData]);
 
   const groupedByProject = useMemo(() => {
@@ -358,11 +361,14 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         dates: new Set<string>()
       });
       const proj = map.get(key);
+      const isInternal = s.activityType !== 'work' || s.isInternal;
+      
       proj.hours += s.totalHours;
       proj.totalCost += s.cost;
       proj.totalExpenses += (s.totalExpenses || 0);
-      proj.revenue += (s.revenue || 0);
+      proj.revenue += (isInternal ? 0 : (s.revenue || 0));
       proj.dates.add(s.date);
+      if (s.isInternal) proj.isInternal = true;
     });
     return Array.from(map.values()).map(p => ({
       ...p,
@@ -905,6 +911,13 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
             >
               {t('helpAdminPersonnelBody')}
             </HelpCard>
+            <HelpCard 
+              title={t('helpAdminInternalTitle')} 
+              icon={<Briefcase className="text-indigo-600" />} 
+              color="bg-indigo-50"
+            >
+              {t('helpAdminInternalBody')}
+            </HelpCard>
           </>
         )}
       </div>
@@ -1325,7 +1338,8 @@ const ProjectsView: React.FC = () => {
     siteContactEmail: '',
     siteContactRole: '',
     financialAgreement: 'hourly' as 'hourly' | 'fixed',
-    sellingPrice: 0
+    sellingPrice: 0,
+    isInternal: false
   });
 
   const handleEdit = (p: Project) => {
@@ -1342,7 +1356,8 @@ const ProjectsView: React.FC = () => {
       siteContactEmail: p.siteContactEmail || '',
       siteContactRole: p.siteContactRole || '',
       financialAgreement: p.financialAgreement || 'hourly',
-      sellingPrice: p.sellingPrice || 0
+      sellingPrice: p.sellingPrice || 0,
+      isInternal: p.isInternal || false
     });
     setIsModalOpen(true);
   };
@@ -1365,10 +1380,10 @@ const ProjectsView: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const resetForm = () => {
+  const resetForm = (isInternal = false) => {
     setEditingId(null);
     setFormData({
-      clientId: '',
+      clientId: isInternal ? 'internal' : '',
       name: '',
       description: '',
       address: '',
@@ -1379,18 +1394,24 @@ const ProjectsView: React.FC = () => {
       siteContactEmail: '',
       siteContactRole: '',
       financialAgreement: 'hourly',
-      sellingPrice: 0
+      sellingPrice: 0,
+      isInternal
     });
     setIsModalOpen(true);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-slate-900">{t('projects')}</h1>
-        <button onClick={resetForm} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all">
-          <Plus size={16} className="mr-2 inline" /> {t('newProject')}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => resetForm(true)} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center gap-2">
+            <Plus size={16} /> {t('newInternalProject')}
+          </button>
+          <button onClick={() => resetForm(false)} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+            <Plus size={16} /> {t('newProject')}
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-4">
         {projects.map(p => {
@@ -1402,8 +1423,11 @@ const ProjectsView: React.FC = () => {
                   <Briefcase size={24} />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-slate-900 text-lg truncate">{p.name}</h3>
-                  <p className="text-xs text-slate-500 font-medium tracking-wide mt-0.5 truncate">{client?.name || '---'}</p>
+                  <h3 className="font-bold text-slate-900 text-lg truncate flex items-center gap-2">
+                    {p.name}
+                    {p.isInternal && <span className="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">{t('isInternalProject')}</span>}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium tracking-wide mt-0.5 truncate">{p.isInternal ? t('activityInternal') : (client?.name || '---')}</p>
                 </div>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
@@ -1425,11 +1449,24 @@ const ProjectsView: React.FC = () => {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <FullWidthField label={t('isInternalProject')} className="md:col-span-2">
+                  <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
+                    <button type="button" onClick={() => setFormData({ ...formData, isInternal: false, clientId: '' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${!formData.isInternal ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('no')}</button>
+                    <button type="button" onClick={() => setFormData({ ...formData, isInternal: true, clientId: 'internal', financialAgreement: 'fixed', sellingPrice: 0 })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.isInternal ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}>{t('yes')}</button>
+                  </div>
+                </FullWidthField>
                 <FullWidthField label={t('project.client')}>
-                  <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} className={inputClasses}>
-                    <option value="">{t('select')}</option>
-                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  {!formData.isInternal && (
+                    <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} className={inputClasses}>
+                      <option value="">{t('select')}</option>
+                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  )}
+                  {formData.isInternal && (
+                    <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-sm italic">
+                      {t('activityInternal')}
+                    </div>
+                  )}
                 </FullWidthField>
                 <FullWidthField label={t('project.title')}>
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
@@ -1442,17 +1479,28 @@ const ProjectsView: React.FC = () => {
                 <FullWidthField label={t('project.address')}>
                   <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} />
                 </FullWidthField>
-                <FullWidthField label={t('project.billingType')}>
-                  <div className="flex bg-slate-100 p-1 rounded-xl">
-                    <button type="button" onClick={() => setFormData({ ...formData, financialAgreement: 'hourly' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'hourly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingHourly')}</button>
-                    <button type="button" onClick={() => setFormData({ ...formData, financialAgreement: 'fixed' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'fixed' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingFixed')}</button>
-                  </div>
-                </FullWidthField>
-                <FullWidthField label={t('project.amount')}>
-                  <div className="relative flex items-center">
-                    <input type="number" step="0.01" value={formData.sellingPrice} onChange={e => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })} className={inputClasses} />
-                  </div>
-                </FullWidthField>
+                {!formData.isInternal && (
+                  <FullWidthField label={t('project.billingType')}>
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                      <button type="button" onClick={() => setFormData({ ...formData, financialAgreement: 'hourly' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'hourly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingHourly')}</button>
+                      <button type="button" onClick={() => setFormData({ ...formData, financialAgreement: 'fixed' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'fixed' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingFixed')}</button>
+                    </div>
+                  </FullWidthField>
+                )}
+                {formData.isInternal && (
+                  <FullWidthField label={t('project.billingType')}>
+                    <div className="px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-amber-700 text-sm font-bold">
+                      {t('nonBillable')}
+                    </div>
+                  </FullWidthField>
+                )}
+                {!formData.isInternal && (
+                  <FullWidthField label={t('project.amount')}>
+                    <div className="relative flex items-center">
+                      <input type="number" step="0.01" value={formData.sellingPrice} onChange={e => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })} className={inputClasses} />
+                    </div>
+                  </FullWidthField>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <FullWidthField label={t('project.contactPerson')}>
                     <input type="text" value={formData.siteContactName} onChange={e => setFormData({ ...formData, siteContactName: e.target.value })} className={inputClasses} />
@@ -1760,6 +1808,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     description: '',
     expenses: [] as Expense[],
     additionalWorkers: [] as AdditionalWorker[],
+    activityType: 'work' as 'work' | 'sickness' | 'holiday' | 'internal',
     invoiceStatus: 'Pending'
   });
 
@@ -1846,6 +1895,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       description: r.description,
       expenses: [...(r.expenses || [])],
       additionalWorkers: [...(r.additionalWorkers || [])],
+      activityType: r.activityType || 'work',
       invoiceStatus: r.invoiceStatus || 'Pending'
     });
     setIsModalOpen(true);
@@ -1875,6 +1925,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       description: r.description,
       expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
       additionalWorkers: [...(r.additionalWorkers || [])],
+      activityType: r.activityType || 'work',
       invoiceStatus: 'Pending'
     });
     setIsModalOpen(true);
@@ -1905,6 +1956,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               description: '',
               expenses: [],
               additionalWorkers: [],
+              activityType: 'work',
               invoiceStatus: 'Pending'
             });
             setIsModalOpen(true);
@@ -2024,7 +2076,14 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="text-xs font-bold text-blue-600 capitalize">{formattedDate}</div>
+                    <div className="text-xs font-bold text-blue-600 capitalize flex items-center gap-2">
+                      {formattedDate}
+                      {r.activityType && r.activityType !== 'work' && (
+                        <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-black uppercase">
+                          {t(`activity${r.activityType.charAt(0).toUpperCase() + r.activityType.slice(1)}` as any)}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
                   </div>
                   <div className="flex gap-1.5">
@@ -2126,11 +2185,24 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     setFormData({
                       ...formData,
                       projectId: newProjectId,
+                      activityType: proj?.isInternal ? 'internal' : (formData.activityType === 'internal' ? 'work' : formData.activityType),
                       description: (formData.description === '' && proj?.description) ? proj.description : formData.description
                     });
                   }} className={inputClasses}>
                     <option value="">{t('select')}</option>
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </FullWidthField>
+                <FullWidthField label={t('activityType')}>
+                  <select 
+                    value={formData.activityType} 
+                    onChange={e => setFormData({ ...formData, activityType: e.target.value as any })} 
+                    className={inputClasses}
+                  >
+                    <option value="work">{t('activityWork')}</option>
+                    <option value="sickness">{t('activitySickness')}</option>
+                    <option value="holiday">{t('activityHoliday')}</option>
+                    <option value="internal">{t('activityInternal')}</option>
                   </select>
                 </FullWidthField>
                 <FullWidthField label={t('date')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>

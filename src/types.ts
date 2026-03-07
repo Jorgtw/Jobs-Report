@@ -68,6 +68,7 @@ export interface Project {
   siteContactRole?: string;
   financialAgreement?: 'hourly' | 'fixed';
   sellingPrice?: number;
+  isInternal?: boolean;
   createdAt: number;
 }
 
@@ -109,6 +110,7 @@ export interface WorkReport {
   notes: string;
   expenses: Expense[];
   additionalWorkers: AdditionalWorker[];
+  activityType?: 'work' | 'sickness' | 'holiday' | 'internal';
   invoiceStatus?: string;
   createdAt: number;
 }
