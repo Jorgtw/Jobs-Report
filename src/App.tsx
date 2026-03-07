@@ -486,37 +486,37 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       <div className="bg-white rounded-2xl border border-slate-200 flex flex-wrap lg:flex-nowrap justify-between items-center p-4 gap-6 shadow-sm">
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('summaryHoursWorked')}</span>
-          <span className="text-lg font-black text-slate-800">{totals.hours.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} h</span>
+          <span className="text-sm font-medium text-slate-600">{totals.hours.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('summaryPersonnelCost')}</span>
-          <span className="text-lg font-black text-slate-800">{formatCurrency(totals.personnelCost)}</span>
+          <span className="text-sm font-medium text-slate-600">{formatCurrency(totals.personnelCost)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('summarySubcontractCost')}</span>
-          <span className="text-lg font-black text-slate-800">{formatCurrency(totals.subcontractCost)}</span>
+          <span className="text-sm font-medium text-slate-600">{formatCurrency(totals.subcontractCost)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
-          <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">{t('totalExpenses')}</span>
-          <span className="text-lg font-black text-amber-600">{formatCurrency(totals.totalExpenses)}</span>
+          <span className="text-[10px] font-bold text-amber-600/70 uppercase tracking-widest">{t('totalExpenses')}</span>
+          <span className="text-sm font-medium text-amber-700/80">{formatCurrency(totals.totalExpenses)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
-          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{t('summaryTotalGeneral')}</span>
-          <span className="text-lg font-black text-blue-600">{formatCurrency(totals.totalCost)}</span>
+          <span className="text-[10px] font-bold text-blue-600/70 uppercase tracking-widest">{t('summaryTotalGeneral')}</span>
+          <span className="text-sm font-medium text-blue-700/80">{formatCurrency(totals.totalCost)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{t('totalRevenue')}</span>
-          <span className="text-lg font-black text-indigo-600">{formatCurrency(totals.revenue)}</span>
+          <span className="text-base font-semibold text-indigo-600">{formatCurrency(totals.revenue)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
           <span className={`text-[10px] font-bold uppercase tracking-widest ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{t('margin')}</span>
-          <span className={`text-2xl font-black ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(totals.margin)}</span>
+          <span className={`text-xl font-bold ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(totals.margin)}</span>
         </div>
       </div>
 
