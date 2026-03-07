@@ -521,46 +521,83 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-100 bg-slate-50">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest">{t('summaryProjectSummary')}</h2>
+        <div className="p-3 border-b border-slate-100 bg-slate-50">
+          <h2 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{t('summaryProjectSummary')}</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white border-b border-slate-200">
-              <tr>
-                <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider whitespace-nowrap">{t('headerDate')}</th>
-                <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider">{t('summaryProjectName')}</th>
-                <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider">{t('headerClient')}</th>
-                <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('totalHours')}</th>
-                <th className="px-4 py-3 font-bold text-slate-400 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('summaryTotalCost')}</th>
-                <th className="px-4 py-3 font-bold text-indigo-400 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('totalRevenue')}</th>
-                <th className="px-4 py-3 font-bold text-emerald-500 uppercase text-[10px] tracking-wider text-right whitespace-nowrap">{t('margin')}</th>
+
+        {/* Mobile View: Card Layout */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {groupedByProject.length > 0 ? groupedByProject.map((p, idx) => (
+            <div key={idx} className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-blue-600 capitalize">
+                    {p.dateDisplay !== 'Periodo'
+                      ? new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
+                      : t('summaryPeriod')}
+                  </div>
+                  <div className="text-sm font-bold text-slate-900">{p.name}</div>
+                  <div className="text-[10px] font-medium text-slate-500 uppercase">{p.clientName}</div>
+                </div>
+                <div className={`px-2 py-1 rounded-lg text-[10px] font-black ${p.margin > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : p.margin < 0 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
+                  {p.margin > 0 ? '+' : ''}{formatCurrency(p.margin)}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[10px]">
+                <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
+                  <span className="font-bold text-slate-400 uppercase tracking-tight">{t('totalHours')}</span>
+                  <span className="font-black text-slate-700">{p.hours.toLocaleString('it-IT', { minimumFractionDigits: 1 })}h</span>
+                </div>
+                <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
+                  <span className="font-bold text-slate-400 uppercase tracking-tight">{t('summaryTotalCost')}</span>
+                  <span className="font-black text-slate-700">{formatCurrency(p.totalCost)}</span>
+                </div>
+                <div className="flex justify-between items-center p-2 bg-indigo-50/50 rounded-lg border border-indigo-100 col-span-2">
+                  <span className="font-bold text-indigo-400 uppercase tracking-tight">{t('totalRevenue')}</span>
+                  <span className="font-black text-indigo-600">{formatCurrency(p.revenue)}</span>
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div className="p-8 text-center text-slate-400 text-xs font-medium">{t('noData')}</div>
+          )}
+        </div>
+
+        {/* Desktop View: Compact Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-white border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                <th className="px-3 py-2 whitespace-nowrap">{t('headerDate')}</th>
+                <th className="px-3 py-2">{t('summaryProjectName')}</th>
+                <th className="px-3 py-2">{t('headerClient')}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap">{t('totalHours')}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap">{t('summaryTotalCost')}</th>
+                <th className="px-3 py-2 text-indigo-400 text-right whitespace-nowrap">{t('totalRevenue')}</th>
+                <th className="px-3 py-2 text-emerald-500 text-right whitespace-nowrap">{t('margin')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 text-xs">
               {groupedByProject.length > 0 ? groupedByProject.map((p, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-4 font-bold text-blue-600 whitespace-nowrap capitalize">{
-                    p.dateDisplay !== 'Periodo'
+                  <td className="px-3 py-1.5 font-bold text-blue-600 whitespace-nowrap capitalize">
+                    {p.dateDisplay !== 'Periodo'
                       ? new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
-                      : t('summaryPeriod')
-                  }</td>
-                  <td className="px-4 py-4 font-bold text-slate-900">{p.name}</td>
-                  <td className="px-4 py-4 text-slate-600 text-xs font-semibold">{p.clientName}</td>
-                  <td className="px-4 py-4 font-black text-slate-700 text-right">{p.hours.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} h</td>
-                  <td className="px-4 py-4 font-black text-slate-900 text-right">{formatCurrency(p.totalCost)}</td>
-                  <td className="px-4 py-4 font-black text-indigo-600 text-right">{formatCurrency(p.revenue)}</td>
-                  <td className="px-4 py-4 font-black text-right">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black ${p.margin > 0 ? 'bg-emerald-50 text-emerald-700' :
-                      p.margin < 0 ? 'bg-red-50 text-red-700' :
-                        'bg-slate-100 text-slate-500'
-                      }`}>
+                      : t('summaryPeriod')}
+                  </td>
+                  <td className="px-3 py-1.5 font-bold text-slate-900 truncate max-w-[150px]" title={p.name}>{p.name}</td>
+                  <td className="px-3 py-1.5 text-slate-500 font-medium truncate max-w-[120px]" title={p.clientName}>{p.clientName}</td>
+                  <td className="px-3 py-1.5 font-black text-slate-700 text-right whitespace-nowrap">{p.hours.toLocaleString('it-IT', { minimumFractionDigits: 1 })} h</td>
+                  <td className="px-3 py-1.5 font-black text-slate-900 text-right whitespace-nowrap">{formatCurrency(p.totalCost)}</td>
+                  <td className="px-3 py-1.5 font-black text-indigo-600 text-right whitespace-nowrap">{formatCurrency(p.revenue)}</td>
+                  <td className="px-3 py-1.5 font-black text-right whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black ${p.margin > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : p.margin < 0 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-slate-100 text-slate-500'}`}>
                       {p.margin > 0 ? '+' : ''}{formatCurrency(p.margin)}
                     </span>
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-400 font-medium">{t('noData')}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400 text-xs">{t('noData')}</td></tr>
               )}
             </tbody>
           </table>
@@ -1817,15 +1854,63 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       )}
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        {/* Mobile View: Card Layout */}
+        <div className="sm:hidden divide-y divide-slate-100">
+          {[...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
+            const proj = projects.find(p => p.id === r.projectId);
+            const dateObj = new Date(r.date);
+            const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
+            const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
+            const totalCombinedHours = (r.totalHours + (r.additionalWorkers || []).reduce((s, aw) => s + aw.totalHours, 0)).toFixed(2);
+
+            return (
+              <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-blue-600 capitalize">{formattedDate}</div>
+                    <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors border border-emerald-100" title={t('duplicate')}><Copy size={16} /></button>
+                    <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 active:bg-blue-100 rounded-lg transition-colors border border-blue-100" title={t('edit')}><Pencil size={16} /></button>
+                    <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 active:bg-red-100 rounded-lg transition-colors border border-red-100" title={t('delete')}><Trash2 size={16} /></button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1.5 text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                    <Users size={12} /> <span className="font-bold">{totalWorkersCount}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                    <Clock size={12} /> <span className="font-bold">{totalCombinedHours}h</span>
+                  </div>
+                  {r.invoiceStatus && (
+                    <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${
+                      r.invoiceStatus === 'Pagato' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                      r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                      'bg-amber-50 text-amber-600 border-amber-100'
+                    }`}>
+                      {t(r.invoiceStatus === 'Pending' ? 'statusPending' : r.invoiceStatus === 'Fatturato' ? 'statusInvoiced' : 'statusPaid' as any)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {reports.length === 0 && (
+            <div className="p-8 text-center text-slate-500 text-sm">Nessun dato disponibile</div>
+          )}
+        </div>
+
+        {/* Desktop View: Compact Table */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-left border-collapse table-fixed">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
-                <th className="p-4 font-semibold">{t('date')}</th>
-                <th className="p-4 font-semibold">{t('project')}</th>
-                <th className="p-4 font-semibold text-center">{t('peopleLabel')}</th>
-                <th className="p-4 font-semibold text-center">{t('totalHoursLabel')}</th>
-                <th className="p-4 font-semibold text-right">Azioni</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest">
+                <th className="px-3 py-2 font-black w-32">{t('date')}</th>
+                <th className="px-3 py-2 font-black">{t('project')}</th>
+                <th className="px-3 py-2 font-black text-center w-24">{t('peopleLabel')}</th>
+                <th className="px-3 py-2 font-black text-center w-24">{t('totalHoursLabel')}</th>
+                <th className="px-3 py-2 font-black text-right w-36">Azioni</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1838,23 +1923,23 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="p-4 text-sm font-semibold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
-                    <td className="p-4 text-sm font-medium text-slate-900 max-w-[200px] truncate">{proj?.name || '---'}</td>
-                    <td className="p-4 text-center">
-                      <span className="inline-flex items-center justify-center bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg text-xs">
+                    <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
+                    <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate" title={proj?.name}>{proj?.name || '---'}</td>
+                    <td className="px-3 py-1.5 text-center">
+                      <span className="inline-flex items-center justify-center bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
                         {totalWorkersCount}
                       </span>
                     </td>
-                    <td className="p-4 text-center">
-                      <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2.5 py-1 rounded-lg text-xs border border-blue-100">
+                    <td className="px-3 py-1.5 text-center">
+                      <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100">
                         {totalCombinedHours}h
                       </span>
                     </td>
-                    <td className="p-4 text-right whitespace-nowrap">
-                      <div className="flex gap-2 justify-end">
-                        <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('duplicate')}><Copy size={18} /></button>
-                        <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}><Pencil size={18} /></button>
-                        <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}><Trash2 size={18} /></button>
+                    <td className="px-3 py-1.5 text-right whitespace-nowrap">
+                      <div className="flex gap-1.5 justify-end">
+                        <button onClick={() => handleDuplicate(r)} className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('duplicate')}><Copy size={14} /></button>
+                        <button onClick={() => handleEdit(r)} className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}><Pencil size={14} /></button>
+                        <button onClick={() => handleDelete(r.id)} className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -1862,9 +1947,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               })}
               {reports.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-500">
-                    Nessun dato disponibile
-                  </td>
+                  <td colSpan={5} className="p-6 text-center text-slate-500 text-xs">Nessun dato disponibile</td>
                 </tr>
               )}
             </tbody>
