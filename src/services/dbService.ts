@@ -685,6 +685,13 @@ class DBService {
       }
     }
   }
+
+  async bulkUpdateInvoiceStatus(reportIds: string[], newStatus: string) {
+    if (!reportIds || reportIds.length === 0) return;
+    const { error } = await supabase.from('reports').update({ invoice_status: newStatus }).in('id', reportIds);
+    if (error) throw error;
+  }
+
   async deleteReport(id: string) {
     // 1. Delete associated workers and expenses first to avoid foreign key constraints
     await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
