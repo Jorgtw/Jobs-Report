@@ -150,7 +150,7 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
       });
       return acc;
     }, []);
-    worksheet['!cols'] = maxWidths.map((w: number) => ({ w: w + 2 }));
+    worksheet['!cols'] = maxWidths.map((w: number) => ({ wch: w + 2 }));
 
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, t('workSummary'));
