@@ -748,6 +748,8 @@ class DBService {
           personnelCost: user?.subcontractorId ? 0 : workerCost,
           subcontractorCost: user?.subcontractorId ? workerCost : 0,
           invoiceStatus: r.invoiceStatus || 'Pending',
+          activityType: r.activityType || 'work',
+          isInternal: project?.isInternal || false,
           createdAt: r.createdAt
         });
 
@@ -776,6 +778,8 @@ class DBService {
             personnelCost: awUser?.subcontractorId ? 0 : awCost,
             subcontractorCost: awUser?.subcontractorId ? awCost : 0,
             invoiceStatus: r.invoiceStatus || 'Pending',
+            activityType: r.activityType || 'work',
+            isInternal: project?.isInternal || false,
             createdAt: r.createdAt
           });
         });
