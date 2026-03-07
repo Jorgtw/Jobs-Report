@@ -882,7 +882,11 @@ const PersonnelView: React.FC = () => {
       return;
     }
     const subject = encodeURIComponent(t('emailInstructionsSubject'));
-    const body = encodeURIComponent(t('emailInstructionsBody'));
+    let bodyText = t('emailInstructionsBody');
+    bodyText = bodyText.replace('{name}', u.name || '');
+    bodyText = bodyText.replace('{email}', u.email || '');
+    bodyText = bodyText.replace('{password}', u.password || '');
+    const body = encodeURIComponent(bodyText);
     window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;
   };
 

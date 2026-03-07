@@ -266,8 +266,8 @@ export const translations = {
     customRange: "Intervallo personalizzato",
     filterByRange: "Filtra per intervallo",
     sendInstructions: "Invia Istruzioni",
-    emailInstructionsSubject: "Istruzioni installazione App Jobs Report",
-    emailInstructionsBody: "Ciao,\n\nEcco il link per accedere all'App Jobs Report: https://jobs-report.vercel.app\n\nPer installarla sul tuo telefono:\n\n- Su iPhone (Safari): Clicca l'icona 'Condividi' (il quadrato con la freccia verso l'alto) e seleziona 'Aggiungi alla schermata Home'.\n\n- Su Android (Chrome): Clicca sui tre puntini in alto a destra e seleziona 'Installa app'.\n\nBuon lavoro!"
+    emailInstructionsSubject: "Istruzioni accesso App Jobs Report",
+    emailInstructionsBody: "Ciao {name},\n\nil tuo account per Jobs-Report è stato creato.\n\nApri questo link dal tuo telefono: https://jobs-report.vercel.app\n\nAccedi con:\n- E-mail: {email}\n- Password: {password}\n\nUsa il menu del browser e scegli 'Installa app' o 'Aggiungi a schermata Home' per avere Jobs-Report come una normale applicazione.\n\nDa lì potrai inserire i rapportini di lavoro, vedere i tuoi progetti e le ore registrate.\n\nBuon lavoro!"
   },
   en: {
     dashboard: "Dashboard",
@@ -534,8 +534,8 @@ export const translations = {
     customRange: "Custom range",
     filterByRange: "Filter by range",
     sendInstructions: "Send Instructions",
-    emailInstructionsSubject: "Instructions for installing the Jobs Report App",
-    emailInstructionsBody: "Hello,\n\nHere is the link to access the Jobs Report App: https://jobs-report.vercel.app\n\nTo install it on your phone:\n\n- On iPhone (Safari): Click the 'Share' icon (the square with the upward arrow) and select 'Add to Home Screen'.\n\n- On Android (Chrome): Click the three dots at the top right and select 'Install app'.\n\nHave a good day!"
+    emailInstructionsSubject: "Access instructions for the Jobs Report App",
+    emailInstructionsBody: "Hello {name},\n\nyour account for Jobs-Report has been created.\n\nOpen this link from your phone: https://jobs-report.vercel.app\n\nLogin with:\n- E-mail: {email}\n- Password: {password}\n\nUse the browser menu and choose 'Install app' or 'Add to Home Screen' to have Jobs-Report as a normal application.\n\nFrom there you can enter work reports, see your projects and registered hours.\n\nHave a good day!"
   },
   da: {
     dashboard: "Oversigt",
@@ -803,8 +803,8 @@ export const translations = {
     customRange: "Brugerdefineret interval",
     filterByRange: "Filtrer efter interval",
     sendInstructions: "Send Instruktioner",
-    emailInstructionsSubject: "Instruktioner til installation af Jobs Report-appen",
-    emailInstructionsBody: "Hej,\n\nHer er linket til at få adgang til Jobs Report-appen: https://jobs-report.vercel.app\n\nSådan installeres den på din telefon:\n\n- På iPhone (Safari): Klik på ikonet 'Del' (firkanten med opadgående pil) og vælg 'Føj til hjemmeskærm'.\n\n- På Android (Chrome): Klik på de tre prikker øverst til højre og vælg 'Installer app'.\n\nGod arbejdslyst!"
+    emailInstructionsSubject: "Adgangsinstruktioner til Jobs Report-appen",
+    emailInstructionsBody: "Hej {name},\n\ndin konto til Jobs-Report er blevet oprettet.\n\nÅbn dette link fra din telefon: https://jobs-report.vercel.app\n\nLog ind med:\n- E-mail: {email}\n- Adgangskode: {password}\n\nBrug browsermenuen og vælg 'Installer app' eller 'Føj til hjemmeskærm' for at have Jobs-Report som en normal applikation.\n\nDerfra kan du indtaste arbejdsrapporter, se dine projekter og registrerede timer.\n\nGod arbejdslyst!"
   },
   es: {
     dashboard: "Panel",
@@ -1072,8 +1072,8 @@ export const translations = {
     customRange: "Rango personalizado",
     filterByRange: "Filtrar por rango",
     sendInstructions: "Enviar Instrucciones",
-    emailInstructionsSubject: "Instrucciones para instalar la App Jobs Report",
-    emailInstructionsBody: "Hola,\n\nAquí tienes il enlace para acceder a la App Jobs Report: https://jobs-report.vercel.app\n\nPara instalarla en tu teléfono:\n\n- En iPhone (Safari): Haz clic en el icono 'Compartir' (el cuadrado con la flecha hacia arriba) y selecciona 'Añadir a la pantalla de inicio'.\n\n- En Android (Chrome): Haz clic en los tres puntos en la parte superior derecha e selecciona 'Instalar aplicación'.\n\n¡Buen trabajo!"
+    emailInstructionsSubject: "Instrucciones de acceso para la App Jobs Report",
+    emailInstructionsBody: "Hola {name},\n\ntu cuenta para Jobs-Report ha sido creada.\n\nAbre este enlace desde tu teléfono: https://jobs-report.vercel.app\n\nInicia sesión con:\n- E-mail: {email}\n- Contraseña: {password}\n\nUsa el menú del navegador y elige 'Instalar aplicación' o 'Añadir a la pantalla de inicio' para tener Jobs-Report como una aplicación normal.\n\nDesde allí podrás introducir los partes de trabajo, ver tus proyectos y las horas registradas.\n\n¡Buen trabajo!"
   },
   pl: {
     dashboard: "Panel",
@@ -1341,8 +1341,8 @@ export const translations = {
     customRange: "Niestandardowy zakres",
     filterByRange: "Filtruj według zakresu",
     sendInstructions: "Wyślij Instrukcje",
-    emailInstructionsSubject: "Instrukcja instalacji aplikacji Jobs Report",
-    emailInstructionsBody: "Witaj,\n\nOto link do aplikacji Jobs Report: https://jobs-report.vercel.app\n\nAby zainstalować ją na telefonie:\n\n- Na iPhone (Safari): Kliknij ikonę 'Udostępnij' (kwadrat ze strzałką w górę) i wybierz 'Dodaj do ekranu początkowego'.\n\n- Na Android (Chrome): Kliknij trzy kropki w prawym górnym rogu i wybierz 'Zainstaluj aplikację'.\n\nPowodzenia!"
+    emailInstructionsSubject: "Instrukcja dostępu do aplikacji Jobs Report",
+    emailInstructionsBody: "Cześć {name},\n\nTwoje konto w Jobs-Report zostało utworzone.\n\nOtwórz ten link w telefonie: https://jobs-report.vercel.app\n\nZaloguj się używając:\n- E-mail: {email}\n- Hasło: {password}\n\nUżyj menu przeglądarki i wybierz 'Zainstaluj aplikację' lub 'Dodaj do ekranu głównego', aby używać Jobs-Report jako normalnej aplikacji.\n\nStamtąd będziesz mógł wpisywać raporty z pracy, przeglądać swoje projekty i zarejestrowane godziny.\n\nPowodzenia!"
   },
   tr: {
     dashboard: "Panel",
@@ -1609,7 +1609,7 @@ export const translations = {
     customRange: "Özel aralık",
     filterByRange: "Aralığa göre filtrele",
     sendInstructions: "Talimatları Gönder",
-    emailInstructionsSubject: "Jobs Report Uygulamasını yükleme talimatları",
-    emailInstructionsBody: "Merhaba,\n\nJobs Report Uygulamasına erişmek için bağlantı: https://jobs-report.vercel.app\n\nTelefonunuza yüklemek için:\n\n- iPhone (Safari): 'Paylaş' simgesine (yukarı oklu kare) tıklayın ve 'Ana Ekrana Ekle'yi seçin.\n\n- Android (Chrome): Sağ üstteki üç noktaya tıklayın ve 'Uygulamayı yükle'yi seçin.\n\nİyi çalışmalar!"
+    emailInstructionsSubject: "Jobs Report Uygulaması erişim talimatları",
+    emailInstructionsBody: "Merhaba {name},\n\nJobs-Report hesabınız oluşturuldu.\n\nBu bağlantıyı telefonunuzdan açın: https://jobs-report.vercel.app\n\nŞununla giriş yapın:\n- E-posta: {email}\n- Şifre: {password}\n\nTarayıcı menüsünü kullanın ve Jobs-Report'u normal bir uygulama gibi kullanmak için 'Uygulamayı yükle' veya 'Ana Ekrana Ekle'yi seçin.\n\nBuradan iş raporlarını girebilir, projelerinizi ve kayıtlı saatlerinizi görebilirsiniz.\n\nİyi çalışmalar!"
   }
 };
