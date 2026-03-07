@@ -21,7 +21,8 @@ import {
   Eye,
   EyeOff,
   ChevronRight,
-  Download
+  Download,
+  Copy
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -1602,6 +1603,24 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
+  const handleDuplicate = (r: WorkReport) => {
+    setEditingId(null);
+    setFormData({
+      projectId: r.projectId,
+      userId: r.userId,
+      date: new Date().toISOString().split('T')[0],
+      startTime: r.startTime,
+      endTime: r.endTime,
+      breakHours: r.breakHours,
+      manualTotalHours: r.manualTotalHours,
+      description: r.description,
+      expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
+      additionalWorkers: [...(r.additionalWorkers || [])],
+      invoiceStatus: 'Pending'
+    });
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -1660,8 +1679,9 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     </td>
                     <td className="p-4 text-right whitespace-nowrap">
                       <div className="flex gap-2 justify-end">
-                        <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="Modifica"><Pencil size={18} /></button>
-                        <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="Elimina"><Trash2 size={18} /></button>
+                        <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('duplicate')}><Copy size={18} /></button>
+                        <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}><Pencil size={18} /></button>
+                        <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}><Trash2 size={18} /></button>
                       </div>
                     </td>
                   </tr>

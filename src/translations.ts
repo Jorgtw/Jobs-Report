@@ -258,7 +258,8 @@ export const translations = {
     forgotPasswordEmailBody: "Ciao,\n\nHo dimenticato la mia password e chiedo assistenza.\n\nUsername: {username}\nEmail di contatto: {email}\n\nGrazie",
     registrationEmailSubject: "[JobsReport] Richiesta nuova registrazione",
     registrationEmailBody: "Salve,\n\nVorrei registrare la mia azienda su JobsReport.\n\nNome azienda: {companyName}\nReferente: {contactName}\nEmail: {email}\nTelefono: {phone}\nNote: {notes}\n\nGrazie",
-    installApp: "Installa App"
+    installApp: "Installa App",
+    duplicate: "Duplica"
   },
   en: {
     dashboard: "Dashboard",
@@ -517,7 +518,8 @@ export const translations = {
     forgotPasswordEmailBody: "Hello,\n\nI forgot my password and request assistance.\n\nUsername: {username}\nContact Email: {email}\n\nThank you",
     registrationEmailSubject: "[JobsReport] New registration request",
     registrationEmailBody: "Hello,\n\nI would like to register my company on JobsReport.\n\nCompany Name: {companyName}\nContact Person: {contactName}\nEmail: {email}\nPhone: {phone}\nNotes: {notes}\n\nThank you",
-    installApp: "Install App"
+    installApp: "Install App",
+    duplicate: "Duplicate"
   },
   da: {
     dashboard: "Oversigt",
@@ -777,7 +779,8 @@ export const translations = {
     forgotPasswordEmailBody: "Hej,\n\nJeg har glemt min adgangskode og beder om hjælp.\n\nBrugernavn: {username}\nKontakt e-mail: {email}\n\nTak",
     registrationEmailSubject: "[JobsReport] Anmodning om ny registrering",
     registrationEmailBody: "Hej,\n\nJeg vil gerne registrere mit firma på JobsReport.\n\nFirmanavn: {companyName}\nKontaktperson: {contactName}\nE-mail: {email}\nTelefon: {phone}\nNoter: {notes}\n\nTak",
-    installApp: "Installer App"
+    installApp: "Installer App",
+    duplicate: "Dupliker"
   },
   es: {
     dashboard: "Panel",
@@ -1037,7 +1040,8 @@ export const translations = {
     forgotPasswordEmailBody: "Hola,\n\nHe olvidado mi contraseña y solicito asistencia.\n\nNombre de usuario: {username}\nCorreo de contacto: {email}\n\nGracias",
     registrationEmailSubject: "[JobsReport] Solicitud de nuevo registro",
     registrationEmailBody: "Hola,\n\nMe gustaría registrar mi empresa en JobsReport.\n\nNombre de la empresa: {companyName}\nPersona de contacto: {contactName}\nCorreo electrónico: {email}\nTeléfono: {phone}\nNotas: {notes}\n\nGracias",
-    installApp: "Instalar App"
+    installApp: "Instalar App",
+    duplicate: "Duplicar"
   },
   pl: {
     dashboard: "Panel",
@@ -1297,7 +1301,8 @@ export const translations = {
     forgotPasswordEmailBody: "Cześć,\n\nZapomniałem hasła i proszę o pomoc.\n\nNazwa użytkownika: {username}\nE-mail kontaktowy: {email}\n\nDziękuję",
     registrationEmailSubject: "[JobsReport] Prośba o nową rejestrację",
     registrationEmailBody: "Dzień dobry,\n\nChciałbym zarejestrować moją firmę w JobsReport.\n\nNazwa firmy: {companyName}\nOsoba kontaktowa: {contactName}\nE-mail: {email}\nTelefon: {phone}\nNotatki: {notes}\n\nDziękuję",
-    installApp: "Zainstaluj Aplikację"
+    installApp: "Zainstaluj Aplikację",
+    duplicate: "Duplikuj"
   },
   tr: {
     dashboard: "Panel",
@@ -1556,6 +1561,7 @@ export const translations = {
     forgotPasswordEmailBody: "Merhaba,\n\nŞifremi unuttum ve yardım talep ediyorum.\n\nKullanıcı Adı: {username}\nİletişim E-postası: {email}\n\nTeşekkürler",
     registrationEmailSubject: "[JobsReport] Yeni kayıt talebi",
     registrationEmailBody: "Merhaba,\n\nŞirketimi JobsReport'a kaydetmek istiyorum.\n\nŞirket Adı: {companyName}\nİlgili Kişi: {contactName}\nE-posta: {email}\nTelefon: {phone}\nNotlar: {notes}\n\nTeşekkürler",
-    installApp: "Uygulamayı Yükle"
+    installApp: "Uygulamayı Yükle",
+    duplicate: "Kopyala"
   }
 };
