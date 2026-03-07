@@ -350,6 +350,7 @@ class DBService {
       companyId: w.company_id || null,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
+      overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
       createdAt: new Date(w.created_at).getTime()
     };
   }
@@ -364,7 +365,8 @@ class DBService {
       username: w.username,
       company_id: w.companyId,
       subcontractor_id: w.subcontractorId,
-      hourly_rate: w.hourlyRate
+      hourly_rate: w.hourlyRate,
+      overtime_hourly_rate: w.overtimeHourlyRate
     };
     if (w.password || w.password_hash) obj.password_hash = w.password || w.password_hash;
     return obj;
@@ -537,10 +539,12 @@ class DBService {
         personRole: aw.person_role || '',
         membershipType: aw.membership_type || 'Interno',
         subcontractorId: aw.subcontractor_id,
-        isManualOverride: aw.is_manual_override || false
+        isManualOverride: aw.is_manual_override || false,
+        overtimeHours: Number(aw.overtime_hours) || 0
       })),
       activityType: r.activity_type || 'work',
       invoiceStatus: r.invoice_status || 'Pending',
+      overtimeHours: Number(r.overtime_hours) || 0,
       createdAt: new Date(r.created_at).getTime()
     };
   }
@@ -591,6 +595,7 @@ class DBService {
       description: report.description,
       "Notes": report.notes,
       activity_type: report.activityType || 'work',
+      overtime_hours: report.overtimeHours || 0,
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
     };
@@ -622,7 +627,8 @@ class DBService {
           person_role: aw.personRole || '',
           membership_type: aw.membershipType || 'Interno',
           subcontractor_id: aw.subcontractorId || null,
-          is_manual_override: aw.isManualOverride || false
+          is_manual_override: aw.isManualOverride || false,
+          overtime_hours: aw.overtimeHours || 0
         };
       });
       const { error: insErr } = await supabase.from('rapportini_workers').insert(workersToAdd);
@@ -651,7 +657,8 @@ class DBService {
       manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
       description: updates.description,
       "Notes": updates.notes,
-      activity_type: updates.activityType || 'work'
+      activity_type: updates.activityType || 'work',
+      overtime_hours: updates.overtimeHours || 0
     };
 
     const { error } = await supabase.from('reports').update(sbObj).eq('id', id);
@@ -682,7 +689,8 @@ class DBService {
             person_role: aw.personRole || '',
             membership_type: aw.membershipType || 'Interno',
             subcontractor_id: aw.subcontractorId || null,
-            is_manual_override: aw.isManualOverride || false
+            is_manual_override: aw.isManualOverride || false,
+            overtime_hours: aw.overtimeHours || 0
           };
         });
         const { error: updInsErr } = await supabase.from('rapportini_workers').insert(workersToAdd);
@@ -722,11 +730,15 @@ class DBService {
 
       const summaries = [];
 
-      const user = workers.find((u: any) => u.id === r.userId);
-      const workerCost = (r.totalHours * (user?.hourlyRate || 0)) + (user?.extraCost || 0);
-      const reportExpenses = Array.isArray(r.expenses)
-        ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
-        : 0;
+        const user = workers.find((u: any) => u.id === r.userId);
+        const reportOvertimeHours = r.overtimeHours || 0;
+        const workerCost = (r.totalHours * (user?.hourlyRate || 0)) + 
+                           (reportOvertimeHours * (user?.overtimeHourlyRate || 0)) + 
+                           (user?.extraCost || 0);
+        
+        const reportExpenses = Array.isArray(r.expenses)
+          ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
+          : 0;
 
         const isReportInternal = r.activityType !== 'work' || project?.isInternal;
         const revenue = isReportInternal ? 0 : r.totalHours * sellingPrice;
@@ -742,11 +754,13 @@ class DBService {
           userId: r.userId,
           subcontractorId: user?.subcontractorId || null,
           totalHours: r.totalHours,
+          overtimeHours: reportOvertimeHours,
           totalExpenses: reportExpenses,
           description: r.description,
           revenue: revenue,
           hourlyRevenue: isReportInternal ? 0 : sellingPrice,
           cost: workerCost,
+          overtimeCost: reportOvertimeHours * (user?.overtimeHourlyRate || 0),
           hourlyCost: user?.hourlyRate || 0,
           personnelCost: user?.subcontractorId ? 0 : workerCost,
           subcontractorCost: user?.subcontractorId ? workerCost : 0,
@@ -759,7 +773,10 @@ class DBService {
         const additionalWorkers = r.additionalWorkers || [];
         additionalWorkers.forEach((aw: any, idx: number) => {
           const awUser = workers.find((u: any) => u.id === aw.userId);
-          const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + (awUser?.extraCost || 0);
+          const awOvertimeHours = aw.overtimeHours || 0;
+          const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + 
+                         (awOvertimeHours * (awUser?.overtimeHourlyRate || 0)) + 
+                         (awUser?.extraCost || 0);
           const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
 
           summaries.push({
@@ -773,11 +790,13 @@ class DBService {
             userId: aw.userId,
             subcontractorId: awUser?.subcontractorId || null,
             totalHours: aw.totalHours,
+            overtimeHours: awOvertimeHours,
             totalExpenses: 0,
             description: r.description,
             revenue: awRevenue,
             hourlyRevenue: isReportInternal ? 0 : sellingPrice,
             cost: awCost,
+            overtimeCost: awOvertimeHours * (awUser?.overtimeHourlyRate || 0),
             hourlyCost: awUser?.hourlyRate || 0,
             personnelCost: awUser?.subcontractorId ? 0 : awCost,
             subcontractorCost: awUser?.subcontractorId ? awCost : 0,

@@ -954,6 +954,7 @@ const PersonnelView: React.FC = () => {
     role: 'operator' as Role,
     status: 'active' as UserStatus,
     hourlyRate: 0,
+    overtimeHourlyRate: 0,
     extraCost: 0,
     phone: '',
     address: '',
@@ -971,6 +972,7 @@ const PersonnelView: React.FC = () => {
       role: u.role,
       status: u.status,
       hourlyRate: u.hourlyRate || 0,
+      overtimeHourlyRate: u.overtimeHourlyRate || 0,
       extraCost: u.extraCost || 0,
       phone: u.phone || '',
       address: u.address || '',
@@ -1023,6 +1025,7 @@ const PersonnelView: React.FC = () => {
       role: 'operator',
       status: 'active',
       hourlyRate: 0,
+      overtimeHourlyRate: 0,
       extraCost: 0,
       phone: '',
       address: '',
@@ -1108,6 +1111,11 @@ const PersonnelView: React.FC = () => {
                 <FullWidthField label={t('person.hourlyRate')}>
                   <div className="relative flex items-center">
                     <input type="number" step="0.01" value={formData.hourlyRate} onChange={e => setFormData({ ...formData, hourlyRate: parseFloat(e.target.value) || 0 })} className={inputClasses} />
+                  </div>
+                </FullWidthField>
+                <FullWidthField label={t('person.overtimeHourlyRate')}>
+                  <div className="relative flex items-center">
+                    <input type="number" step="0.01" value={formData.overtimeHourlyRate} onChange={e => setFormData({ ...formData, overtimeHourlyRate: parseFloat(e.target.value) || 0 })} className={inputClasses} />
                   </div>
                 </FullWidthField>
                 {/* Username and Password only for Internal personnel */}
@@ -1803,6 +1811,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     endTime: '17:00',
     breakHours: 1,
     manualTotalHours: undefined as number | undefined,
+    overtimeHours: 0,
     description: '',
     expenses: [] as Expense[],
     additionalWorkers: [] as AdditionalWorker[],
@@ -1819,6 +1828,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         endTime: formData.endTime,
         breakHours: formData.breakHours,
         totalHours: 0,
+        overtimeHours: 0,
         hourlyRate: 0,
         totalCost: 0,
         personName: '',
@@ -1890,6 +1900,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       endTime: r.endTime,
       breakHours: r.breakHours,
       manualTotalHours: r.manualTotalHours,
+      overtimeHours: r.overtimeHours || 0,
       description: r.description,
       expenses: [...(r.expenses || [])],
       additionalWorkers: [...(r.additionalWorkers || [])],
@@ -1920,6 +1931,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       endTime: r.endTime,
       breakHours: r.breakHours,
       manualTotalHours: r.manualTotalHours,
+      overtimeHours: r.overtimeHours || 0,
       description: r.description,
       expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
       additionalWorkers: [...(r.additionalWorkers || [])],
@@ -1951,6 +1963,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               endTime: '17:00',
               breakHours: 1,
               manualTotalHours: undefined,
+              overtimeHours: 0,
               description: '',
               expenses: [],
               additionalWorkers: [],
@@ -2238,6 +2251,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <div className="w-20 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Inizio</div>
                     <div className="w-20 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Fine</div>
                     <div className="w-16 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Pausa</div>
+                    <div className="w-16 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center pl-1 ml-1">Extra</div>
                     <div className="w-16 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center pl-1 ml-1">Tot</div>
                   </div>
 
@@ -2259,6 +2273,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <div className="flex items-center gap-2 sm:gap-0">
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Pausa</label>
                       <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-1 text-center pl-3`} />
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
+                      <label className="text-[10px] font-extrabold text-amber-500 uppercase sm:hidden w-12">Extra</label>
+                      <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full sm:w-16 px-1 text-center text-amber-600 font-bold bg-amber-50 border-amber-200`} />
                     </div>
                     <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Tot</label>
@@ -2293,6 +2311,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       <div className="flex items-center gap-2 sm:gap-0">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Pausa</label>
                         <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-1 text-center pl-3`} />
+                      </div>
+                      <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
+                        <label className="text-[10px] font-extrabold text-amber-500 uppercase sm:hidden w-12">Extra</label>
+                        <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full sm:w-16 px-1 text-center text-amber-600 font-bold bg-amber-50 border-amber-200`} />
                       </div>
                       <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Tot</label>

@@ -34,6 +34,7 @@ export interface User {
   companyId?: string | null;
   hourlyRate?: number;
   extraCost?: number;
+  overtimeHourlyRate?: number;
   phone?: string;
   address?: string;
   notes?: string;
@@ -94,6 +95,7 @@ export interface AdditionalWorker {
   membershipType?: string;
   subcontractorId?: string;
   isManualOverride?: boolean;
+  overtimeHours?: number;
 }
 
 export interface WorkReport {
@@ -112,6 +114,7 @@ export interface WorkReport {
   additionalWorkers: AdditionalWorker[];
   activityType?: 'work' | 'sickness' | 'holiday' | 'internal';
   invoiceStatus?: string;
+  overtimeHours?: number;
   createdAt: number;
 }
 
@@ -127,6 +130,8 @@ export interface ReportSummary {
   description: string;
   revenue: number;
   cost: number;
+  overtimeHours: number;
+  overtimeCost: number;
   invoiceStatus?: string;
   createdAt: number;
 }
