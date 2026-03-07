@@ -22,7 +22,8 @@ import {
   EyeOff,
   ChevronRight,
   Download,
-  Copy
+  Copy,
+  Search
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -1490,6 +1491,66 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     };
     load();
   }, []);
+
+  const [filters, setFilters] = useState({
+    projectId: '',
+    userId: '',
+    search: '',
+    dateRange: 'all' as 'all' | 'today' | 'week' | 'month' | 'custom',
+    dateFrom: '',
+    dateTo: ''
+  });
+
+  const filteredReports = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    // Calcolo inizio settimana (Lunedì)
+    const monday = new Date(now);
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    monday.setDate(diff);
+    const mondayStr = monday.toISOString().split('T')[0];
+
+    // Calcolo inizio mese
+    const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayMonthStr = firstDayMonth.toISOString().split('T')[0];
+
+    return reports.filter((r: WorkReport) => {
+      // Filtro Progetto
+      if (filters.projectId && r.projectId !== filters.projectId) return false;
+
+      // Filtro Persona (Autore o Collaboratore aggiuntivo)
+      if (filters.userId) {
+        const isAuthor = r.userId === filters.userId;
+        const isHelper = (r.additionalWorkers || []).some((aw: AdditionalWorker) => aw.userId === filters.userId);
+        if (!isAuthor && !isHelper) return false;
+      }
+
+      // Filtro Ricerca Testo
+      if (filters.search) {
+        const s = filters.search.toLowerCase();
+        const inDesc = r.description.toLowerCase().includes(s);
+        const inNotes = (r.notes || '').toLowerCase().includes(s);
+        const projName = projects.find((p: Project) => p.id === r.projectId)?.name.toLowerCase() || '';
+        if (!inDesc && !inNotes && !projName.includes(s)) return false;
+      }
+
+      // Filtro Data
+      if (filters.dateRange === 'today') {
+        if (r.date !== todayStr) return false;
+      } else if (filters.dateRange === 'week') {
+        if (r.date < mondayStr) return false;
+      } else if (filters.dateRange === 'month') {
+        if (r.date < firstDayMonthStr) return false;
+      } else if (filters.dateRange === 'custom') {
+        if (filters.dateFrom && r.date < filters.dateFrom) return false;
+        if (filters.dateTo && r.date > filters.dateTo) return false;
+      }
+
+      return true;
+    });
+  }, [reports, filters, projects]);
   const [formData, setFormData] = useState({
     projectId: '',
     userId: user.id,
@@ -1643,6 +1704,98 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
           setIsModalOpen(true);
         }} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"><Plus size={16} className="mr-2 inline" /> {t('newReport')}</button>
       </div>
+
+      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <Search size={14} /> {t('filters')}
+          </h3>
+          <button
+            onClick={() => setFilters({ projectId: '', userId: '', search: '', dateRange: 'all', dateFrom: '', dateTo: '' })}
+            className="text-[10px] items-center font-bold px-3 py-1 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors uppercase"
+          >
+            {t('clearFilters')}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('project')}</label>
+            <select
+              value={filters.projectId}
+              onChange={e => setFilters({ ...filters, projectId: e.target.value })}
+              className={inputClasses}
+            >
+              <option value="">{t('allProjects')}</option>
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('workerLabel')}</label>
+            <select
+              value={filters.userId}
+              onChange={e => setFilters({ ...filters, userId: e.target.value })}
+              className={inputClasses}
+            >
+              <option value="">{t('allWorkers')}</option>
+              {personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('filterByRange')}</label>
+            <select
+              value={filters.dateRange}
+              onChange={e => setFilters({ ...filters, dateRange: e.target.value as any })}
+              className={inputClasses}
+            >
+              <option value="all">{t('statusAll')}</option>
+              <option value="today">{t('today')}</option>
+              <option value="week">{t('thisWeek')}</option>
+              <option value="month">{t('thisMonth')}</option>
+              <option value="custom">{t('customRange')}</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('filters')}</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={filters.search}
+                onChange={e => setFilters({ ...filters, search: e.target.value })}
+                placeholder={t('placeholderSearch')}
+                className={inputClasses + " pl-9"}
+              />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            </div>
+          </div>
+
+          {filters.dateRange === 'custom' && (
+            <div className="col-span-1 md:col-span-2 lg:col-span-4 grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('dateFrom')}</label>
+                <input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={e => setFilters({ ...filters, dateFrom: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">{t('dateTo')}</label>
+                <input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={e => setFilters({ ...filters, dateTo: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -1656,7 +1809,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {[...reports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
+              {[...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
                 const proj = projects.find(p => p.id === r.projectId);
                 const dateObj = new Date(r.date);
                 const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);

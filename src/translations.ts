@@ -259,7 +259,12 @@ export const translations = {
     registrationEmailSubject: "[JobsReport] Richiesta nuova registrazione",
     registrationEmailBody: "Salve,\n\nVorrei registrare la mia azienda su JobsReport.\n\nNome azienda: {companyName}\nReferente: {contactName}\nEmail: {email}\nTelefono: {phone}\nNote: {notes}\n\nGrazie",
     installApp: "Installa App",
-    duplicate: "Duplica"
+    duplicate: "Duplica",
+    today: "Oggi",
+    thisWeek: "Questa settimana",
+    thisMonth: "Questo mese",
+    customRange: "Intervallo personalizzato",
+    filterByRange: "Filtra per periodo"
   },
   en: {
     dashboard: "Dashboard",
@@ -519,7 +524,12 @@ export const translations = {
     registrationEmailSubject: "[JobsReport] New registration request",
     registrationEmailBody: "Hello,\n\nI would like to register my company on JobsReport.\n\nCompany Name: {companyName}\nContact Person: {contactName}\nEmail: {email}\nPhone: {phone}\nNotes: {notes}\n\nThank you",
     installApp: "Install App",
-    duplicate: "Duplicate"
+    duplicate: "Duplicate",
+    today: "Today",
+    thisWeek: "This week",
+    thisMonth: "This month",
+    customRange: "Custom range",
+    filterByRange: "Filter by range"
   },
   da: {
     dashboard: "Oversigt",
@@ -780,7 +790,12 @@ export const translations = {
     registrationEmailSubject: "[JobsReport] Anmodning om ny registrering",
     registrationEmailBody: "Hej,\n\nJeg vil gerne registrere mit firma på JobsReport.\n\nFirmanavn: {companyName}\nKontaktperson: {contactName}\nE-mail: {email}\nTelefon: {phone}\nNoter: {notes}\n\nTak",
     installApp: "Installer App",
-    duplicate: "Dupliker"
+    duplicate: "Dupliker",
+    today: "I dag",
+    thisWeek: "Denne uge",
+    thisMonth: "Denne måned",
+    customRange: "Brugerdefineret interval",
+    filterByRange: "Filtrer efter interval"
   },
   es: {
     dashboard: "Panel",
@@ -1041,7 +1056,12 @@ export const translations = {
     registrationEmailSubject: "[JobsReport] Solicitud de nuevo registro",
     registrationEmailBody: "Hola,\n\nMe gustaría registrar mi empresa en JobsReport.\n\nNombre de la empresa: {companyName}\nPersona de contacto: {contactName}\nCorreo electrónico: {email}\nTeléfono: {phone}\nNotas: {notes}\n\nGracias",
     installApp: "Instalar App",
-    duplicate: "Duplicar"
+    duplicate: "Duplicar",
+    today: "Hoy",
+    thisWeek: "Esta semana",
+    thisMonth: "Este mes",
+    customRange: "Rango personalizado",
+    filterByRange: "Filtrer por rango"
   },
   pl: {
     dashboard: "Panel",
@@ -1302,7 +1322,12 @@ export const translations = {
     registrationEmailSubject: "[JobsReport] Prośba o nową rejestrację",
     registrationEmailBody: "Dzień dobry,\n\nChciałbym zarejestrować moją firmę w JobsReport.\n\nNazwa firmy: {companyName}\nOsoba kontaktowa: {contactName}\nE-mail: {email}\nTelefon: {phone}\nNotatki: {notes}\n\nDziękuję",
     installApp: "Zainstaluj Aplikację",
-    duplicate: "Duplikuj"
+    duplicate: "Duplikuj",
+    today: "Dzisiaj",
+    thisWeek: "W tym tygodniu",
+    thisMonth: "W tym miesiącu",
+    customRange: "Niestandardowy zakres",
+    filterByRange: "Filtruj według zakresu"
   },
   tr: {
     dashboard: "Panel",
@@ -1562,6 +1587,11 @@ export const translations = {
     registrationEmailSubject: "[JobsReport] Yeni kayıt talebi",
     registrationEmailBody: "Merhaba,\n\nŞirketimi JobsReport'a kaydetmek istiyorum.\n\nŞirket Adı: {companyName}\nİlgili Kişi: {contactName}\nE-posta: {email}\nTelefon: {phone}\nNotlar: {notes}\n\nTeşekkürler",
     installApp: "Uygulamayı Yükle",
-    duplicate: "Kopyala"
+    duplicate: "Kopyala",
+    today: "Bugün",
+    thisWeek: "Bu hafta",
+    thisMonth: "Bu ay",
+    customRange: "Özel aralık",
+    filterByRange: "Aralığa göre filtrele"
   }
 };
