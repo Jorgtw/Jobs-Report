@@ -414,35 +414,6 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-900">{t('workSummary')}</h1>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
-          <div className="flex-1 sm:flex-none">
-            <select
-              title="Aggiorna stato dei risultati filtrati"
-              onChange={async (e) => {
-                const val = e.target.value;
-                if (!val) return;
-                const confirmMsg = `Vuoi aggiornare lo stato di ${filteredData.length} record filtrati a '${val === 'Pending' ? t('statusPending') : val === 'Fatturato' ? t('statusInvoiced') : t('statusPaid')}'?`;
-                if (!window.confirm(confirmMsg)) {
-                  e.target.value = '';
-                  return;
-                }
-                try {
-                  const ids = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
-                  await db.bulkUpdateInvoiceStatus(ids, val);
-                  const newData = await db.getSummary();
-                  setSummary(newData);
-                } catch (err: any) {
-                  alert("Errore durante l'aggiornamento: " + err.message);
-                }
-                e.target.value = '';
-              }}
-              className="w-full sm:w-auto px-4 py-2 bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold rounded-xl shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
-            >
-              <option value="">{t('update')} {t('statusLabel')}</option>
-              <option value="Pending">{t('statusPending')}</option>
-              <option value="Fatturato">{t('statusInvoiced')}</option>
-              <option value="Pagato">{t('statusPaid')}</option>
-            </select>
-          </div>
           <button onClick={handleExportExcel} className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-emerald-700 transition-all">
             <FileSpreadsheet size={16} className="mr-2" /> {t('exportExcelBtn')}
           </button>
@@ -510,6 +481,36 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
               <button onClick={() => setAdminStatus('Pagato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pagato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusPaid')}</button>
               <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('statusPending')}</button>
             </div>
+          </div>
+          
+          <div className="flex-shrink-0 w-full sm:w-auto sm:ml-auto">
+            <select
+              title="Aggiorna stato dei risultati filtrati"
+              onChange={async (e) => {
+                const val = e.target.value;
+                if (!val) return;
+                const confirmMsg = `Vuoi aggiornare lo stato di ${filteredData.length} record filtrati a '${val === 'Pending' ? t('statusPending') : val === 'Fatturato' ? t('statusInvoiced') : t('statusPaid')}'?`;
+                if (!window.confirm(confirmMsg)) {
+                  e.target.value = '';
+                  return;
+                }
+                try {
+                  const ids = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
+                  await db.bulkUpdateInvoiceStatus(ids, val);
+                  const newData = await db.getSummary();
+                  setSummary(newData);
+                } catch (err: any) {
+                  alert("Errore durante l'aggiornamento: " + err.message);
+                }
+                e.target.value = '';
+              }}
+              className="w-full sm:w-auto px-4 py-1.5 bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
+            >
+              <option value="">{t('update')} {t('statusLabel')} ({filteredData.length})</option>
+              <option value="Pending">{t('statusPending')}</option>
+              <option value="Fatturato">{t('statusInvoiced')}</option>
+              <option value="Pagato">{t('statusPaid')}</option>
+            </select>
           </div>
         </div>
       </div>
