@@ -16,17 +16,17 @@ export default defineConfig(({ mode }) => ({
         background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/Jobs-Report/',
-        start_url: '/Jobs-Report/',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
-            src: '/Jobs-Report/icon-192.png',
+            src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/Jobs-Report/icon-512.png',
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -35,12 +35,12 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: '/Jobs-Report/index.html',
-        navigateFallbackDenylist: [/^\/Jobs-Report\/api/]
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/]
       }
     })
   ],
-  base: '/Jobs-Report/',
+  base: '/',
   build: {
     outDir: 'dist',
     sourcemap: false
