@@ -24,7 +24,8 @@ import {
   Download,
   Copy,
   Search,
-  Filter
+  Filter,
+  Mail
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -875,6 +876,16 @@ const PersonnelView: React.FC = () => {
     }
   };
 
+  const handleSendInstructions = (u: any) => {
+    if (!u.email) {
+      alert(t('placeholderEmail'));
+      return;
+    }
+    const subject = encodeURIComponent(t('emailInstructionsSubject'));
+    const body = encodeURIComponent(t('emailInstructionsBody'));
+    window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
@@ -934,6 +945,11 @@ const PersonnelView: React.FC = () => {
                 </p>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
+                {u.email && (
+                  <button onClick={() => handleSendInstructions(u)} className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title={t('sendInstructions')}>
+                    <Mail size={18} />
+                  </button>
+                )}
                 <button onClick={() => handleEdit(u)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"><Pencil size={18} /></button>
                 <button onClick={() => handleDelete(u.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>
               </div>
@@ -1006,6 +1022,11 @@ const PersonnelView: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
+                  {editingId && formData.email && (
+                    <button type="button" onClick={() => handleSendInstructions(formData)} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
+                      <Mail size={16} /> {t('sendInstructions')}
+                    </button>
+                  )}
                   <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
                   <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
                     {editingId ? t('update') : t('save')}

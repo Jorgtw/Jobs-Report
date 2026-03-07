@@ -264,7 +264,10 @@ export const translations = {
     thisWeek: "Questa settimana",
     thisMonth: "Questo mese",
     customRange: "Intervallo personalizzato",
-    filterByRange: "Filtra per intervallo"
+    filterByRange: "Filtra per intervallo",
+    sendInstructions: "Invia Istruzioni",
+    emailInstructionsSubject: "Istruzioni installazione App Jobs Report",
+    emailInstructionsBody: "Ciao,\n\nEcco il link per accedere all'App Jobs Report: https://jobs-report.vercel.app\n\nPer installarla sul tuo telefono:\n\n- Su iPhone (Safari): Clicca l'icona 'Condividi' (il quadrato con la freccia verso l'alto) e seleziona 'Aggiungi alla schermata Home'.\n\n- Su Android (Chrome): Clicca sui tre puntini in alto a destra e seleziona 'Installa app'.\n\nBuon lavoro!"
   },
   en: {
     dashboard: "Dashboard",
@@ -529,7 +532,10 @@ export const translations = {
     thisWeek: "This week",
     thisMonth: "This month",
     customRange: "Custom range",
-    filterByRange: "Filter by range"
+    filterByRange: "Filter by range",
+    sendInstructions: "Send Instructions",
+    emailInstructionsSubject: "Instructions for installing the Jobs Report App",
+    emailInstructionsBody: "Hello,\n\nHere is the link to access the Jobs Report App: https://jobs-report.vercel.app\n\nTo install it on your phone:\n\n- On iPhone (Safari): Click the 'Share' icon (the square with the upward arrow) and select 'Add to Home Screen'.\n\n- On Android (Chrome): Click the three dots at the top right and select 'Install app'.\n\nHave a good day!"
   },
   da: {
     dashboard: "Oversigt",
@@ -795,7 +801,10 @@ export const translations = {
     thisWeek: "Denne uge",
     thisMonth: "Denne måned",
     customRange: "Brugerdefineret interval",
-    filterByRange: "Filtrer efter interval"
+    filterByRange: "Filtrer efter interval",
+    sendInstructions: "Send Instruktioner",
+    emailInstructionsSubject: "Instruktioner til installation af Jobs Report-appen",
+    emailInstructionsBody: "Hej,\n\nHer er linket til at få adgang til Jobs Report-appen: https://jobs-report.vercel.app\n\nSådan installeres den på din telefon:\n\n- På iPhone (Safari): Klik på ikonet 'Del' (firkanten med opadgående pil) og vælg 'Føj til hjemmeskærm'.\n\n- På Android (Chrome): Klik på de tre prikker øverst til højre og vælg 'Installer app'.\n\nGod arbejdslyst!"
   },
   es: {
     dashboard: "Panel",
@@ -1061,7 +1070,10 @@ export const translations = {
     thisWeek: "Esta semana",
     thisMonth: "Este mes",
     customRange: "Rango personalizado",
-    filterByRange: "Filtrar por rango"
+    filterByRange: "Filtrar por rango",
+    sendInstructions: "Enviar Instrucciones",
+    emailInstructionsSubject: "Instrucciones para instalar la App Jobs Report",
+    emailInstructionsBody: "Hola,\n\nAquí tienes il enlace para acceder a la App Jobs Report: https://jobs-report.vercel.app\n\nPara instalarla en tu teléfono:\n\n- En iPhone (Safari): Haz clic en el icono 'Compartir' (el cuadrado con la flecha hacia arriba) y selecciona 'Añadir a la pantalla de inicio'.\n\n- En Android (Chrome): Haz clic en los tres puntos en la parte superior derecha e selecciona 'Instalar aplicación'.\n\n¡Buen trabajo!"
   },
   pl: {
     dashboard: "Panel",
@@ -1327,7 +1339,10 @@ export const translations = {
     thisWeek: "W tym tygodniu",
     thisMonth: "W tym miesiącu",
     customRange: "Niestandardowy zakres",
-    filterByRange: "Filtruj według zakresu"
+    filterByRange: "Filtruj według zakresu",
+    sendInstructions: "Wyślij Instrukcje",
+    emailInstructionsSubject: "Instrukcja instalacji aplikacji Jobs Report",
+    emailInstructionsBody: "Witaj,\n\nOto link do aplikacji Jobs Report: https://jobs-report.vercel.app\n\nAby zainstalować ją na telefonie:\n\n- Na iPhone (Safari): Kliknij ikonę 'Udostępnij' (kwadrat ze strzałką w górę) i wybierz 'Dodaj do ekranu początkowego'.\n\n- Na Android (Chrome): Kliknij trzy kropki w prawym górnym rogu i wybierz 'Zainstaluj aplikację'.\n\nPowodzenia!"
   },
   tr: {
     dashboard: "Panel",
@@ -1592,6 +1607,9 @@ export const translations = {
     thisWeek: "Bu hafta",
     thisMonth: "Bu ay",
     customRange: "Özel aralık",
-    filterByRange: "Aralığa göre filtrele"
+    filterByRange: "Aralığa göre filtrele",
+    sendInstructions: "Talimatları Gönder",
+    emailInstructionsSubject: "Jobs Report Uygulamasını yükleme talimatları",
+    emailInstructionsBody: "Merhaba,\n\nJobs Report Uygulamasına erişmek için bağlantı: https://jobs-report.vercel.app\n\nTelefonunuza yüklemek için:\n\n- iPhone (Safari): 'Paylaş' simgesine (yukarı oklu kare) tıklayın ve 'Ana Ekrana Ekle'yi seçin.\n\n- Android (Chrome): Sağ üstteki üç noktaya tıklayın ve 'Uygulamayı yükle'yi seçin.\n\nİyi çalışmalar!"
   }
 };
