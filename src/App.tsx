@@ -25,7 +25,13 @@ import {
   Copy,
   Search,
   Filter,
-  Mail
+  Mail,
+  HelpCircle,
+  Smartphone,
+  Apple,
+  Chrome,
+  PlusCircle,
+  LayoutDashboard
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -76,7 +82,8 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
     { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
-    { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
+    { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' },
+    { name: t('help'), path: '/help', icon: HelpCircle, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-600' }
   ];
 
   if (isSuperAdmin) {
@@ -813,6 +820,99 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
             {t('update')}
           </button>
         </form>
+      </div>
+    </div>
+  );
+};
+
+// --- Help View ---
+const HelpCard: React.FC<{ title: string; children: React.ReactNode; icon: React.ReactNode; color: string }> = ({ title, children, icon, color }) => (
+  <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all">
+    <div className="flex items-start gap-4">
+      <div className={`p-3 rounded-2xl ${color} shrink-0`}>
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
+        <p className="text-sm text-slate-500 leading-relaxed">{children}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const HelpView: React.FC<{ user: User }> = ({ user }) => {
+  const { t } = useTranslation();
+  const isAdmin = user?.role === 'admin';
+
+  return (
+    <div className="space-y-8 pb-10">
+      <div className="text-center max-w-2xl mx-auto pt-4">
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{t('helpTitle')}</h1>
+        <p className="text-slate-500 font-medium">{t('helpSubtitle')}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Common Section: PWA */}
+        <HelpCard 
+          title={t('helpPwaTitle')} 
+          icon={<Smartphone className="text-indigo-600" />} 
+          color="bg-indigo-50"
+        >
+          {t('helpPwaBody')}
+          <div className="mt-4 flex gap-4">
+            <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+              <Apple size={14} className="text-slate-400" />
+              <span className="text-[10px] font-bold text-slate-600">iPhone: Share → Add to Home</span>
+            </div>
+            <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+              <Chrome size={14} className="text-slate-400" />
+              <span className="text-[10px] font-bold text-slate-600">Android: Menu → Install App</span>
+            </div>
+          </div>
+        </HelpCard>
+
+        {/* Roles based content */}
+        {!isAdmin ? (
+          <>
+            <HelpCard 
+              title={t('helpNewReportTitle')} 
+              icon={<PlusCircle className="text-blue-600" />} 
+              color="bg-blue-50"
+            >
+              {t('helpNewReportBody')}
+            </HelpCard>
+            <HelpCard 
+              title={t('helpAdditionalWorkersTitle')} 
+              icon={<Users className="text-emerald-600" />} 
+              color="bg-emerald-50"
+            >
+              {t('helpAdditionalWorkersBody')}
+            </HelpCard>
+          </>
+        ) : (
+          <>
+            <HelpCard 
+              title={t('helpAdminSummaryTitle')} 
+              icon={<LayoutDashboard className="text-amber-600" />} 
+              color="bg-amber-50"
+            >
+              {t('helpAdminSummaryBody')}
+            </HelpCard>
+            <HelpCard 
+              title={t('helpAdminPersonnelTitle')} 
+              icon={<Users className="text-purple-600" />} 
+              color="bg-purple-50"
+            >
+              {t('helpAdminPersonnelBody')}
+            </HelpCard>
+          </>
+        )}
+      </div>
+
+      <div className="bg-blue-50 rounded-3xl p-8 border border-blue-100 text-center">
+        <HelpCircle className="mx-auto text-blue-500 mb-3" size={32} />
+        <h3 className="font-bold text-blue-900 text-lg">{t('requestSent')}</h3>
+        <p className="text-blue-700/70 text-sm mt-1">Per assistenza tecnica o problemi di accesso, contatta l'amministratore.</p>
       </div>
     </div>
   );
@@ -2721,6 +2821,7 @@ const App: React.FC = () => {
             <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView /> : <Navigate to="/" />} />
             <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
             <Route path="/profile" element={<ProfileView user={user} />} />
+            <Route path="/help" element={<HelpView user={user} />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AppLayout>
