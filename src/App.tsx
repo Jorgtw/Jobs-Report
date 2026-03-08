@@ -2096,6 +2096,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       )}
                     </div>
                     <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
+                    {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-0.5" title={r.description}>{r.description}</div>}
                   </div>
                   <div className="flex gap-1.5">
                     <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors border border-emerald-100" title={t('duplicate')}><Copy size={16} /></button>
@@ -2135,6 +2136,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest">
                 <th className="px-3 py-2 font-black w-32">{t('date')}</th>
                 <th className="px-3 py-2 font-black">{t('project')}</th>
+                <th className="px-3 py-2 font-black hidden lg:table-cell">{t('description')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('peopleLabel')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('totalHoursLabel')}</th>
                 <th className="px-3 py-2 font-black text-right w-36">Azioni</th>
@@ -2151,7 +2153,8 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
-                    <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate" title={proj?.name}>{proj?.name || '---'}</td>
+                    <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate max-w-[150px]" title={proj?.name}>{proj?.name || '---'}</td>
+                    <td className="px-3 py-1.5 text-xs text-slate-600 truncate max-w-[150px] hidden lg:table-cell" title={r.description}>{r.description || '---'}</td>
                     <td className="px-3 py-1.5 text-center">
                       <span className="inline-flex items-center justify-center bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
                         {totalWorkersCount}
@@ -2174,7 +2177,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               })}
               {reports.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-6 text-center text-slate-500 text-xs">Nessun dato disponibile</td>
+                  <td colSpan={6} className="p-6 text-center text-slate-500 text-xs">Nessun dato disponibile</td>
                 </tr>
               )}
             </tbody>
