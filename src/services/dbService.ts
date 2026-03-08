@@ -351,6 +351,7 @@ class DBService {
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
+      extraCost: Number(w.extra_cost) || 0,
       createdAt: new Date(w.created_at).getTime()
     };
   }
@@ -366,7 +367,8 @@ class DBService {
       company_id: w.companyId,
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
-      overtime_hourly_rate: w.overtimeHourlyRate
+      overtime_hourly_rate: w.overtimeHourlyRate,
+      extra_cost: w.extraCost
     };
     if (w.password || w.password_hash) obj.password_hash = w.password || w.password_hash;
     return obj;
