@@ -501,7 +501,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
               onChange={async (e) => {
                 const val = e.target.value;
                 if (!val) return;
-                const confirmMsg = `Vuoi aggiornare lo stato di ${filteredData.length} record filtrati a '${val === 'Pending' ? t('statusPending') : val === 'Fatturato' ? t('statusInvoiced') : t('statusPaid')}'?`;
+                const confirmMsg = t('confirmUpdateStatus').replace('{count}', filteredData.length.toString()).replace('{status}', val === 'Pending' ? t('statusPending') : val === 'Fatturato' ? t('statusInvoiced') : t('statusPaid'));
                 if (!window.confirm(confirmMsg)) {
                   e.target.value = '';
                   return;
@@ -512,7 +512,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                   const newData = await db.getSummary();
                   setSummary(newData);
                 } catch (err: any) {
-                  alert("Errore durante l'aggiornamento: " + err.message);
+                  alert(t('updateError') + err.message);
                 }
                 e.target.value = '';
               }}
@@ -1886,7 +1886,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       setIsModalOpen(false);
     } catch (err: any) {
       console.error(err);
-      alert("Errore durante il salvataggio: " + JSON.stringify(err));
+      alert(t('saveError') + JSON.stringify(err));
     }
   };
 
@@ -2720,7 +2720,7 @@ const CompaniesView: React.FC = () => {
         await db.deleteCompany(id);
         loadCompanies();
       } catch (err: any) {
-        alert('Errore durante l\'eliminazione: ' + (err.message || JSON.stringify(err)));
+        alert(t('deleteError') + (err.message || JSON.stringify(err)));
       }
     }
   };
@@ -2742,7 +2742,7 @@ const CompaniesView: React.FC = () => {
       setIsModalOpen(false);
       loadCompanies();
     } catch (err: any) {
-      alert(`Errore: ${err.message}`);
+      alert(t('genericError') + err.message);
     } finally {
       setIsSubmitting(false);
     }

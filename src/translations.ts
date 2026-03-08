@@ -299,7 +299,12 @@ export const translations = {
     helpAdminPersonnelTitle: "Gestione Personale",
     helpAdminPersonnelBody: "Puoi creare nuovi utenti nella sezione 'Personale'. Ricordati di inserire l'email corretta per poter inviare loro le istruzioni di accesso con un solo clic.",
     helpAdminInternalTitle: "Attività Interne (Malattia/Ferie)",
-    helpAdminInternalBody: "Per gestire le assenze, usa il nuovo tasto 'Nuova Attività Interna' nella sezione Progetti. Questo creerà un progetto speciale che non genera fatturato ma traccia correttamente i costi del personale."
+    helpAdminInternalBody: "Per gestire le assenze, usa il nuovo tasto 'Nuova Attività Interna' nella sezione Progetti. Questo creerà un progetto speciale che non genera fatturato ma traccia correttamente i costi del personale.",
+    confirmUpdateStatus: "Vuoi aggiornare lo stato di {count} record filtrati a '{status}'?",
+    updateError: "Errore durante l'aggiornamento: ",
+    saveError: "Errore durante il salvataggio: ",
+    deleteError: "Errore durante l'eliminazione: ",
+    genericError: "Errore: "
   },
   en: {
     dashboard: "Dashboard",
@@ -598,7 +603,12 @@ export const translations = {
     helpAdminSummaryBody: "In the 'Work Summary' section, you can filter data by period, client or collaborator. Here you can also update the billing status and export data to Excel or PDF.",
     helpAdminPersonnelTitle: "Personnel Management",
     helpAdminPersonnelBody: "You can create new users in the 'Personnel' section. Remember to enter the correct email to be able to send them access instructions with a single click.",
-    helpAdminInternalBody: "To manage absences, use the new 'New Internal Activity' button in the Projects section. This will create a special project that doesn't generate revenue but correctly tracks personnel costs."
+    helpAdminInternalBody: "To manage absences, use the new 'New Internal Activity' button in the Projects section. This will create a special project that doesn't generate revenue but correctly tracks personnel costs.",
+    confirmUpdateStatus: "Do you want to update the status of {count} filtered records to '{status}'?",
+    updateError: "Error during update: ",
+    saveError: "Error during save: ",
+    deleteError: "Error during deletion: ",
+    genericError: "Error: "
   },
   da: {
     dashboard: "Oversigt",
@@ -899,7 +909,12 @@ export const translations = {
     helpAdminPersonnelTitle: "Personalestyring",
     helpAdminPersonnelBody: "Du kan oprette nye brugere i sektionen 'Personale'. Husk at indtaste den korrekte e-mail for at kunne sende dem adgangsinstruktioner med et enkelt klik.",
     helpAdminInternalTitle: "Interne Aktiviteter (Sygdom/Ferie)",
-    helpAdminInternalBody: "For at administrere fravær skal du bruge den nye knap 'Ny Intern Aktivitet' i sektionen Projekter. Dette vil oprette et specielt projekt, der ikke genererer indtægter, men sporer personalepomkostninger korrekt."
+    helpAdminInternalBody: "For at administrere fravær skal du bruge den nye knap 'Ny Intern Aktivitet' i sektionen Projekter. Dette vil oprette et specielt projekt, der ikke genererer indtægter, men sporer personalepomkostninger korrekt.",
+    confirmUpdateStatus: "Vil du opdatere status for {count} filtrerede poster til '{status}'?",
+    updateError: "Fejl under opdatering: ",
+    saveError: "Fejl under lagring: ",
+    deleteError: "Fejl under sletning: ",
+    genericError: "Fejl: "
   },
   es: {
     dashboard: "Panel",
@@ -1200,7 +1215,12 @@ export const translations = {
     helpAdminPersonnelTitle: "Gestión de Personal",
     helpAdminPersonnelBody: "Puedes crear nuevos usuarios en la sección 'Personal'. Recuerda ingresar el correo electrónico correcto para poder enviarles instrucciones de acceso con un solo clic.",
     helpAdminInternalTitle: "Actividades Internas (Bajas/Vacaciones)",
-    helpAdminInternalBody: "Para gestionar las ausenzeas, usa il nuovo tasto 'Nuova Attività Interna' nella sezione Progetti. Questo creerà un progetto speciale che non genera fatturato ma traccia correttamente i costi del personale."
+    helpAdminInternalBody: "Para gestionar las ausenzeas, usa il nuovo tasto 'Nuova Attività Interna' nella sezione Proyectos. Questo creerá un progetto speciale che non genera fatturato ma traccia correttamente i costi del personale.",
+    confirmUpdateStatus: "¿Quieres actualizar el estado de {count} registros filtrados a '{status}'?",
+    updateError: "Error durante la actualización: ",
+    saveError: "Error durante el guardado: ",
+    deleteError: "Error durante la eliminación: ",
+    genericError: "Error: "
   },
   pl: {
     dashboard: "Panel",
@@ -1501,7 +1521,12 @@ export const translations = {
     helpAdminPersonnelTitle: "Zarządzanie personelem",
     helpAdminPersonnelBody: "Możesz tworzyć nowych użytkowników w sekcji 'Personel'. Pamiętaj o podaniu poprawnego adresu e-mail, aby móc wysłać im instrukcje dostępu jednym kliknięciem.",
     helpAdminInternalTitle: "Aktywności Wewnętrzne (Chorobowe/Urlopy)",
-    helpAdminInternalBody: "Aby zarządzać nieobecnościami, użyj nowego przycisku 'Nowa Aktywność Wewnętrzna' w sekcji Projekty. Spowoduje to utworzenie specjalnego projektu, który nie generuje przychodów, ale poprawnie śledzi koszty personelu."
+    helpAdminInternalBody: "Aby zarządzać nieobecnościami, użyj nowego przycisku 'Nowa Aktywność Wewnętrzna' w sekcji Projekty. Spowoduje to utworzenie specjalnego projektu, który nie generuje przychodów, ale poprawnie śledzi koszty personelu.",
+    confirmUpdateStatus: "Czy chcesz zaktualizować status {count} wyfiltrowanych rekordów do '{status}'?",
+    updateError: "Błąd podczas aktualizacji: ",
+    saveError: "Błąd podczas zapisywania: ",
+    deleteError: "Błąd podczas usuwania: ",
+    genericError: "Błąd: "
   },
   tr: {
     dashboard: "Panel",
@@ -1793,9 +1818,9 @@ export const translations = {
     helpAdminSummaryTitle: "İzleme ve Faturalandırma",
     helpAdminSummaryBody: " 'İş Özeti' bölümünde verileri döneme, müşteriye veya çalışma arkadaşına göre filtreleyebilirsiniz. Burada faturalandırma durumunu da güncelleyebilir ve verileri Excel veya PDF'e aktarabilirsiniz.",
     helpAdminPersonnelTitle: "Personel Yönetimi",
-    helpAdminPersonnelBody: "Yeni kullanıcıları 'Personel' bölümünde oluşturabilirsiniz. Erişimi tek tıklamayla onlara göndermek için doğru e-posta adresini girdiğinizden emin olun.",
+    helpAdminPersonnelBody: "Yeni kullanıcıları 'Personel' bölümünde oluşturabilirsiniz. Erişimi tek tıklamayla onlara göndermek için doğru e-postayı girdiğinizden emin olun.",
     helpAdminInternalTitle: "İç Aktiviteler (Hastalık/Tatil)",
-    helpAdminInternalBody: "Devamsızlıkları yönetmek için Projeler bölümündeki yeni 'Yeni İç Aktivite' düğmesini kullanın. Bu, gelir getirmeyen ancak personel maliyetlerini doğru bir şekilde takip eden özel bir proje oluşturacaktır.",
+    helpAdminInternalBody: "Devamsızlıkları yönetmek için Projeler bölümündeki yeni 'Yeni Dahili Etkinlik' düğmesini kullanın. Bu, gelir sağlamayan ancak personel maliyetlerini doğru şekilde izleyen özel bir proje yaratacaktır.",
     overtimeHourlyRate: "Fazla Mesai Ücreti",
     overtimeHours: "Fazla Mesai Saatleri",
     overtimeCost: "Fazla Mesai Maliyeti",
