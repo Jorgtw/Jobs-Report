@@ -3022,7 +3022,7 @@ const PresentationView: React.FC = () => {
               <div className="grid grid-cols-12 min-h-[500px]">
                 {/* Sidebar Mock */}
                 <div className="col-span-1 hidden lg:block bg-slate-900 border-r border-slate-800 p-4 space-y-6">
-                   {[HomeView, FileText, ClipboardList, Users, Building2, HelpCircle].map((Icon, idx) => (
+                   {[LayoutDashboard, FileText, ClipboardList, Users, Building2, HelpCircle].map((Icon, idx) => (
                       <div key={idx} className={`w-10 h-10 rounded-xl flex items-center justify-center ${idx === 1 ? 'bg-blue-600 text-white' : 'text-slate-600'}`}>
                          {/* @ts-ignore */}
                          <Icon size={20} />
