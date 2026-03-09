@@ -329,7 +329,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       const adminMatch = adminStatus === 'Tutti' || (s.invoiceStatus || 'Pending') === adminStatus;
       return dateMatch && clientMatch && projectMatch && userMatch && subMatch && adminMatch;
     });
-  }, [summary, filters, projects]);
+  }, [summary, filters, projects, adminStatus]);
 
   const totals = useMemo(() => {
     const baseTotals = filteredData.reduce((acc, s) => {
