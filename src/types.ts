@@ -70,6 +70,7 @@ export interface Project {
   financialAgreement?: 'hourly' | 'fixed';
   sellingPrice?: number;
   isInternal?: boolean;
+  assignedWorkerIds?: string[];
   createdAt: number;
 }
 

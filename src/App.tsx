@@ -1329,14 +1329,16 @@ const ProjectsView: React.FC = () => {
   const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const [p, c] = await Promise.all([db.getProjects(), db.getClients()]);
+      const [p, c, u] = await Promise.all([db.getProjects(), db.getClients(), db.getUsers()]);
       setProjects(p);
       setClients(c.filter((cl: Client) => cl.status === 'active'));
+      setPersonnel(u.filter((usr: User) => usr.status === 'active'));
     };
     load();
   }, []);
@@ -1354,7 +1356,8 @@ const ProjectsView: React.FC = () => {
     siteContactRole: '',
     financialAgreement: 'hourly' as 'hourly' | 'fixed',
     sellingPrice: 0,
-    isInternal: false
+    isInternal: false,
+    assignedWorkerIds: [] as string[]
   });
 
   const handleEdit = (p: Project) => {
@@ -1372,7 +1375,8 @@ const ProjectsView: React.FC = () => {
       siteContactRole: p.siteContactRole || '',
       financialAgreement: p.financialAgreement || 'hourly',
       sellingPrice: p.sellingPrice || 0,
-      isInternal: p.isInternal || false
+      isInternal: p.isInternal || false,
+      assignedWorkerIds: p.assignedWorkerIds || []
     });
     setIsModalOpen(true);
   };
@@ -1410,7 +1414,8 @@ const ProjectsView: React.FC = () => {
       siteContactRole: '',
       financialAgreement: 'hourly',
       sellingPrice: 0,
-      isInternal
+      isInternal,
+      assignedWorkerIds: []
     });
     setIsModalOpen(true);
   };
@@ -1528,6 +1533,27 @@ const ProjectsView: React.FC = () => {
                   <FullWidthField label={t('project.notes')}>
                     <textarea rows={2} value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses} />
                   </FullWidthField>
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('project.assignedPersonnel') as any}:</label>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {personnel.map(u => (
+                      <label key={u.id} className="flex items-center gap-2 p-1.5 hover:bg-white rounded-lg transition-colors cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={formData.assignedWorkerIds.includes(u.id)}
+                          onChange={e => {
+                            const newIds = e.target.checked 
+                              ? [...formData.assignedWorkerIds, u.id]
+                              : formData.assignedWorkerIds.filter(id => id !== u.id);
+                            setFormData({ ...formData, assignedWorkerIds: newIds });
+                          }}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-xs font-medium text-slate-700 group-hover:text-blue-600">{u.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -1883,6 +1909,16 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     setFormData({ ...formData, additionalWorkers: newWorkers });
   };
   const currentMainWorkerHours = db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours, formData.manualTotalHours);
+  
+  // Personnel filtering based on project assignment
+  const selectedProject = projects.find(p => p.id === formData.projectId);
+  const availablePersonnel = useMemo(() => {
+    if (!selectedProject || !selectedProject.assignedWorkerIds || selectedProject.assignedWorkerIds.length === 0) {
+      return personnel; // All personnel if no project selected or no assignments
+    }
+    return personnel.filter(u => selectedProject.assignedWorkerIds?.includes(u.id));
+  }, [selectedProject, personnel]);
+
   const currentHelpersTotalHours = formData.additionalWorkers.reduce((sum, aw) => sum + (aw.manualTotalHours !== undefined ? aw.manualTotalHours : db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours)), 0);
   const globalTotalHours = currentMainWorkerHours + currentHelpersTotalHours;
 
@@ -2213,7 +2249,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     });
                   }} className={inputClasses}>
                     <option value="">{t('select')}</option>
-                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    {projects
+                      .filter(p => {
+                        if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
+                        return p.assignedWorkerIds.includes(user.id);
+                      })
+                      .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </FullWidthField>
                 <FullWidthField label={t('activityType')}>
@@ -2309,7 +2350,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       <div className="flex-1 min-w-[120px]">
                         <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full px-2"}>
                           <option value="">{t('workerLabel')}...</option>
-                          {personnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                          {availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
                       </div>
                       <div className="flex items-center gap-2 sm:gap-0">

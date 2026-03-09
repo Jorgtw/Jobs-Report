@@ -459,6 +459,7 @@ class DBService {
       sellingPrice: Number(p.hourly_sale_price) || Number(p.total_amount) || 0,
       isInternal: p.is_internal || false,
       notes: p.internal_note || '',
+      assignedWorkerIds: p.assigned_worker_ids || [],
       createdAt: new Date(p.created_at).getTime()
     };
   }
@@ -473,7 +474,8 @@ class DBService {
       economic_type: p.financialAgreement,
       hourly_sale_price: p.financialAgreement === 'hourly' ? p.sellingPrice : null,
       total_amount: p.financialAgreement === 'fixed' ? p.sellingPrice : null,
-      is_internal: p.isInternal || false
+      is_internal: p.isInternal || false,
+      assigned_worker_ids: p.assignedWorkerIds || []
     };
   }
 
