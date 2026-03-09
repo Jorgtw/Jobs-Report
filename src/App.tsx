@@ -20,7 +20,6 @@ import {
   ShieldAlert,
   Eye,
   EyeOff,
-  ChevronRight,
   Download,
   Copy,
   Search,
@@ -261,18 +260,19 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{t('activityManagement')}</p>
       </div>
 
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {links.map((link) => (
           <Link
             key={link.path}
             to={link.path}
-            className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 group flex items-center gap-5 text-left"
+            className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 group flex flex-col items-center gap-4 text-center"
           >
-            <div className={`${link.color} w-14 h-14 rounded-2xl text-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0`}>
-              <link.icon size={28} strokeWidth={2} />
+            <div className={`${link.color} w-12 h-12 rounded-xl text-white shadow-lg flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+              <link.icon size={24} strokeWidth={2.5} />
             </div>
-            <span className="font-extrabold text-slate-800 text-lg group-hover:text-blue-600 transition-colors uppercase tracking-tight flex-1">{link.name}</span>
-            <ChevronRight className="text-slate-300 group-hover:text-blue-500 w-6 h-6 transition-colors" />
+            <div className="space-y-1">
+              <span className="block font-black text-slate-800 text-xs group-hover:text-blue-600 transition-colors uppercase tracking-tight">{link.name}</span>
+            </div>
           </Link>
         ))}
       </div>
