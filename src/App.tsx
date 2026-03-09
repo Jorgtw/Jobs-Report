@@ -1000,7 +1000,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
     let bodyText = t('emailInstructionsBody');
     bodyText = bodyText.replace('{name}', u.name || '');
     bodyText = bodyText.replace('{username}', u.username || '');
-    const displayedPassword = (u.password && u.password.length === 64) ? '********' : (u.password || '');
+    const displayedPassword = u.password || '';
     bodyText = bodyText.replace('{password}', displayedPassword);
     const body = encodeURIComponent(bodyText);
     window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;
@@ -1063,7 +1063,6 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                 </h3>
                 <p className="text-xs text-slate-500 font-medium mt-1 truncate capitalize">
                   {t(u.role as any)} • {u.subcontractorId ? sub?.name || 'Subappalto' : t('person.internal')}
-                  {!u.subcontractorId && u.password && <span className="ml-2 text-blue-600 font-bold">PW: {u.password}</span>}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
@@ -1145,14 +1144,6 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                 </div>
               </div>
 
-              {formData.email && !formData.subcontractorId && (
-                <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl mt-4">
-                  <p className="text-xs text-emerald-800 flex items-start gap-2">
-                    <Mail className="shrink-0 mt-0.5" size={14} />
-                    <span>{t('passwordEmailNote')}</span>
-                  </p>
-                </div>
-              )}
 
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
                 <div className="flex items-center gap-3">
