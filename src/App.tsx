@@ -2257,6 +2257,22 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </FullWidthField>
+
+                {user.role === 'admin' && (
+                  <FullWidthField label={t('workerLabel')}>
+                    <select
+                      required
+                      value={formData.userId}
+                      onChange={e => setFormData({ ...formData, userId: e.target.value })}
+                      className={inputClasses}
+                    >
+                      <option value="">{t('select')}</option>
+                      {personnel.map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  </FullWidthField>
+                )}
                 <FullWidthField label={t('activityType')}>
                   <select 
                     value={formData.activityType} 
