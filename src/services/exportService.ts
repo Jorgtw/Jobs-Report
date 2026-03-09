@@ -146,6 +146,19 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
 
     const worksheet = utils.json_to_sheet(worksheetData);
 
+    // Apply number formatting to numeric columns
+    const range = utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let R = range.s.r + 1; R <= range.e.r; ++R) { // skip header
+      for (let C = 6; C <= 11; ++C) { // Columns G to L
+        const cell_address = { c: C, r: R };
+        const cell_ref = utils.encode_cell(cell_address);
+        if (worksheet[cell_ref]) {
+          worksheet[cell_ref].t = 'n';
+          worksheet[cell_ref].z = '#,##0.00';
+        }
+      }
+    }
+
     // Auto-fit columns
     const maxWidths = worksheetData.reduce((acc: any, row: any) => {
       Object.keys(row).forEach((key, i) => {
