@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   Eye,
   EyeOff,
+  ChevronRight,
   Download,
   Copy,
   Search,
@@ -76,8 +77,8 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
   const links = [
     { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
-    { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
     { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
+    { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
     { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
@@ -260,19 +261,18 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{t('activityManagement')}</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="flex flex-col gap-2 max-w-2xl mx-auto">
         {links.map((link) => (
           <Link
             key={link.path}
             to={link.path}
-            className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 group flex flex-col items-center gap-4 text-center"
+            className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 group flex items-center gap-4 text-left"
           >
-            <div className={`${link.color} w-12 h-12 rounded-xl text-white shadow-lg flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
-              <link.icon size={24} strokeWidth={2.5} />
+            <div className={`${link.color} w-10 h-10 rounded-lg text-white shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0`}>
+              <link.icon size={20} strokeWidth={2} />
             </div>
-            <div className="space-y-1">
-              <span className="block font-black text-slate-800 text-xs group-hover:text-blue-600 transition-colors uppercase tracking-tight">{link.name}</span>
-            </div>
+            <span className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors uppercase tracking-tight flex-1">{link.name}</span>
+            <ChevronRight className="text-slate-300 group-hover:text-blue-500 w-5 h-5 transition-colors" />
           </Link>
         ))}
       </div>
