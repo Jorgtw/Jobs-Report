@@ -30,8 +30,7 @@ import {
   Smartphone,
   Apple,
   Chrome,
-  PlusCircle,
-  LayoutDashboard
+  Play
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -2591,8 +2590,7 @@ const ForgotPasswordLink: React.FC = () => {
 };
 
 // --- Registration Request Modal ---
-const RegistrationRequestLink: React.FC = () => {
-  const [open, setOpen] = useState(false);
+const RegistrationRequestModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean) => void }> = ({ isOpen: open, setOpen }) => {
   const [form, setForm] = useState({ companyName: '', contactName: '', email: '', phone: '', notes: '' });
   const { t } = useTranslation();
 
@@ -2610,50 +2608,57 @@ const RegistrationRequestLink: React.FC = () => {
     setOpen(false);
   };
 
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-lg font-bold text-slate-900">🏢 {t('registrationTitle')}</h2>
+          <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">{t('registrationDesc')}</p>
+        <form onSubmit={handleSend} className="space-y-4">
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('companyName')} *</label>
+            <input required value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Es. Edilizia Rossi Srl" />
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('contactNameLabel')} *</label>
+            <input required value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Mario Rossi" />
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('email')} *</label>
+            <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="info@azienda.it" />
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('phone')}</label>
+            <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="+39 02 1234567" />
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('additionalNotes')}</label>
+            <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none" placeholder="N. dipendenti, tipo di attività..." />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm">{t('cancel')}</button>
+            <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">{t('sendRequest')}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const RegistrationRequestLink: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   return (
     <>
-      <button onClick={() => { setOpen(true); setForm({ companyName: '', contactName: '', email: '', phone: '', notes: '' }); }}
-        className="text-blue-600 hover:underline font-bold">
+      <button onClick={() => setOpen(true)} className="text-blue-600 hover:underline font-bold">
         {t('registerLink')}
       </button>
-      {open && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-lg font-bold text-slate-900">🏢 {t('registrationTitle')}</h2>
-              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <p className="text-sm text-slate-500 mb-4">{t('registrationDesc')}</p>
-            <form onSubmit={handleSend} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('companyName')} *</label>
-                <input required value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Es. Edilizia Rossi Srl" />
-              </div>
-              <div>
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('contactNameLabel')} *</label>
-                <input required value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="Mario Rossi" />
-              </div>
-              <div>
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('email')} *</label>
-                <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="info@azienda.it" />
-              </div>
-              <div>
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('phone')}</label>
-                <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="+39 02 1234567" />
-              </div>
-              <div>
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('additionalNotes')}</label>
-                <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none" placeholder="N. dipendenti, tipo di attività..." />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm">{t('cancel')}</button>
-                <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">{t('sendRequest')}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <RegistrationRequestModal isOpen={open} setOpen={setOpen} />
     </>
   );
 };
@@ -2907,6 +2912,166 @@ const CompaniesView: React.FC = () => {
 };
 
 
+// --- Presentation View ---
+const PresentationView: React.FC = () => {
+  const { t } = useTranslation();
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+
+  const features = [
+    { title: t('featReportsTitle'), desc: t('featReportsDesc'), icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { title: t('featProjTitle'), desc: t('featProjDesc'), icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { title: t('featTeamTitle'), desc: t('featTeamDesc'), icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { title: t('featExportTitle'), desc: t('featExportDesc'), icon: FileSpreadsheet, color: 'text-purple-600', bg: 'bg-purple-50' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 border-t-4 border-blue-600">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={logoImg} alt="Logo" className="w-8 h-8 object-contain" />
+            <span className="font-extrabold text-lg text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></span>
+          </div>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <Link to="/" className="text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest">{t('presBackToLogin')}</Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full -z-10 bg-gradient-to-b from-blue-50/50 to-transparent rounded-full blur-3xl opacity-50"></div>
+        <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">v2.4 - Ready for Scale</span>
+          </div>
+          <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+            <span className="text-gradient leading-normal py-2 block">{t('presTitle')}</span>
+          </h1>
+          <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+            {t('presSubtitle')}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <button 
+              onClick={() => setIsRegisterOpen(true)}
+              className="px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto text-lg"
+            >
+              {t('presHeroCTA')}
+            </button>
+            <Link 
+              to="/"
+              className="px-10 py-4 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all w-full sm:w-auto text-lg"
+            >
+              {t('loginBtn')}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* App Preview */}
+      <section className="py-10 px-4">
+        <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden group hover:shadow-blue-900/10 transition-shadow duration-500">
+           <div className="bg-slate-900 p-2 flex items-center gap-1.5 px-4 backdrop-blur-sm">
+             <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+             <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+             <div className="ml-4 h-4 bg-slate-800 rounded px-10 text-[8px] text-slate-500 flex items-center">https://jobs-report.vercel.app</div>
+           </div>
+           <div className="aspect-video bg-slate-50 flex items-center justify-center relative overflow-hidden">
+             {/* Simulating UI elements for the preview */}
+             <div className="absolute inset-x-8 top-8 bottom-0 bg-white rounded-t-xl shadow-lg border border-slate-100 p-6 space-y-6">
+               <div className="flex justify-between">
+                 <div className="h-6 w-32 bg-slate-100 rounded-lg"></div>
+                 <div className="h-6 w-24 bg-blue-50 rounded-lg border border-blue-100"></div>
+               </div>
+               <div className="grid grid-cols-4 gap-4">
+                 {[1,2,3,4].map(i => <div key={i} className="h-20 bg-slate-50 rounded-xl border border-slate-100"></div>)}
+               </div>
+               <div className="space-y-3">
+                 {[1,2,3].map(i => <div key={i} className="h-10 bg-slate-50/50 rounded-lg border border-slate-100"></div>)}
+               </div>
+             </div>
+             <div className="absolute inset-0 bg-blue-600/5 backdrop-blur-[1px] flex items-center justify-center group-hover:backdrop-blur-none transition-all duration-700">
+                <Play className="w-16 h-16 text-blue-600 animate-float opacity-30" />
+             </div>
+             <div className="absolute bottom-8 right-8 w-48 h-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 translate-y-20 group-hover:translate-y-0 transition-transform duration-1000 ease-out hidden lg:block">
+                <div className="h-3 w-10 bg-blue-600 rounded-full mb-4"></div>
+                <div className="space-y-3">
+                  <div className="h-8 bg-slate-50 rounded-lg"></div>
+                  <div className="h-24 bg-slate-50 rounded-lg"></div>
+                </div>
+             </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-24 px-4 bg-white border-y border-slate-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            {features.map((f, i) => (
+              <div key={i} className="space-y-4 group">
+                <div className={`${f.bg} ${f.color} w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                  <f.icon size={28} />
+                </div>
+                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">{f.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed font-medium">
+                  {f.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social proof / CTA */}
+      <section className="py-24 px-4 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white opacity-5"></div>
+        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
+           <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+             Pronto per semplificare la gestione dei tuoi cantieri?
+           </h2>
+           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+             Unisciti alle imprese che già utilizzano Jobs Report per tracciare ogni minuto e ogni centesimo.
+           </p>
+           <div className="pt-4">
+             <button 
+                onClick={() => setIsRegisterOpen(true)}
+                className="px-12 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-slate-100 transition-all text-lg shadow-xl"
+             >
+               {t('presHeroCTA')}
+             </button>
+           </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-slate-200 bg-white">
+         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="flex items-center gap-2">
+              <img src={logoImg} alt="Logo" className="w-6 h-6 object-contain opacity-50 grayscale" />
+              <span className="font-bold text-slate-400 text-sm uppercase tracking-widest">Jobs Report &copy; 2026</span>
+           </div>
+           <div className="flex gap-8">
+             <a href="#" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Privacy</a>
+             <a href="#" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Terms</a>
+             <a href="mailto:jtw@live.it" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">{t('help')}</a>
+           </div>
+         </div>
+      </footer>
+
+      <RegistrationRequestModal isOpen={isRegisterOpen} setOpen={setIsRegisterOpen} />
+    </div>
+  );
+};
+
+
 // --- Main App Component ---
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
@@ -2985,43 +3150,50 @@ const App: React.FC = () => {
 
   const contextValue = useMemo(() => ({ lang, setLang, t }), [lang]);
 
-  if (!user) {
-    return (
-      <LanguageContext.Provider value={contextValue}>
-        <AuthView onLogin={handleLogin} />
-      </LanguageContext.Provider>
-    );
-  }
-
   return (
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
-        <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
-          {adminUser && (
-            <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
-              <div className="flex items-center gap-2">
-                <ShieldAlert size={16} />
-                <span>Impersonando: <span className="underline">{user.name}</span> ({user.username})</span>
-              </div>
-              <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
-                <LogOut size={14} /> Torna ad Admin
-              </button>
-            </div>
-          )}
-          <Routes>
-            <Route path="/" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
-            <Route path="/reports" element={<ReportsView user={user} />} />
-            <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-            <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
-            <Route path="/projects" element={user.role === 'admin' ? <ProjectsView /> : <Navigate to="/" />} />
-            <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
-            <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
-            <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
-            <Route path="/profile" element={<ProfileView user={user} />} />
-            <Route path="/help" element={<HelpView user={user} />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </AppLayout>
+        <Routes>
+          {/* Public Route */}
+          <Route path="/Presentation" element={<PresentationView />} />
+
+          {/* Protected Routes Wrapper */}
+          <Route 
+            path="/*" 
+            element={
+              !user ? (
+                <AuthView onLogin={handleLogin} />
+              ) : (
+                <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
+                  {adminUser && (
+                    <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert size={16} />
+                        <span>Impersonando: <span className="underline">{user.name}</span> ({user.username})</span>
+                      </div>
+                      <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
+                        <LogOut size={14} /> Torna ad Admin
+                      </button>
+                    </div>
+                  )}
+                  <Routes>
+                    <Route path="/" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
+                    <Route path="/reports" element={<ReportsView user={user} />} />
+                    <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
+                    <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
+                    <Route path="/projects" element={user.role === 'admin' ? <ProjectsView /> : <Navigate to="/" />} />
+                    <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
+                    <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
+                    <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
+                    <Route path="/profile" element={<ProfileView user={user} />} />
+                    <Route path="/help" element={<HelpView user={user} />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                  </Routes>
+                </AppLayout>
+              )
+            } 
+          />
+        </Routes>
       </HashRouter>
     </LanguageContext.Provider>
   );
