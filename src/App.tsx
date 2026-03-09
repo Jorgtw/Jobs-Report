@@ -3316,7 +3316,7 @@ const App: React.FC = () => {
       <HashRouter>
         <Routes>
           {/* Public Route */}
-          <Route path="/Presentation" element={<PresentationView />} />
+          <Route path="/presentation" element={<PresentationView />} />
 
           {/* Protected Routes Wrapper */}
           <Route 
