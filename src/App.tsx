@@ -32,7 +32,10 @@ import {
   Chrome,
   PlusCircle,
   LayoutDashboard,
-  Play
+  Play,
+  ShieldCheck,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -2926,6 +2929,18 @@ const PresentationView: React.FC = () => {
     { title: t('featExportTitle'), desc: t('featExportDesc'), icon: FileSpreadsheet, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
+  const benefits = [
+    { title: t('presWhy1Title'), desc: t('presWhy1Desc'), icon: TrendingUp },
+    { title: t('presWhy2Title'), desc: t('presWhy2Desc'), icon: ShieldCheck },
+    { title: t('presWhy3Title'), desc: t('presWhy3Desc'), icon: Zap },
+  ];
+
+  const stats = [
+    { label: t('presStat1Label'), value: t('presStat1Value') },
+    { label: t('presStat2Label'), value: t('presStat2Value') },
+    { label: t('presStat3Label'), value: t('presStat3Value') },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 border-t-4 border-blue-600">
       {/* Navigation */}
@@ -2943,7 +2958,7 @@ const PresentationView: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 relative overflow-hidden">
+      <section className="pt-32 pb-16 px-4 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full -z-10 bg-gradient-to-b from-blue-50/50 to-transparent rounded-full blur-3xl opacity-50"></div>
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full">
@@ -2953,10 +2968,10 @@ const PresentationView: React.FC = () => {
             </span>
             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">v2.4 - Ready for Scale</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+          <h1 className="text-4xl sm:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
             <span className="text-gradient leading-normal py-2 block">{t('presTitle')}</span>
           </h1>
-          <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
             {t('presSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -2976,8 +2991,20 @@ const PresentationView: React.FC = () => {
         </div>
       </section>
 
+      {/* Stats Banner */}
+      <section className="max-w-6xl mx-auto px-4 pb-16">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+          {stats.map((s, i) => (
+            <div key={i} className="p-8 text-center space-y-2">
+              <div className="text-3xl font-black text-blue-600">{s.value}</div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* App Preview */}
-      <section className="py-10 px-4">
+      <section className="py-10 px-4 mb-20">
         <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden group hover:shadow-blue-900/10 transition-shadow duration-500">
            <div className="bg-slate-900 p-2 flex items-center gap-1.5 px-4 backdrop-blur-sm">
              <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
@@ -3010,6 +3037,27 @@ const PresentationView: React.FC = () => {
                 </div>
              </div>
            </div>
+        </div>
+      </section>
+
+      {/* Why Section */}
+      <section className="py-24 px-4 bg-slate-100/50 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">{t('presWhyTitle')}</h2>
+            <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {benefits.map((b, i) => (
+              <div key={i} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                  <b.icon size={24} />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mb-3">{b.title}</h3>
+                <p className="text-slate-500 font-medium leading-relaxed">{b.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
