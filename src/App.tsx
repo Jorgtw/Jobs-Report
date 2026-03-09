@@ -30,6 +30,8 @@ import {
   Smartphone,
   Apple,
   Chrome,
+  PlusCircle,
+  LayoutDashboard,
   Play
 } from 'lucide-react';
 import { db } from './services/dbService';
