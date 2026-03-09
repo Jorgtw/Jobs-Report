@@ -62,12 +62,12 @@ export const localeMap: Record<string, string> = {
 };
 
 // --- Shared Styles ---
-const inputClasses = "flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
-const filterInputClasses = "flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-xs disabled:bg-slate-50";
-const modalClasses = "bg-white rounded-2xl p-5 w-full max-w-4xl relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh]";
+const inputClasses = "flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
+const filterInputClasses = "flex-1 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-xs disabled:bg-slate-50";
+const modalClasses = "bg-white rounded-2xl p-4 w-full max-w-4xl relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh]";
 
 const FullWidthField: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({ label, children, className = "" }) => (
-  <div className={`flex flex-col gap-1.5 ${className}`}>
+  <div className={`flex flex-col gap-1 ${className}`}>
     <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{label}:</label>
     {children}
   </div>
@@ -1463,12 +1463,12 @@ const ProjectsView: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
-            <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-bold text-slate-900">{editingId ? t('editProject') : t('newProject')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                 <FullWidthField label={t('isInternalProject')} className="md:col-span-2">
                   <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
                     <button type="button" onClick={() => setFormData({ ...formData, isInternal: false, clientId: '' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${!formData.isInternal ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('no')}</button>
@@ -1690,12 +1690,12 @@ const SubcontractorsView: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
-            <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-bold text-slate-900">{editingId ? t('editSubcontractor') : t('newSubcontractor')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                 <FullWidthField label={t('subcontractor.companyName')}>
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
                 </FullWidthField>
@@ -1727,7 +1727,7 @@ const SubcontractorsView: React.FC = () => {
                 </FullWidthField>
                 <div className="md:col-span-2">
                   <FullWidthField label={t('subcontractor.notes')}>
-                    <textarea rows={3} value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses} placeholder={t('placeholderNotes')} />
+                    <textarea rows={2} value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses} placeholder={t('placeholderNotes')} />
                   </FullWidthField>
                 </div>
               </div>
@@ -2234,9 +2234,9 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
-            <div className="flex justify-between items-center mb-6 border-b pb-4"><h2 className="text-xl font-bold text-slate-900">{editingId ? t('editReport') : t('newReport')}</h2><button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button></div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex justify-between items-center mb-4 border-b pb-2"><h2 className="text-xl font-bold text-slate-900">{editingId ? t('editReport') : t('newReport')}</h2><button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button></div>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                 <FullWidthField label={t('project')}>
                   <select required value={formData.projectId} onChange={e => {
                     const newProjectId = e.target.value;
@@ -2270,7 +2270,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </select>
                 </FullWidthField>
                 <FullWidthField label={t('date')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
-                <div className="md:col-span-2"><FullWidthField label={t('description')}><textarea required rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
+                <div className="md:col-span-2"><FullWidthField label={t('description')}><textarea required rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
 
                 {user.role === 'admin' && (
                   <div className="md:col-span-2 bg-blue-50 border border-blue-100 p-4 rounded-xl">
@@ -2309,78 +2309,88 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </div>
 
                   {/* Riga Autore Principale */}
-                  <div className="bg-white p-2 rounded-xl border border-blue-200 flex flex-wrap sm:flex-nowrap gap-2 items-center shadow-sm relative pr-[3.25rem]">
-                    <div className="flex-1 min-w-[120px]">
-                      <div className="px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
-                        {personnel.find(u => u.id === formData.userId)?.name || t('mainWorker')} (Autore)
+                  <div className="bg-white p-2 rounded-xl border border-blue-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
+                    <div className="col-span-12 sm:col-span-4">
+                      <div className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
+                        {personnel.find(u => u.id === formData.userId)?.name || t('mainWorker')}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-0">
-                      <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Inizio</label>
-                      <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
+                    
+                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Inizio</label>
+                      <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-0">
-                      <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Fine</label>
-                      <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
+                    
+                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Fine</label>
+                      <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-0">
-                      <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Pausa</label>
-                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-1 text-center pl-3`} />
+                    
+                    <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Pausa</label>
+                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
-                      <label className="text-[10px] font-extrabold text-amber-500 uppercase sm:hidden w-12">Extra</label>
-                      <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full sm:w-16 px-1 text-center text-amber-600 font-bold bg-amber-50 border-amber-200`} />
+                    
+                    <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                      <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">Extra</label>
+                      <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
-                      <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Tot</label>
+                    
+                    <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Tot</label>
                       <input
                         type="number"
                         step="0.01"
                         value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''}
                         onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
                         placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)}
-                        className="w-full sm:w-16 px-1 py-1.5 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                        className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px]"
                       />
                     </div>
                   </div>
 
                   {/* Righe Collaboratori */}
                   {formData.additionalWorkers.map((aw, idx) => (
-                    <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 flex flex-wrap sm:flex-nowrap gap-2 items-center shadow-sm relative pr-10">
-                      <div className="flex-1 min-w-[120px]">
-                        <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full px-2"}>
+                    <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
+                      <div className="col-span-12 sm:col-span-4">
+                        <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}>
                           <option value="">{t('workerLabel')}...</option>
                           {availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-0">
-                        <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Inizio</label>
-                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
+
+                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Inizio</label>
+                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-0">
-                        <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Fine</label>
-                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full sm:w-20 px-1 text-center`} />
+                      
+                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Fine</label>
+                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-0">
-                        <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Pausa</label>
-                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full sm:w-16 px-1 text-center pl-3`} />
+                      
+                      <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Pausa</label>
+                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
-                        <label className="text-[10px] font-extrabold text-amber-500 uppercase sm:hidden w-12">Extra</label>
-                        <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full sm:w-16 px-1 text-center text-amber-600 font-bold bg-amber-50 border-amber-200`} />
+                      
+                      <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">Extra</label>
+                        <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-0 sm:pl-1 sm:ml-1 sm:border-l sm:border-slate-200">
-                        <label className="text-[10px] font-extrabold text-slate-400 uppercase sm:hidden w-12">Tot</label>
+                      
+                      <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Tot</label>
                         <input
                           type="number"
                           step="0.01"
                           value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''}
                           onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
                           placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)}
-                          className="w-full sm:w-16 px-1 py-1.5 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                          className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px]"
                         />
                       </div>
-                      <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                      <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-2 sm:top-1/2 sm:-translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
                     </div>
                   ))}
                 </div>
@@ -2427,42 +2437,51 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   )}
 
                   {formData.expenses.map((exp: any, idx: number) => (
-                    <div key={idx} className="bg-white p-2 rounded-xl border border-amber-200 flex flex-wrap sm:flex-nowrap gap-2 items-center shadow-sm relative pr-10">
-                      <input
-                        type="text"
-                        placeholder={t('placeholderExpenseType')}
-                        value={exp.type || ''}
-                        onChange={e => {
-                          const updated = [...formData.expenses] as any[];
-                          updated[idx] = { ...updated[idx], type: e.target.value };
-                          setFormData({ ...formData, expenses: updated });
-                        }}
-                        className={`${inputClasses} flex-1 min-w-[120px]`}
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        value={exp.amount || ''}
-                        onChange={e => {
-                          const updated = [...formData.expenses] as any[];
-                          updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
-                          setFormData({ ...formData, expenses: updated });
-                        }}
-                        className={`${inputClasses} w-24 text-right`}
-                      />
-                      <input
-                        type="text"
-                        placeholder={t('placeholderExpenseNotes')}
-                        value={exp.notes || ''}
-                        onChange={e => {
-                          const updated = [...formData.expenses] as any[];
-                          updated[idx] = { ...updated[idx], notes: e.target.value };
-                          setFormData({ ...formData, expenses: updated });
-                        }}
-                        className={`${inputClasses} flex-1 min-w-[100px]`}
-                      />
+                    <div key={idx} className="bg-white p-2 rounded-xl border border-amber-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
+                      <div className="col-span-12 sm:col-span-4 flex flex-col gap-0.5">
+                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('placeholderExpenseType')}</label>
+                        <input
+                          type="text"
+                          placeholder={t('placeholderExpenseType')}
+                          value={exp.type || ''}
+                          onChange={e => {
+                            const updated = [...formData.expenses] as any[];
+                            updated[idx] = { ...updated[idx], type: e.target.value };
+                            setFormData({ ...formData, expenses: updated });
+                          }}
+                          className={`${inputClasses} w-full`}
+                        />
+                      </div>
+                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('amount')}</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          value={exp.amount || ''}
+                          onChange={e => {
+                            const updated = [...formData.expenses] as any[];
+                            updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
+                            setFormData({ ...formData, expenses: updated });
+                          }}
+                          className={`${inputClasses} w-full text-right`}
+                        />
+                      </div>
+                      <div className="col-span-8 sm:col-span-6 flex flex-col gap-0.5 pr-2">
+                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('placeholderExpenseNotes')}</label>
+                        <input
+                          type="text"
+                          placeholder={t('placeholderExpenseNotes')}
+                          value={exp.notes || ''}
+                          onChange={e => {
+                            const updated = [...formData.expenses] as any[];
+                            updated[idx] = { ...updated[idx], notes: e.target.value };
+                            setFormData({ ...formData, expenses: updated });
+                          }}
+                          className={`${inputClasses} w-full`}
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => {
@@ -2470,7 +2489,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           updated.splice(idx, 1);
                           setFormData({ ...formData, expenses: updated });
                         }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="absolute right-2 top-2 sm:top-1/2 sm:-translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>
