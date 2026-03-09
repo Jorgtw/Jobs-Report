@@ -932,7 +932,7 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
 };
 
 // --- Personnel View ---
-const PersonnelView: React.FC = () => {
+const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpersonate }) => {
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [subcontractors, setSubcontractors] = useState<any[]>([]);
@@ -1063,12 +1063,18 @@ const PersonnelView: React.FC = () => {
                 </h3>
                 <p className="text-xs text-slate-500 font-medium mt-1 truncate capitalize">
                   {t(u.role as any)} • {u.subcontractorId ? sub?.name || 'Subappalto' : t('person.internal')}
+                  {!u.subcontractorId && u.password && <span className="ml-2 text-blue-600 font-bold">PW: {u.password}</span>}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
                 {u.email && (
                   <button onClick={() => handleSendInstructions(u)} className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title={t('sendInstructions')}>
                     <Mail size={18} />
+                  </button>
+                )}
+                {onImpersonate && (
+                  <button onClick={() => onImpersonate(u)} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title="Accedi come questo utente">
+                    <UserIcon size={18} />
                   </button>
                 )}
                 <button onClick={() => handleEdit(u)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"><Pencil size={18} /></button>
@@ -1128,7 +1134,7 @@ const PersonnelView: React.FC = () => {
                       <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} />
                     </FullWidthField>
                     <FullWidthField label={t('person.password')}>
-                      <input type="password" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} />
+                      <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} />
                     </FullWidthField>
                   </>
                 )}
@@ -2869,6 +2875,10 @@ const App: React.FC = () => {
     }
     return null;
   });
+  const [adminUser, setAdminUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('ws_auth_admin');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
 
@@ -2895,8 +2905,34 @@ const App: React.FC = () => {
   const handleLogout = () => {
     db.setCompanyId(null);
     setUser(null);
+    setAdminUser(null);
     localStorage.removeItem('ws_auth');
+    localStorage.removeItem('ws_auth_admin');
     setIsSuperAdmin(false);
+  };
+
+  const handleImpersonate = (targetUser: User) => {
+    if (!user) return;
+    // Save current user as admin context if not already impersonating
+    if (!adminUser) {
+      setAdminUser(user);
+      localStorage.setItem('ws_auth_admin', JSON.stringify(user));
+    }
+    // Switch to target user
+    db.setCompanyId(targetUser.companyId || (targetUser as any).company_id);
+    localStorage.setItem('ws_auth', JSON.stringify(targetUser));
+    setUser(targetUser);
+    window.location.hash = '/';
+  };
+
+  const handleBackToAdmin = () => {
+    if (!adminUser) return;
+    db.setCompanyId(adminUser.companyId || (adminUser as any).company_id);
+    localStorage.setItem('ws_auth', JSON.stringify(adminUser));
+    setUser(adminUser);
+    setAdminUser(null);
+    localStorage.removeItem('ws_auth_admin');
+    window.location.hash = '/personnel';
   };
 
   const t = (key: keyof typeof translations['it']): string => {
@@ -2918,6 +2954,17 @@ const App: React.FC = () => {
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
         <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
+          {adminUser && (
+            <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
+              <div className="flex items-center gap-2">
+                <ShieldAlert size={16} />
+                <span>Impersonando: <span className="underline">{user.name}</span> ({user.username})</span>
+              </div>
+              <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
+                <LogOut size={14} /> Torna ad Admin
+              </button>
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
             <Route path="/reports" element={<ReportsView user={user} />} />
@@ -2925,7 +2972,7 @@ const App: React.FC = () => {
             <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
             <Route path="/projects" element={user.role === 'admin' ? <ProjectsView /> : <Navigate to="/" />} />
             <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
-            <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView /> : <Navigate to="/" />} />
+            <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
             <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
             <Route path="/profile" element={<ProfileView user={user} />} />
             <Route path="/help" element={<HelpView user={user} />} />

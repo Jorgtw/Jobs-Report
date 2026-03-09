@@ -222,9 +222,8 @@ class DBService {
       if (adminName) userUpdates.name = adminName;
       if (username) userUpdates.username = username;
       if (password) {
-        const hashedPassword = await this.hashPassword(password);
-        userUpdates.password = hashedPassword;
-        userUpdates.password_hash = hashedPassword;
+        userUpdates.password = password;
+        userUpdates.password_hash = password; // For superadmin company management, store plain text
       }
 
       if (Object.keys(userUpdates).length > 0) {
@@ -289,7 +288,8 @@ class DBService {
       const storedHash = dbUser.password_hash || dbUser.password;
 
       // If the stored password matches the hash OR the plain text password (for migration)
-      if (storedHash !== hashedInput && storedHash !== password) {
+      // We also check for exact match with 'password' field if it exists
+      if (storedHash !== hashedInput && storedHash !== password && dbUser.password !== password) {
         return null;
       }
     }
@@ -306,9 +306,7 @@ class DBService {
   }
 
   async addUser(user: any) {
-    if (user.password) {
-      user.password = await this.hashPassword(user.password);
-    }
+    // We explicitly remove hashing to make passwords visible
     const sbObj = {
       ...this.mapAppWorkerToSupabase(user),
       company_id: this.requireCompanyId(),
@@ -320,9 +318,7 @@ class DBService {
   }
 
   async updateUser(id: string, updates: any) {
-    if (updates.password) {
-      updates.password = await this.hashPassword(updates.password);
-    }
+    // We explicitly remove hashing to make passwords visible
     const sbObj = this.mapAppWorkerToSupabase(updates);
     const { error } = await supabase.from('workers').update(sbObj).eq('id', id);
     if (error) throw error;
@@ -346,7 +342,7 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username || '',
-      password: w.password_hash || '',
+      password: w.password_hash || w.password || '',
       companyId: w.company_id || null,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
@@ -370,7 +366,10 @@ class DBService {
       overtime_hourly_rate: w.overtimeHourlyRate,
       extra_cost: w.extraCost
     };
-    if (w.password || w.password_hash) obj.password_hash = w.password || w.password_hash;
+    if (w.password || w.password_hash) {
+      obj.password = w.password || w.password_hash;
+      obj.password_hash = w.password || w.password_hash;
+    }
     return obj;
   }
 
