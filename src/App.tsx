@@ -2929,16 +2929,22 @@ const PresentationView: React.FC = () => {
     { title: t('featExportTitle'), desc: t('featExportDesc'), icon: FileSpreadsheet, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
-  const benefits = [
-    { title: t('presWhy1Title'), desc: t('presWhy1Desc'), icon: TrendingUp },
-    { title: t('presWhy2Title'), desc: t('presWhy2Desc'), icon: ShieldCheck },
-    { title: t('presWhy3Title'), desc: t('presWhy3Desc'), icon: Zap },
+  const differentiators = [
+    { title: t('presDiff1Title'), desc: t('presDiff1Desc') },
+    { title: t('presDiff2Title'), desc: t('presDiff2Desc') },
+    { title: t('presDiff3Title'), desc: t('presDiff3Desc') },
+    { title: t('presDiff4Title'), desc: t('presDiff4Desc') },
+    { title: t('presDiff5Title'), desc: t('presDiff5Desc') },
+    { title: t('presDiff6Title'), desc: t('presDiff6Desc') },
+    { title: t('presDiff7Title'), desc: t('presDiff7Desc') },
   ];
 
-  const stats = [
-    { label: t('presStat1Label'), value: t('presStat1Value') },
-    { label: t('presStat2Label'), value: t('presStat2Value') },
-    { label: t('presStat3Label'), value: t('presStat3Value') },
+  const comparisonData = [
+    { name: 'Jobs-Report', team: '✅', eco: '✅', status: '✅', lang: '✅ (6)', Saas: '✅', cost: 'Free*' },
+    { name: 'Toggl/Clockify', team: '❌', eco: '❌', status: '❌', lang: '✅', Saas: '✅', cost: '~$10-18/mo' },
+    { name: 'Teamwork', team: '❌', eco: '🟡', status: '🟡', lang: '✅', Saas: '✅', cost: '~$12+/mo' },
+    { name: 'Fatture in Cloud', team: '❌', eco: '✅', status: '✅', lang: '🟡', Saas: '❌', cost: '~€13/mo' },
+    { name: 'Excel manuale', team: '✅', eco: '✅', status: '✅', lang: '❌', Saas: '❌', cost: 'Free' },
   ];
 
   return (
@@ -2960,7 +2966,7 @@ const PresentationView: React.FC = () => {
       {/* Hero Section */}
       <section className="pt-32 pb-16 px-4 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full -z-10 bg-gradient-to-b from-blue-50/50 to-transparent rounded-full blur-3xl opacity-50"></div>
-        <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 uppercase">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -2968,100 +2974,194 @@ const PresentationView: React.FC = () => {
             </span>
             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">v2.4 - Ready for Scale</span>
           </div>
-          <h1 className="text-4xl sm:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
-            <span className="text-gradient leading-normal py-2 block">{t('presTitle')}</span>
+          <h1 className="text-5xl sm:text-8xl font-black text-slate-900 tracking-tighter leading-[0.9]">
+            {t('presTitle')}
           </h1>
-          <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed normal-case tracking-normal py-4">
             {t('presSubtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <button 
-              onClick={() => setIsRegisterOpen(true)}
-              className="px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto text-lg"
-            >
-              {t('presHeroCTA')}
-            </button>
-            <Link 
-              to="/"
-              className="px-10 py-4 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all w-full sm:w-auto text-lg"
-            >
-              {t('loginBtn')}
-            </Link>
+          <div className="flex justify-center pt-4">
+            <a href="#intro" className="flex flex-col items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors">
+               <span className="text-[10px] font-bold uppercase tracking-widest">{t('presHeroCTA')}</span>
+               <div className="w-6 h-10 border-2 border-current rounded-full flex justify-center p-1">
+                  <div className="w-1 h-2 bg-current rounded-full animate-bounce"></div>
+               </div>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Stats Banner */}
-      <section className="max-w-6xl mx-auto px-4 pb-16">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-          {stats.map((s, i) => (
-            <div key={i} className="p-8 text-center space-y-2">
-              <div className="text-3xl font-black text-blue-600">{s.value}</div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{s.label}</div>
-            </div>
-          ))}
-        </div>
+      {/* Intro Section */}
+      <section id="intro" className="py-24 px-4 max-w-4xl mx-auto text-center space-y-6 scroll-mt-20">
+        <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">{t('presIntroTitle')}</h2>
+        <p className="text-lg text-slate-500 leading-relaxed font-medium">
+          {t('presIntroDesc')}
+        </p>
       </section>
 
-      {/* App Preview */}
-      <section className="py-10 px-4 mb-20">
-        <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden group hover:shadow-blue-900/10 transition-shadow duration-500">
-           <div className="bg-slate-900 p-2 flex items-center gap-1.5 px-4 backdrop-blur-sm">
-             <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-             <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-             <div className="ml-4 h-4 bg-slate-800 rounded px-10 text-[8px] text-slate-500 flex items-center">https://jobs-report.vercel.app</div>
+      {/* App Preview - Realistic UI mockup */}
+      <section className="py-10 px-4 mb-20 bg-slate-900 pb-32">
+        <div className="max-w-6xl mx-auto space-y-12">
+           <div className="text-center space-y-2">
+              <h3 className="text-white text-2xl font-black uppercase tracking-widest opacity-80">Interfaccia Reale</h3>
+              <div className="w-12 h-1 bg-blue-500 mx-auto rounded-full"></div>
            </div>
-           <div className="aspect-video bg-slate-50 flex items-center justify-center relative overflow-hidden">
-             {/* Simulating UI elements for the preview */}
-             <div className="absolute inset-x-8 top-8 bottom-0 bg-white rounded-t-xl shadow-lg border border-slate-100 p-6 space-y-6">
-               <div className="flex justify-between">
-                 <div className="h-6 w-32 bg-slate-100 rounded-lg"></div>
-                 <div className="h-6 w-24 bg-blue-50 rounded-lg border border-blue-100"></div>
-               </div>
-               <div className="grid grid-cols-4 gap-4">
-                 {[1,2,3,4].map(i => <div key={i} className="h-20 bg-slate-50 rounded-xl border border-slate-100"></div>)}
-               </div>
-               <div className="space-y-3">
-                 {[1,2,3].map(i => <div key={i} className="h-10 bg-slate-50/50 rounded-lg border border-slate-100"></div>)}
-               </div>
-             </div>
-             <div className="absolute inset-0 bg-blue-600/5 backdrop-blur-[1px] flex items-center justify-center group-hover:backdrop-blur-none transition-all duration-700">
-                <Play className="w-16 h-16 text-blue-600 animate-float opacity-30" />
-             </div>
-             <div className="absolute bottom-8 right-8 w-48 h-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 translate-y-20 group-hover:translate-y-0 transition-transform duration-1000 ease-out hidden lg:block">
-                <div className="h-3 w-10 bg-blue-600 rounded-full mb-4"></div>
-                <div className="space-y-3">
-                  <div className="h-8 bg-slate-50 rounded-lg"></div>
-                  <div className="h-24 bg-slate-50 rounded-lg"></div>
+           <div className="bg-slate-800 rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden group">
+              <div className="bg-slate-900 p-3 flex items-center justify-between border-b border-slate-800">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
                 </div>
-             </div>
+                <div className="flex-1 max-w-md mx-auto hidden sm:block">
+                   <div className="bg-slate-950 rounded-lg py-1 px-4 text-[10px] text-slate-500 text-center font-mono">https://jobs-report.vercel.app/reports</div>
+                </div>
+                <div className="w-12"></div>
+              </div>
+              
+              <div className="grid grid-cols-12 min-h-[500px]">
+                {/* Sidebar Mock */}
+                <div className="col-span-1 hidden lg:block bg-slate-900 border-r border-slate-800 p-4 space-y-6">
+                   {[HomeView, FileText, ClipboardList, Users, Building2, HelpCircle].map((Icon, idx) => (
+                      <div key={idx} className={`w-10 h-10 rounded-xl flex items-center justify-center ${idx === 1 ? 'bg-blue-600 text-white' : 'text-slate-600'}`}>
+                         {/* @ts-ignore */}
+                         <Icon size={20} />
+                      </div>
+                   ))}
+                </div>
+                {/* Main Content Mock */}
+                <div className="col-span-12 lg:col-span-11 bg-slate-50 p-6 space-y-6 relative overflow-hidden">
+                   <div className="flex items-center justify-between">
+                     <div className="h-8 w-48 bg-slate-200 rounded-lg"></div>
+                     <div className="h-10 w-40 bg-blue-600 rounded-xl shadow-lg"></div>
+                   </div>
+                   
+                   {/* Play overlay for mockup */}
+                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
+                      <Play size={120} className="text-slate-900" />
+                   </div>
+                   
+                   {/* Table Mock */}
+                   <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                      <div className="bg-slate-50 h-12 border-b border-slate-200 flex items-center px-4 gap-4">
+                         <div className="w-6 h-6 bg-slate-200 rounded"></div>
+                         <div className="w-24 h-4 bg-slate-200 rounded"></div>
+                         <div className="w-32 h-4 bg-slate-200 rounded"></div>
+                         <div className="w-40 h-4 bg-slate-200 rounded"></div>
+                         <div className="flex-1"></div>
+                         <div className="w-24 h-6 bg-slate-200 rounded-full"></div>
+                      </div>
+                      {[1,2,3,4].map(row => (
+                        <div key={row} className="h-14 border-b border-slate-100 flex items-center px-4 gap-4">
+                           <div className="w-6 h-6 bg-slate-100 rounded"></div>
+                           <div className="w-24 h-3 bg-slate-100 rounded"></div>
+                           <div className="w-32 h-3 bg-slate-100 rounded"></div>
+                           <div className="w-40 h-5 bg-blue-50 border border-blue-100 rounded-lg flex items-center px-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                              <div className="w-20 h-2 bg-blue-200 rounded"></div>
+                           </div>
+                           <div className="flex-1"></div>
+                           <div className="w-16 h-4 bg-slate-100 rounded"></div>
+                        </div>
+                      ))}
+                   </div>
+
+                   {/* Cost/Detail Card Mock */}
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <div className="flex justify-between items-center"><div className="w-24 h-4 bg-slate-100 rounded"></div><TrendingUp size={16} className="text-blue-500" /></div>
+                        <div className="h-10 w-32 bg-slate-50 rounded-lg"></div>
+                      </div>
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border-2 border-blue-500/20 space-y-4">
+                        <div className="flex justify-between items-center"><div className="w-24 h-4 bg-blue-100 rounded"></div><Zap size={16} className="text-blue-500" /></div>
+                        <div className="h-10 w-32 bg-blue-50 rounded-lg"></div>
+                      </div>
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <div className="flex justify-between items-center"><div className="w-24 h-4 bg-slate-100 rounded"></div><ShieldCheck size={16} className="text-blue-500" /></div>
+                        <div className="h-10 w-32 bg-slate-50 rounded-lg"></div>
+                      </div>
+                   </div>
+                </div>
+              </div>
            </div>
         </div>
       </section>
 
-      {/* Why Section */}
-      <section className="py-24 px-4 bg-slate-100/50 border-t border-slate-200">
+      {/* Differentiators Grid */}
+      <section className="py-24 px-4 bg-white">
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">{t('presWhyTitle')}</h2>
-            <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight uppercase leading-none">{t('presWhyTitle')}</h2>
+            <div className="w-24 h-2 bg-blue-600 mx-auto rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {benefits.map((b, i) => (
-              <div key={i} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
-                  <b.icon size={24} />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-3">{b.title}</h3>
-                <p className="text-slate-500 font-medium leading-relaxed">{b.desc}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {differentiators.map((d, i) => (
+              <div key={i} className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 hover:border-blue-500 hover:bg-white transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/5 group">
+                <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-blue-600 transition-colors">{d.title}</h3>
+                <p className="text-slate-500 font-medium leading-relaxed">{d.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Comparison Section */}
+      <section className="py-24 px-4 bg-slate-50 border-y border-slate-200">
+        <div className="max-w-5xl mx-auto space-y-12">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight uppercase leading-none">{t('presCompTitle')}</h2>
+            <div className="w-24 h-2 bg-blue-600 mx-auto rounded-full"></div>
+          </div>
+          <div className="overflow-x-auto bg-white rounded-3xl border border-slate-200 shadow-xl">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-900 text-white">
+                  <th className="p-6 text-left text-sm uppercase tracking-widest font-black">{t('presCompFeature')}</th>
+                  <th className="p-6 text-center text-sm uppercase tracking-widest font-black">{t('presCompTeam')}</th>
+                  <th className="p-6 text-center text-sm uppercase tracking-widest font-black">{t('presCompEco')}</th>
+                  <th className="p-6 text-center text-sm uppercase tracking-widest font-black">{t('presCompStatus')}</th>
+                  <th className="p-6 text-center text-sm uppercase tracking-widest font-black">Cost</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {comparisonData.map((row, i) => (
+                  <tr key={i} className={row.name === 'Jobs-Report' ? 'bg-blue-50/50' : 'hover:bg-slate-50 transition-colors'}>
+                    <td className="p-6 font-black text-slate-900">{row.name}</td>
+                    <td className="p-6 text-center text-xl">{row.team}</td>
+                    <td className="p-6 text-center text-xl">{row.eco}</td>
+                    <td className="p-6 text-center text-xl">{row.status}</td>
+                    <td className="p-6 text-center font-bold text-slate-500">{row.cost}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[10px] text-slate-400 text-center font-bold uppercase tracking-widest italic">{t('presCompExcel')}</p>
+        </div>
+      </section>
+
+      {/* Transparency / Limits Section */}
+      <section className="py-24 px-4 bg-white">
+         <div className="max-w-4xl mx-auto p-12 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 space-y-10">
+            <div className="text-center space-y-2">
+               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest">{t('presCompLimitsTitle')}</h2>
+               <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Siamo trasparenti sul nostro prodotto</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+               {[1, 2, 3, 4].map(idx => (
+                 <div key={idx} className="flex gap-4 items-start bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                       <span className="text-[10px] font-black text-slate-500">{idx}</span>
+                    </div>
+                    {/* @ts-ignore */}
+                    <p className="text-sm text-slate-500 font-bold leading-tight">{t(`presLimit${idx}`)}</p>
+                 </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* Features Grid - Quick Overview */}
       <section className="py-24 px-4 bg-white border-y border-slate-100">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -3080,23 +3180,34 @@ const PresentationView: React.FC = () => {
         </div>
       </section>
 
-      {/* Social proof / CTA */}
+      {/* Summary / Final CTA */}
       <section className="py-24 px-4 bg-slate-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-white opacity-5"></div>
-        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-           <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-             Pronto per semplificare la gestione dei tuoi cantieri?
-           </h2>
-           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-             Unisciti alle imprese che già utilizzano Jobs Report per tracciare ogni minuto e ogni centesimo.
-           </p>
-           <div className="pt-4">
-             <button 
-                onClick={() => setIsRegisterOpen(true)}
-                className="px-12 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-slate-100 transition-all text-lg shadow-xl"
-             >
-               {t('presHeroCTA')}
-             </button>
+        <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10 animate-in fade-in zoom-in duration-1000">
+           <div className="space-y-4">
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-none uppercase">{t('presSummaryTitle')}</h2>
+              <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">
+                {t('presSummaryDesc')}
+              </p>
+           </div>
+           
+           <div className="flex flex-col items-center gap-8 pt-4">
+              <button 
+                  onClick={() => setIsRegisterOpen(true)}
+                  className="px-16 py-6 bg-blue-600 text-white font-black rounded-3xl hover:bg-blue-700 hover:scale-105 transition-all text-xl shadow-2xl shadow-blue-500/30 uppercase tracking-widest"
+              >
+                {t('presFinalCTA')}
+              </button>
+              
+              <Link 
+                  to="/"
+                  className="group flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+              >
+                 <span className="font-bold border-b-2 border-slate-700 group-hover:border-blue-500 py-1 transition-colors uppercase tracking-widest text-sm">
+                   {t('presFinalLogin')}
+                 </span>
+                 <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
            </div>
         </div>
       </section>
