@@ -159,6 +159,34 @@ class DBService {
     const { data: userData, error: userError } = await supabase.from('workers').insert([sbObj]).select();
     if (userError) throw userError;
 
+    // 4. Create an internal client and project for absences and internal notes
+    const internalClientName = `${companyName} - Uso Interno`;
+    const { data: clientData, error: clientError } = await supabase
+      .from('clients')
+      .insert([{
+        company_id: newCompanyId,
+        name: internalClientName,
+        status: 'active',
+        created_at: new Date().toISOString()
+      }])
+      .select();
+    
+    if (!clientError && clientData && clientData.length > 0) {
+      const internalClientId = clientData[0].id;
+      await supabase
+        .from('projects')
+        .insert([{
+          company_id: newCompanyId,
+          client_id: internalClientId,
+          title: 'Assenze e Note Interne',
+          status: 'active',
+          economic_type: 'hourly',
+          hourly_sale_price: 0,
+          is_internal: true,
+          created_at: new Date().toISOString()
+        }]);
+    }
+
     return this.mapSupabaseWorker(userData[0]);
   }
 
