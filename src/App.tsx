@@ -2319,18 +2319,18 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </div>
 
                   {/* Intestazioni (visibili solo su schermi non troppo piccoli, o allineate) */}
-                  <div className="hidden sm:flex items-center gap-2 px-2 pr-[3.25rem] mb-1">
-                    <div className="flex-1 min-w-[120px]"></div>
-                    <div className="w-20 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Inizio</div>
-                    <div className="w-20 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Fine</div>
-                    <div className="w-16 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Pausa</div>
-                    <div className="w-16 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center pl-1 ml-1">Extra</div>
-                    <div className="w-16 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center pl-1 ml-1">Tot</div>
+                  <div className="hidden sm:grid grid-cols-12 gap-2 px-2 mb-1 pr-10 sm:pr-0">
+                    <div className="col-span-3"></div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Inizio</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Fine</div>
+                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Pausa</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">Extra</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center sm:border-l sm:border-transparent sm:pl-2 pr-8">Tot</div>
                   </div>
 
                   {/* Riga Autore Principale */}
                   <div className="bg-white p-2 rounded-xl border border-blue-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                    <div className="col-span-12 sm:col-span-4">
+                    <div className="col-span-12 sm:col-span-3">
                       <div className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
                         {personnel.find(u => u.id === formData.userId)?.name || t('mainWorker')}
                       </div>
@@ -2351,12 +2351,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
                     
-                    <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                       <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">Extra</label>
                       <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
                     </div>
                     
-                    <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Tot</label>
                       <input
                         type="number"
@@ -2372,7 +2372,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   {/* Righe Collaboratori */}
                   {formData.additionalWorkers.map((aw, idx) => (
                     <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                      <div className="col-span-12 sm:col-span-4">
+                      <div className="col-span-12 sm:col-span-3">
                         <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}>
                           <option value="">{t('workerLabel')}...</option>
                           {availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -2394,12 +2394,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
                       
-                      <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                         <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">Extra</label>
                         <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
                       </div>
                       
-                      <div className="col-span-6 sm:col-span-1.5 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Tot</label>
                         <input
                           type="number"
