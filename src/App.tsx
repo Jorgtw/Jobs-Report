@@ -756,31 +756,31 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
             <UserIcon size={16} className="text-blue-500" /> {t('personnel')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('email')}:</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('email')}</label>
               <input
                 type="email"
                 value={profileForm.email}
                 onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
-                className={inputClasses}
+                className={`${inputClasses} w-full`}
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('phone')}:</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('phone')}</label>
               <input
                 type="tel"
                 value={profileForm.phone}
                 onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
-                className={inputClasses}
+                className={`${inputClasses} w-full`}
               />
             </div>
-            <div className="sm:col-span-2 space-y-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('address')}:</label>
+            <div className="sm:col-span-2 flex flex-col gap-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('address')}</label>
               <input
                 type="text"
                 value={profileForm.address}
                 onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
-                className={inputClasses}
+                className={`${inputClasses} w-full`}
               />
             </div>
           </div>
@@ -800,24 +800,24 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
             <ShieldAlert size={16} className="text-blue-500" /> {t('changePassword')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('newPassword')}:</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('newPassword')}</label>
               <input
                 type="password"
                 required
                 value={passForm.newPass}
                 onChange={e => setPassForm({ ...passForm, newPass: e.target.value })}
-                className={inputClasses}
+                className={`${inputClasses} w-full`}
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('confirmPassword')}:</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('confirmPassword')}</label>
               <input
                 type="password"
                 required
                 value={passForm.confirmPass}
                 onChange={e => setPassForm({ ...passForm, confirmPass: e.target.value })}
-                className={inputClasses}
+                className={`${inputClasses} w-full`}
               />
             </div>
           </div>
