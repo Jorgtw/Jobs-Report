@@ -45,9 +45,8 @@ class DBService {
       contactPerson: s.contact_person || '',
       phone: s.phone || '',
       email: s.email || '',
-      economicType: s.economic_type || 'hourly',
-      hourlySalary: Number(s.hourly_salary) || 0,
-      totalAmount: Number(s.total_amount) || 0,
+      billingType: s.economic_type || 'hourly',
+      amount: Number(s.economic_type === 'fixed' ? s.total_amount : s.hourly_salary) || 0,
       notes: s.internal_note || '',
       status: s.status,
       createdAt: new Date(s.created_at).getTime()
@@ -61,9 +60,9 @@ class DBService {
       contact_person: s.contactPerson,
       phone: s.phone,
       email: s.email,
-      economic_type: s.economicType,
-      hourly_salary: s.hourlySalary,
-      total_amount: s.totalAmount,
+      economic_type: s.billingType,
+      hourly_salary: s.billingType === 'hourly' ? s.amount : 0,
+      total_amount: s.billingType === 'fixed' ? s.amount : 0,
       internal_note: s.notes,
       status: s.status
     };

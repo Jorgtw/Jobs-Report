@@ -1118,9 +1118,23 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
                 </FullWidthField>
                 <FullWidthField label={t('person.type')}>
-                  <select value={formData.subcontractorId} onChange={e => setFormData({ ...formData, subcontractorId: e.target.value })} className={inputClasses}>
+                  <select 
+                    value={formData.subcontractorId} 
+                    onChange={e => {
+                      const subId = e.target.value;
+                      const sub = subcontractors.find(s => s.id === subId);
+                      setFormData({ 
+                        ...formData, 
+                        subcontractorId: subId,
+                        hourlyRate: sub ? sub.amount : (subId === "" ? 0 : formData.hourlyRate)
+                      });
+                    }} 
+                    className={inputClasses}
+                  >
                     <option value="">{t('person.internal')}</option>
-                    {subcontractors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    {Array.from(new Map(subcontractors.map(s => [s.id, s])).values()).map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
                   </select>
                 </FullWidthField>
                 <FullWidthField label={t('person.role')}>
