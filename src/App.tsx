@@ -661,6 +661,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
 // --- Profile View ---
 const ProfileView: React.FC<{ user: User }> = ({ user }) => {
   const { t } = useTranslation();
+  const isDemoAccount = user.username?.toLowerCase().includes('demo') || false;
   const [passForm, setPassForm] = useState({ newPass: '', confirmPass: '' });
   const [profileForm, setProfileForm] = useState({
     email: user.email || '',
@@ -799,36 +800,44 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
             <ShieldAlert size={16} className="text-blue-500" /> {t('changePassword')}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('newPassword')}</label>
-              <input
-                type="password"
-                required
-                value={passForm.newPass}
-                onChange={e => setPassForm({ ...passForm, newPass: e.target.value })}
-                className={`${inputClasses} w-full`}
-              />
+          {isDemoAccount ? (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium">
+              La modifica della password è disabilitata per gli account dimostrativi.
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('confirmPassword')}</label>
-              <input
-                type="password"
-                required
-                value={passForm.confirmPass}
-                onChange={e => setPassForm({ ...passForm, confirmPass: e.target.value })}
-                className={`${inputClasses} w-full`}
-              />
-            </div>
-          </div>
-          {message.text && (
-            <p className={`text-xs font-bold p-3 rounded-xl transition-all ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
-              {message.text}
-            </p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('newPassword')}</label>
+                  <input
+                    type="password"
+                    required
+                    value={passForm.newPass}
+                    onChange={e => setPassForm({ ...passForm, newPass: e.target.value })}
+                    className={`${inputClasses} w-full`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('confirmPassword')}</label>
+                  <input
+                    type="password"
+                    required
+                    value={passForm.confirmPass}
+                    onChange={e => setPassForm({ ...passForm, confirmPass: e.target.value })}
+                    className={`${inputClasses} w-full`}
+                  />
+                </div>
+              </div>
+              {message.text && (
+                <p className={`text-xs font-bold p-3 rounded-xl transition-all ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                  {message.text}
+                </p>
+              )}
+              <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all mt-2">
+                {t('update')}
+              </button>
+            </>
           )}
-          <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all mt-2">
-            {t('update')}
-          </button>
         </form>
       </div>
     </div>
@@ -968,6 +977,8 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
     subcontractorId: ''
   });
 
+  const isEditingDemo = !!editingId && formData.username?.toLowerCase().includes('demo');
+
   const handleEdit = (u: User) => {
     setEditingId(u.id);
     setFormData({
@@ -1097,9 +1108,14 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {isEditingDemo && (
+                <div className="bg-amber-50 text-amber-800 p-3 rounded-xl text-xs font-semibold border border-amber-200">
+                  ⚠️ I campi principali (Nome, Ruolo, Username, Password) sono bloccati per gli account demo predefiniti per preservare l'integrità del sistema.
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 <FullWidthField label={t('person.name')}>
-                  <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
+                  <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
                 </FullWidthField>
                 <FullWidthField label={t('person.type')}>
                   <select value={formData.subcontractorId} onChange={e => setFormData({ ...formData, subcontractorId: e.target.value })} className={inputClasses}>
@@ -1108,7 +1124,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   </select>
                 </FullWidthField>
                 <FullWidthField label={t('person.role')}>
-                  <select required value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as Role })} className={inputClasses}>
+                  <select required value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as Role })} disabled={isEditingDemo} className={inputClasses}>
                     <option value="operator">{t('operator')}</option>
                     <option value="supervisor">{t('supervisor')}</option>
                     <option value="admin">{t('adminRole')}</option>
@@ -1134,10 +1150,10 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                 {!formData.subcontractorId && (
                   <>
                     <FullWidthField label={t('person.username')}>
-                      <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} />
+                      <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
                     </FullWidthField>
                     <FullWidthField label={t('person.password')}>
-                      <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} />
+                      <input type="text" required={!editingId} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
                     </FullWidthField>
                   </>
                 )}
