@@ -1089,7 +1089,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   </button>
                 )}
                 {onImpersonate && (
-                  <button onClick={() => onImpersonate(u)} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title="Accedi come questo utente">
+                  <button onClick={() => onImpersonate(u)} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title={t('impersonateUser')}>
                     <UserIcon size={18} />
                   </button>
                 )}
@@ -1112,7 +1112,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
             <form onSubmit={handleSubmit} className="space-y-4">
               {isEditingDemo && (
                 <div className="bg-amber-50 text-amber-800 p-3 rounded-xl text-xs font-semibold border border-amber-200">
-                  ⚠️ I campi principali (Nome, Ruolo, Username, Password) sono bloccati per gli account demo predefiniti per preservare l'integrità del sistema.
+                  {t('demoFieldsLocked')}
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -2343,7 +2343,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <div className="md:col-span-2 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                   <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
                     <h3 className="text-sm font-bold text-slate-800 uppercase flex items-center gap-2">
-                      <Users size={16} className="text-blue-500" /> SQUADRA E COLLABORATORI
+                      <Users size={16} className="text-blue-500" /> {t('teamLabel')}
                     </h3>
                     <button type="button" onClick={addWorker} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1">
                       <Plus size={14} /> {t('addWorker')}
@@ -2353,11 +2353,11 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   {/* Intestazioni (visibili solo su schermi non troppo piccoli, o allineate) */}
                   <div className="hidden sm:grid grid-cols-12 gap-2 px-2 mb-1 pr-10 sm:pr-0">
                     <div className="col-span-3"></div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Inizio</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Fine</div>
-                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">Pausa</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">Extra</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center sm:border-l sm:border-transparent sm:pl-2 pr-8">Tot</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('headerStart')}</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('headerEnd')}</div>
+                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('headerBreak')}</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">{t('headerExtra')}</div>
+                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center sm:border-l sm:border-transparent sm:pl-2 pr-8">{t('headerTotal')}</div>
                   </div>
 
                   {/* Riga Autore Principale */}
@@ -2369,27 +2369,27 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     </div>
                     
                     <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Inizio</label>
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerStart')}</label>
                       <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
                     
                     <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Fine</label>
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerEnd')}</label>
                       <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
                     
                     <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Pausa</label>
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerBreak')}</label>
                       <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
                     
                     <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                      <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">Extra</label>
+                      <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('headerExtra')}</label>
                       <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
                     </div>
                     
                     <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Tot</label>
+                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerTotal')}</label>
                       <input
                         type="number"
                         step="0.01"
@@ -2412,27 +2412,27 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       </div>
 
                       <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Inizio</label>
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerStart')}</label>
                         <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
                       
                       <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Fine</label>
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerEnd')}</label>
                         <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
                       
                       <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Pausa</label>
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerBreak')}</label>
                         <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
                       </div>
                       
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">Extra</label>
+                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('headerExtra')}</label>
                         <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
                       </div>
                       
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">Tot</label>
+                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerTotal')}</label>
                         <input
                           type="number"
                           step="0.01"
