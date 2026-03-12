@@ -937,8 +937,10 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
 
       <div className="bg-blue-50 rounded-3xl p-8 border border-blue-100 text-center">
         <HelpCircle className="mx-auto text-blue-500 mb-3" size={32} />
-        <h3 className="font-bold text-blue-900 text-lg">{t('requestSent')}</h3>
-        <p className="text-blue-700/70 text-sm mt-1">Per assistenza tecnica o problemi di accesso, contatta l'amministratore.</p>
+        <h3 className="font-bold text-blue-900 text-lg">{t('helpContactHeader')}</h3>
+        <a href="mailto:jtw@live.it" className="text-blue-700/70 text-sm mt-1 hover:text-blue-800 transition-colors">
+          {t('helpSupportContact')}
+        </a>
       </div>
     </div>
   );
