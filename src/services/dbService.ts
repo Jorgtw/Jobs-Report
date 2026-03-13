@@ -476,6 +476,23 @@ class DBService {
     if (error) throw error;
   }
 
+  async getInternalClient() {
+    const compId = this.requireCompanyId();
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('company_id', compId)
+      .or(`name.ilike.%Interno%,name.ilike.%Internal%`)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching internal client:', error);
+      return null;
+    }
+    return data ? this.mapSupabaseClient(data) : null;
+  }
+
   private mapSupabaseProject(p: any): any {
     return {
       id: p.id,
@@ -522,9 +539,19 @@ class DBService {
   }
 
   async addProject(project: any) {
+    const compId = this.requireCompanyId();
+
+    // Handle internal project client resolution if not already set correctly
+    if (project.isInternal && (!project.clientId || project.clientId === 'internal')) {
+      const internalClient = await this.getInternalClient();
+      if (internalClient) {
+        project.clientId = internalClient.id;
+      }
+    }
+
     const sbObj = {
       ...this.mapAppProjectToSupabase(project),
-      company_id: this.requireCompanyId(),
+      company_id: compId,
       created_at: new Date().toISOString()
     };
     const { data, error } = await supabase.from('projects').insert([sbObj]).select();

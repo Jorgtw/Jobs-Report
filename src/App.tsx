@@ -1438,19 +1438,34 @@ const ProjectsView: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      await db.updateProject(editingId, formData);
-    } else {
-      await db.addProject(formData);
+    try {
+      if (editingId) {
+        await db.updateProject(editingId, formData);
+      } else {
+        await db.addProject(formData);
+      }
+      setProjects(await db.getProjects());
+      setIsModalOpen(false);
+    } catch (error: any) {
+      console.error('Error saving project:', error);
+      alert(t('saveError') + (error.message || error.code || 'Unknown error'));
     }
-    setProjects(await db.getProjects());
-    setIsModalOpen(false);
   };
 
-  const resetForm = (isInternal = false) => {
+  const resetForm = async (isInternal = false) => {
+    let internalClientId = '';
+    if (isInternal) {
+      const internalClient = await db.getInternalClient();
+      if (internalClient) {
+        internalClientId = internalClient.id;
+      } else {
+        internalClientId = 'internal'; // Fallback to placeholder, addProject will try again
+      }
+    }
+
     setEditingId(null);
     setFormData({
-      clientId: isInternal ? 'internal' : '',
+      clientId: isInternal ? internalClientId : '',
       name: '',
       description: '',
       address: '',
