@@ -397,7 +397,6 @@ class DBService {
       overtime_hourly_rate: w.overtimeHourlyRate,
       extra_cost: w.extraCost,
       address: w.address,
-      billingAddress: w.address, // Added as fallback
       internal_note: w.notes
     };
     if (w.password || w.password_hash) {

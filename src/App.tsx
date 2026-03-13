@@ -1027,14 +1027,19 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
-    if (editingId) {
-      await db.updateUser(editingId, data);
-    } else {
-      await db.addUser(data);
+    try {
+      const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
+      if (editingId) {
+        await db.updateUser(editingId, data);
+      } else {
+        await db.addUser(data);
+      }
+      setUsers(await db.getUsers());
+      setEditingId(null);
+      setIsModalOpen(false);
+    } catch (err: any) {
+      alert(t('saveError') + err.message);
     }
-    setUsers(await db.getUsers());
-    setIsModalOpen(false);
   };
 
   const resetForm = () => {
