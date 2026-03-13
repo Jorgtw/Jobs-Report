@@ -396,8 +396,7 @@ class DBService {
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
       extra_cost: w.extraCost,
-      address: w.address,
-      internal_note: w.notes
+      address: w.address
     };
     if (w.password || w.password_hash) {
       obj.password = w.password || w.password_hash;
