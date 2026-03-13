@@ -2376,14 +2376,16 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 )}
 
                 <div className="md:col-span-2 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
-                    <h3 className="text-sm font-bold text-slate-800 uppercase flex items-center gap-2">
-                      <Users size={16} className="text-blue-500" /> {t('teamLabel')}
-                    </h3>
-                    <button type="button" onClick={addWorker} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1">
-                      <Plus size={14} /> {t('addWorker')}
-                    </button>
-                  </div>
+                  {user.role !== 'operator' && (
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
+                      <h3 className="text-sm font-bold text-slate-800 uppercase flex items-center gap-2">
+                        <Users size={16} className="text-blue-500" /> {t('teamLabel')}
+                      </h3>
+                      <button type="button" onClick={addWorker} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1">
+                        <Plus size={14} /> {t('addWorker')}
+                      </button>
+                    </div>
+                  )}
 
                   {/* Intestazioni (visibili solo su schermi non troppo piccoli, o allineate) */}
                   <div className="hidden sm:grid grid-cols-12 gap-2 px-2 mb-1 pr-10 sm:pr-0">
@@ -2437,7 +2439,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </div>
 
                   {/* Righe Collaboratori */}
-                  {formData.additionalWorkers.map((aw, idx) => (
+                  {user.role !== 'operator' && formData.additionalWorkers.map((aw, idx) => (
                     <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
                       <div className="col-span-12 sm:col-span-3">
                         <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}>
