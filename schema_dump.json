@@ -1,0 +1,38 @@
+{
+  "workers": [
+    "name",
+    "type",
+    "company_id",
+    "role",
+    "phone",
+    "address",
+    "hourly_rate",
+    "username",
+    "password_hash",
+    "status",
+    "created_at",
+    "id",
+    "email",
+    "subcontractor_id",
+    "password",
+    "overtime_hourly_rate",
+    "extra_cost"
+  ],
+  "subcontractors": [
+    "created_at",
+    "company_name",
+    "address",
+    "contact_person",
+    "phone",
+    "email",
+    "economic_type",
+    "hourly_salary",
+    "total_amount",
+    "internal_note",
+    "status",
+    "updated_at",
+    "id",
+    "vatNumber",
+    "company_id"
+  ]
+}

@@ -49,6 +49,7 @@ class DBService {
       amount: Number(s.economic_type === 'fixed' ? s.total_amount : s.hourly_salary) || 0,
       notes: s.internal_note || '',
       status: s.status,
+      address: s.address || '',
       createdAt: new Date(s.created_at).getTime()
     };
   }
@@ -64,7 +65,8 @@ class DBService {
       hourly_salary: s.billingType === 'hourly' ? s.amount : 0,
       total_amount: s.billingType === 'fixed' ? s.amount : 0,
       internal_note: s.notes,
-      status: s.status
+      status: s.status,
+      address: s.address
     };
   }
 
@@ -375,6 +377,7 @@ class DBService {
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
       extraCost: Number(w.extra_cost) || 0,
+      address: w.address || '',
       createdAt: new Date(w.created_at).getTime()
     };
   }
@@ -391,7 +394,8 @@ class DBService {
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
-      extra_cost: w.extraCost
+      extra_cost: w.extraCost,
+      address: w.address
     };
     if (w.password || w.password_hash) {
       obj.password = w.password || w.password_hash;

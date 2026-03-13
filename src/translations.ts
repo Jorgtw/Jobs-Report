@@ -365,6 +365,8 @@ export const translations = {
     adminAdminUsername: "Username Amministratore",
     adminAdminPassword: "Password Amministratore",
     presRealInterface: "Interfaccia Reale",
+    privacy: "Privacy",
+    terms: "Termini di Servizio",
   },
   en: {
     dashboard: "Dashboard",
@@ -716,6 +718,8 @@ export const translations = {
     adminAdminUsername: "Administrator Username",
     adminAdminPassword: "Administrator Password",
     presRealInterface: "Real Interface",
+    privacy: "Privacy",
+    terms: "Terms of Service",
   },
   da: {
     dashboard: "Oversigt",
@@ -1043,6 +1047,8 @@ export const translations = {
     headerEnd: "SLUT",
     headerBreak: "PAUSE",
     headerTotal: "TOT",
+    privacy: "Privatliv",
+    terms: "Servicevilkår",
   },
   es: {
     dashboard: "Panel",
@@ -1370,6 +1376,8 @@ export const translations = {
     headerEnd: "FIN",
     headerBreak: "PAUSA",
     headerTotal: "TOT",
+    privacy: "Privacidad",
+    terms: "Términos de Servicio",
   },
   pl: {
     dashboard: "Panel",
@@ -1587,6 +1595,9 @@ export const translations = {
     headerWorker: "Pracownik",
     headerHours: "Godziny",
     headerPurchase: "Zakup",
+    headerExtra: "Ekstra",
+    privacy: "Prywatność",
+    terms: "Regulamin",
     isInternalProject: "Projekt Wewnętrzny (Urlop/Wewn)",
     activityType: "Rodzaj Aktywności",
     activityWork: "Praca u Klienta",
@@ -2017,5 +2028,7 @@ export const translations = {
     headerBreak: "MOLA",
     headerTotal: "TOPLAM",
     presBackToLogin: "Logine Geri Dön",
+    privacy: "Gizlilik",
+    terms: "Kullanım Koşulları",
   }
 };

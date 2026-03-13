@@ -2205,8 +2205,8 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </div>
             );
           })}
-          {reports.length === 0 && (
-            <div className="p-8 text-center text-slate-500 text-sm">Nessun dato disponibile</div>
+            {reports.length === 0 && (
+            <div className="p-8 text-center text-slate-500 text-sm">{t('noData')}</div>
           )}
         </div>
 
@@ -2220,7 +2220,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <th className="px-3 py-2 font-black hidden lg:table-cell">{t('description')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('peopleLabel')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('totalHoursLabel')}</th>
-                <th className="px-3 py-2 font-black text-right w-36">Azioni</th>
+                <th className="px-3 py-2 font-black text-right w-36">{t('actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -2258,7 +2258,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               })}
               {reports.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-6 text-center text-slate-500 text-xs">Nessun dato disponibile</td>
+                  <td colSpan={6} className="p-6 text-center text-slate-500 text-xs">{t('noData')}</td>
                 </tr>
               )}
             </tbody>
@@ -2555,7 +2555,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <div>
                   {editingId && user.role === 'admin' && (
                     <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2">
-                      <Trash2 size={16} /> Elimina
+                      <Trash2 size={16} /> {t('delete')}
                     </button>
                   )}
                 </div>
@@ -3252,8 +3252,8 @@ const PresentationView: React.FC = () => {
               <span className="font-bold text-slate-400 text-sm uppercase tracking-widest">Jobs Report &copy; 2026</span>
            </div>
            <div className="flex gap-8">
-             <a href="#" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Privacy</a>
-             <a href="#" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Terms</a>
+             <a href="#" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">{t('privacy')}</a>
+             <a href="#" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">{t('terms')}</a>
              <a href="mailto:jtw@live.it" className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">{t('help')}</a>
            </div>
          </div>
