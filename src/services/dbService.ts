@@ -377,7 +377,8 @@ class DBService {
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
       extraCost: Number(w.extra_cost) || 0,
-      address: w.address || '',
+      address: w.address || w.billing_address || w.billingAddress || w.home_address || '',
+      notes: w.internal_note || w.Notes || w.notes || '',
       createdAt: new Date(w.created_at).getTime()
     };
   }
@@ -395,7 +396,9 @@ class DBService {
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
       extra_cost: w.extraCost,
-      address: w.address
+      address: w.address,
+      billingAddress: w.address, // Added as fallback
+      internal_note: w.notes
     };
     if (w.password || w.password_hash) {
       obj.password = w.password || w.password_hash;
@@ -591,15 +594,33 @@ class DBService {
       .eq('company_id', compId);
 
     if (role !== 'admin' && userId) {
-      const { data, error } = await query;
-      if (error) {
-        console.error('Error fetching reports:', error);
-        return [];
+      if (role === 'supervisor') {
+        const projects = await this.getProjects();
+        const assignedProjectIds = projects
+          .filter((p: any) => p.assignedWorkerIds?.includes(userId))
+          .map((p: any) => p.id);
+
+        const { data, error } = await query;
+        if (error) {
+          console.error('Error fetching reports:', error);
+          return [];
+        }
+        return data.map(r => this.mapSupabaseReport(r)).filter((r: any) =>
+          r.userId === userId ||
+          r.additionalWorkers.some((aw: any) => aw.userId === userId) ||
+          assignedProjectIds.includes(r.projectId)
+        );
+      } else {
+        const { data, error } = await query;
+        if (error) {
+          console.error('Error fetching reports:', error);
+          return [];
+        }
+        return data.map(r => this.mapSupabaseReport(r)).filter((r: any) =>
+          r.userId === userId ||
+          r.additionalWorkers.some((aw: any) => aw.userId === userId)
+        );
       }
-      return data.map(r => this.mapSupabaseReport(r)).filter((r: any) =>
-        r.userId === userId ||
-        r.additionalWorkers.some((aw: any) => aw.userId === userId)
-      );
     }
 
     const { data, error } = await query;

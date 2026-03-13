@@ -659,7 +659,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
 
 
 // --- Profile View ---
-const ProfileView: React.FC<{ user: User }> = ({ user }) => {
+const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ user, onUpdate }) => {
   const { t } = useTranslation();
   const isDemoAccount = user.username?.toLowerCase().includes('demo') || false;
   const [passForm, setPassForm] = useState({ newPass: '', confirmPass: '' });
@@ -716,6 +716,8 @@ const ProfileView: React.FC<{ user: User }> = ({ user }) => {
     e.preventDefault();
     try {
       await db.updateUser(user.id, profileForm);
+      const updatedUser = { ...user, ...profileForm };
+      if (onUpdate) onUpdate(updatedUser);
       setProfileMessage({ text: t('profileUpdated'), type: 'success' });
     } catch (err) {
       setProfileMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
@@ -1176,6 +1178,11 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                 <div className="md:col-span-2">
                   <FullWidthField label={t('person.address')}>
                     <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} />
+                  </FullWidthField>
+                </div>
+                <div className="md:col-span-2">
+                  <FullWidthField label={t('notes')}>
+                    <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses + " min-h-[60px]"} />
                   </FullWidthField>
                 </div>
               </div>
@@ -1813,6 +1820,19 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     load();
   }, []);
 
+  const canEditReport = (r: WorkReport) => {
+    if (user.role === 'admin') return true;
+    if (user.role === 'supervisor') {
+      // Supervisors can edit their own and reports from their assigned projects
+      const isAuthor = r.userId === user.id;
+      const proj = projects.find(p => p.id === r.projectId);
+      const isAssigned = proj?.assignedWorkerIds?.includes(user.id);
+      return isAuthor || isAssigned;
+    }
+    // Operators only edit what they created
+    return r.userId === user.id;
+  };
+
 
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -2087,17 +2107,19 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </select>
             </div>
 
-            <div className="flex flex-col gap-0.5">
-              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('workerLabel')}</label>
-              <select
-                value={filters.userId}
-                onChange={e => setFilters({ ...filters, userId: e.target.value })}
-                className={filterInputClasses}
-              >
-                <option value="">{t('allWorkers')}</option>
-                {personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-            </div>
+            {user.role !== 'operator' && (
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('workerLabel')}</label>
+                <select
+                  value={filters.userId}
+                  onChange={e => setFilters({ ...filters, userId: e.target.value })}
+                  className={filterInputClasses}
+                >
+                  <option value="">{t('allWorkers')}</option>
+                  {personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                </select>
+              </div>
+            )}
 
             <div className="flex flex-col gap-0.5">
               <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('filterByRange')}</label>
@@ -2181,8 +2203,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   </div>
                   <div className="flex gap-1.5">
                     <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors border border-emerald-100" title={t('duplicate')}><Copy size={16} /></button>
-                    <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 active:bg-blue-100 rounded-lg transition-colors border border-blue-100" title={t('edit')}><Pencil size={16} /></button>
-                    <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 active:bg-red-100 rounded-lg transition-colors border border-red-100" title={t('delete')}><Trash2 size={16} /></button>
+                    {canEditReport(r) && (
+                      <>
+                        <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 active:bg-blue-100 rounded-lg transition-colors border border-blue-100" title={t('edit')}><Pencil size={16} /></button>
+                        <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 active:bg-red-100 rounded-lg transition-colors border border-red-100" title={t('delete')}><Trash2 size={16} /></button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-xs">
@@ -2249,8 +2275,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <td className="px-3 py-1.5 text-right whitespace-nowrap">
                       <div className="flex gap-1.5 justify-end">
                         <button onClick={() => handleDuplicate(r)} className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('duplicate')}><Copy size={14} /></button>
-                        <button onClick={() => handleEdit(r)} className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}><Pencil size={14} /></button>
-                        <button onClick={() => handleDelete(r.id)} className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}><Trash2 size={14} /></button>
+                        {canEditReport(r) && (
+                          <>
+                            <button onClick={() => handleEdit(r)} className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('edit')}><Pencil size={14} /></button>
+                            <button onClick={() => handleDelete(r.id)} className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('delete')}><Trash2 size={14} /></button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -2553,7 +2583,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
               <div className="flex justify-between items-center pt-6 border-t mt-8">
                 <div>
-                  {editingId && user.role === 'admin' && (
+                  {editingId && canEditReport(reports.find(r => r.id === editingId)!) && (
                     <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2">
                       <Trash2 size={16} /> {t('delete')}
                     </button>
@@ -3378,7 +3408,7 @@ const App: React.FC = () => {
                     <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
-                    <Route path="/profile" element={<ProfileView user={user} />} />
+                    <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} />} />
                     <Route path="/help" element={<HelpView user={user} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
