@@ -1,7 +1,17 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { X, PlusCircle, ChevronRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { LanguageContext } from './App';
+
+const useTranslation = () => {
+  const context = useContext(LanguageContext);
+  return { 
+    t: context.t, 
+    i18n: { 
+      language: context.lang, 
+      changeLanguage: context.setLang 
+    } 
+  };
+};
 
 // --- Registration Request Modal (Professional React Version) ---
 const RegistrationRequestModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean) => void }> = ({ isOpen: open, setOpen }) => {
@@ -115,14 +125,14 @@ const PresentationView: React.FC = () => {
   useEffect(() => {
     const saved = localStorage.getItem('jobsReportLang');
     if (saved) {
-      i18n.changeLanguage(saved);
-      if (langContext) langContext.setLanguage(saved);
+      i18n.changeLanguage(saved as any);
+      if (langContext) langContext.setLang(saved as any);
     }
   }, []);
 
   const setLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    if (langContext) langContext.setLanguage(lang);
+    i18n.changeLanguage(lang as any);
+    if (langContext) langContext.setLang(lang as any);
     localStorage.setItem('jobsReportLang', lang);
     setShowLangOverlay(false);
     setIsLangDropdownOpen(false);
@@ -140,7 +150,7 @@ const PresentationView: React.FC = () => {
           : 'text-[#6b7280] hover:bg-[#f0f2f5] hover:text-[#1a1a2e] border-transparent'
       }`}
     >
-      <span className="sidebar-icon w-5 text-center text-[16px]">{icon}</span>
+      <span className="sidebar-icon w-5 text-center text-[16px]">{icon as React.ReactNode}</span>
       {label}
     </div>
   );
@@ -168,7 +178,7 @@ const PresentationView: React.FC = () => {
               onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
               className="flex items-center gap-1.5 border border-[#e5e7eb] bg-white rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6b7280] cursor-pointer"
             >
-              🌐 <span className="uppercase">{currentLang}</span>
+              🌐 <span className="uppercase">{String(currentLang)}</span>
             </button>
             {isLangDropdownOpen && (
               <div className="absolute top-[calc(100%+10px)] right-0 bg-white border border-[#e5e7eb] rounded-xl shadow-lg w-[160px] p-1.5 z-[400]">
@@ -243,7 +253,7 @@ const PresentationView: React.FC = () => {
                   className={`flex items-center gap-4 bg-white border border-[#e5e7eb] rounded-xl p-4 px-5 cursor-pointer shadow-sm transition-all hover:shadow-md hover:border-[#d1d5db] ${openPanelKey === key ? 'border-[#2563eb] ring-[3px] ring-[#2563eb]/10' : ''}`}
                 >
                   <div className={`w-[44px] h-[44px] rounded-xl flex items-center justify-center text-[20px] shrink-0 text-white shadow-inner`} style={{ backgroundColor: sec.color }}>
-                    {sec.icon}
+                    {sec.icon as React.ReactNode}
                   </div>
                   <div className="flex-1">
                     <strong className="text-[13px] font-semibold tracking-[0.5px] uppercase">{sec.title}</strong>
@@ -265,7 +275,7 @@ const PresentationView: React.FC = () => {
               <div className="p-6 px-6 pb-5 border-b border-[#e5e7eb] flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3.5">
                   <div className="w-[46px] h-[46px] rounded-xl flex items-center justify-center text-[22px] shrink-0 text-white" style={{ background: L.sections[openPanelKey].color }}>
-                    {L.sections[openPanelKey].icon}
+                    {L.sections[openPanelKey].icon as React.ReactNode}
                   </div>
                   <div>
                     <div className="text-[16px] font-bold leading-tight">{L.sections[openPanelKey].title}</div>

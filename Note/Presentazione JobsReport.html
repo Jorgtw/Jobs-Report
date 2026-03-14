@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f0f2f5;
+    --white: #ffffff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border: #e5e7eb;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+    --radius: 12px;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* TOPNAV */
+  .topnav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 300; box-shadow: var(--shadow-sm); }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+  .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg,#2563eb,#3b82f6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .logo span { color: var(--blue); }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .lang-btn { display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--white); border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+  .user-chip { display: flex; align-items: center; gap: 10px; }
+  .user-info { text-align: right; }
+  .user-name { font-size: 13px; font-weight: 600; }
+  .user-role { font-size: 11px; color: var(--text-muted); }
+  .avatar { width: 34px; height: 34px; background: var(--blue-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+
+  /* LANGUAGE OVERLAY */
+  #langOverlay { position: fixed; inset: 0; background: rgba(26,26,46,0.95); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: all 0.4s ease; }
+  #langOverlay.visible { visibility: visible; opacity: 1; }
+  .lang-card { background: var(--white); padding: 40px; border-radius: 24px; text-align: center; max-width: 500px; width: 90%; box-shadow: var(--shadow-lg); transform: translateY(20px); transition: transform 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+  #langOverlay.visible .lang-card { transform: translateY(0); }
+  .lang-card h2 { margin-bottom: 8px; font-size: 24px; }
+  .lang-card p { color: var(--text-secondary); margin-bottom: 24px; font-size: 15px; }
+  .lang-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .lang-opt { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .lang-opt:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+  .lang-opt span { font-size: 18px; }
+
+  /* LANG DROPDOWN */
+  .lang-selector { position: relative; }
+  #langDropdown { position: absolute; top: calc(100% + 10px); right: 0; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 160px; display: none; z-index: 400; padding: 6px; }
+  #langDropdown.show { display: block; }
+  .lang-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: background 0.2s; }
+  .lang-item:hover { background: var(--bg); color: var(--text-primary); }
+  .lang-item.active { background: var(--blue-light); color: var(--blue); font-weight: 500; }
+
+  /* LAYOUT */
+  .layout { display: flex; flex: 1; }
+
+  /* SIDEBAR */
+  .sidebar { width: 220px; background: var(--white); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 60px; height: calc(100vh - 60px); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-nav { flex: 1; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 24px; font-size: 14px; color: var(--text-secondary); cursor: pointer; border-right: 2px solid transparent; transition: background 0.15s, color 0.15s; user-select: none; }
+  .sidebar-item:hover { background: var(--bg); color: var(--text-primary); }
+  .sidebar-item.active { color: var(--blue); font-weight: 500; background: var(--blue-light); border-right-color: var(--blue); }
+  .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-bottom { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+  .esci-btn { color: var(--text-muted) !important; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 40px 48px; transition: margin-right 0.3s ease; min-width: 0; }
+  .main.panel-open { margin-right: 360px; }
+
+  .page-header { margin-bottom: 32px; }
+  .welcome-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .page-header h1 { font-size: 28px; font-weight: 700; }
+  .subtitle { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+  .section-label-sm { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+
+  /* MENU LIST */
+  .menu-list { display: flex; flex-direction: column; gap: 8px; }
+  .menu-item { display: flex; align-items: center; gap: 16px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; cursor: pointer; box-shadow: var(--shadow-sm); transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s; user-select: none; }
+  .menu-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #d1d5db; transform: translateY(-1px); }
+  .menu-item.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .menu-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .ic-green  { background: #10b981; }
+  .ic-red    { background: #ef4444; }
+  .ic-orange { background: #f59e0b; }
+  .ic-teal   { background: #06b6d4; }
+  .ic-blue   { background: #3b82f6; }
+  .ic-purple { background: #8b5cf6; }
+  .ic-gray   { background: #6b7280; }
+  .ic-cobalt { background: #2563eb; }
+  .menu-text { flex: 1; }
+  .menu-text strong { font-size: 13px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .menu-text p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .chevron { color: var(--text-muted); font-size: 18px; transition: transform 0.2s; }
+  .menu-item.selected .chevron { transform: rotate(90deg); color: var(--blue); }
+
+  /* DETAIL PANEL */
+  .detail-panel { position: fixed; top: 60px; right: 0; width: 360px; height: calc(100vh - 60px); background: var(--white); border-left: 1px solid var(--border); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; z-index: 200; overflow: hidden; }
+  .detail-panel.open { transform: translateX(0); }
+
+  .panel-header { padding: 24px 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .panel-header-left { display: flex; align-items: center; gap: 14px; }
+  .panel-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .panel-title { font-size: 16px; font-weight: 700; }
+  .panel-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .close-btn { background: var(--bg); border: none; border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
+  .close-btn:hover { background: var(--border); }
+
+  .panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .feature-group { margin-bottom: 24px; }
+  .feature-group-title { font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .feature-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .feature-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .feature-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .feature-item p strong { color: var(--text-primary); font-weight: 500; }
+
+  .panel-cta { padding: 16px 24px; border-top: 1px solid var(--border); }
+  .panel-cta a { display: block; text-align: center; background: var(--blue); color: #fff; font-weight: 500; font-size: 14px; padding: 12px; border-radius: 8px; text-decoration: none; }
+  .panel-cta a:hover { background: #1d4ed8; }
+
+  /* HERO SECTION - Compattata e focalizzata sul valore dell'esperienza */
+  .hero { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 32px; background: linear-gradient(135deg, #1e40af, #3b82f6); padding: 24px 32px; border-radius: 16px; color: #fff; box-shadow: var(--shadow-sm); position: relative; }
+  .hero-content { z-index: 1; max-width: 850px; }
+  .hero-tag { display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .hero h2 { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+  .hero p { font-size: 14px; opacity: 0.95; line-height: 1.5; margin-bottom: 0; }
+
+  /* FEATURES LIST */
+  .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+  .feature-box { background: var(--white); padding: 24px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  .feature-box h3 { font-size: 16px; margin: 12px 0 8px; color: var(--text-primary); }
+  .feature-box p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+  .feature-box .icon { font-size: 24px; }
+
+  footer { background: var(--white); border-top: 1px solid var(--border); text-align: center; padding: 14px; font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    Jobs<span>Report</span>
+  </div>
+  <div class="nav-right">
+    <div class="lang-selector">
+      <div class="lang-btn" onclick="toggleLangDropdown()">🌐 <span id="currentLangLabel">IT</span></div>
+      <div id="langDropdown">
+        <div class="lang-item active" onclick="setLanguage('it')"><span>🇮🇹</span> Italiano</div>
+        <div class="lang-item" onclick="setLanguage('en')"><span>🇬🇧</span> English</div>
+        <div class="lang-item" onclick="setLanguage('es')"><span>🇪🇸</span> Español</div>
+        <div class="lang-item" onclick="setLanguage('pl')"><span>🇵🇱</span> Polski</div>
+        <div class="lang-item" onclick="setLanguage('tr')"><span>🇹🇷</span> Türkçe</div>
+        <div class="lang-item" onclick="setLanguage('da')"><span>🇩🇰</span> Dansk</div>
+      </div>
+    </div>
+    <div class="user-chip">
+      <div class="user-info">
+        <div class="user-name">Thomas Demo</div>
+        <div class="user-role">Admin</div>
+      </div>
+      <div class="avatar">👤</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-nav">
+      <div class="sidebar-item" onclick="openPanel('clienti',this)"><span class="sidebar-icon">👥</span> Clienti</div>
+      <div class="sidebar-item" onclick="openPanel('personale',this)"><span class="sidebar-icon">🛡️</span> Personale</div>
+      <div class="sidebar-item" onclick="openPanel('progetti',this)"><span class="sidebar-icon">💼</span> Progetti</div>
+      <div class="sidebar-item" onclick="openPanel('subappalti',this)"><span class="sidebar-icon">📋</span> Subappalti</div>
+      <div class="sidebar-item" onclick="openPanel('rapportini',this)"><span class="sidebar-icon">📄</span> Rapportini</div>
+      <div class="sidebar-item" onclick="openPanel('sommario',this)"><span class="sidebar-icon">📑</span> Sommario Lavori</div>
+      <div class="sidebar-item" onclick="openPanel('profilo',this)"><span class="sidebar-icon">👤</span> Profilo</div>
+      <div class="sidebar-item" onclick="openPanel('assistenza',this)"><span class="sidebar-icon">❓</span> Assistenza</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-item esci-btn" onclick="window.open('https://www.jobs-report.com','_blank')"><span class="sidebar-icon">↪️</span> Esci</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-tag">Il valore dell'esperienza</div>
+        <h2>Rapportini e controllo costi in tempo reale</h2>
+        <p>Realizzato dopo oltre 30 anni di esperienza vissuta in prima persona sul campo: prima come operaio e poi come amministratore. JobsReport è lo strumento concreto nato dall'esigenza reale di chi gestisce il cantiere ogni giorno.</p>
+      </div>
+    </div>
+
+    <div class="section-label-sm">Funzionalità Chiave</div>
+    <div class="menu-list">
+      <div class="menu-item" onclick="openPanel('clienti',this)">
+        <div class="menu-icon ic-green">👥</div>
+        <div class="menu-text"><strong>Anagrafica Clienti</strong><p>Gestione semplice dei contatti, collegata direttamente a progetti e rapportini.</p></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="menu-item" onclick="openPanel('personale',this)">
+        <div class="menu-icon ic-red">🛡️</div>
+        <div class="menu-text"><strong>Gestione Personale</strong><p>Onboarding multilingua, ruoli operativi e controllo dei costi aziendali.</p></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="menu-item" onclick="openPanel('progetti',this)">
+        <div class="menu-icon ic-orange">💼</div>
+        <div class="menu-text"><strong>Progetti e Cantieri</strong><p>Gestione flessibile di commesse clienti e progetti interni (assenze/magazzino).</p></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="menu-item" onclick="openPanel('subappalti',this)">
+        <div class="menu-icon ic-cyan">📋</div>
+        <div class="menu-text"><strong>Subappalti</strong><p>Gestione ditte esterne, contratti a corpo o a ore e controllo lavoratori.</p></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="menu-item" onclick="openPanel('rapportini',this)">
+        <div class="menu-icon ic-blue">📄</div>
+        <div class="menu-text"><strong>Rapportini Giornalieri</strong><p>Il cuore operativo: tracciamento squadra, tempi precisi e spese extra sul campo.</p></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="menu-item" onclick="openPanel('sommario',this)">
+        <div class="menu-icon ic-purple">📑</div>
+        <div class="menu-text"><strong>Analisi dei Margini</strong><p>Report sintetici su costi e ricavi per valutare la redditività dei lavori.</p></div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- DETAIL PANEL -->
+  <aside class="detail-panel" id="detailPanel">
+    <div class="panel-header">
+      <div class="panel-header-left">
+        <div class="panel-icon" id="panelIcon"></div>
+        <div>
+          <div class="panel-title" id="panelTitle"></div>
+          <div class="panel-desc" id="panelDesc"></div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+    <div class="panel-cta">
+      <a href="mailto:jtw@live.it?subject=Richiesta%20demo%20gratuita%20JobsReport&body=Gentile%20team%20JobsReport%2C%0A%0ASono%20interessato%20a%20ricevere%20una%20demo%20gratuita%20del%20programma.%0A%0AAttendo%20vostre%20notizie.%0A%0ACordiali%20saluti">
+        Richiedi una demo gratuita →
+      </a>
+    </div>
+  </aside>
+
+</div>
+
+<footer>© 2025 JobsReport · <span data-i18n="footer_rights">Tutti i diritti riservati</span></footer>
+
+<!-- LANGUAGE OVERLAY -->
+<div id="langOverlay">
+  <div class="lang-card">
+    <div style="font-size: 48px; margin-bottom: 20px;">🌐</div>
+    <h2 id="overlayTitle">Benvenuto in JobsReport</h2>
+    <p id="overlaySubtitle">Scegli la tua lingua per iniziare la presentazione</p>
+    <div class="lang-grid">
+      <div class="lang-opt" onclick="setLanguage('it')"><span>🇮🇹</span> Italiano</div>
+      <div class="lang-opt" onclick="setLanguage('en')"><span>🇬🇧</span> English</div>
+      <div class="lang-opt" onclick="setLanguage('es')"><span>🇪🇸</span> Español</div>
+      <div class="lang-opt" onclick="setLanguage('pl')"><span>🇵🇱</span> Polski</div>
+      <div class="lang-opt" onclick="setLanguage('tr')"><span>🇹🇷</span> Türkçe</div>
+      <div class="lang-opt" onclick="setLanguage('da')"><span>🇩🇰</span> Dansk</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentLang = 'it';
+var I18N = {
+  it: {
+    sidebar: { clienti:'Clienti', personale:'Personale', progetti:'Progetti', subappalti:'Subappalti', rapportini:'Rapportini', sommario:'Sommario Lavori', profilo:'Profilo', assistenza:'Assistenza', esci:'Esci' },
+    hero: { tag:'Il valore dell\'esperienza', title:'Rapportini e controllo costi in tempo reale', desc:'Realizzato dopo oltre 30 anni di esperienza vissuta in prima persona sul campo: prima come operaio e poi come amministratore. JobsReport è lo strumento concreto nato dall\'esigenza reale di chi gestisce il cantiere ogni giorno.' },
+    ui: { key_features:'Funzionalità Chiave', request_demo:'Richiedi una demo gratuita →', footer_rights:'Tutti i diritti riservati', overlay_title:'Benvenuto in JobsReport', overlay_sub:'Scegli la tua lingua per iniziare la presentazione' },
+    sections: {
+      clienti: { icon:'👥', color:'#10b981', title:'Clienti', desc:'Anagrafica essenziale per la gestione dei tuoi cantieri.', groups:[ {title:'Dati Aziendali', color:'#10b981', items:[ {name:'Scheda essenziale', desc:'Nome ditta, P.IVA e contatti.'}, {name:'Stato Cliente', desc:'Gestione Attivi/Non attivi.'} ]} ] },
+      personale: { icon:'🛡️', color:'#ef4444', title:'Il Tuo Team', desc:'Gestione e onboarding del personale interno ed esterno.', groups:[ {title:'Ruoli e Lingua', color:'#ef4444', items:[ {name:'Onboarding', desc:'Invia istruzioni app nella lingua del lavoratore.'}, {name:'Ruoli', desc:'Operaio, Incaricato o Amministrativo.'} ]} ] },
+      progetti: { icon:'💼', color:'#f59e0b', title:'Progetti', desc:'Configurazione dei cantieri e delle attività interne.', groups:[ {title:'Tipologia', color:'#f59e0b', items:[ {name:'Clienti vs Interni', desc:'Gestione commesse o attività come Assenze/Ferie.'}, {name:'Budgeting', desc:'Supporto per lavori a ore o a corpo.'} ]} ] },
+      subappalti: { icon:'📋', color:'#06b6d4', title:'Subappalti', desc:'Collabora con ditte esterne mantenendo il controllo sui costi.', groups:[ {title:'Partner', color:'#06b6d4', items:[ {name:'Gestione Ditte', desc:'Anagrafica subappaltatori e referenti.'}, {name:'Costi Esterni', desc:'Monitoraggio lavori a corpo o a ore.'} ]} ] },
+      rapportini: { icon:'📄', color:'#3b82f6', title:'Rapportini', desc:'Rendicontazione giornaliera veloce e professionale.', groups:[ {title:'Esecuzione', color:'#3b82f6', items:[ {name:'Tempi Reali', desc:'Tracciamento preciso Inizio/Fine/Pausa o ore dirette.'}, {name:'Spese', desc:'Inserimento pasti, materiali e parcheggi.'} ]}, {title:'Gestione', color:'#3b82f6', items:[ {name:'Caposquadra', desc:'L\'Incaricato inserisce i dati per tutto il team.'} ]} ] },
+      sommario: { icon:'📑', color:'#8b5cf6', title:'Analisi Economica', desc:'Il Sommario Lavori: il cuore del controllo margini.', groups:[ {title:'Analisi', color:'#8b5cf6', items:[ {name:'Real-Time', desc:'Margini netti e costi calcolati all\'istante.'}, {name:'Filtri ed Export', desc:'Filtra e scarica dati in Excel o PDF.'} ]} ] },
+      profilo: { icon:'👤', color:'#6b7280', title:'Il tuo Account', desc:'Personalizza la tua esperienza di lavoro.', groups:[ {title:'Account', color:'#6b7280', items:[ {name:'Sicurezza', desc:'Gestione accessi e preferenze lingua.'} ]} ] },
+      assistenza: { icon:'❓', color:'#2563eb', title:'Centro Assistenza', desc:'Guide e istruzioni rapide per l\'utilizzo ottimale dell\'app.', groups:[ {title:'Guida Rapida', color:'#2563eb', items:[ {name:'Installazione', desc:'Aggiungi l\'app alla home screen (iPhone: "Aggiungi a Home", Android: "Installa App").'}, {name:'Filtri', desc:'Usa il "Sommario Lavori" per monitorare margini e costi in tempo reale.'} ]}, {title:'Supporto', color:'#2563eb', items:[ {name:'Admin', desc:'Per assistenza tecnica, contatta direttamente l\'amministratore di sistema.'} ]} ] }
+    }
+  },
+  en: {
+    sidebar: { clienti:'Clients', personale:'Personnel', progetti:'Projects', subappalti:'Subcontracts', rapportini:'Timesheets', sommario:'Work Summary', profilo:'Profile', assistenza:'Support', esci:'Exit' },
+    hero: { tag:'The value of experience', title:'Timesheets and real-time cost control', desc:'Created after more than 30 years of first-hand field experience: first as a worker and then as an administrator. JobsReport is the practical tool born from the real needs of those who manage construction sites every day.' },
+    ui: { key_features:'Key Features', request_demo:'Request a free demo →', footer_rights:'All rights reserved', overlay_title:'Welcome to JobsReport', overlay_sub:'Choose your language to start the presentation' },
+    sections: {
+      clienti: { icon:'👥', color:'#10b981', title:'Clients', desc:'Essential registry for managing your construction sites.', groups:[ {title:'Company Data', color:'#10b981', items:[ {name:'Essential Form', desc:'Company name, VAT and contacts.'}, {name:'Client Status', desc:'Easily manage Active/Inactive clients.'} ]} ] },
+      personale: { icon:'🛡️', color:'#ef4444', title:'Your Team', desc:'Management and onboarding of internal and external personnel.', groups:[ {title:'Roles and Language', color:'#ef4444', items:[ {name:'Onboarding', desc:'Send app instructions in the worker\'s language.'}, {name:'Roles', desc:'Worker, Supervisor or Administrator.'} ]} ] },
+      progetti: { icon:'💼', color:'#f59e0b', title:'Projects', desc:'Configuration and monitoring of sites and internal activities.', groups:[ {title:'Type', color:'#f59e0b', items:[ {name:'Clients vs Internal', desc:'Manage external orders or activities like Absence/Leave.'}, {name:'Budgeting', desc:'Support for hourly or lump-sum work.'} ]} ] },
+      subappalti: { icon:'📋', color:'#06b6d4', title:'Subcontracts', desc:'Collaborate with external firms while maintaining full cost control.', groups:[ {title:'Partners', color:'#06b6d4', items:[ {name:'Firm Management', desc:'Subcontractor registry and contacts.'}, {name:'External Costs', desc:'Monitoring of lump-sum or hourly jobs.'} ]} ] },
+      rapportini: { icon:'📄', color:'#3b82f6', title:'Timesheets', desc:'Make daily reporting fast, precise and professional.', groups:[ {title:'Execution', color:'#3b82f6', items:[ {name:'Real Time', desc:'Precise Start/End/Break tracking or direct hours.'}, {name:'Expenses', desc:'Field entries for meals, materials and parking.'} ]}, {title:'Management', color:'#3b82f6', items:[ {name:'Team Leader', desc:'Supervisors can enter data for the whole team.'} ]} ] },
+      sommario: { icon:'📑', color:'#8b5cf6', title:'Economic Analysis', desc:'Work Summary: the core of margin control.', groups:[ {title:'Analysis', color:'#8b5cf6', items:[ {name:'Real-Time', desc:'Net margins and costs calculated instantly.'}, {name:'Filters and Export', desc:'Filter and download data in Excel or PDF.'} ]} ] },
+      profilo: { icon:'👤', color:'#6b7280', title:'Your Account', desc:'Personalize your work experience.', groups:[ {title:'Account', color:'#6b7280', items:[ {name:'Security', desc:'Access management and language preferences.'} ]} ] },
+      assistenza: { icon:'❓', color:'#2563eb', title:'Support Center', desc:'Quick guides and instructions for optimal app usage.', groups:[ {title:'Quick Guide', color:'#2563eb', items:[ {name:'Installation', desc:'Add the app to your home screen (iPhone: "Add to Home", Android: "Install App").'}, {name:'Filters', desc:'Use "Work Summary" to monitor margins and costs in real-time.'} ]}, {title:'Support', color:'#2563eb', items:[ {name:'Admin', desc:'For technical support, contact the system administrator directly.'} ]} ] }
+    }
+  },
+  es: {
+    sidebar: { clienti:'Clientes', personale:'Personal', progetti:'Proyectos', subappalti:'Subcontratas', rapportini:'Partes de Trabajo', sommario:'Resumen de Obra', profilo:'Perfil', assistenza:'Asistencia', esci:'Salir' },
+    hero: { tag:'El valor de la experiencia', title:'Partes de trabajo y control de costes en tiempo real', desc:'Creado tras más de 30 años de experiencia directa en el campo: primero como operario y luego como administrador. JobsReport es la herramienta práctica nacida de las necesidades reales de quienes gestionan la obra cada día.' },
+    ui: { key_features:'Funcionalidades Clave', request_demo:'Solicitar demo gratuita →', footer_rights:'Todos los derechos reservados', overlay_title:'Bienvenido a JobsReport', overlay_sub:'Elige tu idioma para comenzar la presentación' },
+    sections: {
+      clienti: { icon:'👥', color:'#10b981', title:'Clientes', desc:'Registro esencial para la gestión de tus obras.', groups:[ {title:'Datos de Empresa', color:'#10b981', items:[ {name:'Ficha esencial', desc:'Nombre, CIF y contactos.'}, {name:'Estado', desc:'Gestión de Activos/Inactivos.'} ]} ] },
+      personale: { icon:'🛡️', color:'#ef4444', title:'Tu Equipo', desc:'Gestión e incorporación de personal interno y externo.', groups:[ {title:'Roles e Idioma', color:'#ef4444', items:[ {name:'Incorporación', desc:'Envía instrucciones de la app en el idioma del trabajador.'}, {name:'Roles', desc:'Operario, Encargado o Administrador.'} ]} ] },
+      progetti: { icon:'💼', color:'#f59e0b', title:'Proyectos', desc:'Configuración y seguimiento de obras y actividades internas.', groups:[ {title:'Tipología', color:'#f59e0b', items:[ {name:'Clientes vs Interno', desc:'Gestión de pedidos externos o actividades como Ausencias.'}, {name:'Presupuesto', desc:'Soporte para trabajos por horas o ajuste.'} ]} ] },
+      subappalti: { icon:'📋', color:'#06b6d4', title:'Subcontratas', desc:'Colabora con empresas externas manteniendo el control total.', groups:[ {title:'Socios', color:'#06b6d4', items:[ {name:'Gestión Empresas', desc:'Registro de subcontratistas y contactos.'}, {name:'Costes Externos', desc:'Seguimiento de trabajos por horas o forfait.'} ]} ] },
+      rapportini: { icon:'📄', color:'#3b82f6', title:'Partes de Trabajo', desc:'Reporte diario rápido, preciso y profesional.', groups:[ {title:'Ejecución', color:'#3b82f6', items:[ {name:'Tiempo Real', desc:'Seguimiento preciso Inicio/Fin o horas directas.'}, {name:'Gastos', desc:'Entrada de comidas, materiales y parking.'} ]}, {title:'Gestión', color:'#3b82f6', items:[ {name:'Capataz', desc:'Los encargados pueden meter datos de todo el equipo.'} ]} ] },
+      sommario: { icon:'📑', color:'#8b5cf6', title:'Análisis Económico', desc:'Resumen de Obra: el corazón del control de márgenes.', groups:[ {title:'Análisis', color:'#8b5cf6', items:[ {name:'Tiempo Real', desc:'Márgenes netos y costes calculados al instante.'}, {name:'Filtros y Export', desc:'Filtra y descarga datos en Excel o PDF.'} ]} ] },
+      profilo: { icon:'👤', color:'#6b7280', title:'Tu Cuenta', desc:'Personaliza tu experiencia de trabajo.', groups:[ {title:'Account', color:'#6b7280', items:[ {name:'Seguridad', desc:'Gestión de accesos y preferencias de idioma.'} ]} ] },
+      assistenza: { icon:'❓', color:'#2563eb', title:'Centro de Ayuda', desc:'Guías e instrucciones rápidas para el uso óptimo de la app.', groups:[ {title:'Guía Rápida', color:'#2563eb', items:[ {name:'Instalación', desc:'Añade la app a la pantalla de inicio (iPhone: "Añadir a Inicio", Android: "Instalar App").'}, {name:'Filtros', desc:'Usa el "Resumen de Obra" para controlar márgenes y costes en tiempo real.'} ]}, {title:'Soporte', color:'#2563eb', items:[ {name:'Admin', desc:'Para soporte técnico, contacta directamente con el administrador de sistema.'} ]} ] }
+    }
+  },
+  pl: {
+    sidebar: { clienti:'Klienci', personale:'Personel', progetti:'Projekty', subappalti:'Podwykonawcy', rapportini:'Raporty pracy', sommario:'Podsumowanie prac', profilo:'Profil', assistenza:'Pomoc', esci:'Wyjdź' },
+    hero: { tag:'Wartość doświadczenia', title:'Raporty i kontrola kosztów w czasie rzeczywistym', desc:'Stworzony na podstawie ponad 30-letniego doświadczenia zdobytego bezpośrednio w terenie: najpierw jako pracownik, a potem jako administrator. JobsReport to praktyczne narzędzie zrodzone z realnych potrzeb osób codziennie zarządzających budową.' },
+    ui: { key_features:'Kluczowe funkcje', request_demo:'Poproś o darmowe demo →', footer_rights:'Wszelkie prawa zastrzeżone', overlay_title:'Witaj w JobsReport', overlay_sub:'Wybierz język, aby rozpocząć prezentację' },
+    sections: {
+      clienti: { icon:'👥', color:'#10b981', title:'Klienci', desc:'Niezbędny rejestr do zarządzania budowami.', groups:[ {title:'Dane firmy', color:'#10b981', items:[ {name:'Podstawowa karta', desc:'Nazwa firmy, NIP i kontakty.'}, {name:'Status klienta', desc:'Zarządzaj aktywnymi/nieaktywnymi klientami.'} ]} ] },
+      personale: { icon:'🛡️', color:'#ef4444', title:'Twój zespół', desc:'Zarządzanie i wdrażanie personelu wewnętrznego i zewnętrznego.', groups:[ {title:'Role i język', color:'#ef4444', items:[ {name:'Wdrożenie', desc:'Wyślij instrukcje aplikacji w języku pracownika.'}, {name:'Role', desc:'Pracownik, Brygadzista lub Administrator.'} ]} ] },
+      progetti: { icon:'💼', color:'#f59e0b', title:'Projekty', desc:'Konfiguracja i monitorowanie budów oraz działań wewnętrznych.', groups:[ {title:'Typologia', color:'#f59e0b', items:[ {name:'Klienci vs Wewnętrzne', desc:'Zarządzaj zleceniami lub nieobecnościami.'}, {name:'Budżet', desc:'Wsparcie dla prac godzinowych lub ryczałtowych.'} ]} ] },
+      subappalti: { icon:'📋', color:'#06b6d4', title:'Podwykonawcy', desc:'Współpracuj z firmami zewnętrznymi, zachowując kontrolę nad kosztami.', groups:[ {title:'Partnerzy', color:'#06b6d4', items:[ {name:'Zarządzanie firmami', desc:'Rejestr podwykonawców i kontakty.'}, {name:'Koszty zewnętrzne', desc:'Monitorowanie prac ryczałtowych lub godzinowych.'} ]} ] },
+      rapportini: { icon:'📄', color:'#3b82f6', title:'Raporty pracy', desc:'Szybkie, precyzyjne i profesjonalne raportowanie dzienne.', groups:[ {title:'Wykonanie', color:'#3b82f6', items:[ {name:'Czas rzeczywisty', desc:'Precyzyjne śledzenie początku/końca lub godziny.'}, {name:'Wydatki', desc:'Wprowadzanie posiłków, materiałów i parkingów.'} ]}, {title:'Zarządzanie', color:'#3b82f6', items:[ {name:'Kierownik zespołu', desc:'Brygadzista może wpisywać dane dla całego zespołu.'} ]} ] },
+      sommario: { icon:'📑', color:'#8b5cf6', title:'Analiza ekonomiczna', desc:'Podsumowanie prac: serce kontroli marży.', groups:[ {title:'Analiza', color:'#8b5cf6', items:[ {name:'Czas rzeczywisty', desc:'Marże netto i koszty obliczane błyskawicznie.'}, {name:'Filtry i eksport', desc:'Filtruj i pobieraj dane w formacie Excel lub PDF.'} ]} ] },
+      profilo: { icon:'👤', color:'#6b7280', title:'Twoje konto', desc:'Spersonalizuj swoje doświadczenie pracy.', groups:[ {title:'Konto', color:'#6b7280', items:[ {name:'Bezpieczeństwo', desc:'Zarządzanie dostępem i preferencje językowe.'} ]} ] },
+      assistenza: { icon:'❓', color:'#2563eb', title:'Centrum pomocy', desc:'Szybkie przewodniki i instrukcje dla optymalnego użycia aplikacji.', groups:[ {title:'Szybki start', color:'#2563eb', items:[ {name:'Instalacja', desc:'Dodaj aplikację do ekranu głównego (iPhone: "Dodaj do ekranu", Android: "Zainstaluj").'}, {name:'Filtry', desc:'Użyj "Podsumowania prac", aby monitorować marże i koszty w czasie rzeczywistym.'} ]}, {title:'Wsparcie', color:'#2563eb', items:[ {name:'Admin', desc:'W celu uzyskania pomocy technicznej skontaktuj się z administratorem systemu.'} ]} ] }
+    }
+  },
+  tr: {
+    sidebar: { clienti:'Müşteriler', personale:'Personel', progetti:'Projeler', subappalti:'Alt Yükleniciler', rapportini:'Günlük Raporlar', sommario:'İş Özeti', profilo:'Profil', assistenza:'Destek', esci:'Çıkış' },
+    hero: { tag:'Deneyimin değeri', title:'Günlük raporlar ve gerçek zamanlı maliyet kontrolü', desc:'30 yılı aşkın sahada edinilen deneyimle oluşturuldu: önce işçi, sonra yönetici olarak. JobsReport, her gün şantiyeyi yönetenlerin gerçek ihtiyaçlarından doğan pratik bir araçtır.' },
+    ui: { key_features:'Temel Özellikler', request_demo:'Ücretsiz demo iste →', footer_rights:'Tüm hakları saklıdır', overlay_title:'JobsReport\'a Hoş Geldiniz', overlay_sub:'Sunuma başlamak için dilinizi seçin' },
+    sections: {
+      clienti: { icon:'👥', color:'#10b981', title:'Müşteriler', desc:'Şantiyelerinizi yönetmek için temel kayıt defteri.', groups:[ {title:'Şirket Bilgileri', color:'#10b981', items:[ {name:'Temel Kart', desc:'Şirket adı, Vergi No ve iletişim.'}, {name:'Müşteri Durumu', desc:'Aktif/Pasif müşterileri kolayca yönetin.'} ]} ] },
+      personale: { icon:'🛡️', color:'#ef4444', title:'Ekibiniz', desc:'İç ve dış personelin yönetimi ve işe alımı.', groups:[ {title:'Roller ve Dil', color:'#ef4444', items:[ {name:'İşe Alım', desc:'Çalışanın dilinde uygulama talimatlarını gönderin.'}, {name:'Roller', desc:'İşçi, Sorumlu veya Yönetici.'} ]} ] },
+      progetti: { icon:'💼', color:'#f59e0b', title:'Projeler', desc:'Şantiyelerin ve iç faaliyetlerin yapılandırılması ve izlenmesi.', groups:[ {title:'Tür', color:'#f59e0b', items:[ {name:'Müşteriler vs İç', desc:'Dış siparişleri veya izin gibi faaliyetleri yönetin.'}, {name:'Bütçeleme', desc:'Saatlik veya götürü işler için destek.'} ]} ] },
+      subappalti: { icon:'📋', color:'#06b6d4', title:'Alt Yükleniciler', desc:'Maliyetlerde tam kontrolü korurken dış firmalarla iş birliği yapın.', groups:[ {title:'Ortaklar', color:'#06b6d4', items:[ {name:'Firma Yönetimi', desc:'Alt yüklenici sicili ve iletişim.'}, {name:'Dış Maliyetler', desc:'Götürü veya saatlik işlerin izlenmesi.'} ]} ] },
+      rapportini: { icon:'📄', color:'#3b82f6', title:'Günlük Raporlar', desc:'Günlük raporlamayı hızlı, hassas ve profesyonel hale getirin.', groups:[ {title:'Uygulama', color:'#3b82f6', items:[ {name:'Gerçek Zamanlı', desc:'Hassas Başlangıç/Bitiş veya doğrudan saat takibi.'}, {name:'Giderler', desc:'Yemek, malzeme ve otopark girişleri.'} ]}, {title:'Yönetim', color:'#3b82f6', items:[ {name:'Ekip Lideri', desc:'Sorumlular tüm ekip için veri girişi yapabilir.'} ]} ] },
+      sommario: { icon:'📑', color:'#8b5cf6', title:'Ekonomik Analiz', desc:'İş Özeti: kar marjı kontrolünün kalbi.', groups:[ {title:'Analiz', color:'#8b5cf6', items:[ {name:'Gerçek Zamanlı', desc:'Net marjlar ve maliyetler anında hesaplanır.'}, {name:'Filtreler ve Dışa Aktarma', desc:'Verileri filtreleyin ve Excel veya PDF olarak indirin.'} ]} ] },
+      profilo: { icon:'👤', color:'#6b7280', title:'Hesabınız', desc:'Çalışma deneyiminizi kişiselleştirin.', groups:[ {title:'Hesap', color:'#6b7280', items:[ {name:'Güvenlik', desc:'Erişim yönetimi ve dil tercihleri.'} ]} ] },
+      assistenza: { icon:'❓', color:'#2563eb', title:'Destek Merkezi', desc:'Uygulamanın en iyi kullanımı için hızlı rehberler ve talimatlar.', groups:[ {title:'Hızlı Rehber', color:'#2563eb', items:[ {name:'Kurulum', desc:'Uygulamayı ana ekrana ekleyin (iPhone: "Ana Ekrana Ekle", Android: "Yükle").'}, {name:'Filtreler', desc:'Maliyetleri gerçek zamanlı izlemek için "İş Özeti"ni kullanın.'} ]}, {title:'Destek', color:'#2563eb', items:[ {name:'Yönetici', desc:'Teknik destek için doğrudan sistem yöneticisiyle iletişime geçin.'} ]} ] }
+    }
+  },
+  da: {
+    sidebar: { clienti:'Klienter', personale:'Personale', progetti:'Projekter', subappalti:'Underentreprenører', rapportini:'Dagsrapporter', sommario:'Arbejdsoversigt', profilo:'Profil', assistenza:'Support', esci:'Slet' },
+    hero: { tag:'Værdien af erfaring', title:'Dagsrapporter og omkostningskontrol i realtid', desc:'Skabt efter mere end 30 års erfaring på feltet: først som arbejder og derefter som administrator. JobsReport er det praktiske værktøj født af de reelle behov hos dem, der administrerer byggepladser hver dag.' },
+    ui: { key_features:'Nøglefunktioner', request_demo:'Anmod om gratis demo →', footer_rights:'Alle rettigheder forbeholdes', overlay_title:'Velkommen til JobsReport', overlay_sub:'Vælg dit sprog for at starte præsentationen' },
+    sections: {
+      clienti: { icon:'👥', color:'#10b981', title:'Klienter', desc:'Nødvendigt register til administration af dine byggepladser.', groups:[ {title:'Virksomhedsdata', color:'#10b981', items:[ {name:'Vigtig formular', desc:'Firmanavn, CVR og kontakter.'}, {name:'Klientstatus', desc:'Administrer aktive/inaktive klienter.'} ]} ] },
+      personale: { icon:'🛡️', color:'#ef4444', title:'Dit Team', desc:'Ledelse og onboarding af internt og eksternt personale.', groups:[ {title:'Roller og sprog', color:'#ef4444', items:[ {name:'Onboarding', desc:'Send app-instruktioner på arbejderens sprog.'}, {name:'Roller', desc:'Arbejder, Leder eller Administrator.'} ]} ] },
+      progetti: { icon:'💼', color:'#f59e0b', title:'Projekter', desc:'Konfiguration og overvågning af pladser og interne aktiviteter.', groups:[ {title:'Typologi', color:'#f59e0b', items:[ {name:'Klienter vs Intern', desc:'Administrer eksterne ordrer eller fravær.'}, {name:'Budgettering', desc:'Støtte til timeløns- eller fastprisarbejde.'} ]} ] },
+      subappalti: { icon:'📋', color:'#06b6d4', title:'Underentreprenører', desc:'Samarbejd med eksterne firmaer og bevar fuld kontrol over omkostningerne.', groups:[ {title:'Partnere', color:'#06b6d4', items:[ {name:'Firmaadministration', desc:'Register over underentreprenører og kontakter.'}, {name:'Eksterne omkostninger', desc:'Overvågning af timeløns- eller fastprisarbejde.'} ]} ] },
+      rapportini: { icon:'📄', color:'#3b82f6', title:'Dagsrapporter', desc:'Gør daglig rapportering hurtig, præcis og professionel.', groups:[ {title:'Udførelse', color:'#3b82f6', items:[ {name:'Realtid', desc:'Præcis sporing af Start/Slut eller direkte timer.'}, {name:'Udgifter', desc:'Indtastning af måltider, materialer og parkering.'} ]}, {title:'Ledelse', color:'#3b82f6', items:[ {name:'Teamleder', desc:'Ledere kan indtaste data for hele teamet.'} ]} ] },
+      sommario: { icon:'📑', color:'#8b5cf6', title:'Økonomisk analyse', desc:'Arbejdsoversigt: hjertet i dækningsgradskontrol.', groups:[ {title:'Analyse', color:'#8b5cf6', items:[ {name:'Realtid', desc:'Nettomarginer og omkostninger beregnet øjeblikkeligt.'}, {name:'Filtre og eksport', desc:'Filtrer og download data i Excel eller PDF.'} ]} ] },
+      profilo: { icon:'👤', color:'#6b7280', title:'Din konto', desc:'Personliggør din arbejdsoplevelse.', groups:[ {title:'Konto', color:'#6b7280', items:[ {name:'Sikkerhed', desc:'Adgangsstyring og sprogindstillinger.'} ]} ] },
+      assistenza: { icon:'❓', color:'#2563eb', title:'Hjælpecenter', desc:'Hurtige guides og instruktioner til optimal app-brug.', groups:[ {title:'Hurtig guide', color:'#2563eb', items:[ {name:'Installation', desc:'Tilføj appen til startskærmen (iPhone: "Føj til hjemmeskærm", Android: "Installer app").'}, {name:'Filtre', desc:'Brug "Arbejdsoversigt" til at overvåge marginer og omkostninger i realtid.'} ]}, {title:'Support', color:'#2563eb', items:[ {name:'Admin', desc:'Kontakt systemadministratoren direkte for teknisk support.'} ]} ] }
+    }
+  }
+};
+
+var activeMenu = null;
+var activeSidebar = null;
+var openPanelKey = null;
+
+function toggleLangDropdown() {
+  document.getElementById('langDropdown').classList.toggle('show');
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('jobsReportLang', lang);
+  
+  // Update DOM lang
+  document.documentElement.lang = lang;
+  document.getElementById('currentLangLabel').textContent = lang.toUpperCase();
+  document.getElementById('langDropdown').classList.remove('show');
+  document.getElementById('langOverlay').classList.remove('visible');
+
+  // Update Highlighted Lang in Dropdown
+  document.querySelectorAll('.lang-item').forEach(function(item) {
+    item.classList.remove('active');
+    if (item.getAttribute('onclick').includes("'"+lang+"'")) item.classList.add('active');
+  });
+
+  var L = I18N[lang];
+
+  // Update Non-Panel UI
+  document.getElementById('overlayTitle').textContent = L.ui.overlay_title;
+  document.getElementById('overlaySubtitle').textContent = L.ui.overlay_sub;
+  document.querySelector('[data-i18n="footer_rights"]').textContent = L.ui.footer_rights;
+  
+  // Hero
+  var hero = document.querySelector('.hero');
+  hero.querySelector('.hero-tag').textContent = L.hero.tag;
+  hero.querySelector('h2').textContent = L.hero.title;
+  hero.querySelector('p').textContent = L.hero.desc;
+
+  // Sidebar Items (static list)
+  var sidebarItems = document.querySelectorAll('.sidebar-nav .sidebar-item');
+  var keys = ['clienti','personale','progetti','subappalti','rapportini','sommario','profilo','assistenza'];
+  sidebarItems.forEach(function(item, i) {
+    if (i < keys.length) {
+      var k = keys[i];
+      item.innerHTML = '<span class="sidebar-icon">' + L.sections[k].icon + '</span> ' + L.sidebar[k];
+    }
+  });
+  
+  // Sidebar Bottom
+  document.querySelector('.esci-btn').innerHTML = '<span class="sidebar-icon">↪️</span> ' + L.sidebar.esci;
+
+  // Section Label
+  document.querySelector('.section-label-sm').textContent = L.ui.key_features;
+
+  // Menu List Cards
+  var menuItems = document.querySelectorAll('.menu-list .menu-item');
+  menuItems.forEach(function(item, i) {
+    var k = keys[i];
+    var data = L.sections[k];
+    item.querySelector('.menu-icon').textContent = data.icon;
+    item.querySelector('.menu-text strong').textContent = data.title;
+    item.querySelector('.menu-text p').textContent = data.desc;
+  });
+
+  // Panel CTA
+  document.querySelector('.panel-cta a').textContent = L.ui.request_demo;
+
+  // Refresh open panel if any
+  if (openPanelKey) {
+    var activeEl = activeMenu || activeSidebar;
+    openPanel(openPanelKey, activeEl);
+  }
+}
+
+function openPanel(key, el) {
+  openPanelKey = key;
+  var s = I18N[currentLang].sections[key];
+  if (!s) return;
+
+  if (activeMenu) activeMenu.classList.remove('selected');
+  var isSidebar = el && el.classList.contains('sidebar-item');
+  var menuItems = document.querySelectorAll('.menu-item');
+  var keys = ['clienti','personale','progetti','subappalti','rapportini','sommario','profilo','assistenza'];
+  var idx = keys.indexOf(key);
+
+  if (isSidebar) {
+    activeMenu = menuItems[idx] || null;
+    if (activeMenu) activeMenu.classList.add('selected');
+    if (activeSidebar) activeSidebar.classList.remove('active');
+    activeSidebar = el;
+    el.classList.add('active');
+  } else if (el) {
+    activeMenu = el;
+    el.classList.add('selected');
+    var sidebarItems = document.querySelectorAll('.sidebar-nav .sidebar-item');
+    if (activeSidebar) activeSidebar.classList.remove('active');
+    activeSidebar = sidebarItems[idx] || null;
+    if (activeSidebar) activeSidebar.classList.add('active');
+  }
+
+  document.getElementById('panelIcon').style.background = s.color;
+  document.getElementById('panelIcon').textContent = s.icon;
+  document.getElementById('panelTitle').textContent = s.title;
+  document.getElementById('panelDesc').textContent = s.desc;
+
+  var html = '';
+  s.groups.forEach(function(g) {
+    html += '<div class="feature-group"><div class="feature-group-title">' + g.title + '</div>';
+    g.items.forEach(function(f) {
+      html += '<div class="feature-item"><div class="feature-dot" style="background:' + g.color + '"></div><p><strong>' + f.name + '</strong> — ' + f.desc + '</p></div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('panelBody').innerHTML = html;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('main').classList.add('panel-open');
+}
+
+function closePanel() {
+  openPanelKey = null;
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('main').classList.remove('panel-open');
+  if (activeMenu) { activeMenu.classList.remove('selected'); activeMenu = null; }
+  if (activeSidebar) { activeSidebar.classList.remove('active'); activeSidebar = null; }
+}
+
+// Initial session
+window.onload = function() {
+  var saved = localStorage.getItem('jobsReportLang');
+  if (saved && I18N[saved]) {
+    setLanguage(saved);
+  } else {
+    document.getElementById('langOverlay').classList.add('visible');
+    setLanguage('it'); // default IT texts but keep overlay
+    document.getElementById('langOverlay').classList.add('visible'); // double check
+  }
+};
+
+// Close dropdown on click outside
+window.onclick = function(e) {
+  if (!e.target.closest('.lang-selector')) {
+    var dd = document.getElementById('langDropdown');
+    if (dd) dd.classList.remove('show');
+  }
+};
+</script>
+</body>
+</html>
