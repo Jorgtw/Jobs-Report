@@ -39,6 +39,7 @@ import { translations, Language } from './translations';
 import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
+import LandingView from './LandingView';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -2750,86 +2751,7 @@ const RegistrationRequestLink: React.FC = () => {
 };
 
 // --- Auth View ---
-const AuthView: React.FC<{ onLogin: (u: User) => void }> = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const { t } = useTranslation();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      const user = await db.loginUser(username, password);
-
-      if (!user) {
-        setError(t('invalidCredentials'));
-        return;
-      }
-
-      // Note: active status is already checked inside db.loginUser, but we keep this for consistency if needed.
-      if (user.status === 'inactive') {
-        setError(t('accountDisabled'));
-        return;
-      }
-
-      onLogin(user);
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.message || 'Errore di connessione al server');
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <LanguageSelector />
-        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-2 ring-white shadow-sm">
-          <UserIcon className="w-4 h-4" />
-        </div>
-      </div>
-      <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md animate-in zoom-in-95 duration-300 border border-slate-100">
-        <div className="flex flex-col items-center mb-10">
-          <div className="mb-4">
-            <img src={logoImg} alt="JobsReport Logo" className="w-32 h-32 object-contain" />
-          </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></h1>
-        </div>
-        <InstallButton variant="login" />
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">{t('username')}</label>
-            <input type="text" required value={username} onChange={e => setUsername(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700" placeholder={t('username')} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">{t('password')}</label>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700" placeholder="••••••••" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors" aria-label="Toggle password visibility">
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-          {error && <p className="text-red-500 text-sm font-bold text-center bg-red-50 py-3 rounded-xl border border-red-100">{error}</p>}
-          <button type="submit" disabled={!username || !password} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 text-lg">
-            {t('loginBtn')}
-          </button>
-        </form>
-
-        {/* Footer links */}
-        <div className="mt-6 flex flex-col items-center gap-3">
-          <ForgotPasswordLink />
-          <p className="text-sm text-slate-500">
-            {t('noAccount')}{' '}
-            <RegistrationRequestLink />
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
+// AuthView removed in favor of LandingView
 
 
 // --- Companies Management View (SuperAdmin Only) ---
@@ -3088,7 +3010,7 @@ const App: React.FC = () => {
             path="/*" 
             element={
               !user ? (
-                <AuthView onLogin={handleLogin} />
+                <LandingView onLogin={handleLogin} />
               ) : (
                 <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
                   {adminUser && (
