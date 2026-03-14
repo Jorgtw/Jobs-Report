@@ -132,7 +132,7 @@ const MOCK_I18N: any = {
     it: {
       sidebar: { clienti:'Clienti', personale:'Personale', progetti:'Progetti', subappalti:'Subappalti', rapportini:'Rapportini', sommario:'Sommario Lavori', profilo:'Profilo', assistenza:'Assistenza', esci:'Esci' },
       hero: { tag:'Il valore dell\'esperienza', title:'Rapportini e controllo costi in tempo reale', desc:'Realizzato dopo oltre 30 anni di esperienza vissuta in prima persona sul campo: prima come operaio e poi come amministratore. JobsReport è lo strumento concreto nato dall\'esigenza reale di chi gestisce il cantiere ogni giorno.' },
-      ui: { key_features:'Funzionalità Chiave', request_demo:'Richiedi una demo gratuita →', footer_rights:'Tutti i diritti riservati', overlay_title:'Benvenuto in JobsReport', overlay_sub:'Scegli la tua lingua per iniziare la presentazione' },
+      ui: { key_features:'Funzionalità Chiave', request_demo:'Richiedi una demo gratuita →', try_demo:'Prova la Demo 👤', footer_rights:'Tutti i diritti riservati', overlay_title:'Benvenuto in JobsReport', overlay_sub:'Scegli la tua lingua per iniziare la presentazione' },
       sections: {
         clienti: { icon:'👥', color:'#10b981', title:'Clienti', desc:'Anagrafica essenziale per la gestione dei tuoi cantieri.', groups:[ {title:'Dati Aziendali', color:'#10b981', items:[ {name:'Scheda essenziale', desc:'Nome ditta, P.IVA e contatti.'}, {name:'Stato Cliente', desc:'Gestione Attivi/Non attivi.'} ]} ] },
         personale: { icon:'🛡️', color:'#ef4444', title:'Il Tuo Team', desc:'Gestione e onboarding del personale interno ed esterno.', groups:[ {title:'Ruoli e Lingua', color:'#ef4444', items:[ {name:'Onboarding', desc:'Invia istruzioni app nella lingua del lavoratore.'}, {name:'Ruoli', desc:'Operaio, Incaricato o Amministrativo.'} ]} ] },
@@ -147,7 +147,7 @@ const MOCK_I18N: any = {
     en: {
       sidebar: { clienti:'Clients', personale:'Personnel', progetti:'Projects', subappalti:'Subcontracts', rapportini:'Timesheets', sommario:'Work Summary', profilo:'Profile', assistenza:'Support', esci:'Exit' },
       hero: { tag:'The value of experience', title:'Timesheets and real-time cost control', desc:'Created after more than 30 years of first-hand field experience: first as a worker and then as an administrator. JobsReport is the practical tool born from the real needs of those who manage construction sites every day.' },
-      ui: { key_features:'Key Features', request_demo:'Request a free demo →', footer_rights:'All rights reserved', overlay_title:'Welcome to JobsReport', overlay_sub:'Choose your language to start the presentation' },
+      ui: { key_features:'Key Features', request_demo:'Request a free demo →', try_demo:'Try the Demo 👤', footer_rights:'All rights reserved', overlay_title:'Welcome to JobsReport', overlay_sub:'Choose your language to start the presentation' },
       sections: {
         clienti: { icon:'👥', color:'#10b981', title:'Clients', desc:'Essential registry for managing your construction sites.', groups:[ {title:'Company Data', color:'#10b981', items:[ {name:'Essential Form', desc:'Company name, VAT and contacts.'}, {name:'Client Status', desc:'Easily manage Active/Inactive clients.'} ]} ] },
         personale: { icon:'🛡️', color:'#ef4444', title:'Your Team', desc:'Management and onboarding of internal and external personnel.', groups:[ {title:'Roles and Language', color:'#ef4444', items:[ {name:'Onboarding', desc:'Send app instructions in the worker\'s language.'}, {name:'Roles', desc:'Worker, Supervisor or Administrator.'} ]} ] },
@@ -170,6 +170,19 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLangOverlay, setShowLangOverlay] = useState(!localStorage.getItem('jobsReportLang'));
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+
+  const handleDemoLogin = async () => {
+    setIsLoginLoading(true);
+    try {
+      const user = await db.loginUser('Admin.demo', 'demo123');
+      if (user) onLogin(user);
+    } catch (err) {
+      console.error('Demo login failed', err);
+    } finally {
+      setIsLoginLoading(false);
+    }
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem('jobsReportLang');
@@ -202,6 +215,9 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
           <div>Jobs<span className="text-[#2563eb]">Report</span></div>
         </div>
         <div className="flex items-center gap-4">
+          <button onClick={handleDemoLogin} disabled={isLoginLoading} className="px-4 py-1.5 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-all shadow-md active:scale-95 flex items-center gap-1.5">
+            {isLoginLoading ? '...' : L.ui.try_demo}
+          </button>
           <button onClick={() => setIsLoginModalOpen(true)} className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95">
             Accedi
           </button>
@@ -242,6 +258,11 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
             <div className="bg-white/15 px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider self-start">{L.hero.tag}</div>
             <h2 className="text-[22px] font-bold leading-tight">{L.hero.title}</h2>
             <p className="text-[14px] opacity-95 leading-relaxed">{L.hero.desc}</p>
+            <div className="mt-2 flex gap-3">
+              <button onClick={handleDemoLogin} className="px-6 py-2.5 bg-white text-blue-600 rounded-xl text-[13px] font-black shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2">
+                🚀 {L.ui.try_demo}
+              </button>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             {['clienti', 'personale', 'progetti', 'subappalti', 'rapportini', 'sommario'].map((key) => {
