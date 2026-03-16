@@ -179,7 +179,7 @@ class DBService {
         .insert([{
           company_id: newCompanyId,
           client_id: internalClientId,
-          title: 'Assenze e Note Interne',
+          title: 'Rapportino interno',
           status: 'active',
           economic_type: 'hourly',
           hourly_sale_price: 0,

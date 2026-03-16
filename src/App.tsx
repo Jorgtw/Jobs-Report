@@ -2346,7 +2346,11 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                 <FullWidthField label={t('project')}>
-                  <select required value={formData.projectId} onChange={e => {
+                  <select 
+                    required 
+                    disabled={projects.find(p => p.id === formData.projectId)?.isInternal}
+                    value={formData.projectId} 
+                    onChange={e => {
                     const newProjectId = e.target.value;
                     const proj = projects.find(p => p.id === newProjectId);
                     setFormData({
@@ -2359,6 +2363,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <option value="">{t('select')}</option>
                     {projects
                       .filter(p => {
+                        const isCurrentlyInternal = projects.find(proj => proj.id === formData.projectId)?.isInternal;
+                        // Se stiamo creando/modificando un rapportino interno, mostriamo solo i progetti interni
+                        // Se invece è un rapportino standard, nascondiamo gli interni
+                        if (isCurrentlyInternal) return p.isInternal;
+                        if (p.isInternal) return false;
+                        
                         if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
                         return p.assignedWorkerIds.includes(user.id);
                       })
