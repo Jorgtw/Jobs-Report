@@ -215,41 +215,35 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
     </div>
   );
 
-  const isHome = location.pathname === '/home';
-
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {!isHome && <aside className="hidden lg:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>}
+      <aside className="hidden lg:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
-      {!isHome && (
-        <div className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
-        </div>
-      )}
+      <div className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
+      </div>
       <div className="flex-1 flex flex-col min-w-0">
-        {!isHome && (
-          <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
-              <h2 className="text-sm font-semibold text-slate-500 hidden sm:block uppercase tracking-wider">
-                {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('welcome') : '')}
-              </h2>
-            </div>
-            <div className="flex items-center gap-4">
-              <LanguageSelector />
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
-                  <p className="text-xs text-slate-500 mt-1 capitalize">{t(user.role as any)}</p>
-                </div>
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
+        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
+            <h2 className="text-sm font-semibold text-slate-500 hidden sm:block uppercase tracking-wider">
+              {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('welcome') : '')}
+            </h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
+                <p className="text-xs text-slate-500 mt-1 capitalize">{t(user.role as any)}</p>
               </div>
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
             </div>
-          </header>
-        )}
-        <main className={`flex-1 ${isHome ? '' : 'p-4 sm:p-8'} max-w-7xl w-full mx-auto`}>{children}</main>
+          </div>
+        </header>
+        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
     </div>
   );
