@@ -2342,41 +2342,56 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
-            <div className="flex justify-between items-center mb-4 border-b pb-2"><h2 className="text-xl font-bold text-slate-900">{editingId ? t('editReport') : t('newReport')}</h2><button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button></div>
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
+              <h2 className="text-xl font-bold text-slate-900">
+                {projects.find(p => p.id === formData.projectId)?.isInternal 
+                  ? (editingId ? t('editReport') : t('newInternalReport'))
+                  : (editingId ? t('editReport') : t('newReport'))}
+              </h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                 <FullWidthField label={t('project')}>
-                  {projects.find(p => p.id === formData.projectId)?.isInternal ? (
-                    <div className={inputClasses + " bg-indigo-50 border-indigo-200 text-indigo-700 font-bold flex items-center h-[30px]"}>
-                      {projects.find(p => p.id === formData.projectId)?.name || t('newInternalProject')}
-                    </div>
-                  ) : (
-                    <select 
-                      required 
-                      value={formData.projectId} 
-                      onChange={e => {
-                        const newProjectId = e.target.value;
-                        const proj = projects.find(p => p.id === newProjectId);
-                        setFormData({
-                          ...formData,
-                          projectId: newProjectId,
-                          activityType: proj?.isInternal ? 'internal' : (formData.activityType === 'internal' ? 'work' : formData.activityType),
-                          description: (formData.description === '' && proj?.description) ? proj.description : formData.description
-                        });
-                      }} className={inputClasses}>
-                      <option value="">{t('select')}</option>
-                      {projects
-                        .filter(p => {
-                          const isCurrentlyInternal = projects.find(proj => proj.id === formData.projectId)?.isInternal;
-                          if (isCurrentlyInternal) return p.isInternal;
-                          if (p.isInternal) return false;
-                          
-                          if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
-                          return p.assignedWorkerIds.includes(user.id);
-                        })
-                        .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                  )}
+                  {(() => {
+                    const currentProj = projects.find(p => p.id === formData.projectId);
+                    const isInternal = currentProj?.isInternal;
+                    
+                    if (isInternal) {
+                      return (
+                        <div className={inputClasses + " bg-indigo-50 border-indigo-200 text-indigo-700 font-bold flex items-center h-[30px]"}>
+                          {currentProj?.name || t('newInternalProject')}
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <select 
+                        required 
+                        value={formData.projectId} 
+                        onChange={e => {
+                          const newProjectId = e.target.value;
+                          const proj = projects.find(p => p.id === newProjectId);
+                          setFormData({
+                            ...formData,
+                            projectId: newProjectId,
+                            activityType: proj?.isInternal ? 'internal' : (formData.activityType === 'internal' ? 'work' : formData.activityType),
+                            description: (formData.description === '' && proj?.description) ? proj.description : formData.description
+                          });
+                        }} className={inputClasses}>
+                        <option value="">{t('select')}</option>
+                        {projects
+                          .filter(p => {
+                            // Hide internal projects in standard view, but allow if it's already selected (edit mode)
+                            if (p.isInternal) return false;
+                            
+                            if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
+                            return p.assignedWorkerIds.includes(user.id);
+                          })
+                          .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                    );
+                  })()}
                 </FullWidthField>
 
                 {user.role === 'admin' && (
