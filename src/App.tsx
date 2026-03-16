@@ -2829,7 +2829,7 @@ const App: React.FC = () => {
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
-    window.location.hash = '/'; // sempre schermata benvenuto dopo login
+    window.location.hash = '/reports'; // Direct to reports after login
     setUser(u);
   };
   const handleLogout = () => {
@@ -2899,7 +2899,8 @@ const App: React.FC = () => {
                     </div>
                   )}
                   <Routes>
-                    <Route path="/" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
+                    <Route path="/" element={<Navigate to="/reports" replace />} />
+                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />

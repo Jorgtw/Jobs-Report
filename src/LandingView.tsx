@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, X, PlusCircle, ChevronRight } from 'lucide-react';
 import { LanguageContext } from './App';
 import { db } from './services/dbService';
 import logoImg from './assets/logo.png';
@@ -50,7 +50,7 @@ const LoginModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean) => void; onL
       <div className="bg-white rounded-[32px] p-8 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
         <div className="flex flex-col items-center mb-8">
           <img src={logoImg} alt="Logo" className="w-20 h-20 object-contain mb-4" />
-          <h2 className="text-2xl font-black text-slate-900">Accedi a Jobs<span className="text-blue-600">Report</span></h2>
+          <h2 className="text-2xl font-black text-slate-900">{t('loginTitle' as any)}</h2>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -79,7 +79,7 @@ const LoginModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean) => void; onL
   );
 };
 
-// --- Registration Modal ---
+// --- Registration Request Modal (Professional React Version) ---
 const RegistrationRequestModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean) => void }> = ({ isOpen: open, setOpen }) => {
   const [form, setForm] = useState({ companyName: '', contactName: '', email: '', phone: '', notes: '' });
   const { t } = useTranslation();
@@ -103,25 +103,41 @@ const RegistrationRequestModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-      <div className="bg-white rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-black text-slate-900 mb-6">{t('registrationTitle' as any)}</h2>
+      <div className="bg-white rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto border border-slate-100">
+        <div className="flex justify-between items-center mb-6">
+          <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+            <PlusCircle size={28} />
+          </div>
+          <button onClick={() => setOpen(false)} className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 rounded-full transition-colors"><X size={20} /></button>
+        </div>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">{t('registrationTitle' as any)}</h2>
+        <p className="text-sm text-slate-500 mb-8 leading-relaxed">{t('registrationDesc' as any)}</p>
+        
         <form onSubmit={handleSend} className="space-y-4">
-            {/* Same form as PresentationView */}
-            <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('companyName' as any)} *</label>
-                <input required value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" />
-            </div>
-            <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('contactNameLabel' as any)} *</label>
-                <input required value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" />
-            </div>
-            <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('email' as any)} *</label>
-                <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all" />
-            </div>
-            <button type="submit" className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-xl mt-4">
-                {t('sendRequest' as any)}
-            </button>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('companyName' as any)} *</label>
+            <input required value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="Es. Edilizia Rossi Srl" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('contactNameLabel' as any)} *</label>
+            <input required value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="Mario Rossi" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('email' as any)} *</label>
+            <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="info@azienda.it" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('phone' as any)}</label>
+            <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="+39 02 1234567" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('additionalNotes' as any)}</label>
+            <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium resize-none shadow-inner" placeholder="N. dipendenti, tipo di attività..." />
+          </div>
+          
+          <button type="submit" className="w-full py-4 bg-[#2563eb] text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
+            {t('sendRequest' as any)} <ChevronRight size={18} />
+          </button>
         </form>
       </div>
     </div>
@@ -132,7 +148,7 @@ const MOCK_I18N: any = {
     it: {
       sidebar: { clienti:'Clienti', personale:'Personale', progetti:'Progetti', subappalti:'Subappalti', rapportini:'Rapportini', sommario:'Sommario Lavori', profilo:'Profilo', assistenza:'Assistenza', esci:'Esci' },
       hero: { tag:'Il valore dell\'esperienza', title:'Rapportini e controllo costi in tempo reale', desc:'Realizzato dopo oltre 30 anni di esperienza vissuta in prima persona sul campo: prima come operaio e poi come amministratore. JobsReport è lo strumento concreto nato dall\'esigenza reale di chi gestisce il cantiere ogni giorno.' },
-      ui: { key_features:'Funzionalità Chiave', request_demo:'Richiedi una demo gratuita →', try_demo:'Prova la Demo 👤', footer_rights:'Tutti i diritti riservati', overlay_title:'Benvenuto in JobsReport', overlay_sub:'Scegli la tua lingua per iniziare la presentazione' },
+      ui: { key_features:'Funzionalità Chiave', request_demo:'Richiedi una demo gratuita →', try_demo:'Prova la Demo 👤', login:'Accedi', footer_rights:'Tutti i diritti riservati', overlay_title:'Benvenuto in JobsReport', overlay_sub:'Scegli la tua lingua per iniziare la presentazione', login_title:'Accedi a JobsReport' },
       sections: {
         clienti: { icon:'👥', color:'#10b981', title:'Clienti', desc:'Anagrafica essenziale per la gestione dei tuoi cantieri.', groups:[ {title:'Dati Aziendali', color:'#10b981', items:[ {name:'Scheda essenziale', desc:'Nome ditta, P.IVA e contatti.'}, {name:'Stato Cliente', desc:'Gestione Attivi/Non attivi.'} ]} ] },
         personale: { icon:'🛡️', color:'#ef4444', title:'Il Tuo Team', desc:'Gestione e onboarding del personale interno ed esterno.', groups:[ {title:'Ruoli e Lingua', color:'#ef4444', items:[ {name:'Onboarding', desc:'Invia istruzioni app nella lingua del lavoratore.'}, {name:'Ruoli', desc:'Operaio, Incaricato o Amministrativo.'} ]} ] },
@@ -147,7 +163,7 @@ const MOCK_I18N: any = {
     en: {
       sidebar: { clienti:'Clients', personale:'Personnel', progetti:'Projects', subappalti:'Subcontracts', rapportini:'Timesheets', sommario:'Work Summary', profilo:'Profile', assistenza:'Support', esci:'Exit' },
       hero: { tag:'The value of experience', title:'Timesheets and real-time cost control', desc:'Created after more than 30 years of first-hand field experience: first as a worker and then as an administrator. JobsReport is the practical tool born from the real needs of those who manage construction sites every day.' },
-      ui: { key_features:'Key Features', request_demo:'Request a free demo →', try_demo:'Try the Demo 👤', footer_rights:'All rights reserved', overlay_title:'Welcome to JobsReport', overlay_sub:'Choose your language to start the presentation' },
+      ui: { key_features:'Key Features', request_demo:'Request a free demo →', try_demo:'Try the Demo 👤', login:'Login', footer_rights:'All rights reserved', overlay_title:'Welcome to JobsReport', overlay_sub:'Choose your language to start the presentation', login_title:'Login to JobsReport' },
       sections: {
         clienti: { icon:'👥', color:'#10b981', title:'Clients', desc:'Essential registry for managing your construction sites.', groups:[ {title:'Company Data', color:'#10b981', items:[ {name:'Essential Form', desc:'Company name, VAT and contacts.'}, {name:'Client Status', desc:'Easily manage Active/Inactive clients.'} ]} ] },
         personale: { icon:'🛡️', color:'#ef4444', title:'Your Team', desc:'Management and onboarding of internal and external personnel.', groups:[ {title:'Roles and Language', color:'#ef4444', items:[ {name:'Onboarding', desc:'Send app instructions in the worker\'s language.'}, {name:'Roles', desc:'Worker, Supervisor or Administrator.'} ]} ] },
@@ -157,6 +173,66 @@ const MOCK_I18N: any = {
         sommario: { icon:'📑', color:'#8b5cf6', title:'Economic Analysis', desc:'Work Summary: the core of margin control.', groups:[ {title:'Analysis', color:'#8b5cf6', items:[ {name:'Real-Time', desc:'Net margins and costs calculated instantly.'}, {name:'Filters and Export', desc:'Filter and download data in Excel or PDF.'} ]} ] },
         profilo: { icon:'👤', color:'#6b7280', title:'Your Account', desc:'Personalize your work experience.', groups:[ {title:'Account', color:'#6b7280', items:[ {name:'Security', desc:'Access management and language preferences.'} ]} ] },
         assistenza: { icon:'❓', color:'#2563eb', title:'Support Center', desc:'Quick guides and instructions for optimal app usage.', groups:[ {title:'Quick Guide', color:'#2563eb', items:[ {name:'Installation', desc:'Add the app to your home screen (iPhone: "Add to Home", Android: "Install App").'}, {name:'Filters', desc:'Use "Work Summary" to monitor margins and costs in real-time.'} ]}, {title:'Support', color:'#2563eb', items:[ {name:'Admin', desc:'For technical support, contact the system administrator directly.'} ]} ] }
+      }
+    },
+    es: {
+      sidebar: { clienti:'Clientes', personale:'Personal', progetti:'Proyectos', subappalti:'Subcontratas', rapportini:'Partes de Trabajo', sommario:'Resumen de Obra', profilo:'Perfil', assistenza:'Asistencia', esci:'Salir' },
+      hero: { tag:'El valor de la experiencia', title:'Partes de trabajo y control de costes en tiempo real', desc:'Creado tras más de 30 años de experiencia directa en el campo: primero como operario y luego como administrador. JobsReport es la herramienta práctica nacida de las necesidades reales de quienes gestionan la obra cada día.' },
+      ui: { key_features:'Funcionalidades Clave', request_demo:'Solicitar demo gratuita →', try_demo:'Probar Demo 👤', login:'Acceder', footer_rights:'Todos los derechos reservados', overlay_title:'Bienvenido a JobsReport', overlay_sub:'Elige tu idioma para comenzar la presentación', login_title:'Acceder a JobsReport' },
+      sections: {
+        clienti: { icon:'👥', color:'#10b981', title:'Clientes', desc:'Registro esencial para la gestión de tus obras.', groups:[ {title:'Datos de Empresa', color:'#10b981', items:[ {name:'Ficha esencial', desc:'Nombre, CIF y contactos.'}, {name:'Estado', desc:'Gestión de Activos/Inactivos.'} ]} ] },
+        personale: { icon:'🛡️', color:'#ef4444', title:'Tu Equipo', desc:'Gestión e incorporación de personal interno y externo.', groups:[ {title:'Roles e Idioma', color:'#ef4444', items:[ {name:'Incorporación', desc:'Envía instrucciones de la app en el idioma del trabajador.'}, {name:'Roles', desc:'Operario, Encargado o Administrador.'} ]} ] },
+        progetti: { icon:'💼', color:'#f59e0b', title:'Proyectos', desc:'Configuración y seguimiento de obras y actividades internas.', groups:[ {title:'Tipologia', color:'#f59e0b', items:[ {name:'Clientes vs Interno', desc:'Gestión de pedidos externos o actividades como Ausencias.'}, {name:'Presupuesto', desc:'Soporte para trabajos por horas o ajuste.'} ]} ] },
+        subappalti: { icon:'📋', color:'#06b6d4', title:'Subcontratas', desc:'Colabora con empresas externas manteniendo el control total.', groups:[ {title:'Socios', color:'#06b6d4', items:[ {name:'Gestione Empresas', desc:'Registro de subcontratistas y contactos.'}, {name:'Costes Externos', desc:'Seguimiento de trabajos por horas o forfait.'} ]} ] },
+        rapportini: { icon:'📄', color:'#3b82f6', title:'Partes de Trabajo', desc:'Reporte diario rápido, preciso y profesional.', groups:[ {title:'Ejecución', color:'#3b82f6', items:[ {name:'Tiempo Real', desc:'Seguimiento preciso Inicio/Fin o horas directas.'}, {name:'Gastos', desc:'Entrada de comidas, materiales y parking.'} ]}, {title:'Gestión', color:'#3b82f6', items:[ {name:'Capataz', desc:'Los encargados pueden meter dati de todo el equipo.'} ]} ] },
+        sommario: { icon:'📑', color:'#8b5cf6', title:'Análisis Económico', desc:'Resumen de Obra: el corazón del control de márgenes.', groups:[ {title:'Análisis', color:'#8b5cf6', items:[ {name:'Tiempo Real', desc:'Márgenes netos y costes calculados al instante.'}, {name:'Filtros y Export', desc:'Filtra y descarga datos en Excel o PDF.'} ]} ] },
+        profilo: { icon:'👤', color:'#6b7280', title:'Tu Cuenta', desc:'Personaliza tu experiencia de trabajo.', groups:[ {title:'Account', color:'#6b7280', items:[ {name:'Seguridad', desc:'Gestión de accesos y preferencias de idioma.'} ]} ] },
+        assistenza: { icon:'❓', color:'#2563eb', title:'Centro de Ayuda', desc:'Guías e instrucciones rápidas para el uso óptimo de la app.', groups:[ {title:'Guía Rápida', color:'#2563eb', items:[ {name:'Instalación', desc:'Añade la app a la pantalla de inicio (iPhone: "Añadir a Inicio", Android: "Instalar App").'}, {name:'Filtros', desc:'Usa el "Resumen de Obra" para controlar márgenes e costes en tiempo real.'} ]}, {title:'Soporte', color:'#2563eb', items:[ {name:'Admin', desc:'Para soporte técnico, contacta directamente con el administrador de sistema.'} ]} ] }
+      }
+    },
+    pl: {
+      sidebar: { clienti:'Klienci', personale:'Personel', progetti:'Projekty', subappalti:'Podwykonawcy', rapportini:'Raporty pracy', sommario:'Podsumowanie prac', profilo:'Profil', assistenza:'Pomoc', esci:'Wyjdź' },
+      hero: { tag:'Wartość doświadczenia', title:'Raporty i kontrola kosztów w czasie rzeczywistym', desc:'Stworzony na podstawie ponad 30-letniego doświadczenia zdobytego bezpośrednio w terenie: najpierw jako pracownik, a potem jako administrator. JobsReport to praktyczne narzędzie zrodzone z realnych potrzeb osób codziennie zarządzających budową.' },
+      ui: { key_features:'Kluczowe funkcje', request_demo:'Poproś o darmowe demo →', try_demo:'Wypróbuj Demo 👤', login:'Zaloguj się', footer_rights:'Wszelkie prawa zastrzeżone', overlay_title:'Witaj w JobsReport', overlay_sub:'Wybierz język, aby rozpocząć prezentację', login_title:'Zaloguj się do JobsReport' },
+      sections: {
+        clienti: { icon:'👥', color:'#10b981', title:'Klienci', desc:'Niezbędny rejestr do zarządzania budowami.', groups:[ {title:'Dane firmy', color:'#10b981', items:[ {name:'Podstawowa karta', desc:'Nazwa firmy, NIP i kontakty.'}, {name:'Status klienta', desc:'Zarządzaj aktywnymi/nieaktywnymi klientami.'} ]} ] },
+        personale: { icon:'🛡️', color:'#ef4444', title:'Twój zespół', desc:'Zarządzanie i wdrażanie personelu wewnętrznego i zewnętrznego.', groups:[ {title:'Role i język', color:'#ef4444', items:[ {name:'Wdrożenie', desc:'Wyślij instrukcje aplikacji w języku pracownika.'}, {name:'Role', desc:'Pracownik, Brygadzista lub Administrator.'} ]} ] },
+        progetti: { icon:'💼', color:'#f59e0b', title:'Projekty', desc:'Konfiguracja i monitorowanie budów oraz działań wewnętrznych.', groups:[ {title:'Typologia', color:'#f59e0b', items:[ {name:'Klienci vs Wewnętrzne', desc:'Zarządzaj zleceniami lub nieobecnościami.'}, {name:'Budżet', desc:'Wsparcie dla prac godzinowych lub ryczałtowych.'} ]} ] },
+        subappalti: { icon:'📋', color:'#06b6d4', title:'Podwykonawcy', desc:'Współpracuj z firmami zewnętrznymi, zachowując kontrolę nad kosztami.', groups:[ {title:'Partnerzy', color:'#06b6d4', items:[ {name:'Zarządzanie firmami', desc:'Rejestr podwykonawców i kontakty.'}, {name:'Koszty zewnętrzne', desc:'Monitorowanie prac ryczałtowych lub godzinowych.'} ]} ] },
+        rapportini: { icon:'📄', color:'#3b82f6', title:'Raporty pracy', desc:'Szybkie, precyzyjne i profesjonalne raportowanie dzienne.', groups:[ {title:'Wykonanie', color:'#3b82f6', items:[ {name:'Czas rzeczywisty', desc:'Precyzyjne śledzenie początku/końca lub godziny.'}, {name:'Wydatki', desc:'Wprowadzanie posiłków, materiałów i parkingów.'} ]}, {title:'Zarządzanie', color:'#3b82f6', items:[ {name:'Kierownik zespołu', desc:'Brygadzista może wpisywać dane dla całego zespołu.'} ]} ] },
+        sommario: { icon:'📑', color:'#8b5cf6', title:'Analiza ekonomiczna', desc:'Podsumowanie prac: serce kontroli marży.', groups:[ {title:'Analiza', color:'#8b5cf6', items:[ {name:'Czas rzeczywisty', desc:'Marże netto i koszty obliczane błyskawicznie.'}, {name:'Filtry i eksport', desc:'Filtruj i pobieraj dane w formacie Excel lub PDF.'} ]} ] },
+        profilo: { icon:'👤', color:'#6b7280', title:'Twoje konto', desc:'Spersonalizuj swoje doświadczenie pracy.', groups:[ {title:'Konto', color:'#6b7280', items:[ {name:'Bezpieczeństwo', desc:'Zarządzanie dostępem i preferencje językowe.'} ]} ] },
+        assistenza: { icon:'❓', color:'#2563eb', title:'Centrum pomocy', desc:'Szybkie przewodniki i instrukcje dla optymalnego użycia aplikacji.', groups:[ {title:'Szybki start', color:'#2563eb', items:[ {name:'Instalacja', desc:'Dodaj aplikację do ekranu głównego (iPhone: "Dodaj do ekranu", Android: "Zainstaluj").'}, {name:'Filtry', desc:'Użyj "Podsumowania prac", aby monitorować marże i koszty w czasie rzeczywistym.'} ]}, {title:'Wsparcie', color:'#2563eb', items:[ {name:'Admin', desc:'W celu uzyskania pomocy technicznej skontaktuj się z administratorem systemu.'} ]} ] }
+      }
+    },
+    tr: {
+      sidebar: { clienti:'Müşteriler', personale:'Personel', progetti:'Projeler', subappalti:'Alt Yükleniciler', rapportini:'Günlük Raporlar', sommario:'İş Özeti', profilo:'Profil', assistenza:'Destek', esci:'Çıkış' },
+      hero: { tag:'Deneyimin değeri', title:'Günlük raporlar ve gerçek zamanlı maliyet kontrolü', desc:'30 yılı aşkın sahada edinilen deneyimle oluşturuldu: önce işçi, sonra yönetici olarak. JobsReport, her gün şantiyeyi yönetenlerin gerçek ihtiyaçlarından doğan pratik bir araçtır.' },
+      ui: { key_features:'Temel Özellikler', request_demo:'Ücretsiz demo iste →', try_demo:'Demo Dene 👤', login:'Giriş Yap', footer_rights:'Tüm hakları saklıdır', overlay_title:'JobsReport\'a Hoş Geldiniz', overlay_sub:'Sunuma başlamak için dilinizi seçin', login_title:'JobsReport Giriş' },
+      sections: {
+        clienti: { icon:'👥', color:'#10b981', title:'Müşteriler', desc:'Şantiyelerinizi yönetmek için temel kayıt defteri.', groups:[ {title:'Şirket Bilgileri', color:'#10b981', items:[ {name:'Temel Kart', desc:'Şirket adı, Vergi No ve iletişim.'}, {name:'Müşteri Durumu', desc:'Aktif/Pasif müşterileri kolayca yönetin.'} ]} ] },
+        personale: { icon:'🛡️', color:'#ef4444', title:'Ekibiniz', desc:'İç ve dış personelin yönetimi ve işe alımı.', groups:[ {title:'Roller ve Dil', color:'#ef4444', items:[ {name:'İşe Alım', desc:'Çalışanın dilinde uygulama talimatlarını gönderin.'}, {name:'Roller', desc:'İşçi, Sorumlu veya Yönetici.'} ]} ] },
+        progetti: { icon:'💼', color:'#f59e0b', title:'Projeler', desc:'Şantiyelerin ve iç faaliyetlerin yapılandırılması ve izlenmesi.', groups:[ {title:'Tür', color:'#f59e0b', items:[ {name:'Müşteriler vs İç', desc:'Dış siparişleri veya izin gibi faaliyetleri yönetin.'}, {name:'Bütçeleme', desc:'Saatlik veya götürü işler için destek.'} ]} ] },
+        subappalti: { icon:'📋', color:'#06b6d4', title:'Alt Yükleniciler', desc:'Maliyetlerde tam kontrolü korurken dış firmalarla iş birliği yapın.', groups:[ {title:'Ortaklar', color:'#06b6d4', items:[ {name:'Firma Yönetimi', desc:'Alt yüklenici sicili ve iletişim.'}, {name:'Dış Maliyetler', desc:'Götürü veya saatlik işlerin izlenmesi.'} ]} ] },
+        rapportini: { icon:'📄', color:'#3b82f6', title:'Günlük Raporlar', desc:'Günlük raporlamayı hızlı, hassas ve profesyonel hale getirin.', groups:[ {title:'Uygulama', color:'#3b82f6', items:[ {name:'Gerçek Zamanlı', desc:'Hassas Başlangıç/Bitiş veya doğrudan saat takibi.'}, {name:'Giderler', desc:'Yemek, malzeme ve otopark girişleri.'} ]}, {title:'Yönetim', color:'#3b82f6', items:[ {name:'Ekip Lideri', desc:'Sorumlular tüm ekip için veri girişi yapabilir.'} ]} ] },
+        sommario: { icon:'📑', color:'#8b5cf6', title:'Ekonomik Analiz', desc:'İş Özeti: kar marjı kontrolünün kalbi.', groups:[ {title:'Analiz', color:'#8b5cf6', items:[ {name:'Gerçek Zamanlı', desc:'Net marjlar ve maliyetler anında hesaplanır.'}, {name:'Filtreler ve Dışa Aktarma', desc:'Verileri filtreleyin ve Excel veya PDF olarak indirin.'} ]} ] },
+        profilo: { icon:'👤', color:'#6b7280', title:'Hesabınız', desc:'Çalışma deneyiminizi kişiselleştirin.', groups:[ {title:'Hesap', color:'#6b7280', items:[ {name:'Güvenlik', desc:'Erişim yönetimi ve dil tercihleri.'} ]} ] },
+        assistenza: { icon:'❓', color:'#2563eb', title:'Destek Merkezi', desc:'Uygulamanın en iyi kullanımı için hızlı rehberler ve talimatlar.', groups:[ {title:'Hızlı Rehber', color:'#2563eb', items:[ {name:'Kurulum', desc:'Uygulamayı ana ekrana ekleyin (iPhone: "Ana Ekrana Ekle", Android: "Yükle").'}, {name:'Filtreler', desc:'Maliyetleri gerçek zamanlı izlemek için "İş Özeti"ni kullanın.'} ]}, {title:'Support', color:'#2563eb', items:[ {name:'Yönetici', desc:'Teknik destek için doğrudan sistem yöneticisiyle iletişime geçin.'} ]} ] }
+      }
+    },
+    da: {
+      sidebar: { clienti:'Klienter', personale:'Personale', progetti:'Projekter', subappalti:'Underentreprenører', rapportini:'Dagsrapporter', sommario:'Arbejdsoversigt', profilo:'Profil', assistenza:'Support', esci:'Slet' },
+      hero: { tag:'Værdien af erfaring', title:'Dagsrapporter og omkostningskontrol i realtid', desc:'Skabt efter mere end 30 års erfaring på feltet: først som arbejder og derefter som administrator. JobsReport er det praktiske værktøj født af de reelle behov hos dem, der administrerer byggepladser hver dag.' },
+      ui: { key_features:'Nøglefunktioner', request_demo:'Anmod om gratis demo →', try_demo:'Prøv Demo 👤', login:'Log ind', footer_rights:'Alle rettigheder forbeholdes', overlay_title:'Velkommen til JobsReport', overlay_sub:'Vælg dit sprog for at starte præsentationen', login_title:'JobsReport Log ind' },
+      sections: {
+        clienti: { icon:'👥', color:'#10b981', title:'Klienter', desc:'Nødvendigt register til administration af dine byggepladser.', groups:[ {title:'Virksomhedsdata', color:'#10b981', items:[ {name:'Vigtig formular', desc:'Firmanavn, CVR og kontakter.'}, {name:'Klientstatus', desc:'Administrer aktive/inaktive klienter.'} ]} ] },
+        personale: { icon:'🛡️', color:'#ef4444', title:'Dit Team', desc:'Ledelse og onboarding af internt og eksternt personale.', groups:[ {title:'Roller og sprog', color:'#ef4444', items:[ {name:'Onboarding', desc:'Send app-instruktioner på arbejderens sprog.'}, {name:'Roller', desc:'Arbejder, Leder eller Administrator.'} ]} ] },
+        progetti: { icon:'💼', color:'#f59e0b', title:'Projekter', desc:'Konfiguration og overvågning af pladser og interne aktiviteter.', groups:[ {title:'Typologi', color:'#f59e0b', items:[ {name:'Klienter vs Intern', desc:'Administrer eksterne ordrer eller fravær.'}, {name:'Budgettering', desc:'Støtte til timeløns- eller fastprisarbejde.'} ]} ] },
+        subappalti: { icon:'📋', color:'#06b6d4', title:'Underentreprenører', desc:'Samarbejd med eksterne firmaer og bevar fuld kontrol over omkostningerne.', groups:[ {title:'Partnere', color:'#06b6d4', items:[ {name:'Firmaadministration', desc:'Register over underentreprenører og kontakter.'}, {name:'Eksterne omkostninger', desc:'Overvågning af timeløns- eller fastprisarbejde.'} ]} ] },
+        rapportini: { icon:'📄', color:'#3b82f6', title:'Dagsrapporter', desc:'Gør daglig rapportering hurtig, præcis og professionel.', groups:[ {title:'Udførelse', color:'#3b82f6', items:[ {name:'Realtid', desc:'Præcis sporing af Start/Slut eller direkte timer.'}, {name:'Udgifter', desc:'Indtastning af måltider, materialer og parkering.'} ]}, {title:'Ledelse', color:'#3b82f6', items:[ {name:'Teamleder', desc:'Ledere kan indtaste data for hele teamet.'} ]} ] },
+        sommario: { icon:'📑', color:'#8b5cf6', title:'Økonomisk analyse', desc:'Arbejdsoversigt: hjertet i dækningsgradskontrol.', groups:[ {title:'Analyse', color:'#8b5cf6', items:[ {name:'Realtid', desc:'Nettomarginer og omkostninger beregnet øjeblikkeligt.'}, {name:'Filtre og eksport', desc:'Filtrer og download data i Excel eller PDF.'} ]} ] },
+        profilo: { icon:'👤', color:'#6b7280', title:'Din konto', desc:'Personliggør din arbejdsoplevelse.', groups:[ {title:'Konto', color:'#6b7280', items:[ {name:'Sikkerhed', desc:'Adgangsstyring og sprogindstillinger.'} ]} ] },
+        assistenza: { icon:'❓', color:'#2563eb', title:'Hjælpecenter', desc:'Hurtige guides og instruktioner til optimal app-brug.', groups:[ {title:'Hurtig guide', color:'#2563eb', items:[ {name:'Installation', desc:'Tilføj appen til startskærmen (iPhone: "Føj til hjemmeskærm", Android: "Installer app").'}, {name:'Filtre', desc:'Brug "Arbejdsoversigt" til at overvåge marginer og omkostninger i realtid.'} ]}, {title:'Support', color:'#2563eb', items:[ {name:'Admin', desc:'Kontakt systemadministratoren direkte for teknisk support.'} ]} ] }
       }
     }
 };
@@ -168,7 +244,7 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
   const [openPanelKey, setOpenPanelKey] = useState<string | null>(null);
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [showLangOverlay, setShowLangOverlay] = useState(!localStorage.getItem('jobsReportLang'));
+  const [showLangOverlay, setShowLangOverlay] = useState(!localStorage.getItem('ws_lang'));
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
@@ -185,7 +261,7 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('jobsReportLang');
+    const saved = localStorage.getItem('ws_lang');
     if (saved) {
       i18n.changeLanguage(saved as any);
       if (langContext) langContext.setLang(saved as any);
@@ -195,7 +271,7 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
   const setLanguage = (lang: string) => {
     i18n.changeLanguage(lang as any);
     if (langContext) langContext.setLang(lang as any);
-    localStorage.setItem('jobsReportLang', lang);
+    localStorage.setItem('ws_lang', lang);
     setShowLangOverlay(false);
     setIsLangDropdownOpen(false);
   };
@@ -219,7 +295,7 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
             {isLoginLoading ? '...' : L.ui.try_demo}
           </button>
           <button onClick={() => setIsLoginModalOpen(true)} className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95">
-            Accedi
+            {L.ui.login}
           </button>
           <div className="relative">
             <button onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)} className="flex items-center gap-1.5 border border-[#e5e7eb] bg-white rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6b7280]">
