@@ -268,9 +268,9 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
   };
 
   return (
-    <div className="max-w-sm mx-auto py-12 px-4 animate-in fade-in duration-500">
-      <div className="mb-12 text-center">
-        <div className="flex justify-center mb-6">
+    <div className="max-w-sm mx-auto py-6 px-4 animate-in fade-in duration-500">
+      <div className="mb-6 text-center">
+        <div className="flex justify-center mb-4">
           <img src={logoImg} alt="Logo" className="w-16 h-16 object-contain" />
         </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
