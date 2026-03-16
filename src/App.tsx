@@ -253,7 +253,6 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
   const [stats, setStats] = useState({ todayReports: 0, monthlyHours: 0, activeProjects: 0 });
-  const [recentReports, setRecentReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -289,12 +288,6 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
           activeProjects: activeProjectsCount
         });
 
-        const sortedReports = [...reports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
-        setRecentReports(sortedReports.map(r => ({
-          ...r,
-          projectName: projects.find(p => p.id === r.projectId)?.name || 'N/A'
-        })));
-
       } catch (err) {
         console.error("Dashboard error:", err);
       } finally {
@@ -308,116 +301,64 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
   const quickActions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role)).slice(0, 4);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-400">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
         <div className="text-left">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black uppercase tracking-widest mb-2">
-            <LayoutDashboard size={10} /> {t('dashboard')}
-          </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">
             {t('welcome')}, <span className="text-blue-600">{user.name.split(' ')[0]}</span>
           </h1>
-          <p className="text-slate-400 text-[11px] font-medium uppercase tracking-tight">{t('activityManagement')}</p>
+          <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mt-1">{t('activityManagement')}</p>
         </div>
-        <div className="hidden sm:block text-right">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</p>
+        <div className="text-right">
+          <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">{new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</p>
         </div>
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2">
         {[
-          { label: t('reportsToday'), value: stats.todayReports, icon: FileText, color: 'bg-blue-600', sub: 'Oggi' },
-          { label: t('monthlySummary'), value: stats.monthlyHours.toFixed(1) + ' h', icon: Clock, color: 'bg-emerald-500', sub: 'Mese corrente' },
-          { label: t('activeProjects'), value: stats.activeProjects, icon: Briefcase, color: 'bg-amber-500', sub: 'Cantieri attivi' }
+          { label: t('reportsToday'), value: stats.todayReports, sub: 'OGGI' },
+          { label: t('monthlySummary'), value: stats.monthlyHours.toFixed(1) + 'h', sub: 'MESE' },
+          { label: t('activeProjects'), value: stats.activeProjects, sub: 'CANTIERI' }
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div className="flex items-center gap-3.5 relative">
-              <div className={`${stat.color} w-11 h-11 rounded-xl text-white flex items-center justify-center shadow-lg shadow-blue-100 group-hover:scale-105 transition-transform`}>
-                <stat.icon size={22} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none truncate">{stat.label}</p>
-                <div className="flex items-baseline gap-1.5 mt-1">
-                  <p className="text-2xl font-black text-slate-900 leading-none">{loading ? '...' : stat.value}</p>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight truncate">{stat.sub}</p>
-                </div>
-              </div>
+          <div key={idx} className="bg-white rounded-lg p-2.5 border border-slate-100 shadow-sm flex flex-col justify-center">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+            <div className="flex items-baseline gap-1">
+              <p className="text-lg font-black text-slate-900 leading-none">{loading ? '...' : stat.value}</p>
+              <p className="text-[7px] text-slate-300 font-bold uppercase tracking-tighter">{stat.sub}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <div className="xl:col-span-1 space-y-3">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('viewAll')}</h3>
-          <div className="grid grid-cols-1 gap-2">
-            {quickActions.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className="bg-white rounded-xl py-3 px-4 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all group flex items-center gap-3"
-              >
-                <div className={`${link.color} w-8 h-8 rounded-lg text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
-                  <link.icon size={16} />
-                </div>
-                <span className="font-bold text-slate-700 text-[12px] group-hover:text-blue-600 transition-colors uppercase tracking-tight flex-1">{link.name}</span>
-                <ChevronRight size={14} className="text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
-              </Link>
-            ))}
-            <Link to="/reports" className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-xl font-black text-[12px] hover:bg-black transition-all shadow-lg shadow-slate-200 mt-1 uppercase tracking-widest">
-              <PlusCircle size={16} /> {t('newReport')}
+      {/* Quick Actions List (Compact) */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 px-1">
+          <div className="h-px flex-1 bg-slate-50"></div>
+          <h3 className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">{t('viewAll')}</h3>
+          <div className="h-px flex-1 bg-slate-50"></div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2">
+          {quickActions.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className="bg-white rounded-lg py-2 px-3 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all flex items-center justify-between group"
+            >
+              <span className="font-bold text-slate-600 text-[10px] group-hover:text-blue-600 transition-colors uppercase tracking-tight truncate">{link.name}</span>
+              <ChevronRight size={10} className="text-slate-200 group-hover:text-blue-500 transition-all" />
             </Link>
-          </div>
+          ))}
         </div>
 
-        {/* Recent Activity */}
-        <div className="xl:col-span-2 space-y-3">
-          <div className="flex justify-between items-center px-1">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('recentActivity')}</h3>
-            <Link to="/reports" className="text-[9px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors">{t('viewAll')} →</Link>
-          </div>
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[220px]">
-            {loading ? (
-              <div className="p-10 text-center"><p className="text-slate-300 animate-pulse font-bold tracking-widest uppercase text-[9px]">Caricamento...</p></div>
-            ) : recentReports.length > 0 ? (
-              <div className="divide-y divide-slate-50">
-                {recentReports.map((report) => (
-                  <div key={report.id} className="p-3.5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-10 h-10 bg-slate-50 rounded-lg flex flex-col items-center justify-center text-slate-400 border border-slate-100 shrink-0 group-hover:bg-white transition-colors">
-                        <span className="text-[10px] font-black leading-none">{new Date(report.date).toLocaleDateString('it-IT', { day: '2-digit' })}</span>
-                        <span className="text-[7px] font-black uppercase leading-none mt-1">{new Date(report.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-slate-800 text-[13px] truncate">{report.projectName}</h4>
-                        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1 italic font-medium leading-none">"{report.description}"</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 sm:text-right shrink-0">
-                      <div className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-md text-slate-600 text-[10px] font-black flex items-center gap-1.5 shadow-sm">
-                        <Clock size={10} className="text-blue-500" /> {report.totalHours.toLocaleString('it-IT', { minimumFractionDigits: 1 })}h
-                      </div>
-                      <Link to="/reports" className="p-1.5 text-slate-200 hover:text-blue-600 transition-colors">
-                        <ChevronRight size={16} />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-10 text-center">
-                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-2">
-                  <FileText size={24} />
-                </div>
-                <p className="text-slate-400 text-[11px] font-medium uppercase tracking-tight">{t('noData')}</p>
-                <Link to="/reports" className="text-blue-600 text-[9px] font-black mt-2 uppercase tracking-widest">{t('newReport')} →</Link>
-              </div>
-            )}
-          </div>
-        </div>
+        <Link 
+          to="/reports" 
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-600 text-white rounded-lg font-black text-[10px] hover:bg-blue-700 transition-all shadow-md active:scale-[0.99] uppercase tracking-widest mt-2"
+        >
+          {t('newReport')}
+        </Link>
       </div>
     </div>
   );
