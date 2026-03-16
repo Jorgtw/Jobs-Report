@@ -2073,6 +2073,30 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             <Filter size={20} />
           </button>
           <button onClick={() => {
+            const intProj = projects.find(p => p.isInternal);
+            setEditingId(null);
+            setFormData({
+              projectId: intProj?.id || '',
+              userId: user.id,
+              date: new Date().toISOString().split('T')[0],
+              startTime: '08:00',
+              endTime: '17:00',
+              breakHours: 1,
+              manualTotalHours: undefined,
+              overtimeHours: 0,
+              description: '',
+              expenses: [],
+              additionalWorkers: [],
+              activityType: 'internal',
+              invoiceStatus: 'Pending'
+            });
+            setIsModalOpen(true);
+          }} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-all">
+            <Plus size={16} className="mr-2 inline" /> 
+            <span className="hidden sm:inline">{t('newInternalReport')}</span>
+            <span className="sm:hidden">{t('addBtn')}</span>
+          </button>
+          <button onClick={() => {
             setEditingId(null);
             setFormData({
               projectId: '',
