@@ -308,113 +308,112 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
   const quickActions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role)).slice(0, 4);
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-400">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div className="text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
-            <LayoutDashboard size={12} /> {t('dashboard')}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black uppercase tracking-widest mb-2">
+            <LayoutDashboard size={10} /> {t('dashboard')}
           </div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
             {t('welcome')}, <span className="text-blue-600">{user.name.split(' ')[0]}</span>
           </h1>
-          <p className="text-slate-500 mt-2 font-medium">{t('activityManagement')}</p>
+          <p className="text-slate-400 text-[11px] font-medium uppercase tracking-tight">{t('activityManagement')}</p>
         </div>
         <div className="hidden sm:block text-right">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</p>
         </div>
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: t('reportsToday'), value: stats.todayReports, icon: FileText, color: 'bg-blue-600', sub: 'Rapportini inseriti oggi' },
-          { label: t('monthlySummary'), value: stats.monthlyHours.toFixed(1) + ' h', icon: Clock, color: 'bg-emerald-500', sub: 'Ore totali mese corrente' },
-          { label: t('activeProjects'), value: stats.activeProjects, icon: Briefcase, color: 'bg-amber-500', sub: 'Cantieri aperti' }
+          { label: t('reportsToday'), value: stats.todayReports, icon: FileText, color: 'bg-blue-600', sub: 'Oggi' },
+          { label: t('monthlySummary'), value: stats.monthlyHours.toFixed(1) + ' h', icon: Clock, color: 'bg-emerald-500', sub: 'Mese corrente' },
+          { label: t('activeProjects'), value: stats.activeProjects, icon: Briefcase, color: 'bg-amber-500', sub: 'Cantieri attivi' }
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div className={`absolute top-0 right-0 w-32 h-32 ${stat.color} opacity-[0.03] rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500`}></div>
-            <div className="flex items-center gap-4 relative">
-              <div className={`${stat.color} w-14 h-14 rounded-2xl text-white flex items-center justify-center shadow-lg shadow-blue-200 group-hover:rotate-3 transition-transform`}>
-                <stat.icon size={28} />
+          <div key={idx} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+            <div className="flex items-center gap-3.5 relative">
+              <div className={`${stat.color} w-11 h-11 rounded-xl text-white flex items-center justify-center shadow-lg shadow-blue-100 group-hover:scale-105 transition-transform`}>
+                <stat.icon size={22} />
               </div>
-              <div>
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                <p className="text-3xl font-black text-slate-900 mt-1">{loading ? '...' : stat.value}</p>
+              <div className="min-w-0">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none truncate">{stat.label}</p>
+                <div className="flex items-baseline gap-1.5 mt-1">
+                  <p className="text-2xl font-black text-slate-900 leading-none">{loading ? '...' : stat.value}</p>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight truncate">{stat.sub}</p>
+                </div>
               </div>
             </div>
-            <p className="text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-tight">{stat.sub}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <div className="xl:col-span-1 space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t('viewAll')}</h3>
-          <div className="grid grid-cols-1 gap-3">
+        <div className="xl:col-span-1 space-y-3">
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('viewAll')}</h3>
+          <div className="grid grid-cols-1 gap-2">
             {quickActions.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group flex items-center gap-4"
+                className="bg-white rounded-xl py-3 px-4 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all group flex items-center gap-3"
               >
-                <div className={`${link.color} w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
-                  <link.icon size={20} />
+                <div className={`${link.color} w-8 h-8 rounded-lg text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+                  <link.icon size={16} />
                 </div>
-                <div className="flex-1">
-                  <span className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors uppercase tracking-tight">{link.name}</span>
-                </div>
-                <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                <span className="font-bold text-slate-700 text-[12px] group-hover:text-blue-600 transition-colors uppercase tracking-tight flex-1">{link.name}</span>
+                <ChevronRight size={14} className="text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
               </Link>
             ))}
-            <Link to="/reports" className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl shadow-slate-200 mt-2">
-              <PlusCircle size={18} /> {t('newReport')}
+            <Link to="/reports" className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-xl font-black text-[12px] hover:bg-black transition-all shadow-lg shadow-slate-200 mt-1 uppercase tracking-widest">
+              <PlusCircle size={16} /> {t('newReport')}
             </Link>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="xl:col-span-2 space-y-4">
+        <div className="xl:col-span-2 space-y-3">
           <div className="flex justify-between items-center px-1">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('recentActivity')}</h3>
-            <Link to="/reports" className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest">{t('viewAll')} →</Link>
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('recentActivity')}</h3>
+            <Link to="/reports" className="text-[9px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors">{t('viewAll')} →</Link>
           </div>
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden min-h-[300px]">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[220px]">
             {loading ? (
-              <div className="p-20 text-center"><p className="text-slate-400 animate-pulse font-bold tracking-widest uppercase text-xs">Caricamento...</p></div>
+              <div className="p-10 text-center"><p className="text-slate-300 animate-pulse font-bold tracking-widest uppercase text-[9px]">Caricamento...</p></div>
             ) : recentReports.length > 0 ? (
               <div className="divide-y divide-slate-50">
                 {recentReports.map((report) => (
-                  <div key={report.id} className="p-5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 border border-blue-100 shrink-0">
+                  <div key={report.id} className="p-3.5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-10 h-10 bg-slate-50 rounded-lg flex flex-col items-center justify-center text-slate-400 border border-slate-100 shrink-0 group-hover:bg-white transition-colors">
                         <span className="text-[10px] font-black leading-none">{new Date(report.date).toLocaleDateString('it-IT', { day: '2-digit' })}</span>
-                        <span className="text-[8px] font-black uppercase leading-none mt-1">{new Date(report.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
+                        <span className="text-[7px] font-black uppercase leading-none mt-1">{new Date(report.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-bold text-slate-900 text-sm truncate">{report.projectName}</h4>
-                        <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1 italic">"{report.description}"</p>
+                        <h4 className="font-bold text-slate-800 text-[13px] truncate">{report.projectName}</h4>
+                        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1 italic font-medium leading-none">"{report.description}"</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 sm:text-right shrink-0">
-                      <div className="px-3 py-1.5 bg-slate-100 rounded-lg text-slate-700 text-xs font-black flex items-center gap-1.5">
-                        <Clock size={12} /> {report.totalHours.toLocaleString('it-IT', { minimumFractionDigits: 1 })}h
+                    <div className="flex items-center gap-3 sm:text-right shrink-0">
+                      <div className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-md text-slate-600 text-[10px] font-black flex items-center gap-1.5 shadow-sm">
+                        <Clock size={10} className="text-blue-500" /> {report.totalHours.toLocaleString('it-IT', { minimumFractionDigits: 1 })}h
                       </div>
-                      <Link to="/reports" className="p-2 text-slate-300 hover:text-blue-600 transition-colors">
-                        <ChevronRight size={20} />
+                      <Link to="/reports" className="p-1.5 text-slate-200 hover:text-blue-600 transition-colors">
+                        <ChevronRight size={16} />
                       </Link>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-20 text-center">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
-                  <FileText size={32} />
+              <div className="flex flex-col items-center justify-center p-10 text-center">
+                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-2">
+                  <FileText size={24} />
                 </div>
-                <p className="text-slate-400 text-sm font-medium">{t('noData')}</p>
-                <Link to="/reports" className="text-blue-600 text-xs font-bold mt-2 uppercase tracking-widest">{t('newReport')} →</Link>
+                <p className="text-slate-400 text-[11px] font-medium uppercase tracking-tight">{t('noData')}</p>
+                <Link to="/reports" className="text-blue-600 text-[9px] font-black mt-2 uppercase tracking-widest">{t('newReport')} →</Link>
               </div>
             )}
           </div>
