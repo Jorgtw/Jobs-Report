@@ -217,7 +217,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden lg:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>
+      <aside className="hidden md:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
