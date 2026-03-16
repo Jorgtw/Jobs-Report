@@ -215,35 +215,41 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
     </div>
   );
 
+  const isHome = location.pathname === '/home';
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden lg:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>
+      {!isHome && <aside className="hidden lg:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
-      <div className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
-      </div>
+      {!isHome && (
+        <div className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
+        </div>
+      )}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
-            <h2 className="text-sm font-semibold text-slate-500 hidden sm:block uppercase tracking-wider">
-              {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('welcome') : '')}
-            </h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <LanguageSelector />
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
-                <p className="text-xs text-slate-500 mt-1 capitalize">{t(user.role as any)}</p>
-              </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
+        {!isHome && (
+          <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
+            <div className="flex items-center gap-4">
+              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
+              <h2 className="text-sm font-semibold text-slate-500 hidden sm:block uppercase tracking-wider">
+                {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('welcome') : '')}
+              </h2>
             </div>
-          </div>
-        </header>
-        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
+            <div className="flex items-center gap-4">
+              <LanguageSelector />
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
+                  <p className="text-xs text-slate-500 mt-1 capitalize">{t(user.role as any)}</p>
+                </div>
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
+              </div>
+            </div>
+          </header>
+        )}
+        <main className={`flex-1 ${isHome ? '' : 'p-4 sm:p-8'} max-w-7xl w-full mx-auto`}>{children}</main>
       </div>
     </div>
   );
@@ -255,9 +261,24 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
   const navLinks = getNavLinks(t, isSuperAdmin);
   const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
 
+  const handleManualLogout = () => {
+    // We can't easily reach the original handleLogout here, 
+    // but we can trigger a refresh or let the App component handle it via context if we had one.
+    // However, App.tsx is one big file. Let's see if we can find handleLogout.
+    // Actually, HomeView is inside App component's file, so we can pass handleLogout if we want.
+    // For now, let's just clear storage and reload or use the existing logout logic if available.
+    db.setCompanyId(null);
+    localStorage.removeItem('ws_auth');
+    localStorage.removeItem('ws_auth_admin');
+    window.location.reload(); // Simple way to reset everything
+  };
+
   return (
     <div className="max-w-sm mx-auto py-12 px-4 animate-in fade-in duration-500">
       <div className="mb-12 text-center">
+        <div className="flex justify-center mb-6">
+          <img src={logoImg} alt="Logo" className="w-16 h-16 object-contain" />
+        </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           {t('welcome')}, {user.name.split(' ')[0]}
         </h1>
@@ -279,12 +300,15 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
           </Link>
         ))}
         
-        <Link 
-          to="/reports" 
-          className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[11px] hover:bg-blue-600 shadow-lg shadow-slate-100 transition-all mt-6 uppercase tracking-widest active:scale-[0.98]"
+        <button 
+          onClick={handleManualLogout}
+          className="flex items-center gap-4 p-3.5 bg-white border border-slate-100 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group shadow-sm active:scale-[0.98] mt-4"
         >
-          <PlusCircle size={16} /> {t('newReport')}
-        </Link>
+          <div className="bg-slate-100 p-2 rounded-lg text-slate-400 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white">
+            <LogOut size={18} />
+          </div>
+          <span className="text-xs font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('logout')}</span>
+        </button>
       </nav>
     </div>
   );
