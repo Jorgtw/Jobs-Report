@@ -39,7 +39,7 @@ import { translations, Language } from './translations';
 import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
-import LandingView from './LandingView';
+import LoginView from './LoginView';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -187,7 +187,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
   const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
     <div className="flex flex-col h-full py-6">
       <div className="px-6 mb-8 flex items-center gap-2">
-        <Link to="/" onClick={onItemClick} className="flex items-center gap-2">
+        <Link to="/home" onClick={onItemClick} className="flex items-center gap-2">
           <img src={logoImg} alt="Jobs Report" className="w-10 h-10 object-contain" />
           <span className="font-extrabold text-xl text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></span>
         </Link>
@@ -252,31 +252,173 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
-  const links = getNavLinks(t, isSuperAdmin).filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
+  const [stats, setStats] = useState({ todayReports: 0, monthlyHours: 0, activeProjects: 0 });
+  const [recentReports, setRecentReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [reports, projects] = await Promise.all([
+          db.getReports(user.id, user.role),
+          db.getProjects()
+        ]);
+
+        const today = new Date().toISOString().split('T')[0];
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const todayReportsCount = reports.filter(r => r.date === today).length;
+        const monthlyHoursTotal = reports
+          .filter(r => new Date(r.date) >= startOfMonth)
+          .reduce((sum, r) => {
+            let h = 0;
+            if (r.userId === user.id) h += (r.totalHours || 0);
+            const aw = r.additionalWorkers?.find((w: any) => w.userId === user.id);
+            if (aw) h += (aw.totalHours || 0);
+            return sum + h;
+          }, 0);
+
+        const activeProjectsCount = projects.filter(p => p.status === 'active').length;
+
+        setStats({
+          todayReports: todayReportsCount,
+          monthlyHours: monthlyHoursTotal,
+          activeProjects: activeProjectsCount
+        });
+
+        const sortedReports = [...reports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
+        setRecentReports(sortedReports.map(r => ({
+          ...r,
+          projectName: projects.find(p => p.id === r.projectId)?.name || 'N/A'
+        })));
+
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboardData();
+  }, [user.id, user.role]);
+
+  const navLinks = getNavLinks(t, isSuperAdmin);
+  const quickActions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role)).slice(0, 4);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="text-left">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          {t('welcome')}, {user.name}
-        </h1>
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{t('activityManagement')}</p>
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div className="text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
+            <LayoutDashboard size={12} /> {t('dashboard')}
+          </div>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+            {t('welcome')}, <span className="text-blue-600">{user.name.split(' ')[0]}</span>
+          </h1>
+          <p className="text-slate-500 mt-2 font-medium">{t('activityManagement')}</p>
+        </div>
+        <div className="hidden sm:block text-right">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}</p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-2 max-w-2xl mx-auto">
-        {links.map((link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 group flex items-center gap-4 text-left"
-          >
-            <div className={`${link.color} w-10 h-10 rounded-lg text-white shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shrink-0`}>
-              <link.icon size={20} strokeWidth={2} />
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: t('reportsToday'), value: stats.todayReports, icon: FileText, color: 'bg-blue-600', sub: 'Rapportini inseriti oggi' },
+          { label: t('monthlySummary'), value: stats.monthlyHours.toFixed(1) + ' h', icon: Clock, color: 'bg-emerald-500', sub: 'Ore totali mese corrente' },
+          { label: t('activeProjects'), value: stats.activeProjects, icon: Briefcase, color: 'bg-amber-500', sub: 'Cantieri aperti' }
+        ].map((stat, idx) => (
+          <div key={idx} className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+            <div className={`absolute top-0 right-0 w-32 h-32 ${stat.color} opacity-[0.03] rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500`}></div>
+            <div className="flex items-center gap-4 relative">
+              <div className={`${stat.color} w-14 h-14 rounded-2xl text-white flex items-center justify-center shadow-lg shadow-blue-200 group-hover:rotate-3 transition-transform`}>
+                <stat.icon size={28} />
+              </div>
+              <div>
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                <p className="text-3xl font-black text-slate-900 mt-1">{loading ? '...' : stat.value}</p>
+              </div>
             </div>
-            <span className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors uppercase tracking-tight flex-1">{link.name}</span>
-            <ChevronRight className="text-slate-300 group-hover:text-blue-500 w-5 h-5 transition-colors" />
-          </Link>
+            <p className="text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-tight">{stat.sub}</p>
+          </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Quick Actions */}
+        <div className="xl:col-span-1 space-y-4">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t('viewAll')}</h3>
+          <div className="grid grid-cols-1 gap-3">
+            {quickActions.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group flex items-center gap-4"
+              >
+                <div className={`${link.color} w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+                  <link.icon size={20} />
+                </div>
+                <div className="flex-1">
+                  <span className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors uppercase tracking-tight">{link.name}</span>
+                </div>
+                <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+              </Link>
+            ))}
+            <Link to="/reports" className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl shadow-slate-200 mt-2">
+              <PlusCircle size={18} /> {t('newReport')}
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="xl:col-span-2 space-y-4">
+          <div className="flex justify-between items-center px-1">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('recentActivity')}</h3>
+            <Link to="/reports" className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest">{t('viewAll')} →</Link>
+          </div>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden min-h-[300px]">
+            {loading ? (
+              <div className="p-20 text-center"><p className="text-slate-400 animate-pulse font-bold tracking-widest uppercase text-xs">Caricamento...</p></div>
+            ) : recentReports.length > 0 ? (
+              <div className="divide-y divide-slate-50">
+                {recentReports.map((report) => (
+                  <div key={report.id} className="p-5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                      <div className="w-12 h-12 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 border border-blue-100 shrink-0">
+                        <span className="text-[10px] font-black leading-none">{new Date(report.date).toLocaleDateString('it-IT', { day: '2-digit' })}</span>
+                        <span className="text-[8px] font-black uppercase leading-none mt-1">{new Date(report.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-slate-900 text-sm truncate">{report.projectName}</h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1 italic">"{report.description}"</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 sm:text-right shrink-0">
+                      <div className="px-3 py-1.5 bg-slate-100 rounded-lg text-slate-700 text-xs font-black flex items-center gap-1.5">
+                        <Clock size={12} /> {report.totalHours.toLocaleString('it-IT', { minimumFractionDigits: 1 })}h
+                      </div>
+                      <Link to="/reports" className="p-2 text-slate-300 hover:text-blue-600 transition-colors">
+                        <ChevronRight size={20} />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-20 text-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                  <FileText size={32} />
+                </div>
+                <p className="text-slate-400 text-sm font-medium">{t('noData')}</p>
+                <Link to="/reports" className="text-blue-600 text-xs font-bold mt-2 uppercase tracking-widest">{t('newReport')} →</Link>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2891,6 +3033,7 @@ const App: React.FC = () => {
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
+    window.location.hash = '/home'; // Go to Welcome Page (HomeView) after login
     setUser(u);
   };
   const handleLogout = () => {
@@ -2938,7 +3081,7 @@ const App: React.FC = () => {
       <HashRouter>
         <Routes>
           {/* Public & Entrance Route */}
-          <Route path="/" element={<LandingView user={user} onLogin={handleLogin} />} />
+          <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
           <Route path="/presentation" element={<PresentationView />} />
 
           {/* Protected Routes Wrapper */}
