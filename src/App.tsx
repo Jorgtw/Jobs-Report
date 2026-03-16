@@ -252,114 +252,40 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
-  const [stats, setStats] = useState({ todayReports: 0, monthlyHours: 0, activeProjects: 0 });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true);
-        const [reports, projects] = await Promise.all([
-          db.getReports(user.id, user.role),
-          db.getProjects()
-        ]);
-
-        const today = new Date().toISOString().split('T')[0];
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-
-        const todayReportsCount = reports.filter(r => r.date === today).length;
-        const monthlyHoursTotal = reports
-          .filter(r => new Date(r.date) >= startOfMonth)
-          .reduce((sum, r) => {
-            let h = 0;
-            if (r.userId === user.id) h += (r.totalHours || 0);
-            const aw = r.additionalWorkers?.find((w: any) => w.userId === user.id);
-            if (aw) h += (aw.totalHours || 0);
-            return sum + h;
-          }, 0);
-
-        const activeProjectsCount = projects.filter(p => p.status === 'active').length;
-
-        setStats({
-          todayReports: todayReportsCount,
-          monthlyHours: monthlyHoursTotal,
-          activeProjects: activeProjectsCount
-        });
-
-      } catch (err) {
-        console.error("Dashboard error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadDashboardData();
-  }, [user.id, user.role]);
-
   const navLinks = getNavLinks(t, isSuperAdmin);
-  const quickActions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role)).slice(0, 4);
+  const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Header Section */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-        <div className="text-left">
-          <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">
-            {t('welcome')}, <span className="text-blue-600">{user.name.split(' ')[0]}</span>
-          </h1>
-          <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mt-1">{t('activityManagement')}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">{new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</p>
-        </div>
+    <div className="max-w-sm mx-auto py-12 px-4 animate-in fade-in duration-500">
+      <div className="mb-12 text-center">
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          {t('welcome')}, {user.name.split(' ')[0]}
+        </h1>
+        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">{t('activityManagement')}</p>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: t('reportsToday'), value: stats.todayReports, sub: 'OGGI' },
-          { label: t('monthlySummary'), value: stats.monthlyHours.toFixed(1) + 'h', sub: 'MESE' },
-          { label: t('activeProjects'), value: stats.activeProjects, sub: 'CANTIERI' }
-        ].map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-lg p-2.5 border border-slate-100 shadow-sm flex flex-col justify-center">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-            <div className="flex items-baseline gap-1">
-              <p className="text-lg font-black text-slate-900 leading-none">{loading ? '...' : stat.value}</p>
-              <p className="text-[7px] text-slate-300 font-bold uppercase tracking-tighter">{stat.sub}</p>
+      <nav className="flex flex-col space-y-2">
+        {actions.map((link) => (
+          <Link
+            key={link.path}
+            to={link.path}
+            className="flex items-center gap-4 p-3.5 bg-white border border-slate-100 rounded-xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
+          >
+            <div className={`${link.color} p-2 rounded-lg text-white shadow-sm transition-transform group-hover:scale-110`}>
+              <link.icon size={18} />
             </div>
-          </div>
+            <span className="text-xs font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors">{link.name}</span>
+            <ChevronRight size={14} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+          </Link>
         ))}
-      </div>
-
-      {/* Quick Actions List (Compact) */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 px-1">
-          <div className="h-px flex-1 bg-slate-50"></div>
-          <h3 className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">{t('viewAll')}</h3>
-          <div className="h-px flex-1 bg-slate-50"></div>
-        </div>
         
-        <div className="grid grid-cols-2 gap-2">
-          {quickActions.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="bg-white rounded-lg py-2 px-3 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all flex items-center justify-between group"
-            >
-              <span className="font-bold text-slate-600 text-[10px] group-hover:text-blue-600 transition-colors uppercase tracking-tight truncate">{link.name}</span>
-              <ChevronRight size={10} className="text-slate-200 group-hover:text-blue-500 transition-all" />
-            </Link>
-          ))}
-        </div>
-
         <Link 
           to="/reports" 
-          className="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-600 text-white rounded-lg font-black text-[10px] hover:bg-blue-700 transition-all shadow-md active:scale-[0.99] uppercase tracking-widest mt-2"
+          className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[11px] hover:bg-blue-600 shadow-lg shadow-slate-100 transition-all mt-6 uppercase tracking-widest active:scale-[0.98]"
         >
-          {t('newReport')}
+          <PlusCircle size={16} /> {t('newReport')}
         </Link>
-      </div>
+      </nav>
     </div>
   );
 };
