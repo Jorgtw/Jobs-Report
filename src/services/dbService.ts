@@ -26,7 +26,7 @@ class DBService {
   }
 
   public calculateTotalHours(startTime: string, endTime: string, breakHours: number, manualTotal?: number): number {
-    if (manualTotal !== undefined && manualTotal !== null && manualTotal > 0) {
+    if (manualTotal !== undefined && manualTotal !== null) {
       return Number(manualTotal);
     }
     if (!startTime || !endTime) return 0;

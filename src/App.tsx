@@ -2079,10 +2079,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               projectId: intProj?.id || '',
               userId: user.id,
               date: new Date().toISOString().split('T')[0],
-              startTime: '08:00',
-              endTime: '17:00',
-              breakHours: 1,
-              manualTotalHours: undefined,
+              startTime: '',
+              endTime: '',
+              breakHours: 0,
+              manualTotalHours: 0,
               overtimeHours: 0,
               description: '',
               expenses: [],
@@ -2346,34 +2346,37 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                 <FullWidthField label={t('project')}>
-                  <select 
-                    required 
-                    disabled={projects.find(p => p.id === formData.projectId)?.isInternal}
-                    value={formData.projectId} 
-                    onChange={e => {
-                    const newProjectId = e.target.value;
-                    const proj = projects.find(p => p.id === newProjectId);
-                    setFormData({
-                      ...formData,
-                      projectId: newProjectId,
-                      activityType: proj?.isInternal ? 'internal' : (formData.activityType === 'internal' ? 'work' : formData.activityType),
-                      description: (formData.description === '' && proj?.description) ? proj.description : formData.description
-                    });
-                  }} className={inputClasses}>
-                    <option value="">{t('select')}</option>
-                    {projects
-                      .filter(p => {
-                        const isCurrentlyInternal = projects.find(proj => proj.id === formData.projectId)?.isInternal;
-                        // Se stiamo creando/modificando un rapportino interno, mostriamo solo i progetti interni
-                        // Se invece è un rapportino standard, nascondiamo gli interni
-                        if (isCurrentlyInternal) return p.isInternal;
-                        if (p.isInternal) return false;
-                        
-                        if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
-                        return p.assignedWorkerIds.includes(user.id);
-                      })
-                      .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                  {projects.find(p => p.id === formData.projectId)?.isInternal ? (
+                    <div className={inputClasses + " bg-indigo-50 border-indigo-200 text-indigo-700 font-bold flex items-center h-[30px]"}>
+                      {projects.find(p => p.id === formData.projectId)?.name || t('newInternalProject')}
+                    </div>
+                  ) : (
+                    <select 
+                      required 
+                      value={formData.projectId} 
+                      onChange={e => {
+                        const newProjectId = e.target.value;
+                        const proj = projects.find(p => p.id === newProjectId);
+                        setFormData({
+                          ...formData,
+                          projectId: newProjectId,
+                          activityType: proj?.isInternal ? 'internal' : (formData.activityType === 'internal' ? 'work' : formData.activityType),
+                          description: (formData.description === '' && proj?.description) ? proj.description : formData.description
+                        });
+                      }} className={inputClasses}>
+                      <option value="">{t('select')}</option>
+                      {projects
+                        .filter(p => {
+                          const isCurrentlyInternal = projects.find(proj => proj.id === formData.projectId)?.isInternal;
+                          if (isCurrentlyInternal) return p.isInternal;
+                          if (p.isInternal) return false;
+                          
+                          if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
+                          return p.assignedWorkerIds.includes(user.id);
+                        })
+                        .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  )}
                 </FullWidthField>
 
                 {user.role === 'admin' && (
@@ -2394,7 +2397,17 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <FullWidthField label={t('activityType')}>
                   <select 
                     value={formData.activityType} 
-                    onChange={e => setFormData({ ...formData, activityType: e.target.value as any })} 
+                    onChange={e => {
+                      const newType = e.target.value as any;
+                      const updates: any = { activityType: newType };
+                      if (['sickness', 'holiday', 'internal'].includes(newType)) {
+                        updates.manualTotalHours = 0;
+                        updates.startTime = '';
+                        updates.endTime = '';
+                        updates.breakHours = 0;
+                      }
+                      setFormData({ ...formData, ...updates });
+                    }} 
                     className={inputClasses}
                   >
                     <option value="work">{t('activityWork')}</option>
@@ -2454,12 +2467,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     
                     <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerStart')}</label>
-                      <input type="time" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
+                      <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
                     
                     <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('headerEnd')}</label>
-                      <input type="time" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
+                      <input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
                     </div>
                     
                     <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
