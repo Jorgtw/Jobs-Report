@@ -2891,7 +2891,6 @@ const App: React.FC = () => {
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
-    window.location.hash = '/reports'; // Direct to reports after login
     setUser(u);
   };
   const handleLogout = () => {
@@ -2938,7 +2937,8 @@ const App: React.FC = () => {
     <LanguageContext.Provider value={contextValue}>
       <HashRouter>
         <Routes>
-          {/* Public Route */}
+          {/* Public & Entrance Route */}
+          <Route path="/" element={<LandingView user={user} onLogin={handleLogin} />} />
           <Route path="/presentation" element={<PresentationView />} />
 
           {/* Protected Routes Wrapper */}
@@ -2946,7 +2946,7 @@ const App: React.FC = () => {
             path="/*" 
             element={
               !user ? (
-                <LandingView onLogin={handleLogin} />
+                <Navigate to="/" replace />
               ) : (
                 <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
                   {adminUser && (
@@ -2961,7 +2961,6 @@ const App: React.FC = () => {
                     </div>
                   )}
                   <Routes>
-                    <Route path="/" element={<Navigate to="/reports" replace />} />
                     <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />

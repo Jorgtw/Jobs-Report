@@ -237,7 +237,7 @@ const MOCK_I18N: any = {
     }
 };
 
-const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
+const LandingView: React.FC<{ user: any | null; onLogin: (u: any) => void }> = ({ user, onLogin }) => {
   const { i18n } = useTranslation();
   const langContext = useContext(LanguageContext);
   
@@ -294,9 +294,15 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
           <button onClick={handleDemoLogin} disabled={isLoginLoading} className="px-4 py-1.5 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-all shadow-md active:scale-95 flex items-center gap-1.5">
             {isLoginLoading ? '...' : L.ui.try_demo}
           </button>
-          <button onClick={() => setIsLoginModalOpen(true)} className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95">
-            {L.ui.login}
-          </button>
+          {user ? (
+            <a href="#/reports" className="px-4 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition-all shadow-md active:scale-95 flex items-center gap-1">
+              🚀 {langContext?.lang === 'it' ? 'Vai ai Rapportini' : 'Enter App'}
+            </a>
+          ) : (
+            <button onClick={() => setIsLoginModalOpen(true)} className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95">
+              {L.ui.login}
+            </button>
+          )}
           <div className="relative">
             <button onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)} className="flex items-center gap-1.5 border border-[#e5e7eb] bg-white rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6b7280]">
               🌐 <span className="uppercase">{String(currentLang)}</span>
@@ -332,12 +338,20 @@ const LandingView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
         <main className={`flex-1 p-[40px] px-[48px] transition-all duration-300 ${openPanelKey ? 'mr-[360px]' : ''}`}>
           <div className="flex flex-col gap-3 mb-8 bg-gradient-to-br from-[#1e40af] to-[#3b82f6] p-6 px-8 rounded-2xl text-white shadow-sm">
             <div className="bg-white/15 px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider self-start">{L.hero.tag}</div>
-            <h2 className="text-[22px] font-bold leading-tight">{L.hero.title}</h2>
-            <p className="text-[14px] opacity-95 leading-relaxed">{L.hero.desc}</p>
+            <h2 className="text-[22px] font-bold leading-tight">
+              {user ? `${langContext?.lang === 'it' ? 'Bentornato' : 'Welcome back'}, ${user.name}` : L.hero.title}
+            </h2>
+            <p className="text-[14px] opacity-95 leading-relaxed">{user ? (langContext?.lang === 'it' ? 'Sei pronto per gestire i tuoi lavori di oggi?' : 'Are you ready to manage your work today?') : L.hero.desc}</p>
             <div className="mt-2 flex gap-3">
-              <button onClick={handleDemoLogin} className="px-6 py-2.5 bg-white text-blue-600 rounded-xl text-[13px] font-black shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2">
-                🚀 {L.ui.try_demo}
-              </button>
+              {user ? (
+                <a href="#/reports" className="px-6 py-2.5 bg-white text-emerald-600 rounded-xl text-[13px] font-black shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2">
+                  🚀 {langContext?.lang === 'it' ? 'Entra nell\'App' : 'Enter App'}
+                </a>
+              ) : (
+                <button onClick={handleDemoLogin} className="px-6 py-2.5 bg-white text-blue-600 rounded-xl text-[13px] font-black shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2">
+                  🚀 {L.ui.try_demo}
+                </button>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-2">
