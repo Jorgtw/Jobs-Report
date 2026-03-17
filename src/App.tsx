@@ -2437,17 +2437,53 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                <FullWidthField label={t('activityType')} className="md:col-span-2">
+                  <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const wasInternal = formData.activityType === 'internal' || formData.activityType === 'sickness' || formData.activityType === 'holiday';
+                        if (wasInternal) {
+                          setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined });
+                        }
+                      }} 
+                      className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                    >
+                      {t('activityWork')}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const intProj = projects.find(p => p.isInternal);
+                        setFormData({ 
+                          ...formData, 
+                          activityType: 'internal', 
+                          projectId: intProj?.id || '',
+                          startTime: '',
+                          endTime: '',
+                          breakHours: 0,
+                          manualTotalHours: 0
+                        });
+                      }} 
+                      className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType !== 'work' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}
+                    >
+                      {t('activityInternal')} / {t('activityAbsence') || 'Assenza'}
+                    </button>
+                  </div>
+                </FullWidthField>
+
                 <FullWidthField label={t('project')}>
                   {(() => {
-                    const currentProj = projects.find(p => p.id === formData.projectId);
-                    const isInternal = currentProj?.isInternal;
+                    const isInternalMode = formData.activityType !== 'work';
                     
-                    if (isInternal) {
+                    if (isInternalMode) {
+                      const proj = projects.find(p => p.id === formData.projectId);
                       return (
-                        <div className={inputClasses + " bg-indigo-50 border-indigo-200 text-indigo-700 font-bold flex items-center h-[30px]"}>
-                          {currentProj?.name || t('newInternalProject')}
+                        <div className="px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 text-sm font-bold flex items-center justify-between">
+                          <span>{proj?.name || t('activityInternal')}</span>
+                          <span className="text-[9px] bg-indigo-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('isInternalProject')}</span>
                         </div>
                       );
                     }
@@ -2462,16 +2498,13 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           setFormData({
                             ...formData,
                             projectId: newProjectId,
-                            activityType: proj?.isInternal ? 'internal' : (formData.activityType === 'internal' ? 'work' : formData.activityType),
                             description: (formData.description === '' && proj?.description) ? proj.description : formData.description
                           });
                         }} className={inputClasses}>
                         <option value="">{t('select')}</option>
                         {projects
                           .filter(p => {
-                            // Hide internal projects in standard view, but allow if it's already selected (edit mode)
                             if (p.isInternal) return false;
-                            
                             if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
                             return p.assignedWorkerIds.includes(user.id);
                           })
@@ -2496,28 +2529,29 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     </select>
                   </FullWidthField>
                 )}
-                <FullWidthField label={t('activityType')}>
-                  <select 
-                    value={formData.activityType} 
-                    onChange={e => {
-                      const newType = e.target.value as any;
-                      const updates: any = { activityType: newType };
-                      if (['sickness', 'holiday', 'internal'].includes(newType)) {
-                        updates.manualTotalHours = 0;
-                        updates.startTime = '';
-                        updates.endTime = '';
-                        updates.breakHours = 0;
-                      }
-                      setFormData({ ...formData, ...updates });
-                    }} 
-                    className={inputClasses}
-                  >
-                    <option value="work">{t('activityWork')}</option>
-                    <option value="sickness">{t('activitySickness')}</option>
-                    <option value="holiday">{t('activityHoliday')}</option>
-                    <option value="internal">{t('activityInternal')}</option>
-                  </select>
-                </FullWidthField>
+                {formData.activityType !== 'work' && (
+                  <FullWidthField label={t('activityType')}>
+                    <select 
+                      value={formData.activityType} 
+                      onChange={e => {
+                        const newType = e.target.value as any;
+                        const updates: any = { activityType: newType };
+                        if (['sickness', 'holiday', 'internal'].includes(newType)) {
+                          updates.manualTotalHours = 0;
+                          updates.startTime = '';
+                          updates.endTime = '';
+                          updates.breakHours = 0;
+                        }
+                        setFormData({ ...formData, ...updates });
+                      }} 
+                      className={inputClasses}
+                    >
+                      <option value="internal">{t('activityInternal')}</option>
+                      <option value="sickness">{t('activitySickness')}</option>
+                      <option value="holiday">{t('activityHoliday')}</option>
+                    </select>
+                  </FullWidthField>
+                )}
                 <FullWidthField label={t('date')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
                 <div className="md:col-span-2"><FullWidthField label={t('description')}><textarea required rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
 
