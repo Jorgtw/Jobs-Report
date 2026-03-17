@@ -18,6 +18,13 @@ class DBService {
   }
 
 
+  private formatForTimestamp(date: string, time: string | null | undefined): string | null {
+    if (!time) return null;
+    if (time.includes('T')) return time; 
+    const cleanTime = time.trim().substring(0, 5);
+    return `${date}T${cleanTime}:00`;
+  }
+
   private formatForTime(time: string | null | undefined): string | null {
     if (!time) return null;
     if (time.includes('T')) return time.split('T')[1].substring(0, 8);
@@ -694,8 +701,8 @@ class DBService {
       project_id: report.projectId,
       created_by: report.userId,
       date: report.date,
-      start_time: this.formatForTime(report.startTime),
-      end_time: this.formatForTime(report.endTime),
+      start_time: this.formatForTimestamp(report.date, report.startTime),
+      end_time: this.formatForTimestamp(report.date, report.endTime),
       break_hours: report.breakHours,
       total_hours: totalHours,
       manual_total_hours: report.manualTotalHours !== undefined ? report.manualTotalHours : null,
@@ -757,8 +764,8 @@ class DBService {
       project_id: updates.projectId,
       created_by: updates.userId,
       date: updates.date,
-      start_time: this.formatForTime(updates.startTime),
-      end_time: this.formatForTime(updates.endTime),
+      start_time: this.formatForTimestamp(updates.date, updates.startTime),
+      end_time: this.formatForTimestamp(updates.date, updates.endTime),
       break_hours: updates.breakHours,
       total_hours: updates.totalHours,
       manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
