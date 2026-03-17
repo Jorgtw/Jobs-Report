@@ -2478,16 +2478,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   {(() => {
                     const isInternalMode = formData.activityType !== 'work';
                     
-                    if (isInternalMode) {
-                      const proj = projects.find(p => p.id === formData.projectId);
-                      return (
-                        <div className="px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 text-sm font-bold flex items-center justify-between">
-                          <span>{proj?.name || t('activityInternal')}</span>
-                          <span className="text-[9px] bg-indigo-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('isInternalProject')}</span>
-                        </div>
-                      );
-                    }
-                    
                     return (
                       <select 
                         required 
@@ -2504,6 +2494,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         <option value="">{t('select')}</option>
                         {projects
                           .filter(p => {
+                            if (isInternalMode) return p.isInternal;
                             if (p.isInternal) return false;
                             if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
                             return p.assignedWorkerIds.includes(user.id);
