@@ -1600,9 +1600,6 @@ const ProjectsView: React.FC = () => {
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-slate-900">{t('projects')}</h1>
         <div className="flex gap-2">
-          <button onClick={() => resetForm(true)} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center gap-2">
-            <Plus size={16} /> {t('newInternalProject')}
-          </button>
           <button onClick={() => resetForm(false)} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
             <Plus size={16} /> {t('newProject')}
           </button>
@@ -2185,30 +2182,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             title={t('filters')}
           >
             <Filter size={20} />
-          </button>
-          <button onClick={() => {
-            const intProj = projects.find(p => p.isInternal);
-            setEditingId(null);
-            setFormData({
-              projectId: intProj?.id || '',
-              userId: user.id,
-              date: new Date().toISOString().split('T')[0],
-              startTime: '',
-              endTime: '',
-              breakHours: 0,
-              manualTotalHours: 0,
-              overtimeHours: 0,
-              description: '',
-              expenses: [],
-              additionalWorkers: [],
-              activityType: 'internal',
-              invoiceStatus: 'Pending'
-            });
-            setIsModalOpen(true);
-          }} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-all">
-            <Plus size={16} className="mr-2 inline" /> 
-            <span className="hidden sm:inline">{t('newInternalReport')}</span>
-            <span className="sm:hidden">{t('addBtn')}</span>
           </button>
           <button onClick={() => {
             setEditingId(null);
