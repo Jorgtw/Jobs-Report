@@ -17,6 +17,28 @@ class DBService {
     return this.currentCompanyId;
   }
 
+  private formatForTimestamp(date: string, time: string | null | undefined): string | null {
+    if (!time) return null;
+    if (time.includes('T')) return time; 
+    const cleanTime = time.trim().substring(0, 5);
+    return `${date}T${cleanTime}:00`;
+  }
+
+  private formatForTime(time: string | null | undefined): string | null {
+    if (!time) return null;
+    if (time.includes('T')) return time.split('T')[1].substring(0, 8);
+    const cleanTime = time.trim();
+    if (cleanTime.length === 5) return `${cleanTime}:00`;
+    return cleanTime.substring(0, 8);
+  }
+
+  private extractTimeOnly(time: string | null | undefined): string {
+    if (!time) return '';
+    const t = time.trim();
+    if (t.includes('T')) return t.split('T')[1].substring(0, 5);
+    return t.substring(0, 5);
+  }
+
   private async hashPassword(password: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -591,8 +613,8 @@ class DBService {
       projectId: r.project_id,
       userId: r.created_by,
       date: r.date,
-      startTime: r.start_time,
-      endTime: r.end_time,
+      startTime: this.extractTimeOnly(r.start_time),
+      endTime: this.extractTimeOnly(r.end_time),
       breakHours: Number(r.break_hours) || 0,
       totalHours: Number(r.total_hours) || 0,
       manualTotalHours: r.manual_total_hours != null ? Number(r.manual_total_hours) : undefined,
@@ -678,8 +700,8 @@ class DBService {
       project_id: report.projectId,
       created_by: report.userId,
       date: report.date,
-      start_time: report.startTime ? `${report.date}T${report.startTime}:00` : null,
-      end_time: report.endTime ? `${report.date}T${report.endTime}:00` : null,
+      start_time: this.formatForTimestamp(report.date, report.startTime),
+      end_time: this.formatForTimestamp(report.date, report.endTime),
       break_hours: report.breakHours,
       total_hours: totalHours,
       manual_total_hours: report.manualTotalHours !== undefined ? report.manualTotalHours : null,
@@ -707,8 +729,8 @@ class DBService {
         return {
           rapportino_id: createdReportId,
           worker_id: aw.userId,
-          startTime: (aw.startTime && aw.startTime.length === 5) ? `${aw.startTime}:00` : (aw.startTime || null),
-          endTime: (aw.endTime && aw.endTime.length === 5) ? `${aw.endTime}:00` : (aw.endTime || null),
+          startTime: this.formatForTime(aw.startTime),
+          endTime: this.formatForTime(aw.endTime),
           breakHours: aw.breakHours,
           hours: hours,
           manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
@@ -741,8 +763,8 @@ class DBService {
       project_id: updates.projectId,
       created_by: updates.userId,
       date: updates.date,
-      start_time: updates.startTime ? `${updates.date}T${updates.startTime}:00` : null,
-      end_time: updates.endTime ? `${updates.date}T${updates.endTime}:00` : null,
+      start_time: this.formatForTimestamp(updates.date, updates.startTime),
+      end_time: this.formatForTimestamp(updates.date, updates.endTime),
       break_hours: updates.breakHours,
       total_hours: updates.totalHours,
       manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
@@ -769,8 +791,8 @@ class DBService {
           return {
             rapportino_id: id,
             worker_id: aw.userId,
-            startTime: (aw.startTime && aw.startTime.length === 5) ? `${aw.startTime}:00` : (aw.startTime || null),
-            endTime: (aw.endTime && aw.endTime.length === 5) ? `${aw.endTime}:00` : (aw.endTime || null),
+            startTime: this.formatForTime(aw.startTime),
+            endTime: this.formatForTime(aw.endTime),
             breakHours: aw.breakHours,
             hours: hours,
             manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
