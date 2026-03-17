@@ -277,7 +277,7 @@ const CompactDashboard: React.FC = () => {
 
       const hours = monthlyData.reduce((acc, s) => acc + s.totalHours, 0);
       const reports = new Set(monthlyData.map(s => s.id.split('_')[0])).size;
-      const activeProjectsCount = allProjects.filter(p => p.status === 'ATTIVO').length;
+      const activeProjectsCount = allProjects.filter(p => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
       const revenue = monthlyData.reduce((acc, s) => acc + (s.revenue || 0), 0);
       const cost = monthlyData.reduce((acc, s) => acc + s.cost + (s.totalExpenses || 0), 0);
       const margin = revenue - cost;
@@ -357,25 +357,25 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
   };
 
   return (
-    <div className="max-w-sm mx-auto py-6 px-4 animate-in fade-in duration-500">
-      <div className="mb-6 text-center">
+    <div className="max-w-2xl mx-auto py-6 px-4 animate-in fade-in duration-500">
+      <div className="mb-8 text-center">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           {t('welcome')}, {user.name.split(' ')[0]}
         </h1>
-        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">{t('activityManagement')}</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('activityManagement')}</p>
       </div>
 
       {user.role === 'admin' && <CompactDashboard />}
 
-      <nav className="flex flex-col space-y-2">
+      <nav className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {actions.map((link) => (
           <Link
             key={link.path}
             to={link.path}
-            className="flex items-center gap-4 p-3.5 bg-white border border-slate-100 rounded-xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
+            className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
           >
-            <div className={`${link.color} p-2 rounded-lg text-white shadow-sm transition-transform group-hover:scale-110`}>
-              <link.icon size={18} />
+            <div className={`${link.color} p-2.5 rounded-xl text-white shadow-sm transition-transform group-hover:scale-110`}>
+              <link.icon size={20} />
             </div>
             <span className="text-xs font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors">{link.name}</span>
             <ChevronRight size={14} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
@@ -384,10 +384,10 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         
         <button 
           onClick={handleManualLogout}
-          className="flex items-center gap-4 p-3.5 bg-white border border-slate-100 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group shadow-sm active:scale-[0.98] mt-4"
+          className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-red-500 hover:bg-red-50 transition-all group shadow-sm active:scale-[0.98] sm:col-span-2 mt-4"
         >
-          <div className="bg-slate-100 p-2 rounded-lg text-slate-400 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white">
-            <LogOut size={18} />
+          <div className="bg-slate-100 p-2.5 rounded-xl text-slate-400 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white">
+            <LogOut size={20} />
           </div>
           <span className="text-xs font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('logout')}</span>
         </button>
