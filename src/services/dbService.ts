@@ -543,10 +543,21 @@ class DBService {
 
     // Handle internal project client resolution if not already set correctly
     if (project.isInternal && (!project.clientId || project.clientId === 'internal')) {
-      const internalClient = await this.getInternalClient();
-      if (internalClient) {
-        project.clientId = internalClient.id;
+      let internalClient = await this.getInternalClient();
+      if (!internalClient) {
+        // Create a default internal client if none exists
+        internalClient = await this.addClient({
+          name: 'Interno / Magazzino',
+          vatNumber: '',
+          billingAddress: '',
+          mainContactName: '',
+          mainContactPhone: '',
+          email: '',
+          status: 'active',
+          notes: 'Cliente creato automaticamente per progetti interni.'
+        });
       }
+      project.clientId = internalClient.id;
     }
 
     const sbObj = {
