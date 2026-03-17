@@ -249,6 +249,95 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
   );
 };
 
+// --- Compact Dashboard component ---
+const CompactDashboard: React.FC = () => {
+  const { t } = useTranslation();
+  const [stats, setStats] = useState({
+    hours: 0,
+    reports: 0,
+    activeProjects: 0,
+    margin: 0
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const [summary, allProjects] = await Promise.all([
+        db.getSummary(),
+        db.getProjects()
+      ]);
+
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const monthlyData = summary.filter(s => {
+        const d = new Date(s.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+
+      const hours = monthlyData.reduce((acc, s) => acc + s.totalHours, 0);
+      const reports = new Set(monthlyData.map(s => s.id.split('_')[0])).size;
+      const activeProjectsCount = allProjects.filter(p => p.status === 'ATTIVO').length;
+      const revenue = monthlyData.reduce((acc, s) => acc + (s.revenue || 0), 0);
+      const cost = monthlyData.reduce((acc, s) => acc + s.cost + (s.totalExpenses || 0), 0);
+      const margin = revenue - cost;
+
+      setStats({
+        hours,
+        reports,
+        activeProjects: activeProjectsCount,
+        margin
+      });
+    };
+    loadStats();
+  }, []);
+
+  const Card = ({ label, value, icon: Icon, color, to }: { label: string, value: string | number, icon: any, color: string, to: string }) => (
+    <Link to={to} className="flex-1 bg-white p-3 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-center min-h-[64px]">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon size={12} className={color} />
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{label}</span>
+      </div>
+      <div className="text-sm font-black text-slate-900 truncate">
+        {value}
+      </div>
+    </Link>
+  );
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+      <Card 
+        label={t('hours')} 
+        value={`${stats.hours.toLocaleString('it-IT', { maximumFractionDigits: 1 })}h`} 
+        icon={Clock} 
+        color="text-blue-500" 
+        to="/reports" 
+      />
+      <Card 
+        label={t('reports')} 
+        value={stats.reports} 
+        icon={FileText} 
+        color="text-emerald-500" 
+        to="/reports" 
+      />
+      <Card 
+        label={t('activeProjects')} 
+        value={stats.activeProjects} 
+        icon={Briefcase} 
+        color="text-amber-500" 
+        to="/projects" 
+      />
+      <Card 
+        label={t('margin')} 
+        value={`${stats.margin.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}€`} 
+        icon={ClipboardList} 
+        color={stats.margin >= 0 ? "text-emerald-600" : "text-red-600"} 
+        to="/work-summary" 
+      />
+    </div>
+  );
+};
+
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
@@ -275,6 +364,8 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         </h1>
         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">{t('activityManagement')}</p>
       </div>
+
+      {user.role === 'admin' && <CompactDashboard />}
 
       <nav className="flex flex-col space-y-2">
         {actions.map((link) => (
