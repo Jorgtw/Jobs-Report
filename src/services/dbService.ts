@@ -696,8 +696,8 @@ class DBService {
         return {
           rapportino_id: createdReportId,
           worker_id: aw.userId,
-          startTime: (aw.startTime && aw.startTime.length === 5) ? `${report.date}T${aw.startTime}:00` : (aw.startTime || null),
-          endTime: (aw.endTime && aw.endTime.length === 5) ? `${report.date}T${aw.endTime}:00` : (aw.endTime || null),
+          startTime: (aw.startTime && aw.startTime.length === 5) ? `${aw.startTime}:00` : (aw.startTime || null),
+          endTime: (aw.endTime && aw.endTime.length === 5) ? `${aw.endTime}:00` : (aw.endTime || null),
           breakHours: aw.breakHours,
           hours: hours,
           manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
@@ -758,8 +758,8 @@ class DBService {
           return {
             rapportino_id: id,
             worker_id: aw.userId,
-            startTime: (aw.startTime && aw.startTime.length === 5) ? `${updates.date}T${aw.startTime}:00` : (aw.startTime || null),
-            endTime: (aw.endTime && aw.endTime.length === 5) ? `${updates.date}T${aw.endTime}:00` : (aw.endTime || null),
+            startTime: (aw.startTime && aw.startTime.length === 5) ? `${aw.startTime}:00` : (aw.startTime || null),
+            endTime: (aw.endTime && aw.endTime.length === 5) ? `${aw.endTime}:00` : (aw.endTime || null),
             breakHours: aw.breakHours,
             hours: hours,
             manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
