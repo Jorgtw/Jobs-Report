@@ -1050,14 +1050,12 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
                 <p className="text-blue-100 text-sm leading-relaxed max-w-md">{t('helpGuideBody')}</p>
               </div>
             </div>
-            <a 
-              href="https://jobs-report.vercel.app/MANUALE.html" 
-              target="_blank" 
-              rel="noopener noreferrer"
+            <button 
+              onClick={() => window.open('https://jobs-report.vercel.app/MANUALE.html', '_blank', 'noopener,noreferrer')}
               className="bg-white text-blue-600 px-8 py-3 rounded-xl font-black shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
             >
               {t('helpGuideBtn')}
-            </a>
+            </button>
           </div>
         </div>
 
