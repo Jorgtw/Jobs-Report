@@ -42,26 +42,28 @@
 
         /* Header Styling */
         header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: white;
-            padding: 60px 20px;
-            border-radius: 0 0 40px 40px;
-            text-align: center;
-            margin-bottom: 60px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 30px 40px;
+            border-radius: 0 0 12px 12px;
+            text-align: left;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         header h1 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 10px;
-            letter-spacing: -0.025em;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1e293b;
+            letter-spacing: -0.01em;
         }
 
         header p {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            font-weight: 500;
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+            opacity: 1;
         }
 
         /* Content Sections */
@@ -217,6 +219,20 @@
             z-index: 100;
         }
 
+        .logo-placeholder {
+            width: 140px;
+            height: 40px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
         .toc h4 {
             font-weight: 800;
             color: var(--primary);
@@ -256,20 +272,21 @@
         @media (max-width: 640px) {
             .container { padding: 20px 15px; }
             section { padding: 25px; }
-            header h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Manuale d'Uso - Jobs Report</h1>
+    <h1>Guida all'Uso — Jobs Report</h1>
     <p>Il gestionale professionale per i tuoi cantieri</p>
 </header>
 
 <div class="container">
     
     <div class="toc">
+        <!-- Sostituire con il logo reale di Jobs Report -->
+        <div class="logo-placeholder">[ Logo ]</div>
         <h4>Indice</h4>
         <ul>
             <li><a href="#intro">Introduzione</a></li>
@@ -311,7 +328,7 @@
 
     <section id="dashboard">
         <h2>2. Pannello principale (Schermata di avvio)</h2>
-        <p>Dopo il login, verrai indirizzato al Pannello principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.</p>
+        <p>Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.</p>
         <p>Per gli <strong>Operatori</strong> e gli <strong>Incaricati</strong>, in questa pagina è ora visibile anche il <strong>Riepilogo Ore del Mese</strong> corrente, per avere sempre sott'occhio il proprio monte ore lavorate.</p>
 
         <div class="image-container">
