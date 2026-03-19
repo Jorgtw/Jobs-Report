@@ -107,7 +107,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
           {/* Logo & Header */}
           <div className="flex flex-col items-center mb-10 text-center">
             <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mb-6 shadow-inner ring-4 ring-blue-50/50">
-              <img src={logoImg} alt="Logo" className="w-14 h-14 object-contain" />
+              <img src={logoImg} alt="Logo" className="w-14 h-14 object-contain" style={{ borderRadius: '8px', mixBlendMode: 'multiply', overflow: 'hidden' }} />
             </div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></h2>
             <p className="text-slate-400 text-sm mt-2 font-medium">Gestione professionale rapportini</p>

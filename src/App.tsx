@@ -189,7 +189,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
     <div className="flex flex-col h-full py-6">
       <div className="px-6 mb-8 flex items-center gap-2">
         <Link to="/home" onClick={onItemClick} className="flex items-center gap-2">
-          <img src={logoImg} alt="Jobs Report" className="w-10 h-10 object-contain" />
+          <img src={logoImg} alt="Jobs Report" className="w-10 h-10 object-contain" style={{ borderRadius: '8px', mixBlendMode: 'multiply', overflow: 'hidden' }} />
           <span className="font-extrabold text-xl text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></span>
         </Link>
       </div>
