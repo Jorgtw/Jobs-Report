@@ -301,6 +301,8 @@
 <body>
 
 <nav class="sidebar">
+    <!-- Sostituire con il logo reale di Jobs Report -->
+    <div class="logo-placeholder">[ Logo ]</div>
     <h2>Guida</h2>
     <ul>
         <li><a href="#intro" class="nav-link">Introduzione</a></li>
@@ -422,13 +424,8 @@
             <h2>5. Gestione del Personale</h2>
             <p>In questa sezione si gestisce la squadra. Si possono aggiungere nuovi dipendenti o collaboratori esterni, decidendo il loro ruolo e quanto costano all'azienda per ogni ora di lavoro.</p>
             
-            <div class="toc">
-        <!-- Sostituire con il logo reale di Jobs Report -->
-        <div class="logo-placeholder">[ Logo ]</div>
-        <h4>Indice</h4>
             <div class="alert-box">
                 <p><strong>IMPORTANTE:</strong> Ricordati di inserire l'email corretta per ogni persona: servirà per inviare automaticamente le istruzioni di accesso con un solo clic.</p>
-            </div>
             </div>
 
             <p>Dati da inserire per ogni nuovo utente:</p>
@@ -495,7 +492,7 @@
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
             const sectionHeight = section.clientHeight;
-            if (pageYOffset >= (sectionTop - 150)) {
+            if (window.scrollY >= (sectionTop - 150)) {
                 current = section.getAttribute('id');
             }
         });
@@ -508,10 +505,6 @@
         });
     });
 </script>
-
-</body>
-</html>
-iv>
 
 </body>
 </html>
