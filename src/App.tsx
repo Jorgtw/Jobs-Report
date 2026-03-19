@@ -338,6 +338,50 @@ const CompactDashboard: React.FC = () => {
   );
 };
 
+// --- Monthly Hours Card for Workers ---
+const MonthlyHoursCard: React.FC<{ user: User }> = ({ user }) => {
+  const { t } = useTranslation();
+  const [hours, setHours] = useState<number | null>(null);
+
+  useEffect(() => {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    db.getReports(user.id, user.role).then(reports => {
+      const filtered = reports.filter(r => new Date(r.date) >= startOfMonth);
+      const total = filtered.reduce((sum: number, r: any) => {
+        let h = 0;
+        if (r.userId === user.id) h += (r.totalHours || 0);
+        const aw = r.additionalWorkers?.find((w: any) => w.userId === user.id);
+        if (aw) h += (aw.totalHours || 0);
+        return sum + h;
+      }, 0);
+      setHours(total);
+    }).catch(console.error);
+  }, [user.id, user.role]);
+
+  if (hours === null) return null;
+
+  return (
+    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-6 flex items-center justify-between group hover:shadow-md transition-all">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+          <Clock size={24} />
+        </div>
+        <div>
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('monthlyHoursSummary')}</h3>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('currentMonth')}</p>
+        </div>
+      </div>
+      <div className="text-3xl font-black text-blue-600">
+        {hours.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <span className="text-sm font-bold ml-1 text-slate-400">h</span>
+      </div>
+    </div>
+  );
+};
+
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
@@ -365,7 +409,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('activityManagement')}</p>
       </div>
 
-      {user.role === 'admin' && <CompactDashboard />}
+      {user.role === 'admin' ? <CompactDashboard /> : <MonthlyHoursCard user={user} />}
 
       <nav className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {actions.map((link) => (

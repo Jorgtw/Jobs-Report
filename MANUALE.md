@@ -23,6 +23,8 @@ In caso di smarrimento della password, contatta l'amministratore del sistema.
 
 Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.
 
+Per gli **Operatori** e gli **Incaricati**, in questa pagina è ora visibile anche il **Riepilogo Ore del Mese** corrente, per avere sempre sott'occhio il proprio monte ore lavorate.
+
 ![Dashboard Home](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
 *Launcher — Accesso rapido a Rapportini, Progetti e Riepiloghi*
 

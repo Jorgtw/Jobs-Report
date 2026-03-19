@@ -18,8 +18,9 @@ La nuova porta d'ingresso professionale a JobsReport, nata da 30 anni di esperie
 ---
 
 ## 2. Pannello di Controllo (Launcher)
-Dopo il login, verrai indirizzato alla nuova Dashboard "Launcher", progettata per un accesso immediato a tutte le funzioni.
+Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.
 
+Per gli **Operatori** e gli **Incaricati**, in questa pagina è ora visibile anche il **Riepilogo Ore del Mese** corrente, per avere sempre sott'occhio il proprio monte ore lavorate.
 ![Nuovo Launcher Dashboard](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
 
 - **Indicatori KPI (solo Admin)**: Monitora in tempo reale le ore lavorate nel mese, il numero di rapportini, i progetti attivi e il margine economico.
