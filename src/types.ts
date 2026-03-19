@@ -133,6 +133,9 @@ export interface ReportSummary {
   cost: number;
   overtimeHours: number;
   overtimeCost: number;
+  projectId: string;
   invoiceStatus?: string;
+  activityType?: string;
+  isInternal?: boolean;
   createdAt: number;
 }

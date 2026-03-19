@@ -6,20 +6,25 @@ In questo manuale esploreremo assieme le schermate principali dell'App, con esem
 
 ---
 
-## 1. Accesso (Login)
-Il punto di ingresso per gestire il tuo lavoro.
+## 1. Pagina di Presentazione (Landing Page)
+La nuova porta d'ingresso professionale a JobsReport, nata da 30 anni di esperienza sul campo.
 
-![Schermata di Login](file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/login_view_1772981894125.png)
+![Nuova Landing Page](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/landing_page_new_jobsreport_png_1773835243116.png)
 
-- Inserisci le tue credenziali per accedere in sicurezza.
-- Se sei un nuovo amministratore, puoi registrare la tua azienda direttamente da qui.
+- **Panoramica**: Una presentazione chiara delle funzionalità chiave: Clienti, Team, Progetti, Subappalti e Analisi Economica.
+- **Supporto Multilingua**: Seleziona la tua lingua preferita (Italiano, English, Español, Polski, Türkçe, Dansk) direttamente dall'overlay iniziale.
+- **Richiesta Demo**: Da qui puoi richiedere una demo o l'attivazione di un nuovo account aziendale.
 
 ---
 
-## 2. Pannello di Controllo (Dashboard)
-Subito dopo l'accesso, verrai indirizzato alla tua Dashboard personalizzata.
+## 2. Pannello di Controllo (Launcher)
+Dopo il login, verrai indirizzato alla nuova Dashboard "Launcher", progettata per un accesso immediato a tutte le funzioni.
 
-![Dashboard di Benvenuto](file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/welcome_screen_new_1772983454745.png)
+![Nuovo Launcher Dashboard](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
+
+- **Indicatori KPI (solo Admin)**: Monitora in tempo reale le ore lavorate nel mese, il numero di rapportini, i progetti attivi e il margine economico.
+- **Navigazione Rapida**: Icone grandi e intuitive per saltare velocemente tra le sezioni del programma.
+- **Logout Integrato**: Un tasto rosso dedicato a fondo pagina per chiudere la sessione in sicurezza.
 
 ---
 
@@ -40,8 +45,11 @@ Il modulo di inserimento è intuitivo: seleziona il progetto, scrivi cosa hai fa
 
 ## 4. Strumenti per l'Amministratore
 
-### Sommario Analitico (Sommario Lavori)
-Questa è la torre di controllo per l'azienda. Permette di monitorare costi, ricavi e margini in tempo reale.
+### 5. Sommario Lavori
+Disponibile per **Amministratori** e **Incaricati**:
+- Permette di analizzare i costi e i ricavi per progetto, cliente o lavoratore.
+- Gli **Incaricati** vedono solo i dati relativi ai progetti di loro competenza.
+- Gli **Amministratori** hanno una visione globale e possono gestire gli stati di fatturazione.
 
 ![Sommario Amministrativo](file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png)
 

@@ -83,7 +83,7 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
     { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
-    { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
+    { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin', 'supervisor'], color: 'bg-indigo-500' },
     { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' },
     { name: t('help'), path: '/help', icon: HelpCircle, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-600' }
   ];
@@ -414,7 +414,13 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         db.getUsers(),
         db.getSubcontractors(),
       ]);
-      setSummary(s);
+      if (user.role === 'supervisor') {
+        const assignedProjectIds = p.filter((proj: any) => proj.assignedWorkerIds?.includes(user.id)).map((proj: any) => proj.id);
+        const filteredS = s.filter((item: any) => assignedProjectIds.includes(item.projectId));
+        setSummary(filteredS);
+      } else {
+        setSummary(s);
+      }
       setClients(c);
       setProjects(p);
       setUsers(w);
@@ -613,35 +619,37 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
             </div>
           </div>
           
-          <div className="flex-shrink-0 w-full sm:w-auto sm:ml-auto">
-            <select
-              title="Aggiorna stato dei risultati filtrati"
-              onChange={async (e) => {
-                const val = e.target.value;
-                if (!val) return;
-                const confirmMsg = t('confirmUpdateStatus').replace('{count}', filteredData.length.toString()).replace('{status}', val === 'Pending' ? t('statusPending') : val === 'Fatturato' ? t('statusInvoiced') : t('statusPaid'));
-                if (!window.confirm(confirmMsg)) {
+          {user.role === 'admin' && (
+            <div className="flex-shrink-0 w-full sm:w-auto sm:ml-auto">
+              <select
+                title="Aggiorna stato dei risultati filtrati"
+                onChange={async (e) => {
+                  const val = e.target.value;
+                  if (!val) return;
+                  const confirmMsg = t('confirmUpdateStatus').replace('{count}', filteredData.length.toString()).replace('{status}', val === 'Pending' ? t('statusPending') : val === 'Fatturato' ? t('statusInvoiced') : t('statusPaid'));
+                  if (!window.confirm(confirmMsg)) {
+                    e.target.value = '';
+                    return;
+                  }
+                  try {
+                    const ids = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
+                    await db.bulkUpdateInvoiceStatus(ids, val);
+                    const newData = await db.getSummary();
+                    setSummary(user.role === 'supervisor' ? newData.filter(item => projects.filter(proj => proj.assignedWorkerIds?.includes(user.id)).map(proj => proj.id).includes(item.projectId)) : newData);
+                  } catch (err: any) {
+                    alert(t('updateError') + err.message);
+                  }
                   e.target.value = '';
-                  return;
-                }
-                try {
-                  const ids = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
-                  await db.bulkUpdateInvoiceStatus(ids, val);
-                  const newData = await db.getSummary();
-                  setSummary(newData);
-                } catch (err: any) {
-                  alert(t('updateError') + err.message);
-                }
-                e.target.value = '';
-              }}
-              className="w-full sm:w-auto px-4 py-1.5 bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
-            >
-              <option value="">{t('update')} {t('statusLabel')} ({filteredData.length})</option>
-              <option value="Pending">{t('statusPending')}</option>
-              <option value="Fatturato">{t('statusInvoiced')}</option>
-              <option value="Pagato">{t('statusPaid')}</option>
-            </select>
-          </div>
+                }}
+                className="w-full sm:w-auto px-4 py-1.5 bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
+              >
+                <option value="">{t('update')} {t('statusLabel')} ({filteredData.length})</option>
+                <option value="Pending">{t('statusPending')}</option>
+                <option value="Fatturato">{t('statusInvoiced')}</option>
+                <option value="Pagato">{t('statusPaid')}</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -3076,7 +3084,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
-                    <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
+                    <Route path="/work-summary" element={(user.role === 'admin' || user.role === 'supervisor') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
                     <Route path="/projects" element={user.role === 'admin' ? <ProjectsView /> : <Navigate to="/" />} />
                     <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />

@@ -21,8 +21,8 @@
 
 ## 1. Accesso e Ruoli
 
-![Schermata di login di JobsReport](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_login_1772699026857.png)
-*Schermata di accesso — inserire username e password*
+![Schermata di login di JobsReport](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/landing_page_new_jobsreport_png_1773835243116.png)
+*Nuova Landing Page — accesso professionale e multilingua*
 
 | Ruolo | Cosa può fare |
 |---|---|
@@ -37,8 +37,8 @@
 
 ## 2. Flusso di inserimento dati
 
-![Schermata Home con menu di navigazione](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_home_1772699041788.png)
-*Dashboard principale — panoramica di tutte le sezioni*
+![Schermata Home Launcher](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
+*Nuovo Launcher Dashboard — accesso rapido e KPI in tempo reale*
 
 Il flusso è **lineare** e **va rispettato nell'ordine**, perché ogni sezione dipende da quella precedente.
 
@@ -140,6 +140,11 @@ Le ditte subappaltatrici sono partner esterni che collaborano ai cantieri.
 
 ![Schermata form rapportino](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportino_1772699103453.png)
 *Form rapportino — orari, squadra, spese e stato fatturazione in un'unica schermata*
+
+Permette l'inserimento e la modifica dei lavori svolti.
+- **Operatori**: Possono gestire solo i propri dati.
+- **Incaricati**: Possono gestire i dati propri e quelli dei **collaboratori** per i progetti a loro assegnati. Hanno inoltre visibilità sul **Sommario Lavori** per i propri progetti.
+- **Admin**: Controllo completo su ogni aspetto del sistema.
 
 ### Dati principali
 
