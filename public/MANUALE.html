@@ -78,20 +78,6 @@
             border-radius: 8px;
             transition: all 0.2s ease;
         }
-         /* Logo Placement */
-        .logo-placeholder {
-            width: 140px;
-            height: 40px;
-            background: #e2e8f0;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-            font-size: 12px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
 
         /* TOC */
 
@@ -224,6 +210,12 @@
             display: block;
         }
 
+        .image-container img {
+            max-height: 380px;
+            object-fit: cover;
+            object-position: top;
+        }
+
         .caption {
             font-size: 0.95rem;
             color: var(--text-light);
@@ -301,8 +293,7 @@
 <body>
 
 <nav class="sidebar">
-    <!-- Sostituire con il logo reale di Jobs Report -->
-    <div class="logo-placeholder">[ Logo ]</div>
+    <img src="/images/logo.png" alt="Jobs Report" style="width:140px;height:auto;margin-bottom:20px;display:block;">
     <h2>Guida</h2>
     <ul>
         <li><a href="#intro" class="nav-link">Introduzione</a></li>
@@ -320,10 +311,13 @@
 <main class="main-content">
     <div class="container">
         
-        <header>
-    <h1>Guida all'Uso — Jobs Report</h1>
-    <p>Il gestionale professionale per i tuoi cantieri</p>
-</header>
+        <header style="display:flex;align-items:center;gap:20px;">
+            <img src="/images/logo.png" alt="Jobs Report" style="height:48px;width:auto;">
+            <div>
+                <h1>Guida all'Uso — Jobs Report</h1>
+                <p>Il gestionale professionale per i tuoi cantieri</p>
+            </div>
+        </header>
 
         <section id="intro">
             <h2>Introduzione</h2>
@@ -334,15 +328,20 @@
             <h2>1. Accesso al sistema</h2>
             <h3>Entrare nel programma</h3>
             <p>Accedi inserendo il tuo nome utente e la tua password personale. In base al tuo ruolo, vedrai solo le funzioni che ti servono:</p>
-            <ul class="roles-list">
-                <li><strong>Operatore</strong>: Può inserire e gestire solo i propri rapportini di lavoro.</li>
-                <li><strong>Incaricato (Supervisor)</strong>: Può vedere e gestire anche i rapportini dei collaboratori assegnati ai suoi progetti.</li>
-                <li><strong>Amministratore</strong>: Ha accesso completo a tutte le funzioni: rapportini, progetti, clienti, personale e analisi economica.</li>
-            </ul>
-
-            <div class="image-container">
-                <img src="/images/login.png" alt="Accesso">
-                <div class="caption">Schermata di accesso — Inserisci i tuoi dati per iniziare</div>
+            <div style="display:flex;gap:40px;align-items:flex-start;margin:30px 0;">
+                <div style="flex:1;">
+                    <ul class="roles-list">
+                        <li><strong>Operatore</strong>: Può inserire e gestire solo i propri rapportini di lavoro.</li>
+                        <li><strong>Incaricato (Supervisor)</strong>: Può vedere e gestire anche i rapportini dei collaboratori assegnati ai suoi progetti.</li>
+                        <li><strong>Amministratore</strong>: Ha accesso completo a tutte le funzioni: rapportini, progetti, clienti, personale e analisi economica.</li>
+                    </ul>
+                </div>
+                <div style="flex:0 0 280px;">
+                    <div class="image-container">
+                        <img src="/images/login.png" alt="Accesso">
+                        <div class="caption">Schermata di accesso</div>
+                    </div>
+                </div>
             </div>
 
             <h3>Se dimentichi la password</h3>
@@ -488,8 +487,32 @@
         </section>
 
         <section id="installazione">
-            <h2>8. Installazione come App</h2>
-            <p>Per usare Jobs Report comodamente dal tuo telefono, clicca sul tasto "<strong>Installa App</strong>" che trovi nel menu. In questo modo avrai l'icona del programma direttamente sulla tua schermata principale come una normale applicazione.</p>
+            <h2>8. Installazione come App (PWA)</h2>
+            <p>Per usare Jobs Report comodamente dal tuo telefono o PC senza dover aprire il browser ogni volta, segui queste istruzioni:</p>
+
+            <h3>Su Android</h3>
+            <ol>
+                <li>Apri Chrome e vai all'indirizzo di Jobs Report</li>
+                <li>Tocca i tre puntini in alto a destra</li>
+                <li>Seleziona "Aggiungi alla schermata Home"</li>
+                <li>Conferma toccando "Aggiungi"</li>
+            </ol>
+
+            <h3>Su iPhone</h3>
+            <ol>
+                <li>Apri Safari e vai all'indirizzo di Jobs Report</li>
+                <li>Tocca l'icona di condivisione (quadrato con freccia in su)</li>
+                <li>Seleziona "Aggiungi alla schermata Home"</li>
+                <li>Tocca "Aggiungi" in alto a destra</li>
+            </ol>
+
+            <h3>Su PC (Chrome o Edge)</h3>
+            <ol>
+                <li>Apri il browser e vai all'indirizzo di Jobs Report</li>
+                <li>Clicca sull'icona di installazione nella barra degli indirizzi</li>
+                <li>Clicca "Installa"</li>
+                <li>Jobs Report si aprirà come applicazione indipendente</li>
+            </ol>
         </section>
 
         <footer>
