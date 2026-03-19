@@ -1,253 +1,100 @@
-# 📋 Manuale di Utilizzo — JobsReport
+# Manuale d'Uso - Jobs Report
 
-> Versione 1.0 · Marzo 2026
+## Introduzione
+Jobs Report è un'applicazione PWA progettata per la gestione e il monitoraggio dei lavori di cantiere, dei costi del personale e dei rapporti con i subappaltatori. 
 
----
+## 1. Accesso e Autenticazione
 
-## Indice
+### Login
+Accedi con le tue credenziali (username e password). L'applicazione supporta diversi livelli di accesso a seconda del ruolo assegnato:
+- **Operatore**
+- **Incaricato (Supervisor)**
+- **Amministratore**
 
-1. [Accesso e Ruoli](#1-accesso-e-ruoli)
-2. [Flusso di inserimento dati](#2-flusso-di-inserimento-dati)
-3. [Passo 1 — Clienti](#3-passo-1--clienti)
-4. [Passo 2 — Subappalti](#4-passo-2--subappalti)
-5. [Passo 3 — Personale](#5-passo-3--personale)
-6. [Passo 4 — Progetti](#6-passo-4--progetti)
-7. [Passo 5 — Rapportini](#7-passo-5--rapportini)
-8. [Passo 6 — Sommario Lavori](#8-passo-6--sommario-lavori)
-9. [Esportazione PDF / Excel](#9-esportazione-pdf--excel)
-10. [Consigli pratici](#10-consigli-pratici)
+![Schermata di Login](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/initial_load_page_1773835119390.png)
+*Pagana di accesso — Inserisci le tue credenziali per iniziare*
 
----
-
-## 1. Accesso e Ruoli
-
-![Schermata di login di JobsReport](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/landing_page_new_jobsreport_png_1773835243116.png)
-*Nuova Landing Page — accesso professionale e multilingua*
-
-| Ruolo | Cosa può fare |
-|---|---|
-| **Amministratore** | Gestione completa di tutte le sezioni |
-| **Incaricato** | Solo i propri rapportini |
-| **Operaio** | Solo i propri rapportini |
-
-> [!NOTE]
-> Le credenziali vengono create dall'Amministratore nella sezione **Personale**.
+### Recupero Password
+In caso di smarrimento della password, contatta l'amministratore del sistema.
 
 ---
 
-## 2. Flusso di inserimento dati
+## 2. Dashboard Principale (Launcher)
 
-![Schermata Home Launcher](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
-*Nuovo Launcher Dashboard — accesso rapido e KPI in tempo reale*
+Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.
 
-Il flusso è **lineare** e **va rispettato nell'ordine**, perché ogni sezione dipende da quella precedente.
-
-```
-  ┌─────────┐    ┌────────────┐    ┌───────────┐
-  │ CLIENTI │───►│  PROGETTI  │───►│RAPPORTINI │
-  └─────────┘    └────────────┘    └───────────┘
-                      ▲                  ▲
-  ┌─────────┐    ┌────┴───────┐          │
-  │PERSONALE│───►│SUBAPPALTI  │──────────┘
-  └─────────┘    └────────────┘
-  ──────────────────────────────────────────────
-  ┌─────────────────────────────────────────────┐
-  │         SOMMARIO LAVORI (solo Admin)         │
-  └─────────────────────────────────────────────┘
-```
+![Dashboard Home](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
+*Launcher — Accesso rapido a Rapportini, Progetti e Riepiloghi*
 
 ---
 
-## 3. Passo 1 — Clienti
+## 3. Gestione Rapportini
 
-**Menu:** `Clienti` → **+ Nuovo Cliente**
+### Lista Rapportini
+Visualizza tutti i rapportini caricati. Puoi filtrare per data o per progetto.
+- **Operatori**: Vedono solo i propri rapportini.
+- **Incaricati**: Vedono i propri e quelli dei collaboratori assegnati ai propri progetti.
+- **Admin**: Vedono tutti i rapportini dell'azienda.
 
-![Schermata elenco clienti](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_clienti_1772699056806.png)
-*Elenco clienti — ogni scheda mostra nome, referente e contatti*
+![Lista Rapportini](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportini_1772699081545.png)
+*Esempio di lista rapportini con filtri attivi*
 
-| Campo | Obbligatorio | Note |
-|---|---|---|
-| Nome della ditta | ✅ | Nome commerciale del cliente |
-| Partita IVA | — | Utile per i documenti |
-| Persona di riferimento | — | Contatto principale |
-| Telefono / Email | — | Per comunicazioni |
-| Stato | ✅ | Attivo / Non attivo |
-
-> [!TIP]
-> Inserisci prima **tutti i tuoi clienti** prima di creare i progetti.
-
----
-
-## 4. Passo 2 — Subappalti (Ditte esterne)
-
-**Menu:** `Subappalti` → **+ Nuova Ditta**
-
-Le ditte subappaltatrici sono partner esterni che collaborano ai cantieri.
-
-| Campo | Note |
-|---|---|
-| Nome ditta | Nome della ditta esterna |
-| Condizione economica | **A ore** (tariffa oraria) o **A corpo** (importo fisso) |
-| Importo | Tariffa oraria o importo concordato |
-| Stato | Attivo / Non attivo |
-
----
-
-## 5. Passo 3 — Personale
-
-**Menu:** `Personale` → **+ Nuovo Personale**
-
-![Schermata form personale](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_personale_1772699071894.png)
-*Form inserimento lavoratore — notare il campo Prezzo orario, fondamentale per i margini*
-
-| Campo | Note |
-|---|---|
-| Nome | Nome e cognome del lavoratore |
-| Tipo di personale | **Interno** oppure seleziona la ditta subappaltatrice |
-| Ruolo | Operaio / Incaricato / Amministratore |
-| **Tariffa oraria** | ⚠️ **FONDAMENTALE** per il calcolo del costo nei reporting |
-| Username + Password | Solo per personale interno |
-| Stato | Attivo / Non attivo |
-
-> [!IMPORTANT]
-> La **tariffa oraria** è il costo aziendale per quel lavoratore. Senza questo valore il costo nel sommario sarà **€0,00**.
-
----
-
-## 6. Passo 4 — Progetti
-
-**Menu:** `Progetti` → **+ Nuovo Progetto**
-
-![Schermata form nuovo progetto](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_progetti_1772699088031.png)
-*Form progetto — il Prezzo vendita/ora determina il ricavo nel Sommario*
-
-| Campo | Note |
-|---|---|
-| Cliente | Seleziona da quelli inseriti precedentemente |
-| Titolo del progetto | Nome cantiere/intervento |
-| Condizione economica | **A ore** o **A corpo** |
-| **Prezzo vendita / Ora** | ⚠️ **FONDAMENTALE** per il calcolo del ricavo e del margine |
-| Stato | Attivo / Chiuso |
-
-> [!IMPORTANT]
-> Il **prezzo di vendita per ora** è ciò che fatturi al cliente. Senza questo valore il ricavo nel Sommario sarà **€0,00** e il margine non sarà calcolabile.
-
----
-
-## 7. Passo 5 — Rapportini
-
-**Menu:** `Rapportini` → **+ Nuovo Rapportino**
+### Creazione/Modifica Rapportino
+Clicca su "**Nuovo Rapportino**" (o l'icona della matita per modificare):
+- Seleziona il **Progetto**.
+- Inserisci la **Data**.
+- Specifica la **Squadra**: puoi aggiungere collaboratori cliccando su "Aggiungi Collaboratore".
+- Inserisci le **Spese**: materiali, pasti, trasporti, ecc.
+- Definisci lo **Stato Fatturazione** (solo per Admin).
 
 ![Schermata form rapportino](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportino_1772699103453.png)
 *Form rapportino — orari, squadra, spese e stato fatturazione in un'unica schermata*
 
 Permette l'inserimento e la modifica dei lavori svolti.
 - **Operatori**: Possono gestire solo i propri dati.
-- **Incaricati**: Possono gestire i dati propri e quelli dei **collaboratori** per i progetti a loro assegnati. Hanno inoltre visibilità sul **Sommario Lavori** per i propri progetti.
+- **Incaricati**: Possono gestire i dati propri e quelli dei **collaboratori** per i progetti a loro assegnati.
 - **Admin**: Controllo completo su ogni aspetto del sistema.
 
 ### Dati principali
 
 | Campo | Note |
-|---|---|
-| Data | Giorno di lavoro |
-| Progetto | Seleziona il cantiere (mostra indirizzo e contatti) |
-| Ora inizio / fine | Calcolo automatico delle ore totali |
-| Pausa (ore) | Sottratta automaticamente |
-| Ore totali (manuale) | Opzionale: sovrascrive il calcolo automatico |
-| Descrizione attività | Cosa è stato fatto quel giorno |
-
-### Squadra e Collaboratori
-1. Clicca **+ Aggiungi Collaboratore**
-2. Seleziona il lavoratore e inserisci i suoi orari
-3. Il costo viene calcolato in automatico dalla sua tariffa
-
-### Spese Extra
-1. Clicca **+ Aggiungi Spesa**
-2. Inserisci tipo, importo e note
-
-### Stato Fatturazione
-
-| Stato | Significato |
-|---|---|
-| **In Attesa** | Lavoro eseguito, non ancora fatturato |
-| **Fatturato** | Fattura emessa al cliente |
-| **Pagato** | Fattura incassata |
+| :--- | :--- |
+| **Orario Inizio/Fine** | Calcolo automatico delle ore totali. |
+| **Pausa** | Ore di pausa da detrarre dal totale. |
+| **Straordinari** | Vengono calcolati oltre la soglia standard definita nel profilo. |
 
 ---
 
-## 8. Passo 6 — Sommario Lavori
+## 4. Gestione Progetti (Solo Admin)
 
-**Menu:** `Sommario Lavori` *(solo Amministratore)*
-
-![Schermata sommario lavori con KPI e tabella margini](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_sommario_1772699132302.png)
-*Sommario Lavori — KPI economici e tabella per progetto con Vendita e Margine*
-
-### Filtri disponibili
-- Cliente · Progetto · Collaboratore · Ditta Subappalto
-- Periodo (Da → A data)
-- Stato fatturazione (Tutti / Fatturato / Pagato / In attesa)
-
-### Indicatori KPI
-
-| Indicatore | Colore | Descrizione |
-|---|---|---|
-| Ore Lavorate | Grigio | Totale ore nel periodo |
-| Costo Personale | Grigio | Ore × tariffa personale interno |
-| Costo Subappalti | Grigio | Costo personale esterno |
-| Spese Totali | Arancio | Somma spese extra |
-| **Totale Costo** | Blu | Tutti i costi sommati |
-| **Totale Vendita** | Indigo | Ore × prezzo vendita progetto |
-| **Margine** | 🟢 Verde / 🔴 Rosso | Vendita − Costi − Spese |
-
-### Tabella per Progetto
-Ogni riga mostra: Data · Progetto · Cliente · Ore · Costo · Vendita · **Margine** (badge colorato)
+### Progetti e Clienti
+L'amministratore può creare nuovi progetti, associarli a un cliente e assegnare i lavoratori o gli incaricati.
+- **Progetti Attivi**: Visibili per l'inserimento ore.
+- **Progetti Chiusi**: Archivio storico, non più selezionabili per nuovi rapportini.
 
 ---
 
-## 9. Esportazione PDF / Excel
+## 5. Sommario Lavori (Solo Admin)
 
-Nella sezione **Sommario Lavori**, pulsanti in alto a destra:
+Visualizzazione analitica dei costi e ricavi. Riservato agli **Admin**, permette di monitorare ore, costi (personale, subappalti, spese) e ricavi, con calcolo automatico del margine.
 
-- **📊 Esporta Excel** — file `.xlsx` con tutti i dati filtrati
-- **📄 Esporta PDF** — report formattato con intestazione
-
-> [!TIP]
-> Applica i filtri **prima** di esportare (es. solo un mese, solo un cliente).
-> L'export è nella **lingua selezionata** dall'utente (IT/EN/ES/PL/TR/DA).
+![Sommario Amministrativo](file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png)
+*Torre di controllo — Analisi economica per progetto e cliente*
 
 ---
 
-## 10. Consigli pratici
+## 6. Profilo e Impostazioni
 
-### ✅ Checklist setup iniziale
+### Profilo Utente
+Ogni utente può aggiornare i propri dati di contatto e visualizzare il riepilogo delle proprie ore mensili.
 
-1. [ ] Crea i tuoi **Clienti**
-2. [ ] Aggiungi le **Ditte subappaltatrici** (se usi personale esterno)
-3. [ ] Aggiungi il **Personale** con le tariffe orarie
-4. [ ] Crea i **Progetti** con il prezzo di vendita/ora
-5. [ ] Inizia a inserire i **Rapportini** quotidiani
-
-### 💡 Formula del Margine
-
-```
-MARGINE = Totale Vendita − Costo Personale − Costo Subappalti − Spese Extra
-```
-
-- **Costo** → viene dalla **tariffa oraria** del Personale
-- **Ricavo** → viene dal **prezzo vendita/ora** del Progetto
-- Se uno dei due è 0 → il margine non è realistico
-
-### 📅 Flusso mensile consigliato
-
-```
-Inizio mese   → Verifica che i progetti abbiano il prezzo di vendita aggiornato
-Durante mese  → Inserimento rapportini quotidiani dagli operai
-Fine mese     → Sommario → filtro per mese → Esporta Excel/PDF
-              → Aggiorna stato fatturazione (In attesa → Fatturato → Pagato)
-```
+### Lingua
+L'applicazione supporta Italiano, Inglese, Francese, Tedesco e Spagnolo. Cambia la lingua dall'icona del mondo nella testata.
 
 ---
 
-*JobsReport — Sistema professionale di gestione lavori e rapportini*
-*React + TypeScript + Supabase*
+## 7. Modalità PWA (Installazione)
+Si consiglia di installare l'app sulla home del telefono o del PC tramite il tasto "**Installa App**" per un'esperienza più fluida e accesso offline.
+
+---
+*Jobs Report — Efficienza in cantiere, controllo in ufficio.*

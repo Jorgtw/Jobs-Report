@@ -45,11 +45,8 @@ Il modulo di inserimento è intuitivo: seleziona il progetto, scrivi cosa hai fa
 
 ## 4. Strumenti per l'Amministratore
 
-### 5. Sommario Lavori
-Disponibile per **Amministratori** e **Incaricati**:
-- Permette di analizzare i costi e i ricavi per progetto, cliente o lavoratore.
-- Gli **Incaricati** vedono solo i dati relativi ai progetti di loro competenza.
-- Gli **Amministratori** hanno una visione globale e possono gestire gli stati di fatturazione.
+### 5. Sommario Lavori (Solo Admin)
+Permette di analizzare i costi e i ricavi per progetto, cliente o lavoratore. È possibile filtrare i dati per un periodo specifico e scaricare report in PDF o Excel.
 
 ![Sommario Amministrativo](file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png)
 
