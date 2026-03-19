@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manuale Utente - Jobs Report App</title>
+    <title>Benvenuto - Jobs Report Guide</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -11,7 +11,8 @@
         :root {
             --primary: #2563eb;
             --primary-light: #eff6ff;
-            --secondary: #64748b;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #f8fafc;
             --text: #1e293b;
             --text-light: #64748b;
             --bg: #f8fafc;
@@ -31,368 +32,155 @@
             line-height: 1.6;
             color: var(--text);
             background-color: var(--bg);
-            padding-bottom: 50px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* Header Styling */
-        header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: white;
-            padding: 60px 20px;
-            border-radius: 0 0 40px 40px;
-            text-align: center;
-            margin-bottom: 60px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 10px;
-            letter-spacing: -0.025em;
-        }
-
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            font-weight: 500;
-        }
-
-        /* Content Sections */
-        section {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            margin-bottom: 40px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        h2 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 25px;
             display: flex;
-            align-items: center;
-            gap: 15px;
-            letter-spacing: -0.015em;
         }
 
-        h2::before {
-            content: '';
-            width: 8px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 4px;
-        }
-
-        h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin: 30px 0 15px 0;
-            color: #334155;
-        }
-
-        p {
-            margin-bottom: 20px;
-            font-size: 1.05rem;
-        }
-
-        ul {
-            list-style: none;
-            margin-bottom: 25px;
-        }
-
-        ul li {
-            padding-left: 28px;
-            position: relative;
-            margin-bottom: 12px;
-            font-size: 1.05rem;
-        }
-
-        ul li::before {
-            content: '✓';
-            position: absolute;
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            position: fixed;
             left: 0;
-            color: var(--primary);
-            font-weight: 900;
+            top: 0;
+            padding: 30px 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
 
-        strong {
-            font-weight: 700;
-            color: #0f172a;
-        }
+        .sidebar h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 30px; color: white; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); text-transform: uppercase; letter-spacing: 0.05em; }
+        .sidebar ul { list-style: none; }
+        .sidebar ul li { margin-bottom: 5px; }
+        .sidebar ul li a { color: #94a3b8; text-decoration: none; font-size: 0.95rem; font-weight: 500; display: block; padding: 10px 15px; border-radius: 8px; transition: all 0.2s ease; }
+        .sidebar ul li a:hover { color: white; background: rgba(255,255,255,0.05); }
+        .sidebar ul li a.active { color: white; background: var(--primary); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
 
-        /* Images */
-        .image-container {
-            margin: 30px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            background: #f1f5f9;
-        }
+        .main-content { margin-left: 240px; flex: 1; min-width: 0; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
 
-        img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
+        header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 60px 40px; border-radius: 24px; margin-bottom: 60px; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2); }
+        header h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; letter-spacing: -0.025em; }
+        header p { font-size: 1.1rem; opacity: 0.9; font-weight: 500; }
 
-        .caption {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            text-align: center;
-            padding: 15px;
-            font-style: italic;
-            border-top: 1px solid var(--border);
-            background: #ffffff;
-        }
+        section { background: var(--card-bg); padding: 50px; border-radius: 32px; border: 1px solid var(--border); margin-bottom: 50px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03); scroll-margin-top: 40px; }
+        h2 { font-size: 1.75rem; font-weight: 800; color: var(--primary); margin-bottom: 25px; display: flex; align-items: center; gap: 15px; letter-spacing: -0.015em; }
+        h2::before { content: ''; width: 8px; height: 32px; background: var(--primary); border-radius: 4px; }
+        h3 { font-size: 1.35rem; font-weight: 700; margin: 35px 0 15px 0; color: #1e293b; }
+        p { margin-bottom: 20px; font-size: 1.1rem; color: #475569; }
+        ul { list-style: none; margin-bottom: 25px; }
+        ul li { padding-left: 32px; position: relative; margin-bottom: 15px; font-size: 1.1rem; color: #475569; }
+        ul li::before { content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: 900; }
 
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 25px 0;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
+        .image-container { margin: 40px 0; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); background: #f1f5f9; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+        img { width: 100%; height: auto; display: block; }
+        .caption { font-size: 0.95rem; color: var(--text-light); text-align: center; padding: 20px; font-style: italic; border-top: 1px solid var(--border); background: #ffffff; }
 
-        th {
-            background: #f8fafc;
-            text-align: left;
-            padding: 15px;
-            font-weight: 700;
-            color: #475569;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border);
-        }
+        footer { text-align: center; padding: 40px; color: var(--text-light); font-size: 0.95rem; border-top: 1px solid var(--border); margin-top: 60px; }
 
-        td {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: top;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Horizontal Rule */
-        hr {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 40px 0;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-light);
-            margin-top: 40px;
-        }
-
-        /* TOC */
-        .toc {
-            background: var(--primary-light);
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 40px;
-        }
-
-        .toc h4 {
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-
-        .toc ul {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 0;
-        }
-
-        .toc li {
-            font-size: 0.9rem;
-            margin: 0;
-        }
-
-        .toc a {
-            text-decoration: none;
-            color: #334155;
-            font-weight: 600;
-        }
-
-        .toc a:hover {
-            color: var(--primary);
-        }
-
-        @media (max-width: 640px) {
-            .container { padding: 20px 15px; }
-            section { padding: 25px; }
-            header h1 { font-size: 1.8rem; }
-            .toc ul { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 20px 10px; } .sidebar h2, .sidebar ul li a span { display: none; } .sidebar ul li a { text-align: center; padding: 12px; } .main-content { margin-left: 60px; } }
+        @media (max-width: 640px) { .sidebar { display: none; } .main-content { margin-left: 0; } .container { padding: 30px 20px; } section { padding: 30px; } }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Manuale Utente - Jobs Report App</h1>
-    <p>La guida completa all'utilizzo del sistema</p>
-</header>
+<nav class="sidebar">
+    <h2>Introduzione</h2>
+    <ul>
+        <li><a href="#landing" class="nav-link">Landing Page</a></li>
+        <li><a href="#launcher" class="nav-link">Schermata di Avvio</a></li>
+        <li><a href="#rapportini" class="nav-link">Rapportini</a></li>
+        <li><a href="#admin" class="nav-link">Amministrazione</a></li>
+        <li><a href="#personale" class="nav-link">Personale</a></li>
+        <li><a href="#profilo" class="nav-link">Profilo</a></li>
+    </ul>
+</nav>
 
-<div class="container">
-    
-    <div class="toc">
-        <h4>Indice</h4>
-        <ul>
-            <li><a href="#landing">1. Landing Page</a></li>
-            <li><a href="#launcher">2. Launcher</a></li>
-            <li><a href="#rapportini">3. Rapportini</a></li>
-            <li><a href="#admin">4. Amministratore</a></li>
-            <li><a href="#personale">5. Personale</a></li>
-            <li><a href="#profilo">6. Profilo</a></li>
-        </ul>
+<main class="main-content">
+    <div class="container">
+        
+        <header>
+            <h1>Benvenuto in Jobs Report</h1>
+            <p>La guida rapida per iniziare subito a lavorare</p>
+        </header>
+
+        <section id="landing">
+            <h2>1. Pagina di Presentazione</h2>
+            <p>Questa è la nuova porta d'ingresso professionale. Qui puoi vedere una panoramica delle funzioni e scegliere la tua lingua preferita.</p>
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/landing_page_new_jobsreport_png_1773835243116.png" alt="Landing Page">
+                <div class="caption">Nuova presentazione multilingua — Professionale e chiara</div>
+            </div>
+        </section>
+
+        <section id="launcher">
+            <h2>2. Schermata di Avvio (Pannello principale)</h2>
+            <p>Dopo il login, questo è il tuo centro di comando. Da qui raggiungi ogni funzione in un secondo.</p>
+            <p>Se sei un operaio o un incaricato, vedrai qui il tuo riepilogo ore mensile aggiornato in tempo reale.</p>
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png" alt="Pannello principale">
+                <div class="caption">Il Pannello principale — Semplice, rapido e intuitivo</div>
+            </div>
+        </section>
+
+        <section id="rapportini">
+            <h2>3. Registro Lavori (Rapportini)</h2>
+            <p>Questa è la sezione più importante per chi lavora sul campo. Puoi vedere cosa hai fatto e inserire nuovi lavori in pochi secondi.</p>
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/reports_list_new_1772984651456.png" alt="Lista Rapportini">
+                <div class="caption">Lista dei tuoi lavori — Storico chiaro e modificabile</div>
+            </div>
+            <p>Il sistema calcola anche le ore totali e gli straordinari per te, così non devi fare calcoli a mano.</p>
+        </section>
+
+        <section id="admin">
+            <h2>4. Amministrazione e Controllo</h2>
+            <p>Gli amministratori hanno a disposizione strumenti potenti per vedere l'andamento economico di ogni cantiere.</p>
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png" alt="Amministrazione">
+                <div class="caption">Analisi economica — Costi, ricavi e margini sotto controllo</div>
+            </div>
+        </section>
+
+        <section id="personale">
+            <h2>5. Gestione del Personale</h2>
+            <p>Organizza il tuo team, assegna i ruoli e imposta i costi orari per avere un'analisi precisa dei costi aziendali.</p>
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/personnel_tab_new_1772984693912.png" alt="Personale">
+                <div class="caption">Gestione del team — Il cuore dell'organizzazione aziendale</div>
+            </div>
+        </section>
+
+        <section id="profilo">
+            <h2>6. Profilo e Lingue</h2>
+            <p>Personalizza l'app scegliendo tra Italiano, Inglese, Spagnolo, Polacco, Turco o Danese.</p>
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/profile_tab_new_1772984705165.png" alt="Profilo">
+                <div class="caption">Le tue impostazioni — Sempre a portata di mano</div>
+            </div>
+        </section>
+
+        <footer>
+            <p><strong>Jobs Report</strong> — Il tuo alleato quotidiano sul lavoro.</p>
+        </footer>
+
     </div>
+</main>
 
-    <section>
-        <p>Benvenuto in Jobs Report, l'applicazione progettata per semplificare la registrazione delle ore lavorative, la gestione dei progetti e l'amministrazione del personale.</p>
-        <p>In questo manuale esploreremo assieme le schermate principali dell'App, con esempi reali di come appare il sistema una volta configurato con i tuoi dati.</p>
-    </section>
-
-    <section id="landing">
-        <h2>1. Pagina di Presentazione (Landing Page)</h2>
-        <p>La nuova porta d'ingresso professionale a JobsReport, nata da 30 anni di esperienza sul campo.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/landing_page_new_jobsreport_png_1773835243116.png" alt="Nuova Landing Page">
-            <div class="caption">Nuova Landing Page — Professionale e Multilingua</div>
-        </div>
-
-        <ul>
-            <li><strong>Panoramica</strong>: Una presentazione chiara delle funzionalità chiave: Clienti, Team, Progetti, Subappalti e Analisi Economica.</li>
-            <li><strong>Supporto Multilingua</strong>: Seleziona la tua lingua preferita (Italiano, English, Español, Polski, Türkçe, Dansk) direttamente dall'overlay iniziale.</li>
-            <li><strong>Richiesta Demo</strong>: Da qui puoi richiedere una demo o l'attivazione di un nuovo account aziendale.</li>
-        </ul>
-    </section>
-
-    <section id="launcher">
-        <h2>2. Pannello di Controllo (Launcher)</h2>
-        <p>Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.</p>
-        <p>Per gli <strong>Operatori</strong> e gli <strong>Incaricati</strong>, in questa pagina è ora visibile anche il <strong>Riepilogo Ore del Mese</strong> corrente, per avere sempre sott'occhio il proprio monte ore lavorate.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png" alt="Nuovo Launcher Dashboard">
-            <div class="caption">Nuovo Launcher Dashboard con indicatori KPI e navigazione rapida</div>
-        </div>
-
-        <ul>
-            <li><strong>Indicatori KPI (solo Admin)</strong>: Monitora in tempo reale le ore lavorate nel mese, il numero di rapportini, i progetti attivi e il margine economico.</li>
-            <li><strong>Navigazione Rapida</strong>: Icone grandi e intuitive per saltare velocemente tra le sezioni del programma.</li>
-            <li><strong>Logout Integrato</strong>: Un tasto rosso dedicato a fondo pagina per chiudere la sessione in sicurezza.</li>
-        </ul>
-    </section>
-
-    <section id="rapportini">
-        <h2>3. Registro Lavori (Rapportini)</h2>
-        <p>La sezione "Rapportini" è il cuore dell'applicazione per ogni lavoratore. Qui puoi vedere lo storico delle tue attività.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/reports_list_new_1772984651456.png" alt="Lista dei Rapportini Popolata">
-            <div class="caption">Lista dei Rapportini — storico attività con opzioni di modifica e duplicazione</div>
-        </div>
-
-        <ul>
-            <li><strong>Chiarezza</strong>: Ogni riga mostra chiaramente il progetto, la descrizione del compito svolto e le ore totali.</li>
-            <li><strong>Icone Azione</strong>: Puoi duplicare un vecchio rapportino (per risparmiare tempo), modificarlo o eliminarlo velocemente.</li>
-        </ul>
-
-        <h3>Inserimento Nuovo Rapportino</h3>
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/new_report_modal_new_1772984613627.png" alt="Modulo Nuovo Rapportino">
-            <div class="caption">Modulo Nuovo Rapportino — inserimento dati rapido e intuitivo</div>
-        </div>
-
-        <p>Il modulo di inserimento è intuitivo: seleziona il progetto, scrivi cosa hai fatto e inserisci gli orari. Il sistema calcolerà automaticamente le ore totali per te!</p>
-    </section>
-
-    <section id="admin">
-        <h2>4. Strumenti per l'Amministratore</h2>
-
-        <h3>Sommario Lavori (Solo Admin)</h3>
-        <p>Permette di analizzare i costi e i ricavi per progetto, cliente o lavoratore. È possibile filtrare i dati per un periodo specifico e scaricare report in PDF o Excel.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png" alt="Sommario Amministrativo">
-            <div class="caption">Sommario Amministrativo — Analisi economica per progetto e cliente</div>
-        </div>
-
-        <ul>
-            <li><strong>Filtri Potenti</strong>: Filtra per cliente, progetto o collaboratore per trovare esattamente ciò che cerchi.</li>
-            <li><strong>Esportazione Professionale</strong>: Genera report in Excel o PDF con un solo click, completi di tutte le traduzioni e le descrizioni.</li>
-        </ul>
-
-        <h3>Gestione Clienti e Progetti</h3>
-        <p>Organizza la tua struttura aziendale definendo i tuoi Clienti e i relativi Cantieri/Progetti.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/clients_tab_new_1772984719504.png" alt="Elenco Clienti">
-            <div class="caption">Gestione Clienti — Anagrafica completa e progetti associati</div>
-        </div>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/projects_tab_new_1772984681650.png" alt="Elenco Progetti">
-            <div class="caption">Gestione Progetti — Monitoraggio cantieri e personale assegnato</div>
-        </div>
-    </section>
-
-    <section id="personale">
-        <h2>5. Personale e Collaboratori</h2>
-        <p>Gestisci i profili dei tuoi dipendenti, impostando i loro ruoli e i parametri di costo.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/personnel_tab_new_1772984693912.png" alt="Gestione Personale">
-            <div class="caption">Gestione Personale — Ruoli, tariffe orarie e credenziali di accesso</div>
-        </div>
-    </section>
-
-    <section id="profilo">
-        <h2>6. Profilo e Impostazioni</h2>
-        <p>Personalizza la tua esperienza d'uso.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/profile_tab_new_1772984705165.png" alt="Profilo Utente">
-            <div class="caption">Profilo Utente — Riepilogo ore mensili e cambio lingua</div>
-        </div>
-
-        <ul>
-            <li><strong>Multilingua</strong>: Supporto completo per 6 lingue (Italiano, English, Dansk, Español, Türkçe, Polski).</li>
-            <li><strong>Logout Sicuro</strong>: Per chiudere la sessione in tutta sicurezza.</li>
-        </ul>
-    </section>
-
-    <footer>
-        <p><em>Manuale generato con dati di esempio per scopi dimostrativi.</em></p>
-    </footer>
-
-</div>
+<script>
+    const links = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= (sectionTop - 150)) { current = section.getAttribute('id'); }
+        });
+        links.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) { link.classList.add('active'); }
+        });
+    });
+</script>
 
 </body>
 </html>
