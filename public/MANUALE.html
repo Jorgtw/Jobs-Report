@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guida all'Uso - Jobs Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #f8fafc;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --accent: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            display: flex;
+        }
+
+        /* Sidebar Fissa */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 30px 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            color: white;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar ul li a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar ul li a:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .sidebar ul li a.active {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Contenuto Principale */
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 24px;
+            margin-bottom: 60px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -0.025em;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            margin-bottom: 50px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            scroll-margin-top: 40px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            letter-spacing: -0.015em;
+        }
+
+        h2::before {
+            content: '';
+            width: 8px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        h3 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 35px 0 15px 0;
+            color: #1e293b;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #475569;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        ul li {
+            padding-left: 32px;
+            position: relative;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #475569;
+        }
+
+        ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .roles-list li::before { content: '•'; }
+
+        .image-container {
+            margin: 40px 0;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #f1f5f9;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .caption {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            border-top: 1px solid var(--border);
+            background: #ffffff;
+        }
+
+        .alert-box {
+            background-color: #fff7ed;
+            border: 1px solid #fed7aa;
+            padding: 25px;
+            border-radius: 16px;
+            margin: 30px 0;
+        }
+
+        .alert-box strong { color: #9a3412; }
+        .alert-box p { margin: 0; color: #9a3412; font-weight: 500; font-size: 1rem; }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 30px 0;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 18px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            font-size: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 60px; padding: 20px 10px; }
+            .sidebar h2, .sidebar ul li a span { display: none; }
+            .sidebar ul li a { text-align: center; padding: 12px; }
+            .main-content { margin-left: 60px; }
+        }
+
+        @media (max-width: 640px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+            .container { padding: 30px 20px; }
+            section { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="sidebar">
+    <h2>Guida</h2>
+    <ul>
+        <li><a href="#intro" class="nav-link">Introduzione</a></li>
+        <li><a href="#accesso" class="nav-link">Accesso</a></li>
+        <li><a href="#pannello" class="nav-link">Pannello principale</a></li>
+        <li><a href="#rapportini" class="nav-link">Rapportini</a></li>
+        <li><a href="#progetti" class="nav-link">Progetti</a></li>
+        <li><a href="#personale" class="nav-link">Personale</a></li>
+        <li><a href="#sommario" class="nav-link">Analisi economica</a></li>
+        <li><a href="#profilo" class="nav-link">Profilo</a></li>
+        <li><a href="#installazione" class="nav-link">Installazione</a></li>
+    </ul>
+</nav>
+
+<main class="main-content">
+    <div class="container">
+        
+        <header>
+            <h1>Guida all'Uso - Jobs Report</h1>
+            <p>Il sistema semplice per gestire i tuoi lavori e il tuo team</p>
+        </header>
+
+        <section id="intro">
+            <h2>Introduzione</h2>
+            <p>Jobs Report è un'<strong>applicazione web</strong> progettata per rendere semplice e immediata la gestione quotidiana dei lavori. Ti permette di segnare le ore, controllare i costi e avere sempre tutto sotto controllo, sia dall'ufficio che dal cantiere.</p>
+        </section>
+
+        <section id="accesso">
+            <h2>1. Accesso al sistema</h2>
+            <h3>Entrare nel programma</h3>
+            <p>Accedi inserendo il tuo nome utente e la tua password personale. In base al tuo ruolo, vedrai solo le funzioni che ti servono:</p>
+            <ul class="roles-list">
+                <li><strong>Operatore</strong>: Può inserire e gestire solo i propri rapportini di lavoro.</li>
+                <li><strong>Incaricato (Supervisor)</strong>: Può vedere e gestire anche i rapportini dei collaboratori assegnati ai suoi progetti.</li>
+                <li><strong>Amministratore</strong>: Ha accesso completo a tutte le funzioni: rapportini, progetti, clienti, personale e analisi economica.</li>
+            </ul>
+
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/initial_load_page_1773835119390.png" alt="Accesso">
+                <div class="caption">Schermata di accesso — Inserisci i tuoi dati per iniziare</div>
+            </div>
+
+            <h3>Se dimentichi la password</h3>
+            <p>Se non riesci più ad entrare, chiedi aiuto al tuo amministratore che potrà resettare la tua password in pochi istanti.</p>
+        </section>
+
+        <section id="pannello">
+            <h2>2. Pannello principale (Schermata di avvio)</h2>
+            <p>Appena entri, ti troverai nel <strong>Pannello principale</strong>. Da qui puoi raggiungere velocemente ogni sezione con un semplice clic.</p>
+            <p>Se sei un <strong>Operatore</strong> o un <strong>Incaricato</strong>, vedrai subito un riquadro con il totale delle tue ore lavorate nel mese attuale, così saprai sempre quanto hai prodotto finora.</p>
+
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png" alt="Schermata di avvio">
+                <div class="caption">Schermata di avvio — Accesso rapido alle funzioni principali</div>
+            </div>
+            
+            <p>Gli amministratori troveranno qui anche alcuni <strong>indicatori di performance</strong> che mostrano lo stato generale dell'azienda (ore totali, progetti attivi e marginalità).</p>
+        </section>
+
+        <section id="rapportini">
+            <h2>3. Gestione dei Rapportini</h2>
+            <h3>Lista dei lavori svolti</h3>
+            <p>Qui vedi l'elenco di tutte le attività caricate. Operatori e Incaricati vedono solo ciò che li riguarda, mentre l'Amministratore ha la visuale completa.</p>
+
+            <div class="image-container">
+                <img src="C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportini_1772699081545.png" alt="Lista Rapportini">
+                <div class="caption">Esempio di lista dei lavori con filtri per data e progetto</div>
+            </div>
+
+            <h3>Creare o Modificare un lavoro</h3>
+            <p>Clicca sul tasto "<strong>Nuovo Rapportino</strong>" per segnare una nuova giornata. Puoi anche cliccare sull'icona della matita per correggere un errore.</p>
+            <ul>
+                <li>Scegli il <strong>Progetto</strong> su cui hai lavorato.</li>
+                <li>Conferma la <strong>Data</strong>.</li>
+                <li>Aggiungi eventuali <strong>Collaboratori</strong> se avete lavorato in squadra.</li>
+                <li>Inserisci eventuali <strong>Spese extra</strong> (come materiali comprati o pasti).</li>
+            </ul>
+
+            <div class="image-container">
+                <img src="C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportino_1772699103453.png" alt="Form rapportino">
+                <div class="caption">Compilazione del lavoro — semplice, veloce e automatica</div>
+            </div>
+
+            <h3>Dettagli del tempo</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Cosa indica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Inizio / Fine</strong></td>
+                        <td>Gli orari di lavoro calcolano automaticamente il tempo totale.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pausa</strong></td>
+                        <td>Indica il tempo della pausa per toglierlo correttamente dal totale.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Straordinari</strong></td>
+                        <td>Vengono calcolati automaticamente se superi le ore previste nel tuo contratto.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="progetti">
+            <h2>4. Gestione Progetti (Solo Admin)</h2>
+            <p>L'amministratore crea i nuovi cantieri, li assegna ai clienti e decide quali persone possono lavorarci.</p>
+            <ul>
+                <li><strong>Cantieri Attivi</strong>: quelli su cui si può lavorare oggi.</li>
+                <li><strong>Cantieri Chiusi</strong>: l'archivio storico dei lavori terminati.</li>
+            </ul>
+        </section>
+
+        <section id="personale">
+            <h2>5. Gestione del Personale</h2>
+            <p>In questa sezione si gestisce la squadra. Si possono aggiungere nuovi dipendenti o collaboratori esterni, decidendo il loro ruolo e quanto costano all'azienda per ogni ora di lavoro.</p>
+            
+            <div class="alert-box">
+                <p><strong>IMPORTANTE:</strong> Ricordati di inserire l'email corretta per ogni persona: servirà per inviare automaticamente le istruzioni di accesso con un solo clic.</p>
+            </div>
+
+            <p>Dati da inserire per ogni nuovo utente:</p>
+            <ul>
+                <li><strong>Nome e cognome</strong>: per identificare il lavoratore nei report.</li>
+                <li><strong>Email</strong>: fondamentale per l'invio delle credenziali.</li>
+                <li><strong>Ruolo</strong>: scegli tra Operatore (solo i propri dati) o Incaricato (gestione squadra).</li>
+                <li><strong>Costo orario</strong>: quanto costa il lavoratore all'azienda.</li>
+                <li><strong>Soglia straordinari</strong>: dopo quante ore giornaliere scatta la tariffa straordinaria.</li>
+            </ul>
+
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/personnel_tab_new_1772984693912.png" alt="Gestione Personale">
+                <div class="caption">Sezione Personale — Organizza il tuo team e le loro tariffe</div>
+            </div>
+        </section>
+
+        <section id="sommario">
+            <h2>6. Analisi economica (Solo Admin)</h2>
+            <p>Questa sezione è riservata a chi gestisce i conti dell'azienda. Permette di vedere in tempo reale se un lavoro sta guadagnando o perdendo denaro, confrontando i costi del personale e delle spese con il prezzo di vendita pattuito.</p>
+
+            <div class="image-container">
+                <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png" alt="Analisi economica">
+                <div class="caption">Analisi economica — Tutto sotto controllo: ore, costi e guadagni</div>
+            </div>
+            <p>Puoi creare report complessi in un attimo e scaricarli in formato Excel o PDF per la tua fatturazione o per i tuoi consulenti.</p>
+        </section>
+
+        <section id="profilo">
+            <h2>7. Profilo e Impostazioni</h2>
+            <p>Ognuno può controllare le proprie impostazioni, aggiornare il proprio numero di telefono o cambiare la lingua del programma.</p>
+            
+            <h3>Lingue disponibili</h3>
+            <p>Il sistema parla la tua lingua! Puoi scegliere tra:</p>
+            <ul>
+                <li><strong>Italiano</strong></li>
+                <li><strong>Inglese</strong></li>
+                <li><strong>Spagnolo</strong></li>
+                <li><strong>Polacco</strong></li>
+                <li><strong>Turco</strong></li>
+                <li><strong>Danese</strong></li>
+            </ul>
+        </section>
+
+        <section id="installazione">
+            <h2>8. Installazione come App</h2>
+            <p>Per usare Jobs Report comodamente dal tuo telefono, clicca sul tasto "<strong>Installa App</strong>" che trovi nel menu. In questo modo avrai l'icona del programma direttamente sulla tua schermata principale come una normale applicazione.</p>
+        </section>
+
+        <footer>
+            <p><strong>Jobs Report</strong> — Efficienza e controllo per il tuo lavoro quotidiano.</p>
+        </footer>
+
+    </div>
+</main>
+
+<script>
+    // Script per evidenziare la sidebar durante lo scroll (Scroll-Spy)
+    const links = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (pageYOffset >= (sectionTop - 150)) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        links.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
+iv>
+
+</body>
+</html>
