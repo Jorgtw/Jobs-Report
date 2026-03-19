@@ -1951,7 +1951,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         db.getUsers(),
       ]);
       setReports(r);
-      setProjects(p.filter((pr: Project) => pr.status === 'active'));
+      setProjects(p); // Keep all projects for permission checks
       setPersonnel(u.filter((usr: User) => usr.status === 'active'));
     };
     load();
@@ -1960,11 +1960,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const canEditReport = (r: WorkReport) => {
     if (user.role === 'admin') return true;
     if (user.role === 'supervisor') {
-      // Supervisors can edit their own and reports from their assigned projects
+      // Supervisors can edit their own and reports from their assigned projects OR if they are an additional worker
       const isAuthor = r.userId === user.id;
       const proj = projects.find(p => p.id === r.projectId);
       const isAssigned = proj?.assignedWorkerIds?.includes(user.id);
-      return isAuthor || isAssigned;
+      const isHelper = r.additionalWorkers?.some(aw => aw.userId === user.id);
+      return isAuthor || isAssigned || isHelper;
     }
     // Operators only edit what they created
     return r.userId === user.id;
@@ -2502,10 +2503,15 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         <option value="">{t('select')}</option>
                         {projects
                           .filter(p => {
+                            // Always include if it's the current project of the report being edited
+                            if (editingId && p.id === reports.find(r => r.id === editingId)?.projectId) return true;
+                            // Only show active projects for new reports
+                            if (!editingId && p.status !== 'active') return false;
+
                             if (isInternalMode) return p.isInternal;
                             if (p.isInternal) return false;
-                            if (user.role === 'admin' || !p.assignedWorkerIds || p.assignedWorkerIds.length === 0) return true;
-                            return p.assignedWorkerIds.includes(user.id);
+                            if (user.role === 'admin') return true;
+                            return p.assignedWorkerIds?.includes(user.id);
                           })
                           .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
