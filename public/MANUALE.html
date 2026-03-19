@@ -558,5 +558,21 @@
     });
 </script>
 
+
+    <!-- Bottone fisso per tornare all'App -->
+    <a href="https://jobs-report.vercel.app" 
+       target="_blank"
+       style="position: fixed; bottom: 24px; right: 24px; 
+              background: #2563eb; color: white; text-decoration: none;
+              padding: 12px 20px; border-radius: 12px; font-family: 'Inter', sans-serif;
+              font-size: 0.95rem; font-weight: 600; 
+              box-shadow: 0 4px 12px rgba(37,99,235,0.3); z-index: 999;
+              display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"
+       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(37,99,235,0.4)';"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(37,99,235,0.3)';"
+    >
+        <span style="font-size: 1.2rem;">←</span> Torna all'app
+    </a>
+
 </body>
 </html>

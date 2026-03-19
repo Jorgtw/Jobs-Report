@@ -32,6 +32,7 @@ import {
   Chrome,
   PlusCircle,
   LayoutDashboard,
+  BookOpen,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -1037,6 +1038,29 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Full Guide Card */}
+        <div className="md:col-span-2">
+          <div className="bg-blue-600 rounded-3xl p-6 shadow-xl shadow-blue-100 flex flex-col md:flex-row items-center justify-between gap-6 group hover:bg-blue-700 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-white/10 rounded-2xl group-hover:scale-110 transition-transform">
+                <BookOpen className="text-white" size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-1">{t('helpGuideTitle')}</h3>
+                <p className="text-blue-100 text-sm leading-relaxed max-w-md">{t('helpGuideBody')}</p>
+              </div>
+            </div>
+            <a 
+              href="https://jobs-report.vercel.app/MANUALE.html" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-white text-blue-600 px-8 py-3 rounded-xl font-black shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+            >
+              {t('helpGuideBtn')}
+            </a>
+          </div>
+        </div>
+
         {/* Common Section: PWA */}
         <HelpCard 
           title={t('helpPwaTitle')} 
@@ -1101,12 +1125,12 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
         )}
       </div>
 
-      <div className="bg-blue-50 rounded-3xl p-8 border border-blue-100 text-center">
+      <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 text-center">
         <HelpCircle className="mx-auto text-blue-500 mb-3" size={32} />
-        <h3 className="font-bold text-blue-900 text-lg">{t('helpContactHeader')}</h3>
-        <a href="mailto:jtw@live.it" className="text-blue-700/70 text-sm mt-1 hover:text-blue-800 transition-colors">
+        <h3 className="font-bold text-slate-900 text-lg">{t('helpContactHeader')}</h3>
+        <p className="text-slate-500 text-sm mt-2 max-w-lg mx-auto leading-relaxed">
           {t('helpSupportContact')}
-        </a>
+        </p>
       </div>
     </div>
   );
