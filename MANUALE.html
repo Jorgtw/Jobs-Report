@@ -1,461 +1,267 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manuale d'Uso - Jobs Report</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-light: #eff6ff;
-            --secondary: #64748b;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --accent: #f59e0b;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background-color: var(--bg);
-            padding-bottom: 50px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin-left: 260px;
-            padding: 40px 20px;
-        }
-
-        /* Header Styling */
-        header {
-            background: #f8fafc;
-            color: #1e293b;
-            padding: 30px 40px;
-            border-radius: 0 0 12px 12px;
-            text-align: left;
-            margin-bottom: 40px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #1e293b;
-            letter-spacing: -0.01em;
-        }
-
-        header p {
-            font-size: 1rem;
-            color: #64748b;
-            font-weight: 400;
-            opacity: 1;
-        }
-
-        /* Content Sections */
-        section {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            margin-bottom: 40px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        h2 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            letter-spacing: -0.015em;
-        }
-
-        h2::before {
-            content: '';
-            width: 8px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 4px;
-        }
-
-        h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin: 30px 0 15px 0;
-            color: #334155;
-        }
-
-        p {
-            margin-bottom: 20px;
-            font-size: 1.05rem;
-        }
-
-        ul {
-            list-style: none;
-            margin-bottom: 25px;
-        }
-
-        ul li {
-            padding-left: 28px;
-            position: relative;
-            margin-bottom: 12px;
-            font-size: 1.05rem;
-        }
-
-        ul li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-weight: 900;
-        }
-
-        strong {
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        /* Images */
-        .image-container {
-            margin: 30px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            background: #f1f5f9;
-        }
-
-        img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .caption {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            text-align: center;
-            padding: 15px;
-            font-style: italic;
-            border-top: 1px solid var(--border);
-            background: #ffffff;
-        }
-
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 25px 0;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        th {
-            background: #f8fafc;
-            text-align: left;
-            padding: 15px;
-            font-weight: 700;
-            color: #475569;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: top;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Horizontal Rule */
-        hr {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 40px 0;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-light);
-            margin-top: 40px;
-        }
-
-        /* TOC - Sticky Button/Panel could be added, but for now just simple list */
-        .toc {
-            position: fixed;
-            top: 40px;
-            left: 20px;
-            width: 220px;
-            background: var(--primary-light);
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 40px;
-            z-index: 100;
-        }
-
-        .logo-placeholder {
-            width: 140px;
-            height: 40px;
-            background: #e2e8f0;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-            font-size: 12px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        .toc h4 {
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-
-        .toc ul {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 0;
-        }
-
-        .toc li {
-            font-size: 0.9rem;
-            margin: 0;
-        }
-
-        .toc a {
-            text-decoration: none;
-            color: #334155;
-            font-weight: 600;
-        }
-
-        .toc a:hover {
-            color: var(--primary);
-        }
-
-        @media (max-width: 1024px) {
-            .container { margin: 0 auto; }
-            .toc { position: relative; width: auto; top: 0; left: 0; margin-bottom: 30px; }
-        }
-
-        @media (max-width: 640px) {
-            .container { padding: 20px 15px; }
-            section { padding: 25px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuale d'Uso - Jobs Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--p:#2563eb;--pl:#eff6ff;--t:#1e293b;--tl:#64748b;--bg:#f8fafc;--cb:#fff;--b:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;line-height:1.6;color:var(--t);background:var(--bg);padding-bottom:50px}
+.container{max-width:900px;margin-left:260px;padding:40px 20px}
+header{background:var(--bg);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--b);margin-bottom:40px}
+header h1{font-size:1.6rem;font-weight:800;color:var(--t);letter-spacing:-.01em}
+header p{font-size:.95rem;color:var(--tl);margin-top:2px}
+.lang-sel{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.lang-sel span{font-size:.7rem;font-weight:700;color:var(--tl);text-transform:uppercase;letter-spacing:.05em}
+.lb{padding:4px 11px;border:1.5px solid var(--b);border-radius:20px;background:#fff;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;color:var(--tl);cursor:pointer;transition:all .15s}
+.lb:hover{border-color:var(--p);color:var(--p)}
+.lb.active{background:var(--p);color:#fff;border-color:var(--p)}
+section{background:var(--cb);padding:38px;border-radius:22px;border:1px solid var(--b);margin-bottom:36px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05)}
+h2{font-size:1.6rem;font-weight:800;color:var(--p);margin-bottom:22px;display:flex;align-items:center;gap:14px;letter-spacing:-.015em}
+h2::before{content:'';width:7px;height:30px;background:var(--p);border-radius:4px;flex-shrink:0}
+h3{font-size:1.15rem;font-weight:700;margin:26px 0 12px;color:#334155}
+p{margin-bottom:18px;font-size:1rem}
+ul{list-style:none;margin-bottom:22px}
+ul li{padding-left:24px;position:relative;margin-bottom:10px;font-size:1rem}
+ul li::before{content:'✓';position:absolute;left:0;color:var(--p);font-weight:900}
+strong{font-weight:700;color:#0f172a}
+.img-box{margin:26px 0;border-radius:14px;overflow:hidden;border:1px solid var(--b);background:#f1f5f9}
+img{width:100%;height:auto;display:block}
+.caption{font-size:.88rem;color:var(--tl);text-align:center;padding:12px;font-style:italic;border-top:1px solid var(--b);background:#fff}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:22px 0;border:1px solid var(--b);border-radius:12px;overflow:hidden}
+th{background:#f8fafc;text-align:left;padding:13px;font-weight:700;color:#475569;text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;border-bottom:1px solid var(--b)}
+td{padding:13px;border-bottom:1px solid var(--b);vertical-align:top}
+tr:last-child td{border-bottom:none}
+footer{text-align:center;font-size:.88rem;color:var(--tl);margin-top:36px}
+.warn{background:#fffbeb;border:1px solid #fef3c7;padding:18px;border-radius:12px;margin-bottom:22px}
+.warn-title{color:#92400e;font-weight:700;margin-bottom:4px}
+.warn-body{color:#92400e;font-size:.9rem;margin:0}
+/* TOC */
+.toc{position:fixed;top:40px;left:20px;width:220px;background:var(--pl);padding:22px;border-radius:16px;z-index:100}
+.toc-logo{width:120px;height:36px;background:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:11px;margin-bottom:18px;font-weight:500}
+.toc h4{font-weight:800;color:var(--p);margin-bottom:12px;text-transform:uppercase;font-size:.82rem;letter-spacing:.05em}
+.toc ul{display:grid;grid-template-columns:1fr;gap:4px;margin:0}
+.toc li{font-size:.85rem;margin:0;padding-left:0}
+.toc li::before{display:none}
+.toc a{text-decoration:none;color:#334155;font-weight:600;display:block;padding:4px 8px;border-radius:6px;transition:background .15s,color .15s}
+.toc a:hover{color:var(--p);background:rgba(37,99,235,.08)}
+/* Mobile FAB */
+.toc-fab{display:none;position:fixed;bottom:22px;right:18px;z-index:200;background:var(--p);color:#fff;border:none;border-radius:50px;padding:11px 16px;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(37,99,235,.4);transition:transform .15s}
+.toc-fab:hover{transform:scale(1.05)}
+.toc-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:150}
+.toc-bd.open{display:block}
+/* Responsive */
+@media(max-width:1024px){
+  .container{margin:0 auto}
+  .toc{position:fixed;top:0;left:0;bottom:0;width:250px;border-radius:0 14px 14px 0;transform:translateX(-100%);transition:transform .3s ease;overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.1)}
+  .toc.open{transform:translateX(0)}
+  .toc-fab{display:flex;align-items:center;gap:7px}
+}
+@media(max-width:640px){
+  .container{padding:18px 14px}
+  section{padding:22px}
+  header{padding:16px}
+  header h1{font-size:1.25rem}
+}
+</style>
 </head>
 <body>
 
+<div class="toc-bd" id="tocBd" onclick="closeToc()"></div>
+
 <header>
-    <h1>Guida all'Uso — Jobs Report</h1>
-    <p>Il gestionale professionale per i tuoi cantieri</p>
+  <div>
+    <h1 data-i18n="h_title">Guida all'Uso — Jobs Report</h1>
+    <p data-i18n="h_sub">Il gestionale professionale per i tuoi cantieri</p>
+  </div>
+  <div class="lang-sel">
+    <span>🌐</span>
+    <button class="lb active" onclick="setLang('it')">IT</button>
+    <button class="lb" onclick="setLang('en')">EN</button>
+    <button class="lb" onclick="setLang('es')">ES</button>
+    <button class="lb" onclick="setLang('pl')">PL</button>
+    <button class="lb" onclick="setLang('tr')">TR</button>
+    <button class="lb" onclick="setLang('da')">DA</button>
+  </div>
 </header>
 
 <div class="container">
-    
-    <div class="toc">
-        <!-- Sostituire con il logo reale di Jobs Report -->
-        <div class="logo-placeholder">[ Logo ]</div>
-        <h4>Indice</h4>
-        <ul>
-            <li><a href="#intro">Introduzione</a></li>
-            <li><a href="#accesso">1. Accesso</a></li>
-            <li><a href="#dashboard">2. Pannello principale</a></li>
-            <li><a href="#rapportini">3. Rapportini</a></li>
-            <li><a href="#progetti">4. Progetti</a></li>
-            <li><a href="#personale">5. Personale</a></li>
-            <li><a href="#sommario">6. Sommario</a></li>
-            <li><a href="#profilo">7. Profilo</a></li>
-            <li><a href="#pwa">8. Installazione</a></li>
-        </ul>
+
+  <div class="toc" id="tocPanel">
+    <div class="toc-logo">[ Logo ]</div>
+    <h4 data-i18n="toc_h">Indice</h4>
+    <ul>
+      <li><a href="#intro" onclick="closeToc()" data-i18n="toc_0">Introduzione</a></li>
+      <li><a href="#accesso" onclick="closeToc()" data-i18n="toc_1">1. Accesso</a></li>
+      <li><a href="#dashboard" onclick="closeToc()" data-i18n="toc_2">2. Pannello principale</a></li>
+      <li><a href="#rapportini" onclick="closeToc()" data-i18n="toc_3">3. Rapportini</a></li>
+      <li><a href="#progetti" onclick="closeToc()" data-i18n="toc_4">4. Progetti</a></li>
+      <li><a href="#personale" onclick="closeToc()" data-i18n="toc_5">5. Personale</a></li>
+      <li><a href="#sommario" onclick="closeToc()" data-i18n="toc_6">6. Sommario</a></li>
+      <li><a href="#profilo" onclick="closeToc()" data-i18n="toc_7">7. Profilo</a></li>
+      <li><a href="#pwa" onclick="closeToc()" data-i18n="toc_8">8. Installazione</a></li>
+    </ul>
+  </div>
+
+  <section id="intro">
+    <h2 data-i18n="s0_h">Introduzione</h2>
+    <p data-i18n="s0_p">Jobs Report è un'applicazione web per la gestione dei lavori di cantiere, dei costi del personale e dei rapporti con i subappaltatori.</p>
+  </section>
+
+  <section id="accesso">
+    <h2 data-i18n="s1_h">1. Accesso e Autenticazione</h2>
+    <h3 data-i18n="s1_h3a">Login</h3>
+    <p data-i18n="s1_p">Accedi con username e password. I livelli di accesso dipendono dal ruolo assegnato:</p>
+    <ul>
+      <li><strong data-i18n="r_op">Operatore</strong>: <span data-i18n="r_op_d">Inserisce i propri rapportini e visualizza il riepilogo ore mensile.</span></li>
+      <li><strong data-i18n="r_su">Incaricato (Supervisor)</strong>: <span data-i18n="r_su_d">Gestisce i propri rapportini e quelli della propria squadra.</span></li>
+      <li><strong data-i18n="r_ad">Amministratore</strong>: <span data-i18n="r_ad_d">Controllo completo su progetti, personale e analisi economica.</span></li>
+    </ul>
+    <div class="img-box">
+      <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/initial_load_page_1773835119390.png" alt="Login">
+      <div class="caption" data-i18n="s1_cap">Pagina di accesso — Inserisci le credenziali per iniziare</div>
     </div>
+    <h3 data-i18n="s1_h3b">Recupero Password</h3>
+    <p data-i18n="s1_pwd">In caso di smarrimento della password, contatta l'amministratore del sistema.</p>
+  </section>
 
-    <section id="intro">
-        <h2>Introduzione</h2>
-        <p>Jobs Report è un'applicazione web progettata per la gestione e il monitoraggio dei lavori di cantiere, dei costi del personale e dei rapporti con i subappaltatori.</p>
-    </section>
+  <section id="dashboard">
+    <h2 data-i18n="s2_h">2. Pannello principale</h2>
+    <p data-i18n="s2_p1">Dopo il login accedi alla Dashboard principale con tutte le funzionalità autorizzate per il tuo ruolo.</p>
+    <p data-i18n="s2_p2">Operatori e Incaricati vedono il Riepilogo Ore del Mese corrente. Gli Amministratori vedono i KPI aziendali.</p>
+    <div class="img-box">
+      <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png" alt="Dashboard">
+      <div class="caption" data-i18n="s2_cap">Schermata di avvio — Accesso rapido a tutte le sezioni</div>
+    </div>
+  </section>
 
-    <section id="accesso">
-        <h2>1. Accesso e Autenticazione</h2>
-        
-        <h3>Login</h3>
-        <p>Accedi con le tue credenziali (username e password). L'applicazione supporta diversi livelli di accesso a seconda del ruolo assegnato:</p>
-        <ul>
-            <li><strong>Operatore</strong>: Inserisce i propri rapportini e visualizza il riepilogo ore mensile.</li>
-            <li><strong>Incaricato (Supervisor)</strong>: Può modificare sia i propri rapportini che quelli dei collaboratori del suo gruppo, oltre a monitorare l'andamento dei lavori.</li>
-            <li><strong>Amministratore</strong>: Gestione completa di anagrafiche, progetti, personale e analisi economica.</li>
-        </ul>
+  <section id="rapportini">
+    <h2 data-i18n="s3_h">3. Gestione Rapportini</h2>
+    <h3 data-i18n="s3_h3a">Lista Rapportini</h3>
+    <p data-i18n="s3_p">Visualizza i rapportini caricati con filtri per data e progetto.</p>
+    <ul>
+      <li><strong data-i18n="r_op2">Operatori</strong>: <span data-i18n="s3_op">Solo i propri rapportini.</span></li>
+      <li><strong data-i18n="r_su2">Incaricati</strong>: <span data-i18n="s3_su">I propri e quelli della squadra assegnata.</span></li>
+      <li><strong data-i18n="r_ad2">Admin</strong>: <span data-i18n="s3_ad">Tutti i rapportini aziendali.</span></li>
+    </ul>
+    <div class="img-box">
+      <img src="C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportini_1772699081545.png" alt="Lista Rapportini">
+      <div class="caption" data-i18n="s3_cap">Lista rapportini con filtri attivi</div>
+    </div>
+    <h3 data-i18n="s3_h3b">Creazione / Modifica</h3>
+    <p data-i18n="s3_new">Clicca su <strong data-i18n="s3_btn">Nuovo Rapportino</strong> e compila i campi:</p>
+    <ul>
+      <li data-i18n="s3_f1">Progetto</li>
+      <li data-i18n="s3_f2">Data</li>
+      <li data-i18n="s3_f3">Squadra (aggiungi collaboratori)</li>
+      <li data-i18n="s3_f4">Spese (materiali, pasti, trasporti)</li>
+      <li data-i18n="s3_f5">Stato Fatturazione (solo Admin)</li>
+    </ul>
+    <div class="img-box">
+      <img src="C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportino_1772699103453.png" alt="Form rapportino">
+      <div class="caption" data-i18n="s3_cap2">Form rapportino — orari, squadra, spese e stato fatturazione</div>
+    </div>
+    <h3 data-i18n="s3_h3c">Campi principali</h3>
+    <table>
+      <thead><tr><th data-i18n="tb_f">Campo</th><th data-i18n="tb_n">Note</th></tr></thead>
+      <tbody>
+        <tr><td><strong data-i18n="f_t">Orario Inizio/Fine</strong></td><td data-i18n="f_t_d">Calcolo automatico delle ore totali.</td></tr>
+        <tr><td><strong data-i18n="f_b">Pausa</strong></td><td data-i18n="f_b_d">Ore di pausa detratte dal totale.</td></tr>
+        <tr><td><strong data-i18n="f_o">Straordinari</strong></td><td data-i18n="f_o_d">Calcolati oltre la soglia standard del profilo.</td></tr>
+      </tbody>
+    </table>
+  </section>
 
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/initial_load_page_1773835119390.png" alt="Schermata di Login">
-            <div class="caption">Pagina di accesso — Inserisci le tue credenziali per iniziare</div>
-        </div>
+  <section id="progetti">
+    <h2 data-i18n="s4_h">4. Gestione Progetti (Solo Admin)</h2>
+    <p data-i18n="s4_p">Crea progetti, associali a clienti e assegna lavoratori o incaricati.</p>
+    <ul>
+      <li><strong data-i18n="s4_a">Progetti Attivi</strong>: <span data-i18n="s4_a_d">Selezionabili per l'inserimento ore.</span></li>
+      <li><strong data-i18n="s4_c">Progetti Chiusi</strong>: <span data-i18n="s4_c_d">Archivio storico, non selezionabili per nuovi rapportini.</span></li>
+    </ul>
+  </section>
 
-        <h3>Recupero Password</h3>
-        <p>In caso di smarrimento della password, contatta l'amministratore del sistema.</p>
-    </section>
+  <section id="personale">
+    <h2 data-i18n="s5_h">5. Gestione Personale (Solo Admin)</h2>
+    <p data-i18n="s5_p">Gestisci l'elenco dei lavoratori, i ruoli e lo stato di attivazione.</p>
+    <div class="warn">
+      <p class="warn-title" data-i18n="s5_wt">⚠️ IMPORTANTE: Email e Accesso</p>
+      <p class="warn-body" data-i18n="s5_wb">L'email deve essere valida: viene usata per inviare l'invito all'utente. Senza email corretta l'utente non potrà accedere.</p>
+    </div>
+    <p><strong data-i18n="s5_fl">Dati richiesti:</strong></p>
+    <ul>
+      <li data-i18n="s5_f1">Nome e Cognome</li>
+      <li data-i18n="s5_f2">Email</li>
+      <li data-i18n="s5_f3">Ruolo (Operatore, Incaricato, Amministratore)</li>
+      <li data-i18n="s5_f4">Codice Identificativo</li>
+      <li data-i18n="s5_f5">Stato (Attivo / Inattivo)</li>
+    </ul>
+  </section>
 
-    <section id="dashboard">
-        <h2>2. Pannello principale (Schermata di avvio)</h2>
-        <p>Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi accedere rapidamente a tutte le funzionalità autorizzate per il tuo ruolo.</p>
-        <p>Per gli <strong>Operatori</strong> e gli <strong>Incaricati</strong>, in questa pagina è ora visibile anche il <strong>Riepilogo Ore del Mese</strong> corrente, per avere sempre sott'occhio il proprio monte ore lavorate.</p>
+  <section id="sommario">
+    <h2 data-i18n="s6_h">6. Sommario Lavori (Solo Admin)</h2>
+    <p data-i18n="s6_p">Analisi di costi e ricavi per progetto, cliente o lavoratore. Esporta in PDF o Excel con un click.</p>
+    <div class="img-box">
+      <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png" alt="Sommario">
+      <div class="caption" data-i18n="s6_cap">Analisi economica per progetto e cliente</div>
+    </div>
+  </section>
 
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png" alt="Pannello principale Home">
-            <div class="caption">Schermata di avvio — Accesso rapido a Rapportini, Progetti e Riepiloghi</div>
-        </div>
-    </section>
+  <section id="profilo">
+    <h2 data-i18n="s7_h">7. Profilo e Impostazioni</h2>
+    <h3 data-i18n="s7_h3a">Profilo Utente</h3>
+    <p data-i18n="s7_p1">Aggiorna i tuoi dati di contatto e visualizza il riepilogo ore mensile.</p>
+    <h3 data-i18n="s7_h3b">Lingua</h3>
+    <p data-i18n="s7_p2">Supporto per IT, EN, ES, PL, TR, DA. Cambia dall'icona del mondo nella testata.</p>
+  </section>
 
-    <section id="rapportini">
-        <h2>3. Gestione Rapportini</h2>
-        
-        <h3>Lista Rapportini</h3>
-        <p>Visualizza tutti i rapportini caricati. Puoi filtrare per data o per progetto.</p>
-        <ul>
-            <li><strong>Operatori</strong>: Vedono solo i propri rapportini.</li>
-            <li><strong>Incaricati</strong>: Vedono i propri e quelli dei collaboratori assegnati ai propri progetti.</li>
-            <li><strong>Admin</strong>: Vedono tutti i rapportini dell'azienda.</li>
-        </ul>
+  <section id="pwa">
+    <h2 data-i18n="s8_h">8. Installazione (PWA)</h2>
+    <p data-i18n="s8_p">Installa l'app sulla home del telefono o del PC con il tasto <strong data-i18n="s8_btn">Installa App</strong> per accesso rapido e offline.</p>
+  </section>
 
-        <div class="image-container">
-            <img src="C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportini_1772699081545.png" alt="Lista Rapportini">
-            <div class="caption">Esempio di lista rapportini con filtri attivi</div>
-        </div>
-
-        <h3>Creazione/Modifica Rapportino</h3>
-        <p>Clicca su "<strong>Nuovo Rapportino</strong>" (o l'icona della matita per modificare):</p>
-        <ul>
-            <li>Seleziona il <strong>Progetto</strong>.</li>
-            <li>Inserisci la <strong>Data</strong>.</li>
-            <li>Specifica la <strong>Squadra</strong>: puoi aggiungere collaboratori cliccando su "Aggiungi Collaboratore".</li>
-            <li>Inserisci le <strong>Spese</strong>: materiali, pasti, trasporti, ecc.</li>
-            <li>Definisci lo <strong>Stato Fatturazione</strong> (solo per Admin).</li>
-        </ul>
-
-        <div class="image-container">
-            <img src="C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportino_1772699103453.png" alt="Form rapportino">
-            <div class="caption">Form rapportino — orari, squadra, spese e stato fatturazione in un'unica schermata</div>
-        </div>
-
-        <p>Permette l'inserimento e la modifica dei lavori svolti.</p>
-        <ul>
-            <li><strong>Operatori</strong>: Possono gestire solo i propri dati.</li>
-            <li><strong>Incaricati</strong>: Possono gestire i dati propri e quelli dei <strong>collaboratori</strong> per i progetti a loro assegnati.</li>
-            <li><strong>Admin</strong>: Controllo completo su ogni aspetto del sistema.</li>
-        </ul>
-
-        <h3>Dati principali</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Campo</th>
-                    <th>Note</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Orario Inizio/Fine</strong></td>
-                    <td>Calcolo automatico delle ore totali.</td>
-                </tr>
-                <tr>
-                    <td><strong>Pausa</strong></td>
-                    <td>Ore di pausa da detrarre dal totale.</td>
-                </tr>
-                <tr>
-                    <td><strong>Straordinari</strong></td>
-                    <td>Vengono calcolati oltre la soglia standard definita nel profilo.</td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
-
-    <section id="progetti">
-        <h2>4. Gestione Progetti (Solo Admin)</h2>
-        <h3>Progetti e Clienti</h3>
-        <p>L'amministratore può creare nuovi progetti, associarli a un cliente e assegnare i lavoratori o gli incaricati.</p>
-        <ul>
-            <li><strong>Progetti Attivi</strong>: Visibili per l'inserimento ore.</li>
-            <li><strong>Progetti Chiusi</strong>: Archivio storico, non più selezionabili per nuovi rapportini.</li>
-        </ul>
-    </section>
-
-    <section id="personale">
-        <h2>5. Gestione del Personale (Solo Admin)</h2>
-        <p>In questa sezione l'Amministratore può gestire l'elenco dei lavoratori, assegnare i ruoli e monitorare lo stato di attivazione.</p>
-        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-            <p style="color: #92400e; font-weight: 700; margin-bottom: 5px;">⚠️ IMPORTANTE: Email e Accesso</p>
-            <p style="color: #92400e; font-size: 0.9rem; margin: 0;">L'indirizzo email inserito deve essere valido. Una volta salvato l'utente, il sistema invierà automaticamente un'email di invito per impostare la password. Senza una email corretta, l'utente non potrà accedere all'applicazione.</p>
-        </div>
-        <p><strong>Dati richiesti per ogni lavoratore:</strong></p>
-        <ul>
-            <li>Nome e Cognome</li>
-            <li>Email (fondamentale per il login)</li>
-            <li>Ruolo (Operatore, Incaricato o Amministratore)</li>
-            <li>Codice Identificativo/Matricola</li>
-            <li>Stato (Attivo/Inattivo)</li>
-        </ul>
-    </section>
-
-    <section id="sommario">
-        <h2>6. Sommario Lavori (Solo Admin)</h2>
-        <p>Visualizzazione analitica dei costi e ricavi. Riservato agli <strong>Admin</strong>, permette di monitorare ore, costi (personale, subappalti, spese) e ricavi, con calcolo automatico degli indicatori di performance.</p>
-
-        <div class="image-container">
-            <img src="file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png" alt="Sommario Amministrativo">
-            <div class="caption">Torre di controllo — Analisi economica per progetto e cliente</div>
-        </div>
-    </section>
-
-    <section id="profilo">
-        <h2>6. Profilo e Impostazioni</h2>
-        <h3>Profilo Utente</h3>
-        <p>Ogni utente può aggiornare i propri dati di contatto e visualizzare il riepilogo delle proprie ore mensili.</p>
-        
-        <h3>Lingua</h3>
-        <p>L'applicazione supporta le seguenti lingue: Italiano, Inglese, Spagnolo, Polacco, Turco e Danese. Cambia la lingua dall'icona del mondo nella testata.</p>
-    </section>
-
-    <section id="pwa">
-        <h2>8. Modalità applicazione web (Installazione)</h2>
-        <p>Si consiglia di installare l'app sulla home del telefono o del PC tramite il tasto "<strong>Installa App</strong>" per un'esperienza più fluida e accesso offline.</p>
-    </section>
-
-    <footer>
-        <p><em>Jobs Report — Efficienza in cantiere, controllo in ufficio.</em></p>
-    </footer>
-
+  <footer><p><em data-i18n="foot">Jobs Report — Efficienza in cantiere, controllo in ufficio.</em></p></footer>
 </div>
 
+<button class="toc-fab" onclick="toggleToc()">☰ <span data-i18n="toc_h">Indice</span></button>
+
+<script>
+const T={
+it:{h_title:"Guida all'Uso — Jobs Report",h_sub:"Il gestionale professionale per i tuoi cantieri",toc_h:"Indice",toc_0:"Introduzione",toc_1:"1. Accesso",toc_2:"2. Pannello principale",toc_3:"3. Rapportini",toc_4:"4. Progetti",toc_5:"5. Personale",toc_6:"6. Sommario",toc_7:"7. Profilo",toc_8:"8. Installazione",s0_h:"Introduzione",s0_p:"Jobs Report è un'applicazione web per la gestione dei lavori di cantiere, dei costi del personale e dei rapporti con i subappaltatori.",s1_h:"1. Accesso e Autenticazione",s1_h3a:"Login",s1_p:"Accedi con username e password. I livelli di accesso dipendono dal ruolo assegnato:",r_op:"Operatore",r_op_d:"Inserisce i propri rapportini e visualizza il riepilogo ore mensile.",r_su:"Incaricato (Supervisor)",r_su_d:"Gestisce i propri rapportini e quelli della propria squadra.",r_ad:"Amministratore",r_ad_d:"Controllo completo su progetti, personale e analisi economica.",s1_cap:"Pagina di accesso — Inserisci le credenziali per iniziare",s1_h3b:"Recupero Password",s1_pwd:"In caso di smarrimento della password, contatta l'amministratore del sistema.",s2_h:"2. Pannello principale",s2_p1:"Dopo il login accedi alla Dashboard con tutte le funzionalità autorizzate per il tuo ruolo.",s2_p2:"Operatori e Incaricati vedono il Riepilogo Ore del Mese. Gli Admin vedono i KPI aziendali.",s2_cap:"Schermata di avvio — Accesso rapido a tutte le sezioni",s3_h:"3. Gestione Rapportini",s3_h3a:"Lista Rapportini",s3_p:"Visualizza i rapportini con filtri per data e progetto.",r_op2:"Operatori",s3_op:"Solo i propri rapportini.",r_su2:"Incaricati",s3_su:"I propri e quelli della squadra assegnata.",r_ad2:"Admin",s3_ad:"Tutti i rapportini aziendali.",s3_cap:"Lista rapportini con filtri attivi",s3_h3b:"Creazione / Modifica",s3_new:'Clicca su Nuovo Rapportino e compila i campi:',s3_btn:"Nuovo Rapportino",s3_f1:"Progetto",s3_f2:"Data",s3_f3:"Squadra (aggiungi collaboratori)",s3_f4:"Spese (materiali, pasti, trasporti)",s3_f5:"Stato Fatturazione (solo Admin)",s3_cap2:"Form rapportino — orari, squadra, spese e stato fatturazione",s3_h3c:"Campi principali",tb_f:"Campo",tb_n:"Note",f_t:"Orario Inizio/Fine",f_t_d:"Calcolo automatico delle ore totali.",f_b:"Pausa",f_b_d:"Ore di pausa detratte dal totale.",f_o:"Straordinari",f_o_d:"Calcolati oltre la soglia standard del profilo.",s4_h:"4. Gestione Progetti (Solo Admin)",s4_p:"Crea progetti, associali a clienti e assegna lavoratori o incaricati.",s4_a:"Progetti Attivi",s4_a_d:"Selezionabili per l'inserimento ore.",s4_c:"Progetti Chiusi",s4_c_d:"Archivio storico, non selezionabili per nuovi rapportini.",s5_h:"5. Gestione Personale (Solo Admin)",s5_p:"Gestisci lavoratori, ruoli e stato di attivazione.",s5_wt:"⚠️ IMPORTANTE: Email e Accesso",s5_wb:"L'email deve essere valida: viene usata per inviare l'invito. Senza email corretta l'utente non può accedere.",s5_fl:"Dati richiesti:",s5_f1:"Nome e Cognome",s5_f2:"Email",s5_f3:"Ruolo (Operatore, Incaricato, Amministratore)",s5_f4:"Codice Identificativo",s5_f5:"Stato (Attivo / Inattivo)",s6_h:"6. Sommario Lavori (Solo Admin)",s6_p:"Analisi di costi e ricavi per progetto, cliente o lavoratore. Esporta in PDF o Excel.",s6_cap:"Analisi economica per progetto e cliente",s7_h:"7. Profilo e Impostazioni",s7_h3a:"Profilo Utente",s7_p1:"Aggiorna i tuoi dati di contatto e visualizza il riepilogo ore mensile.",s7_h3b:"Lingua",s7_p2:"Supporto per IT, EN, ES, PL, TR, DA. Cambia dall'icona del mondo nella testata.",s8_h:"8. Installazione (PWA)",s8_p:"Installa l'app sulla home del telefono o PC con il tasto Installa App per accesso rapido e offline.",s8_btn:"Installa App",foot:"Jobs Report — Efficienza in cantiere, controllo in ufficio."},
+
+en:{h_title:"User Guide — Jobs Report",h_sub:"The professional tool for your job sites",toc_h:"Contents",toc_0:"Introduction",toc_1:"1. Access",toc_2:"2. Dashboard",toc_3:"3. Reports",toc_4:"4. Projects",toc_5:"5. Staff",toc_6:"6. Summary",toc_7:"7. Profile",toc_8:"8. Installation",s0_h:"Introduction",s0_p:"Jobs Report is a web app for managing job site work, personnel costs and subcontractor relationships.",s1_h:"1. Access & Authentication",s1_h3a:"Login",s1_p:"Log in with your username and password. Access levels depend on your assigned role:",r_op:"Operator",r_op_d:"Enters own reports and views monthly hours summary.",r_su:"Supervisor",r_su_d:"Manages own reports and those of their team.",r_ad:"Administrator",r_ad_d:"Full control over projects, staff and financial analysis.",s1_cap:"Login page — Enter your credentials to get started",s1_h3b:"Password Recovery",s1_pwd:"If you lose your password, contact the system administrator.",s2_h:"2. Main Dashboard",s2_p1:"After login you reach the Dashboard with all features authorised for your role.",s2_p2:"Operators and Supervisors see the current Month's Hours. Admins see company KPIs.",s2_cap:"Launcher — Quick access to all sections",s3_h:"3. Work Reports",s3_h3a:"Reports List",s3_p:"View all reports with filters by date and project.",r_op2:"Operators",s3_op:"See only their own reports.",r_su2:"Supervisors",s3_su:"See own and assigned team's reports.",r_ad2:"Admin",s3_ad:"See all company reports.",s3_cap:"Reports list with active filters",s3_h3b:"Create / Edit Report",s3_new:"Click New Report and fill in the fields:",s3_btn:"New Report",s3_f1:"Project",s3_f2:"Date",s3_f3:"Team (add collaborators)",s3_f4:"Expenses (materials, meals, transport)",s3_f5:"Billing Status (Admin only)",s3_cap2:"Report form — hours, team, expenses and billing",s3_h3c:"Key Fields",tb_f:"Field",tb_n:"Notes",f_t:"Start/End Time",f_t_d:"Automatic calculation of total hours.",f_b:"Break",f_b_d:"Break hours deducted from total.",f_o:"Overtime",f_o_d:"Calculated above the standard threshold in the profile.",s4_h:"4. Projects (Admin only)",s4_p:"Create projects, link to clients and assign workers or supervisors.",s4_a:"Active Projects",s4_a_d:"Available for hours entry.",s4_c:"Closed Projects",s4_c_d:"Historical archive; not selectable for new reports.",s5_h:"5. Staff Management (Admin only)",s5_p:"Manage the workers list, roles and activation status.",s5_wt:"⚠️ IMPORTANT: Email & Access",s5_wb:"The email must be valid — it is used to send the invitation. Without a correct email the user cannot access the app.",s5_fl:"Required data:",s5_f1:"Full Name",s5_f2:"Email",s5_f3:"Role (Operator, Supervisor, Administrator)",s5_f4:"ID Number",s5_f5:"Status (Active / Inactive)",s6_h:"6. Work Summary (Admin only)",s6_p:"Analytical view of costs and revenues by project, client or worker. Export to PDF or Excel.",s6_cap:"Economic analysis by project and client",s7_h:"7. Profile & Settings",s7_h3a:"User Profile",s7_p1:"Update your contact details and view the monthly hours summary.",s7_h3b:"Language",s7_p2:"Supports IT, EN, ES, PL, TR, DA. Change from the globe icon in the header.",s8_h:"8. Installation (PWA)",s8_p:"Install the app on your phone or PC home screen with the Install App button for quick offline access.",s8_btn:"Install App",foot:"Jobs Report — Efficiency on site, control in the office."},
+
+es:{h_title:"Guía de Uso — Jobs Report",h_sub:"El sistema profesional para tus obras",toc_h:"Índice",toc_0:"Introducción",toc_1:"1. Acceso",toc_2:"2. Panel principal",toc_3:"3. Partes",toc_4:"4. Proyectos",toc_5:"5. Personal",toc_6:"6. Resumen",toc_7:"7. Perfil",toc_8:"8. Instalación",s0_h:"Introducción",s0_p:"Jobs Report es una aplicación web para gestionar trabajos de obra, costos de personal y relaciones con subcontratistas.",s1_h:"1. Acceso y Autenticación",s1_h3a:"Inicio de sesión",s1_p:"Accede con usuario y contraseña. Los niveles de acceso dependen del rol asignado:",r_op:"Operario",r_op_d:"Registra sus partes y ve el resumen de horas mensual.",r_su:"Encargado (Supervisor)",r_su_d:"Gestiona sus partes y los de su equipo.",r_ad:"Administrador",r_ad_d:"Control total de proyectos, personal y análisis económico.",s1_cap:"Página de acceso — Introduce tus credenciales para empezar",s1_h3b:"Recuperación de contraseña",s1_pwd:"Si pierdes la contraseña, contacta al administrador del sistema.",s2_h:"2. Panel principal",s2_p1:"Tras el login accedes al Panel con todas las funciones autorizadas para tu rol.",s2_p2:"Operarios y Encargados ven el Resumen de Horas del Mes. Los Admin ven los KPI empresariales.",s2_cap:"Pantalla de inicio — Acceso rápido a todas las secciones",s3_h:"3. Gestión de Partes",s3_h3a:"Lista de Partes",s3_p:"Visualiza los partes con filtros por fecha y proyecto.",r_op2:"Operarios",s3_op:"Solo sus propios partes.",r_su2:"Encargados",s3_su:"Los propios y los del equipo asignado.",r_ad2:"Admin",s3_ad:"Todos los partes de la empresa.",s3_cap:"Lista de partes con filtros activos",s3_h3b:"Crear / Editar Parte",s3_new:"Haz clic en Nuevo Parte y rellena los campos:",s3_btn:"Nuevo Parte",s3_f1:"Proyecto",s3_f2:"Fecha",s3_f3:"Equipo (añadir colaboradores)",s3_f4:"Gastos (materiales, comidas, transporte)",s3_f5:"Estado de Facturación (solo Admin)",s3_cap2:"Formulario de parte — horarios, equipo, gastos y facturación",s3_h3c:"Campos principales",tb_f:"Campo",tb_n:"Notas",f_t:"Hora Inicio/Fin",f_t_d:"Cálculo automático de horas totales.",f_b:"Descanso",f_b_d:"Horas de descanso deducidas del total.",f_o:"Horas extra",f_o_d:"Calculadas por encima del umbral estándar del perfil.",s4_h:"4. Proyectos (Solo Admin)",s4_p:"Crea proyectos, vincúlalos a clientes y asigna trabajadores o encargados.",s4_a:"Proyectos Activos",s4_a_d:"Disponibles para el registro de horas.",s4_c:"Proyectos Cerrados",s4_c_d:"Archivo histórico; no seleccionables para nuevos partes.",s5_h:"5. Gestión de Personal (Solo Admin)",s5_p:"Gestiona la lista de trabajadores, roles y estado de activación.",s5_wt:"⚠️ IMPORTANTE: Email y Acceso",s5_wb:"El email debe ser válido — se usa para enviar la invitación. Sin email correcto el usuario no puede acceder.",s5_fl:"Datos requeridos:",s5_f1:"Nombre y Apellidos",s5_f2:"Email",s5_f3:"Rol (Operario, Encargado, Administrador)",s5_f4:"Número de identificación",s5_f5:"Estado (Activo / Inactivo)",s6_h:"6. Resumen de Trabajos (Solo Admin)",s6_p:"Vista analítica de costos e ingresos por proyecto, cliente o trabajador. Exporta a PDF o Excel.",s6_cap:"Análisis económico por proyecto y cliente",s7_h:"7. Perfil y Configuración",s7_h3a:"Perfil de usuario",s7_p1:"Actualiza tus datos de contacto y ve el resumen de horas mensual.",s7_h3b:"Idioma",s7_p2:"Soporta IT, EN, ES, PL, TR, DA. Cambia desde el icono del mundo en el encabezado.",s8_h:"8. Instalación (PWA)",s8_p:"Instala la app en la pantalla de inicio de tu móvil o PC con el botón Instalar App.",s8_btn:"Instalar App",foot:"Jobs Report — Eficiencia en obra, control en la oficina."},
+
+pl:{h_title:"Instrukcja obsługi — Jobs Report",h_sub:"Profesjonalne narzędzie do zarządzania budowami",toc_h:"Spis treści",toc_0:"Wprowadzenie",toc_1:"1. Dostęp",toc_2:"2. Panel główny",toc_3:"3. Raporty",toc_4:"4. Projekty",toc_5:"5. Personel",toc_6:"6. Podsumowanie",toc_7:"7. Profil",toc_8:"8. Instalacja",s0_h:"Wprowadzenie",s0_p:"Jobs Report to aplikacja do zarządzania pracami budowlanymi, kosztami personelu i relacjami z podwykonawcami.",s1_h:"1. Dostęp i uwierzytelnianie",s1_h3a:"Logowanie",s1_p:"Zaloguj się nazwą użytkownika i hasłem. Poziom dostępu zależy od przypisanej roli:",r_op:"Operator",r_op_d:"Wprowadza własne raporty i przegląda miesięczne godziny.",r_su:"Kierownik (Supervisor)",r_su_d:"Zarządza własnymi raportami i raportami swojego zespołu.",r_ad:"Administrator",r_ad_d:"Pełna kontrola nad projektami, personelem i analizą finansową.",s1_cap:"Strona logowania — Wprowadź dane, aby rozpocząć",s1_h3b:"Odzyskiwanie hasła",s1_pwd:"W razie utraty hasła skontaktuj się z administratorem systemu.",s2_h:"2. Panel główny",s2_p1:"Po zalogowaniu widzisz Panel z wszystkimi dostępnymi funkcjami dla Twojej roli.",s2_p2:"Operatorzy i Kierownicy widzą Miesięczne Godziny. Admini widzą wskaźniki KPI.",s2_cap:"Panel startowy — Szybki dostęp do wszystkich sekcji",s3_h:"3. Zarządzanie raportami",s3_h3a:"Lista raportów",s3_p:"Przeglądaj raporty z filtrami daty i projektu.",r_op2:"Operatorzy",s3_op:"Widzą tylko własne raporty.",r_su2:"Kierownicy",s3_su:"Własne i raporty przypisanego zespołu.",r_ad2:"Admin",s3_ad:"Wszystkie raporty firmy.",s3_cap:"Lista raportów z aktywnymi filtrami",s3_h3b:"Tworzenie / Edycja",s3_new:"Kliknij Nowy raport i wypełnij pola:",s3_btn:"Nowy raport",s3_f1:"Projekt",s3_f2:"Data",s3_f3:"Zespół (dodaj pracowników)",s3_f4:"Wydatki (materiały, posiłki, transport)",s3_f5:"Status rozliczenia (tylko Admin)",s3_cap2:"Formularz raportu — godziny, zespół, wydatki i fakturowanie",s3_h3c:"Główne pola",tb_f:"Pole",tb_n:"Uwagi",f_t:"Godzina Start/Koniec",f_t_d:"Automatyczne obliczanie łącznych godzin.",f_b:"Przerwa",f_b_d:"Godziny przerwy odliczone od łącznie.",f_o:"Nadgodziny",f_o_d:"Liczone powyżej standardowego progu z profilu.",s4_h:"4. Projekty (tylko Admin)",s4_p:"Twórz projekty, powiąż z klientami, przypisuj pracowników lub kierowników.",s4_a:"Aktywne projekty",s4_a_d:"Dostępne do wprowadzania godzin.",s4_c:"Zamknięte projekty",s4_c_d:"Archiwum historyczne; niedostępne dla nowych raportów.",s5_h:"5. Personel (tylko Admin)",s5_p:"Zarządzaj listą pracowników, rolami i statusem aktywacji.",s5_wt:"⚠️ WAŻNE: E-mail i dostęp",s5_wb:"E-mail musi być ważny — służy do wysyłki zaproszenia. Bez poprawnego e-maila użytkownik nie uzyska dostępu.",s5_fl:"Wymagane dane:",s5_f1:"Imię i Nazwisko",s5_f2:"E-mail",s5_f3:"Rola (Operator, Kierownik, Administrator)",s5_f4:"Numer identyfikacyjny",s5_f5:"Status (Aktywny / Nieaktywny)",s6_h:"6. Podsumowanie prac (tylko Admin)",s6_p:"Analityczny widok kosztów i przychodów według projektu, klienta lub pracownika. Eksport do PDF lub Excel.",s6_cap:"Analiza ekonomiczna według projektu i klienta",s7_h:"7. Profil i Ustawienia",s7_h3a:"Profil użytkownika",s7_p1:"Aktualizuj dane kontaktowe i przeglądaj miesięczne godziny.",s7_h3b:"Język",s7_p2:"Obsługuje IT, EN, ES, PL, TR, DA. Zmień z ikony globusa w nagłówku.",s8_h:"8. Instalacja (PWA)",s8_p:"Zainstaluj aplikację na ekranie głównym telefonu lub PC przyciskiem Zainstaluj aplikację.",s8_btn:"Zainstaluj aplikację",foot:"Jobs Report — Efektywność na budowie, kontrola w biurze."},
+
+tr:{h_title:"Kullanım Kılavuzu — Jobs Report",h_sub:"Şantiyeleriniz için profesyonel yönetim aracı",toc_h:"İçindekiler",toc_0:"Giriş",toc_1:"1. Oturum Açma",toc_2:"2. Ana Panel",toc_3:"3. Raporlar",toc_4:"4. Projeler",toc_5:"5. Personel",toc_6:"6. Özet",toc_7:"7. Profil",toc_8:"8. Kurulum",s0_h:"Giriş",s0_p:"Jobs Report, şantiye işlerini, personel maliyetlerini ve taşeron ilişkilerini yönetmek için bir web uygulamasıdır.",s1_h:"1. Giriş ve Kimlik Doğrulama",s1_h3a:"Oturum Aç",s1_p:"Kullanıcı adı ve şifrenizle giriş yapın. Erişim düzeyi atanan role bağlıdır:",r_op:"Operatör",r_op_d:"Kendi raporlarını girer ve aylık saat özetini görür.",r_su:"Sorumlu (Supervisor)",r_su_d:"Kendi ve ekibinin raporlarını yönetir.",r_ad:"Yönetici",r_ad_d:"Projeler, personel ve finansal analiz üzerinde tam kontrol.",s1_cap:"Giriş sayfası — Başlamak için kimlik bilgilerinizi girin",s1_h3b:"Şifre Kurtarma",s1_pwd:"Şifrenizi kaybederseniz sistem yöneticisiyle iletişime geçin.",s2_h:"2. Ana Panel",s2_p1:"Girişten sonra rolünüze göre tüm yetkili özellikleri içeren Ana Panel'e ulaşırsınız.",s2_p2:"Operatörler ve Sorumlular Aylık Saat Özetini görür. Yöneticiler KPI göstergelerini görür.",s2_cap:"Başlatıcı — Tüm bölümlere hızlı erişim",s3_h:"3. Rapor Yönetimi",s3_h3a:"Rapor Listesi",s3_p:"Raporları tarih ve projeye göre filtreli görüntüleyin.",r_op2:"Operatörler",s3_op:"Yalnızca kendi raporlarını görür.",r_su2:"Sorumlular",s3_su:"Kendi ve atanan ekibin raporlarını görür.",r_ad2:"Admin",s3_ad:"Şirketin tüm raporlarını görür.",s3_cap:"Aktif filtrelerle rapor listesi",s3_h3b:"Rapor Oluştur / Düzenle",s3_new:"Yeni Rapor'a tıklayın ve alanları doldurun:",s3_btn:"Yeni Rapor",s3_f1:"Proje",s3_f2:"Tarih",s3_f3:"Ekip (çalışan ekle)",s3_f4:"Giderler (malzeme, yemek, ulaşım)",s3_f5:"Fatura Durumu (yalnızca Admin)",s3_cap2:"Rapor formu — saatler, ekip, giderler ve faturalama",s3_h3c:"Ana Alanlar",tb_f:"Alan",tb_n:"Notlar",f_t:"Başlangıç/Bitiş Saati",f_t_d:"Toplam saatlerin otomatik hesaplanması.",f_b:"Mola",f_b_d:"Toplam süreden düşülen mola saatleri.",f_o:"Fazla Mesai",f_o_d:"Profildeki standart eşiğin üzerinde hesaplanır.",s4_h:"4. Projeler (Yalnızca Admin)",s4_p:"Proje oluşturun, müşteriyle ilişkilendirin ve çalışanlar veya sorumlular atayın.",s4_a:"Aktif Projeler",s4_a_d:"Saat girişi için kullanılabilir.",s4_c:"Kapalı Projeler",s4_c_d:"Tarihi arşiv; yeni raporlar için seçilemez.",s5_h:"5. Personel Yönetimi (Yalnızca Admin)",s5_p:"Çalışan listesini, rolleri ve aktivasyon durumunu yönetin.",s5_wt:"⚠️ ÖNEMLİ: E-posta ve Erişim",s5_wb:"E-posta geçerli olmalı — davet göndermek için kullanılır. Doğru e-posta olmadan kullanıcı erişemez.",s5_fl:"Gerekli veriler:",s5_f1:"Ad Soyad",s5_f2:"E-posta",s5_f3:"Rol (Operatör, Sorumlu, Yönetici)",s5_f4:"Kimlik Numarası",s5_f5:"Durum (Aktif / Pasif)",s6_h:"6. İş Özeti (Yalnızca Admin)",s6_p:"Projeye, müşteriye veya çalışana göre maliyet ve gelir analizi. PDF veya Excel'e aktar.",s6_cap:"Projeye ve müşteriye göre ekonomik analiz",s7_h:"7. Profil ve Ayarlar",s7_h3a:"Kullanıcı Profili",s7_p1:"İletişim bilgilerinizi güncelleyin ve aylık saat özetini görün.",s7_h3b:"Dil",s7_p2:"IT, EN, ES, PL, TR, DA desteklenir. Başlıktaki dünya simgesinden değiştirin.",s8_h:"8. Kurulum (PWA)",s8_p:"Uygulamayı Yükle düğmesiyle telefon veya PC ana ekranına yükleyin.",s8_btn:"Uygulamayı Yükle",foot:"Jobs Report — Şantiyede verimlilik, ofiste kontrol."},
+
+da:{h_title:"Brugervejledning — Jobs Report",h_sub:"Det professionelle styringssystem til dine byggepladser",toc_h:"Indhold",toc_0:"Introduktion",toc_1:"1. Adgang",toc_2:"2. Hovedpanel",toc_3:"3. Rapporter",toc_4:"4. Projekter",toc_5:"5. Personale",toc_6:"6. Oversigt",toc_7:"7. Profil",toc_8:"8. Installation",s0_h:"Introduktion",s0_p:"Jobs Report er en webapplikation til styring af byggepladsarbejde, personaleomkostninger og underleverandørforhold.",s1_h:"1. Adgang og Autentificering",s1_h3a:"Log ind",s1_p:"Log ind med brugernavn og adgangskode. Adgangsniveauet afhænger af den tildelte rolle:",r_op:"Operatør",r_op_d:"Registrerer egne rapporter og ser månedlig timeoversigt.",r_su:"Tilsynsførende (Supervisor)",r_su_d:"Styrer egne rapporter og teamets rapporter.",r_ad:"Administrator",r_ad_d:"Fuld kontrol over projekter, personale og finansiel analyse.",s1_cap:"Loginside — Indtast dine legitimationsoplysninger for at starte",s1_h3b:"Gendannelse af adgangskode",s1_pwd:"Kontakt systemadministratoren, hvis du mister din adgangskode.",s2_h:"2. Hovedpanel",s2_p1:"Efter login ser du Panelet med alle funktioner godkendt til din rolle.",s2_p2:"Operatører og Tilsynsførende ser Månedlig Timeoversigt. Admins ser virksomhedens KPI'er.",s2_cap:"Launcher — Hurtig adgang til alle sektioner",s3_h:"3. Rapportstyring",s3_h3a:"Rapportliste",s3_p:"Se rapporter med filtre for dato og projekt.",r_op2:"Operatører",s3_op:"Ser kun egne rapporter.",r_su2:"Tilsynsførende",s3_su:"Egne og det tildelte teams rapporter.",r_ad2:"Admin",s3_ad:"Alle virksomhedens rapporter.",s3_cap:"Rapportliste med aktive filtre",s3_h3b:"Opret / Rediger Rapport",s3_new:"Klik på Ny Rapport og udfyld felterne:",s3_btn:"Ny Rapport",s3_f1:"Projekt",s3_f2:"Dato",s3_f3:"Team (tilføj medarbejdere)",s3_f4:"Udgifter (materialer, måltider, transport)",s3_f5:"Faktureringsstatus (kun Admin)",s3_cap2:"Rapportformular — timer, team, udgifter og fakturering",s3_h3c:"Vigtige felter",tb_f:"Felt",tb_n:"Noter",f_t:"Start-/Sluttidspunkt",f_t_d:"Automatisk beregning af samlede timer.",f_b:"Pause",f_b_d:"Pausetimer fratrukket det samlede antal.",f_o:"Overarbejde",f_o_d:"Beregnet over standardgrænsen i profilen.",s4_h:"4. Projekter (Kun Admin)",s4_p:"Opret projekter, knyt til kunder og tildel arbejdere eller tilsynsførende.",s4_a:"Aktive projekter",s4_a_d:"Tilgængelige til tidsregistrering.",s4_c:"Afsluttede projekter",s4_c_d:"Historisk arkiv; kan ikke vælges til nye rapporter.",s5_h:"5. Personalestyring (Kun Admin)",s5_p:"Administrer medarbejderliste, roller og aktiveringsstatus.",s5_wt:"⚠️ VIGTIGT: E-mail og Adgang",s5_wb:"E-mailen skal være gyldig — bruges til at sende invitationen. Uden korrekt e-mail kan brugeren ikke tilgå app'en.",s5_fl:"Påkrævede oplysninger:",s5_f1:"Fulde navn",s5_f2:"E-mail",s5_f3:"Rolle (Operatør, Tilsynsførende, Administrator)",s5_f4:"ID-nummer",s5_f5:"Status (Aktiv / Inaktiv)",s6_h:"6. Arbejdsoversigt (Kun Admin)",s6_p:"Analytisk visning af omkostninger og indtægter pr. projekt, kunde eller medarbejder. Eksportér til PDF eller Excel.",s6_cap:"Økonomisk analyse pr. projekt og kunde",s7_h:"7. Profil og Indstillinger",s7_h3a:"Brugerprofil",s7_p1:"Opdatér kontaktoplysninger og se månedlig timeoversigt.",s7_h3b:"Sprog",s7_p2:"Understøtter IT, EN, ES, PL, TR, DA. Skift via globusikonet i sidehovedet.",s8_h:"8. Installation (PWA)",s8_p:"Installer app'en på telefon- eller pc-startskærmen med knappen Installer App.",s8_btn:"Installer App",foot:"Jobs Report — Effektivitet på pladsen, kontrol på kontoret."}
+};
+
+function setLang(l){
+  const s=T[l]||T.it;
+  document.documentElement.lang=l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(s[k]!==undefined) el.textContent=s[k];
+  });
+  document.querySelectorAll('.lb').forEach(b=>{
+    b.classList.toggle('active',b.textContent.trim().toLowerCase()===l);
+  });
+}
+function toggleToc(){
+  const p=document.getElementById('tocPanel'),bd=document.getElementById('tocBd');
+  const o=p.classList.contains('open');
+  p.classList.toggle('open',!o); bd.classList.toggle('open',!o);
+}
+function closeToc(){
+  document.getElementById('tocPanel').classList.remove('open');
+  document.getElementById('tocBd').classList.remove('open');
+}
+</script>
 </body>
 </html>
