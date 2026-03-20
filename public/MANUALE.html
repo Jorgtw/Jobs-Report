@@ -286,6 +286,17 @@
             margin-top: 60px;
         }
 
+        /* Lang selector */
+        .lang-sel{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+        .lb{padding:4px 10px;border:1.5px solid rgba(255,255,255,.3);border-radius:20px;background:transparent;font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;color:#94a3b8;cursor:pointer;transition:all .15s}
+        .lb:hover{border-color:#fff;color:#fff}
+        .lb.active{background:#2563eb;color:#fff;border-color:#2563eb}
+        /* Mobile TOC */
+        .toc-fab{display:none;position:fixed;bottom:80px;left:18px;z-index:200;background:#1e293b;color:#fff;border:none;border-radius:50px;padding:10px 16px;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35);transition:transform .15s}
+        .toc-fab:hover{transform:scale(1.05)}
+        .toc-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
+        .toc-bd.open{display:block}
+
         @media (max-width: 1024px) {
             .sidebar { width: 60px; padding: 20px 10px; }
             .sidebar h2, .sidebar ul li a span { display: none; }
@@ -294,10 +305,14 @@
         }
 
         @media (max-width: 640px) {
-            .sidebar { display: none; }
+            .sidebar { width: 240px; transform: translateX(-100%); transition: transform .3s ease; padding: 30px 20px; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar h2 { display: block; }
+            .sidebar ul li a { text-align: left; padding: 10px 15px; }
             .main-content { margin-left: 0; }
             .container { padding: 30px 20px; }
             section { padding: 30px; }
+            .toc-fab { display: flex; align-items: center; gap: 6px; }
         }
     </style>
 </head>
@@ -322,11 +337,21 @@
 <main class="main-content">
     <div class="container">
         
-        <header style="display:flex;align-items:center;gap:16px;">
-            <img src="/images/logo.png" alt="Jobs Report" style="height:36px;width:auto;flex-shrink:0;border-radius:8px;">
-            <div>
-                <h1>Guida all'Uso — Jobs Report</h1>
-                <p>Il gestionale professionale per i tuoi cantieri</p>
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <img src="/images/logo.png" alt="Jobs Report" style="height:36px;width:auto;flex-shrink:0;border-radius:8px;">
+                <div>
+                    <h1 id="h-title">Guida all'Uso — Jobs Report</h1>
+                    <p id="h-sub">Il gestionale professionale per i tuoi cantieri</p>
+                </div>
+            </div>
+            <div class="lang-sel">
+                <button class="lb active" onclick="setLang('it')">IT</button>
+                <button class="lb" onclick="setLang('en')">EN</button>
+                <button class="lb" onclick="setLang('es')">ES</button>
+                <button class="lb" onclick="setLang('pl')">PL</button>
+                <button class="lb" onclick="setLang('tr')">TR</button>
+                <button class="lb" onclick="setLang('da')">DA</button>
             </div>
         </header>
 
@@ -559,20 +584,64 @@
 </script>
 
 
+    <!-- Mobile TOC FAB + Backdrop -->
+    <div class="toc-bd" id="tocBd" onclick="closeSidebar()"></div>
+    <button class="toc-fab" onclick="openSidebar()">☰ Indice</button>
+
     <!-- Bottone fisso per tornare all'App -->
-    <a href="https://jobs-report.vercel.app" 
+    <a href="https://jobs-report.vercel.app"
        target="_blank"
-       style="position: fixed; bottom: 24px; right: 24px; 
-              background: #2563eb; color: white; text-decoration: none;
-              padding: 12px 20px; border-radius: 12px; font-family: 'Inter', sans-serif;
-              font-size: 0.95rem; font-weight: 600; 
-              box-shadow: 0 4px 12px rgba(37,99,235,0.3); z-index: 999;
-              display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"
-       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(37,99,235,0.4)';"
-       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(37,99,235,0.3)';"
+       style="position:fixed;bottom:24px;right:24px;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;box-shadow:0 4px 12px rgba(37,99,235,.3);z-index:999;display:flex;align-items:center;gap:8px;transition:all .3s ease;"
+       onmouseover="this.style.transform='translateY(-2px)'"
+       onmouseout="this.style.transform='translateY(0)'"
     >
-        <span style="font-size: 1.2rem;">←</span> Torna all'app
+        <span style="font-size:1.2rem">←</span> Torna all'app
     </a>
+
+<script>
+// ── i18n: traduce titoli, nav, sottotitoli ──────────────────
+const T={
+  it:{t:"Guida all'Uso — Jobs Report",s:"Il gestionale professionale per i tuoi cantieri",nh:"Guida",
+    n:["Introduzione","Accesso","Pannello principale","Rapportini","Progetti","Personale","Analisi economica","Profilo","Installazione"],
+    h2:["Introduzione","1. Accesso al sistema","2. Pannello principale (Schermata di avvio)","3. Gestione dei Rapportini","4. Gestione Progetti (Solo Admin)","5. Gestione del Personale","6. Analisi economica (Solo Admin)","7. Profilo e Impostazioni","8. Come installare l'app"],
+    h3:["Entrare nel programma","Se dimentichi la password","Lista dei lavori svolti","Creare o Modificare un lavoro","Dettagli del tempo","Configurazione e Assegnazioni","Lingue disponibili","Su Android","Su iPhone","Su PC (Chrome o Edge)"]},
+  en:{t:"User Guide — Jobs Report",s:"The professional tool for your job sites",nh:"Guide",
+    n:["Introduction","Access","Main Dashboard","Reports","Projects","Staff","Economic Analysis","Profile","Installation"],
+    h2:["Introduction","1. System Login","2. Main Dashboard","3. Work Reports","4. Projects (Admin only)","5. Staff Management","6. Economic Analysis (Admin only)","7. Profile & Settings","8. How to install the app"],
+    h3:["Logging in","Forgot your password?","List of completed jobs","Create or edit a report","Time details","Configuration & Assignments","Available languages","On Android","On iPhone","On PC (Chrome or Edge)"]},
+  es:{t:"Guía de Uso — Jobs Report",s:"El sistema profesional para tus obras",nh:"Guía",
+    n:["Introducción","Acceso","Panel principal","Partes","Proyectos","Personal","Análisis económico","Perfil","Instalación"],
+    h2:["Introducción","1. Acceso al sistema","2. Panel principal","3. Gestión de partes","4. Proyectos (Solo Admin)","5. Gestión de personal","6. Análisis económico (Solo Admin)","7. Perfil y Configuración","8. Cómo instalar la app"],
+    h3:["Iniciar sesión","¿Olvidaste la contraseña?","Lista de trabajos realizados","Crear o editar un parte","Detalles de tiempo","Configuración y Asignaciones","Idiomas disponibles","En Android","En iPhone","En PC (Chrome o Edge)"]},
+  pl:{t:"Instrukcja obsługi — Jobs Report",s:"Profesjonalne narzędzie dla Twoich budów",nh:"Przewodnik",
+    n:["Wprowadzenie","Dostęp","Panel główny","Raporty","Projekty","Personel","Analiza ekonomiczna","Profil","Instalacja"],
+    h2:["Wprowadzenie","1. Logowanie do systemu","2. Panel główny","3. Zarządzanie raportami","4. Projekty (tylko Admin)","5. Zarządzanie personelem","6. Analiza ekonomiczna (tylko Admin)","7. Profil i Ustawienia","8. Jak zainstalować aplikację"],
+    h3:["Logowanie","Zapomniałeś hasła?","Lista wykonanych prac","Tworzenie lub edycja raportu","Szczegóły czasu","Konfiguracja i Przypisania","Dostępne języki","Na Androidzie","Na iPhonie","Na PC (Chrome lub Edge)"]},
+  tr:{t:"Kullanım Kılavuzu — Jobs Report",s:"Şantiyeleriniz için profesyonel yönetim aracı",nh:"Kılavuz",
+    n:["Giriş","Erişim","Ana Panel","Raporlar","Projeler","Personel","Ekonomik Analiz","Profil","Kurulum"],
+    h2:["Giriş","1. Sisteme Erişim","2. Ana Panel","3. Rapor Yönetimi","4. Projeler (Yalnızca Admin)","5. Personel Yönetimi","6. Ekonomik Analiz (Yalnızca Admin)","7. Profil ve Ayarlar","8. Uygulama Nasıl Yüklenir"],
+    h3:["Oturum açma","Şifrenizi unuttunuz?","Tamamlanan işlerin listesi","Rapor oluşturma veya düzenleme","Zaman ayrıntıları","Yapılandırma ve Atamalar","Mevcut diller","Android'de","iPhone'da","PC'de (Chrome veya Edge)"]},
+  da:{t:"Brugervejledning — Jobs Report",s:"Det professionelle system til dine byggepladser",nh:"Vejledning",
+    n:["Introduktion","Adgang","Hovedpanel","Rapporter","Projekter","Personale","Økonomisk analyse","Profil","Installation"],
+    h2:["Introduktion","1. Log ind på systemet","2. Hovedpanel","3. Håndtering af rapporter","4. Projekter (kun Admin)","5. Personalestyring","6. Økonomisk analyse (kun Admin)","7. Profil og indstillinger","8. Sådan installerer du appen"],
+    h3:["Log ind","Glemt adgangskode?","Liste over udførte arbejder","Opret eller rediger en rapport","Tidsoplysninger","Konfiguration og tildelinger","Tilgængelige sprog","På Android","På iPhone","På PC (Chrome eller Edge)"]}
+};
+function setLang(l){
+  const s=T[l]||T.it;
+  document.getElementById('h-title').textContent=s.t;
+  document.getElementById('h-sub').textContent=s.s;
+  document.querySelector('.sidebar h2').textContent=s.nh;
+  document.querySelectorAll('.nav-link').forEach((a,i)=>{if(s.n[i])a.textContent=s.n[i];});
+  document.querySelectorAll('section').forEach((sec,i)=>{const h=sec.querySelector('h2');if(h&&s.h2[i])h.textContent=s.h2[i];});
+  const h3s=document.querySelectorAll('section h3');
+  h3s.forEach((h,i)=>{if(s.h3[i])h.textContent=s.h3[i];});
+  document.documentElement.lang=l;
+  document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('active',b.textContent.trim().toLowerCase()===l));
+}
+function openSidebar(){document.querySelector('.sidebar').classList.add('open');document.getElementById('tocBd').classList.add('open');}
+function closeSidebar(){document.querySelector('.sidebar').classList.remove('open');document.getElementById('tocBd').classList.remove('open');}
+document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click',closeSidebar));
+</script>
 
 </body>
 </html>
