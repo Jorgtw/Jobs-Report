@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Globe, ChevronRight } from 'lucide-react';
 import { db } from './services/dbService';
 import { LanguageContext } from './App';
@@ -182,7 +183,9 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
         </div>
 
         <p className="mt-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-          © 2025 JobsReport · Tutti i diritti riservati
+          © 2026 JobsReport · Tutti i diritti riservati
+          {' · '}
+          <Link to="/privacy" className="hover:text-blue-500 transition-colors">{t('privacy')}</Link>
         </p>
       </div>
     </div>

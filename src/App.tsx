@@ -41,6 +41,7 @@ import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
 import LoginView from './LoginView';
+import PrivacyView from './PrivacyView';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -212,6 +213,12 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
           <span className="font-medium">{t('logout')}</span>
         </button>
         <InstallButton variant="sidebar" />
+        <Link
+          to="/privacy"
+          className="flex items-center justify-center mt-2 py-2 text-[10px] font-bold text-slate-300 hover:text-slate-500 uppercase tracking-widest transition-colors"
+        >
+          {t('privacy')}
+        </Link>
       </div>
     </div>
   );
@@ -3133,6 +3140,7 @@ const App: React.FC = () => {
           {/* Public & Entrance Route */}
           <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
           <Route path="/presentation" element={<PresentationView />} />
+          <Route path="/privacy" element={<PrivacyView />} />
 
           {/* Protected Routes Wrapper */}
           <Route 
