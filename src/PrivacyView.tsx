@@ -13,7 +13,7 @@ const privacyContent: Record<string, {
     sections: [
       {
         heading: '1. Titolare del Trattamento',
-        body: 'Thomas — sviluppatore indipendente. Email: jtw@live.it'
+        body: 'Jorg Thomas Wilkesmann — sviluppatore indipendente. Email: jtw@live.it'
       },
       {
         heading: '2. Dati Raccolti',
@@ -49,7 +49,7 @@ const privacyContent: Record<string, {
     title: 'Privacy Policy',
     lastUpdated: 'Last updated: March 21, 2026',
     sections: [
-      { heading: '1. Data Controller', body: 'Thomas — independent developer. Email: jtw@live.it' },
+      { heading: '1. Data Controller', body: 'Jorg Thomas Wilkesmann — independent developer. Email: jtw@live.it' },
       { heading: '2. Data Collected', body: 'We collect: full name, email address, username, data related to hours worked and managed projects.' },
       { heading: '3. Purpose of Processing', body: 'Data is processed for: application access management, recording work activities, generating reports and economic analyses.' },
       { heading: '4. Legal Basis', body: "Processing is based on the contract between the user and the controller (Art. 6(1)(b) GDPR) and the controller's legitimate interest." },
@@ -63,7 +63,7 @@ const privacyContent: Record<string, {
     title: 'Política de Privacidad',
     lastUpdated: 'Última actualización: 21 de marzo de 2026',
     sections: [
-      { heading: '1. Responsable del Tratamiento', body: 'Thomas — desarrollador independiente. Email: jtw@live.it' },
+      { heading: '1. Responsable del Tratamiento', body: 'Jorg Thomas Wilkesmann — desarrollador independiente. Email: jtw@live.it' },
       { heading: '2. Datos Recopilados', body: 'Recopilamos: nombre completo, dirección de correo electrónico, nombre de usuario, datos relacionados con las horas trabajadas y los proyectos gestionados.' },
       { heading: '3. Finalidad del Tratamiento', body: 'Los datos se tratan para: gestión de accesos a la aplicación, registro de actividades laborales, generación de informes y análisis económicos.' },
       { heading: '4. Base Legal', body: 'El tratamiento se basa en el contrato entre el usuario y el responsable (Art. 6(1)(b) RGPD) y el interés legítimo del responsable.' },
@@ -77,7 +77,7 @@ const privacyContent: Record<string, {
     title: 'Polityka Prywatności',
     lastUpdated: 'Ostatnia aktualizacja: 21 marca 2026',
     sections: [
-      { heading: '1. Administrator Danych', body: 'Thomas — niezależny deweloper. Email: jtw@live.it' },
+      { heading: '1. Administrator Danych', body: 'Jorg Thomas Wilkesmann — niezależny deweloper. Email: jtw@live.it' },
       { heading: '2. Zbierane Dane', body: 'Zbieramy: imię i nazwisko, adres e-mail, nazwę użytkownika, dane dotyczące przepracowanych godzin i zarządzanych projektów.' },
       { heading: '3. Cel Przetwarzania', body: 'Dane są przetwarzane w celu: zarządzania dostępem do aplikacji, rejestrowania aktywności zawodowej, generowania raportów i analiz ekonomicznych.' },
       { heading: '4. Podstawa Prawna', body: 'Przetwarzanie odbywa się na podstawie umowy między użytkownikiem a administratorem (art. 6 ust. 1 lit. b RODO) oraz uzasadnionego interesu administratora.' },
@@ -91,7 +91,7 @@ const privacyContent: Record<string, {
     title: 'Gizlilik Politikası',
     lastUpdated: 'Son güncelleme: 21 Mart 2026',
     sections: [
-      { heading: '1. Veri Sorumlusu', body: 'Thomas — bağımsız geliştirici. E-posta: jtw@live.it' },
+      { heading: '1. Veri Sorumlusu', body: 'Jorg Thomas Wilkesmann — bağımsız geliştirici. E-posta: jtw@live.it' },
       { heading: '2. Toplanan Veriler', body: 'Şunları topluyoruz: ad ve soyad, e-posta adresi, kullanıcı adı, çalışılan saatler ve yönetilen projelerle ilgili veriler.' },
       { heading: '3. İşleme Amacı', body: 'Veriler şunlar için işlenir: uygulama erişim yönetimi, iş faaliyetlerinin kaydı, rapor ve ekonomik analiz üretimi.' },
       { heading: '4. Hukuki Dayanak', body: 'İşleme, kullanıcı ile veri sorumlusu arasındaki sözleşmeye (GDPR Madde 6(1)(b)) ve veri sorumlusunun meşru menfaatine dayanmaktadır.' },
@@ -105,7 +105,7 @@ const privacyContent: Record<string, {
     title: 'Privatlivspolitik',
     lastUpdated: 'Sidst opdateret: 21. marts 2026',
     sections: [
-      { heading: '1. Dataansvarlig', body: 'Thomas — uafhængig udvikler. E-mail: jtw@live.it' },
+      { heading: '1. Dataansvarlig', body: 'Jorg Thomas Wilkesmann — uafhængig udvikler. E-mail: jtw@live.it' },
       { heading: '2. Indsamlede Data', body: 'Vi indsamler: fuldt navn, e-mailadresse, brugernavn, data vedrørende arbejdede timer og administrerede projekter.' },
       { heading: '3. Behandlingsformål', body: 'Data behandles til: administration af adgang til applikationen, registrering af arbejdsaktiviteter, generering af rapporter og økonomiske analyser.' },
       { heading: '4. Retsgrundlag', body: 'Behandlingen er baseret på kontrakten mellem brugeren og den dataansvarlige (GDPR art. 6(1)(b)) og den dataansvarliges legitime interesse.' },
