@@ -2124,7 +2124,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const addWorker = () => {
     setFormData({
       ...formData,
-      additionalWorkers: [...formData.additionalWorkers, {
+      additionalWorkers: [{
         userId: '',
         startTime: formData.startTime,
         endTime: formData.endTime,
@@ -2138,7 +2138,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         membershipType: 'Interno',
         subcontractorId: undefined,
         isManualOverride: false
-      } as AdditionalWorker]
+      } as AdditionalWorker, ...formData.additionalWorkers]
     });
   };
   const removeWorker = (index: number) => {
