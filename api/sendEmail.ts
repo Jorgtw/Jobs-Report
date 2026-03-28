@@ -28,7 +28,7 @@ Grazie`;
       },
       body: JSON.stringify({
         from: 'JobsReport <onboarding@resend.dev>', // Modificare se si attiva un proprio dominio verificato in Resend
-        to: ['jtw@live.it'],
+        to: ['jorgtw@gmail.com'],
         subject: '[JobsReport] Richiesta nuova registrazione',
         text: textBody,
       }),
