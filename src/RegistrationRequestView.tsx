@@ -54,7 +54,7 @@ export const RegistrationRequestView: React.FC = () => {
               <img src={logoImg} alt="Logo" className="w-10 h-10 object-contain" style={{ borderRadius: '8px', mixBlendMode: 'multiply', overflow: 'hidden' }} />
             </div>
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">{(t as any)('registrationTitle') || 'Richiesta Registrazione'}</h2>
-            <p className="text-slate-400 text-sm mt-2 font-medium">Invia la tua richiesta per registrare una nuova azienda su JobsReport.</p>
+            <p className="text-slate-400 text-sm mt-2 font-medium">{(t as any)('registrationDesc') || 'Invia la tua richiesta per registrare una nuova azienda su JobsReport.'}</p>
           </div>
 
           {status === 'success' ? (
@@ -62,8 +62,8 @@ export const RegistrationRequestView: React.FC = () => {
               <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-200">
                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
               </div>
-              <h3 className="text-lg font-black text-emerald-900 mb-2">Richiesta Inviata!</h3>
-              <p className="text-sm font-medium text-emerald-700">Ti contatteremo al più presto. Grazie per aver scelto JobsReport.</p>
+              <h3 className="text-lg font-black text-emerald-900 mb-2">{(t as any)('requestSent') || 'Richiesta Inviata!'}</h3>
+              <p className="text-sm font-medium text-emerald-700">{(t as any)('requestSentDesc') || 'Ti contatteremo al più presto. Grazie per aver scelto JobsReport.'}</p>
             </div>
           ) : (
             <form onSubmit={handleSend} className="space-y-4">
@@ -95,7 +95,7 @@ export const RegistrationRequestView: React.FC = () => {
               )}
 
               <button disabled={status === 'loading'} type="submit" className="w-full py-4 bg-[#2563eb] text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70">
-                {status === 'loading' ? 'Invio in corso...' : 'Invia richiesta'} {status !== 'loading' && <ChevronRight size={18} />}
+                {status === 'loading' ? ((t as any)('sending') || 'Invio in corso...') : ((t as any)('sendRequest') || 'Invia richiesta')} {status !== 'loading' && <ChevronRight size={18} />}
               </button>
             </form>
           )}

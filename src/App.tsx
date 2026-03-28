@@ -982,7 +982,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
           </h3>
           {isDemoAccount ? (
             <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium">
-              La modifica della password è disabilitata per gli account dimostrativi.
+              {t('demoPasswordDisabled') || 'La modifica della password è disabilitata per gli account dimostrativi.'}
             </div>
           ) : (
             <>
@@ -3161,10 +3161,10 @@ const App: React.FC = () => {
                     <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
                       <div className="flex items-center gap-2">
                         <ShieldAlert size={16} />
-                        <span>Impersonando: <span className="underline">{user.name}</span> ({user.username})</span>
+                        <span>{(t as any)('impersonating') || 'Impersonando'}: <span className="underline">{user.name}</span> ({user.username})</span>
                       </div>
                       <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
-                        <LogOut size={14} /> Torna ad Admin
+                        <LogOut size={14} /> {(t as any)('backToAdmin') || 'Torna ad Admin'}
                       </button>
                     </div>
                   )}

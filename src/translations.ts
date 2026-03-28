@@ -251,7 +251,6 @@ export const translations = {
     noAccount: "Non hai un account?",
     registerLink: "Registrati",
     registrationTitle: "Richiesta di registrazione",
-    registrationDesc: "Compila il modulo. Verrà aperto il tuo client di posta con la richiesta pre-compilata da inviare all'amministratore.",
     registrationSuccess: "Il tuo client email si è aperto con il messaggio pre-compilato. Invialo e sarai contattato dall'amministratore entro 24-48 ore lavorative.",
     requestSent: "Richiesta inviata!",
     sendRequest: "Invia richiesta",
@@ -373,6 +372,12 @@ export const translations = {
     presRealInterface: "Interfaccia Reale",
     privacy: "Privacy",
     terms: "Termini di Servizio",
+    impersonating: "Impersonando",
+    backToAdmin: "Torna ad Admin",
+    backToApp: "Torna all'app",
+    registrationDesc: "Invia la tua richiesta per registrare una nuova azienda su JobsReport.",
+    requestSentDesc: "Ti contatteremo al più presto. Grazie per aver scelto JobsReport.",
+    sending: "Invio in corso..."
   },
   en: {
     dashboard: "Dashboard",
@@ -624,7 +629,6 @@ export const translations = {
     noAccount: "Don't have an account?",
     registerLink: "Register",
     registrationTitle: "Registration request",
-    registrationDesc: "Fill in the form. Your email client will open with the pre-filled request to send to the administrator.",
     registrationSuccess: "Your email client has opened with the pre-filled message. Send it and you will be contacted by the administrator within 24-48 business hours.",
     requestSent: "Request sent!",
     sendRequest: "Send request",
@@ -732,6 +736,12 @@ export const translations = {
     presRealInterface: "Real Interface",
     privacy: "Privacy",
     terms: "Terms of Service",
+    impersonating: "Impersonating",
+    backToAdmin: "Back to Admin",
+    backToApp: "Back to app",
+    registrationDesc: "Send your request to register a new company on JobsReport.",
+    requestSentDesc: "We will contact you as soon as possible. Thank you for choosing JobsReport.",
+    sending: "Sending..."
   },
   da: {
     dashboard: "Oversigt",
@@ -998,7 +1008,6 @@ export const translations = {
     normalCost: "Normal omkostning",
     overtimeRateMissing: "Overtidstakst ikke indstillet",
     nonBillable: "Ikke-fakturerbar",
-    registrationDesc: "Udfyld formularen. Din e-mailklient åbnes med den forudfyldte anmodning til administratoren.",
     registrationSuccess: "Din e-mailklient er åbnet med den forudfyldte besked. Send den, og administratoren vil kontakte dig inden for 24-48 arbejdstimer.",
     requestSent: "Anmodning sendt!",
     sendRequest: "Send anmodning",
@@ -1067,6 +1076,12 @@ export const translations = {
     headerTotal: "TOT",
     privacy: "Privatliv",
     terms: "Servicevilkår",
+    impersonating: "Udgiver sig for at være",
+    backToAdmin: "Tilbage til Admin",
+    backToApp: "Tilbage til appen",
+    registrationDesc: "Send din anmodning om at registrere et nyt firma på JobsReport.",
+    requestSentDesc: "Vi kontakter dig hurtigst muligt. Tak fordi du valgte JobsReport.",
+    sending: "Sender..."
   },
   es: {
     dashboard: "Panel",
@@ -1333,7 +1348,6 @@ export const translations = {
     noAccount: "¿No tienes cuenta?",
     registerLink: "Regístrate",
     registrationTitle: "Solicitud de registro",
-    registrationDesc: "Completa el formulario. Tu cliente de correo se abrirá con la solicitud pre-completada para enviar al administrador.",
     registrationSuccess: "Tu cliente de correo se ha abierto con el mensaje pre-completado. Envíalo y el administrador se pondrá en contacto contigo en 24-48 horas hábiles.",
     requestSent: "¡Solicitud enviada!",
     sendRequest: "Enviar solicitud",
@@ -1402,6 +1416,12 @@ export const translations = {
     headerTotal: "TOT",
     privacy: "Privacidad",
     terms: "Términos de Servicio",
+    impersonating: "Suplantando a",
+    backToAdmin: "Volver a Admin",
+    backToApp: "Volver a la app",
+    registrationDesc: "Envíe su solicitud para registrar una nueva empresa en JobsReport.",
+    requestSentDesc: "Nos pondremos en contacto con usted lo antes posible. Gracias por elegir JobsReport.",
+    sending: "Enviando..."
   },
   pl: {
     dashboard: "Panel",
@@ -1670,7 +1690,6 @@ export const translations = {
     noAccount: "Nie masz konta?",
     registerLink: "Zarejestruj się",
     registrationTitle: "Prośba o rejestrację",
-    registrationDesc: "Wypełnij formularz. Otworzy się klient pocztowy z pre-wypełnioną prośbą do administratora.",
     registrationSuccess: "Twój klient pocztowy otworzył się z pre-wypełnioną wiadomością. Wyślij ją, a administrator skontaktuje się w ciągu 24-48 godzin roboczych.",
     requestSent: "Prośba wysłana!",
     sendRequest: "Wyślij prośbę",
@@ -1995,7 +2014,6 @@ export const translations = {
     noAccount: "Hesabınız yok mu?",
     registerLink: "Kayıt ol",
     registrationTitle: "Kayıt talebi",
-    registrationDesc: "Formu doldurun. E-posta istemciniz, yöneticiye gönderilecek önceden doldurulmuş taleple açılacak.",
     registrationSuccess: "E-posta istemciniz önceden doldurulmuş mesajla açıldı. Gönderin, yönetici 24-48 iş saati içinde sizinle iletişime geçecek.",
     requestSent: "Talep gönderildi!",
     sendRequest: "Talebi gönder",
@@ -2066,5 +2084,11 @@ export const translations = {
     presBackToLogin: "Logine Geri Dön",
     privacy: "Gizlilik",
     terms: "Kullanım Koşulları",
+    impersonating: "Taklit ediliyor",
+    backToAdmin: "Yöneticiye Dön",
+    backToApp: "Uygulamaya dön",
+    registrationDesc: "JobsReport'ta yeni bir şirket kaydetmek için isteğinizi gönderin.",
+    requestSentDesc: "En kısa sürede sizinle iletişime geçeceğiz. JobsReport'u seçtiğiniz için teşekkür ederiz.",
+    sending: "Gönderiliyor..."
   }
 };

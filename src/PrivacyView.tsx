@@ -2,6 +2,8 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { LanguageContext } from './App';
 
+import { translations } from './translations';
+
 const privacyContent: Record<string, {
   title: string;
   lastUpdated: string;
@@ -120,6 +122,7 @@ const privacyContent: Record<string, {
 const PrivacyView: React.FC = () => {
   const { lang } = useContext(LanguageContext);
   const content = privacyContent[lang] || privacyContent['it'];
+  const t = (key: keyof typeof translations['it']) => (translations as any)[lang]?.[key] || translations['it'][key];
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
@@ -147,7 +150,7 @@ const PrivacyView: React.FC = () => {
               to="/"
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors"
             >
-              ← Torna all'app
+              ← {t('backToApp') || "Torna all'app"}
             </Link>
           </div>
         </div>
