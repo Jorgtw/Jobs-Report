@@ -221,8 +221,43 @@ class DBService {
       name: c.name,
       status: c.status || 'active',
       is_premium: !!c.is_premium,
+      address: c.address || '',
+      phone: c.phone || '',
+      email: c.email || '',
+      vatNumber: c.vat_number || '',
+      city: c.city || '',
+      country: c.country || '',
       createdAt: new Date(c.created_at).getTime()
     };
+  }
+
+  async getCompanyDetails(companyId: string): Promise<any> {
+    const { data, error } = await supabase.from('companies').select('*').eq('id', companyId).single();
+    if (error || !data) return null;
+    return this.mapSupabaseCompany(data);
+  }
+
+  async getCompanyAdminEmails(companyId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('workers')
+      .select('email')
+      .eq('company_id', companyId)
+      .eq('role', 'admin')
+      .eq('status', 'active');
+    if (error || !data) return [];
+    return data.map((w: any) => w.email).filter(Boolean);
+  }
+
+  async updateCompanyDetails(id: string, details: { address?: string; phone?: string; email?: string; vatNumber?: string; city?: string; country?: string }) {
+    const { error } = await supabase.from('companies').update({
+      address: details.address,
+      phone: details.phone,
+      email: details.email,
+      vat_number: details.vatNumber,
+      city: details.city,
+      country: details.country,
+    }).eq('id', id);
+    if (error) throw error;
   }
 
   async getAllCompanies() {
