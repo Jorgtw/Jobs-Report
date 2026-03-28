@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { X, Camera, Trash2, FileDown, CheckCircle2 } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { X, Camera, Trash2, FileDown, CheckCircle2, PenLine } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { translations } from '../translations';
 import { WorkReport } from '../types';
@@ -13,13 +13,42 @@ interface ComplianceReportModalProps {
 
 export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ report, onClose, onGenerate, lang }) => {
   const sigCanvas = useRef<SignatureCanvas>(null);
+  const sigContainerRef = useRef<HTMLDivElement>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [hasSigned, setHasSigned] = useState(false);
 
   const t = (key: keyof typeof translations['it']) => {
     const current = (translations as any)[lang] || translations['it'];
     return current[key] || translations['it'][key] || key;
   };
+
+  // Fix for react-signature-canvas: resize the internal canvas to match its CSS container
+  useEffect(() => {
+    const resizeCanvas = () => {
+      if (sigContainerRef.current && sigCanvas.current) {
+        const canvas = sigCanvas.current.getCanvas();
+        const container = sigContainerRef.current;
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = container.offsetWidth * ratio;
+        canvas.height = 200 * ratio;
+        canvas.getContext('2d')?.scale(ratio, ratio);
+        sigCanvas.current.clear();
+        setHasSigned(false);
+      }
+    };
+
+    // Run after modal is rendered
+    const timer = setTimeout(resizeCanvas, 100);
+
+    const observer = new ResizeObserver(resizeCanvas);
+    if (sigContainerRef.current) observer.observe(sigContainerRef.current);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, []);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -28,7 +57,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotos(prev => [...prev, reader.result as string].slice(0, 2)); // Limit to 2 photos for PDF performance
+        setPhotos(prev => [...prev, reader.result as string].slice(0, 2));
       };
       reader.readAsDataURL(file);
     });
@@ -38,21 +67,26 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleClear = () => {
+    sigCanvas.current?.clear();
+    setHasSigned(false);
+  };
+
   const handleGenerate = async () => {
-    if (sigCanvas.current?.isEmpty()) {
-      alert(t('complianceSignaturePlaceholder'));
+    if (!hasSigned || sigCanvas.current?.isEmpty()) {
+      alert('⚠️ Per favore firma prima di generare il PDF.');
       return;
     }
-    
+
     setIsGenerating(true);
     const signatureBase64 = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || '';
-    
+
     try {
       await onGenerate(photos, signatureBase64);
       onClose();
     } catch (err) {
-      console.error(err);
-      alert('Error generating PDF');
+      console.error('PDF generation error:', err);
+      alert('Errore nella generazione del PDF. Riprova.');
     } finally {
       setIsGenerating(false);
     }
@@ -85,7 +119,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
               {photos.map((photo, idx) => (
                 <div key={idx} className="relative aspect-video bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group">
                   <img src={photo} alt="Evidence" className="w-full h-full object-cover" />
-                  <button 
+                  <button
                     onClick={() => removePhoto(idx)}
                     className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all"
                   >
@@ -97,13 +131,12 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                 <label className="aspect-video bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-all text-blue-600">
                   <Camera size={32} />
                   <span className="text-[10px] font-black uppercase tracking-wider">{t('complianceAddPhoto')}</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="environment" 
-                    className="hidden" 
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
                     onChange={handlePhotoChange}
-                    multiple 
+                    multiple
                   />
                 </label>
               )}
@@ -115,24 +148,27 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
             <div className="flex justify-between items-end mb-4">
               <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] block">
                 2. {t('complianceSignature')}
+                {hasSigned && <span className="ml-2 text-emerald-500">✓</span>}
               </label>
-              <button 
-                onClick={() => sigCanvas.current?.clear()}
+              <button
+                onClick={handleClear}
                 className="text-[10px] font-bold text-red-500 uppercase hover:underline"
               >
                 {t('complianceSignatureClear')}
               </button>
             </div>
-            <div className="border-2 border-slate-200 rounded-2xl bg-slate-50 overflow-hidden shadow-inner">
-              <SignatureCanvas 
+            <div ref={sigContainerRef} className="border-2 border-slate-200 rounded-2xl bg-slate-50 overflow-hidden shadow-inner">
+              <SignatureCanvas
                 ref={sigCanvas}
                 penColor="#1e3a8a"
+                onEnd={() => setHasSigned(true)}
                 canvasProps={{
-                  className: "w-full min-h-[200px] cursor-crosshair",
-                  style: { width: '100%', height: '200px' }
+                  className: "w-full cursor-crosshair",
+                  style: { width: '100%', height: '200px', display: 'block' }
                 }}
               />
-              <div className="bg-slate-100 py-1.5 px-4 text-center border-t border-slate-200">
+              <div className="bg-slate-100 py-1.5 px-4 text-center border-t border-slate-200 flex items-center justify-center gap-2">
+                <PenLine size={12} className="text-slate-400" />
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">
                   {t('complianceSignaturePlaceholder')}
                 </p>
@@ -142,10 +178,14 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
 
           {/* Action Button */}
           <div className="pt-6 border-t">
-            <button 
+            <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className={`w-full py-4 rounded-2xl font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 ${
+                hasSigned
+                  ? 'bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700 active:scale-[0.98]'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
             >
               {isGenerating ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -154,6 +194,9 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
               )}
               {t('complianceGeneratePDF')}
             </button>
+            {!hasSigned && (
+              <p className="text-center text-xs text-slate-400 mt-2">⚠️ Firma richiesta per generare il PDF</p>
+            )}
           </div>
         </div>
       </div>
