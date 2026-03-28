@@ -49,18 +49,6 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
     }
   };
 
-  const handleRegister = () => {
-    const subject = encodeURIComponent(t('registrationEmailSubject'));
-    let bodyText = t('registrationEmailBody')
-      .replace('{companyName}', 'Nome Azienda')
-      .replace('{contactName}', 'Nome Referente')
-      .replace('{email}', 'Email')
-      .replace('{phone}', 'Telefono')
-      .replace('{notes}', 'Note');
-    const body = encodeURIComponent(bodyText);
-    window.location.href = `mailto:jtw@live.it?subject=${subject}&body=${body}`;
-  };
-
   const handleForgotPassword = () => {
     const subject = encodeURIComponent(t('forgotPasswordEmailSubject'));
     const body = encodeURIComponent(t('forgotPasswordEmailBody').replace('{username}', username || '...').replace('{email}', '...'));
@@ -177,7 +165,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
               👤 {t('try_demo' as any) || 'Prova la Demo'}
             </button>
             <p className="text-center text-slate-400 text-xs font-medium">
-              {t('noAccount')} <button type="button" onClick={handleRegister} className="text-blue-600 font-bold hover:underline">{t('registerLink')}</button>
+              {t('noAccount')} <Link to="/richiesta-registrazione" className="text-blue-600 font-bold hover:underline">{t('registerLink')}</Link>
             </p>
           </div>
         </div>

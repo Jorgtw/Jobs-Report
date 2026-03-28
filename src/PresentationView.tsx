@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { X, PlusCircle, ChevronRight } from 'lucide-react';
+
 import { LanguageContext } from './App';
 
 const useTranslation = () => {
@@ -11,71 +11,6 @@ const useTranslation = () => {
       changeLanguage: context.setLang 
     } 
   };
-};
-
-// --- Registration Request Modal (Professional React Version) ---
-const RegistrationRequestModal: React.FC<{ isOpen: boolean; setOpen: (o: boolean) => void }> = ({ isOpen: open, setOpen }) => {
-  const [form, setForm] = useState({ companyName: '', contactName: '', email: '', phone: '', notes: '' });
-  const { t } = useTranslation();
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    const subject = encodeURIComponent(t('registrationEmailSubject'));
-    let bodyText = t('registrationEmailBody')
-      .replace('{companyName}', form.companyName)
-      .replace('{contactName}', form.contactName)
-      .replace('{email}', form.email)
-      .replace('{phone}', form.phone || t('no'))
-      .replace('{notes}', form.notes || '—');
-    const body = encodeURIComponent(bodyText);
-    window.location.href = `mailto:jtw@live.it?subject=${subject}&body=${body}`;
-    setOpen(false);
-  };
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-      <div className="bg-white rounded-[32px] p-8 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto border border-slate-100">
-        <div className="flex justify-between items-center mb-6">
-          <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-            <PlusCircle size={28} />
-          </div>
-          <button onClick={() => setOpen(false)} className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-slate-600 rounded-full transition-colors"><X size={20} /></button>
-        </div>
-        <h2 className="text-2xl font-black text-slate-900 mb-2">{t('registrationTitle')}</h2>
-        <p className="text-sm text-slate-500 mb-8 leading-relaxed">{t('registrationDesc')}</p>
-        
-        <form onSubmit={handleSend} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('companyName')} *</label>
-            <input required value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="Es. Edilizia Rossi Srl" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('contactNameLabel')} *</label>
-            <input required value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="Mario Rossi" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('email')} *</label>
-            <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="info@azienda.it" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('phone')}</label>
-            <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium" placeholder="+39 02 1234567" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('additionalNotes')}</label>
-            <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium resize-none shadow-inner" placeholder="N. dipendenti, tipo di attività..." />
-          </div>
-          
-          <button type="submit" className="w-full py-4 bg-[#2563eb] text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
-            {t('sendRequest')} <ChevronRight size={18} />
-          </button>
-        </form>
-      </div>
-    </div>
-  );
 };
 
 // --- Mockup Translation Dictionary ---
@@ -177,7 +112,6 @@ const PresentationView: React.FC = () => {
   const langContext = useContext(LanguageContext);
   
   const [openPanelKey, setOpenPanelKey] = useState<string | null>(null);
-  const [isRegModalOpen, setIsRegModalOpen] = useState(false);
   const [showLangOverlay, setShowLangOverlay] = useState(!localStorage.getItem('ws_lang'));
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
@@ -365,7 +299,7 @@ const PresentationView: React.FC = () => {
 
               <div className="p-4 px-6 border-t border-[#e5e7eb]">
                 <button 
-                  onClick={() => setIsRegModalOpen(true)}
+                  onClick={() => window.location.hash = '/richiesta-registrazione'}
                   className="w-full text-center bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium text-[14px] py-3 rounded-lg transition-all"
                 >
                   {L.ui.request_demo}
@@ -409,9 +343,6 @@ const PresentationView: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* REGISTRATION MODAL */}
-      <RegistrationRequestModal isOpen={isRegModalOpen} setOpen={setIsRegModalOpen} />
 
     </div>
   );

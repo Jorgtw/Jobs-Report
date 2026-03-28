@@ -42,6 +42,7 @@ import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
 import LoginView from './LoginView';
 import PrivacyView from './PrivacyView';
+import { RegistrationRequestView } from './RegistrationRequestView';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -3144,6 +3145,7 @@ const App: React.FC = () => {
         <Routes>
           {/* Public & Entrance Route */}
           <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
+          <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
           <Route path="/presentation" element={<PresentationView />} />
           <Route path="/privacy" element={<PrivacyView />} />
 
