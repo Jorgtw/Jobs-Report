@@ -337,7 +337,7 @@ const CompactDashboard: React.FC = () => {
       />
       <Card 
         label={t('margin')} 
-        value={`${stats.margin.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}€`} 
+        value={`${stats.margin.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
         icon={ClipboardList} 
         color={stats.margin >= 0 ? "text-emerald-600" : "text-red-600"} 
         to="/work-summary" 
