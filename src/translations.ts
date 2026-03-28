@@ -1081,7 +1081,8 @@ export const translations = {
     backToApp: "Tilbage til appen",
     registrationDesc: "Send din anmodning om at registrere et nyt firma på JobsReport.",
     requestSentDesc: "Vi kontakter dig hurtigst muligt. Tak fordi du valgte JobsReport.",
-    sending: "Sender..."
+    sending: "Sender...",
+    demoPasswordDisabled: "Adgangskodeændring er deaktiveret for demokonti."
   },
   es: {
     dashboard: "Panel",
@@ -1421,7 +1422,8 @@ export const translations = {
     backToApp: "Volver a la app",
     registrationDesc: "Envíe su solicitud para registrar una nueva empresa en JobsReport.",
     requestSentDesc: "Nos pondremos en contacto con usted lo antes posible. Gracias por elegir JobsReport.",
-    sending: "Enviando..."
+    sending: "Enviando...",
+    demoPasswordDisabled: "El cambio de contraseña está deshabilitado para las cuentas de demostración."
   },
   pl: {
     dashboard: "Panel",
@@ -1756,6 +1758,13 @@ export const translations = {
     headerEnd: "KONIEC",
     headerBreak: "PRZERWA",
     headerTotal: "SUMA",
+    impersonating: "Wcielanie się w",
+    backToAdmin: "Wróć do Admina",
+    backToApp: "Wróć do aplikacji",
+    registrationDesc: "Wyślij prośbę o rejestrację nowej firmy w JobsReport.",
+    requestSentDesc: "Skontaktujemy się z Tobą najszybciej jak to możliwe. Dziękujemy za wybór JobsReport.",
+    sending: "Wysyłanie...",
+    demoPasswordDisabled: "Zmiana hasła jest wyłączona dla kont demonstracyjnych."
   },
   tr: {
     dashboard: "Panel",
@@ -2089,6 +2098,7 @@ export const translations = {
     backToApp: "Uygulamaya dön",
     registrationDesc: "JobsReport'ta yeni bir şirket kaydetmek için isteğinizi gönderin.",
     requestSentDesc: "En kısa sürede sizinle iletişime geçeceğiz. JobsReport'u seçtiğiniz için teşekkür ederiz.",
-    sending: "Gönderiliyor..."
+    sending: "Gönderiliyor...",
+    demoPasswordDisabled: "Demo hesapları için şifre değiştirme devre dışı bırakılmıştır."
   }
 };
