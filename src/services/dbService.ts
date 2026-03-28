@@ -656,7 +656,7 @@ class DBService {
       if (role === 'supervisor') {
         const projects = await this.getProjects();
         const assignedProjectIds = projects
-          .filter((p: any) => p.assignedWorkerIds?.includes(userId))
+          .filter((p: any) => !p.assignedWorkerIds || p.assignedWorkerIds.length === 0 || p.assignedWorkerIds.includes(userId))
           .map((p: any) => p.id);
 
         const { data, error } = await query;

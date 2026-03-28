@@ -65,6 +65,11 @@ export const localeMap: Record<string, string> = {
   da: 'da-DK'
 };
 
+export const canUserAccessProject = (project: Partial<Project>, userId: string) => {
+  if (!project.assignedWorkerIds || project.assignedWorkerIds.length === 0) return true;
+  return project.assignedWorkerIds.includes(userId);
+};
+
 // --- Shared Styles ---
 const inputClasses = "flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
 const filterInputClasses = "flex-1 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-xs disabled:bg-slate-50";
@@ -467,7 +472,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         db.getSubcontractors(),
       ]);
       if (user.role === 'supervisor') {
-        const assignedProjectIds = p.filter((proj: any) => proj.assignedWorkerIds?.includes(user.id)).map((proj: any) => proj.id);
+        const assignedProjectIds = p.filter((proj: any) => canUserAccessProject(proj, user.id)).map((proj: any) => proj.id);
         const filteredS = s.filter((item: any) => assignedProjectIds.includes(item.projectId));
         setSummary(filteredS);
       } else {
@@ -687,7 +692,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                     const ids = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
                     await db.bulkUpdateInvoiceStatus(ids, val);
                     const newData = await db.getSummary();
-                    setSummary(user.role === 'supervisor' ? newData.filter(item => projects.filter(proj => proj.assignedWorkerIds?.includes(user.id)).map(proj => proj.id).includes(item.projectId)) : newData);
+                    setSummary(user.role === 'supervisor' ? newData.filter(item => projects.filter(proj => canUserAccessProject(proj, user.id)).map(proj => proj.id).includes(item.projectId)) : newData);
                   } catch (err: any) {
                     alert(t('updateError') + err.message);
                   }
@@ -2036,7 +2041,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       // Supervisors can edit their own and reports from their assigned projects OR if they are an additional worker
       const isAuthor = r.userId === user.id;
       const proj = projects.find(p => p.id === r.projectId);
-      const isAssigned = proj?.assignedWorkerIds?.includes(user.id);
+      const isAssigned = proj ? canUserAccessProject(proj, user.id) : false;
       const isHelper = r.additionalWorkers?.some(aw => aw.userId === user.id);
       return isAuthor || isAssigned || isHelper;
     }
@@ -2584,7 +2589,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                             if (isInternalMode) return p.isInternal;
                             if (p.isInternal) return false;
                             if (user.role === 'admin') return true;
-                            return p.assignedWorkerIds?.includes(user.id);
+                            return canUserAccessProject(p, user.id);
                           })
                           .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
