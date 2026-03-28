@@ -128,18 +128,35 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                 </div>
               ))}
               {photos.length < 2 && (
-                <label className="aspect-video bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-all text-blue-600">
-                  <Camera size={32} />
-                  <span className="text-[10px] font-black uppercase tracking-wider">{t('complianceAddPhoto')}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoChange}
-                    multiple
-                  />
-                </label>
+                <div className="aspect-video bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 p-4">
+                  <Camera size={28} className="text-blue-400" />
+                  <div className="flex gap-2 w-full">
+                    {/* Camera button (mobile only - opens camera directly) */}
+                    <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-blue-700 transition-colors">
+                      <Camera size={14} /> Fotocamera
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={handlePhotoChange}
+                      />
+                    </label>
+                    {/* Gallery / File browser button */}
+                    <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-slate-200 transition-colors">
+                      <Camera size={14} /> Galleria
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoChange}
+                        multiple
+                      />
+                    </label>
+                  </div>
+                </div>
               )}
+
             </div>
           </section>
 

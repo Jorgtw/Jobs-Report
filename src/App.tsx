@@ -2280,11 +2280,22 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
   const handleGenerateCompliance = async (photos: string[], signature: string) => {
     if (!complianceReportToSign) return;
+    const project = projects.find(p => p.id === complianceReportToSign.projectId);
+    const client = clients.find(c => c.id === project?.clientId);
+
+    // Resolve additional worker names from personnel list
+    const resolvedAdditionalWorkers = (complianceReportToSign.additionalWorkers || []).map(aw => ({
+      ...aw,
+      personName: aw.personName || personnel.find(u => u.id === aw.userId)?.name || '---',
+    }));
+
     const reportData = {
       ...complianceReportToSign,
-      clientName: clients.find(c => c.id === projects.find(p => p.id === complianceReportToSign.projectId)?.clientId)?.name || '---',
-      projectName: projects.find(p => p.id === complianceReportToSign.projectId)?.name || '---',
-      userName: personnel.find(u => u.id === complianceReportToSign.userId)?.name || user.name
+      additionalWorkers: resolvedAdditionalWorkers,
+      clientName: client?.name || '---',
+      projectName: project?.name || '---',
+      projectAddress: project?.address || '',
+      userName: personnel.find(u => u.id === complianceReportToSign.userId)?.name || user.name,
     };
     await generateCompliancePDF(reportData, photos, signature, lang);
   };

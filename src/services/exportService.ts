@@ -183,76 +183,218 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
 export const generateCompliancePDF = async (report: any, photos: string[], signature: string, lang: Language) => {
   const t = getT(lang);
   const doc = new jsPDF('p', 'mm', 'a4');
-  const now = new Date().toLocaleString();
+  const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
+  const contentW = pageW - margin * 2;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
-  // Header
-  doc.setFontSize(22);
-  doc.setTextColor(30, 64, 175);
-  doc.text(t('complianceReport').toUpperCase(), margin, 20);
+  // ── HEADER BAR ──────────────────────────────────────────────────────────
+  doc.setFillColor(30, 64, 175);
+  doc.rect(0, 0, pageW, 28, 'F');
 
-  doc.setFontSize(10);
-  doc.setTextColor(100);
-  doc.text(`${t('date')}: ${report.date}`, margin, 30);
-  doc.text(`${t('generatedOn')}: ${now}`, margin, 35);
-
-  // Work Details
-  doc.setDrawColor(229, 231, 235);
-  doc.line(margin, 40, 196, 40);
-
-  doc.setFontSize(12);
-  doc.setTextColor(30, 41, 59);
+  doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.text(t('project').toUpperCase(), margin, 50);
-  
+  doc.setFontSize(18);
+  doc.text('COMPLIANCE REPORT', margin, 12);
+
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text(`${t('clients')}: ${report.clientName}`, margin, 58);
-  doc.text(`${t('project')}: ${report.projectName}`, margin, 64);
-  doc.text(`${t('personnel')}: ${report.userName}`, margin, 70);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text(t('description').toUpperCase(), margin, 80);
-  doc.setFont('helvetica', 'normal');
-  const splitDesc = doc.splitTextToSize(report.description || '---', 170);
-  doc.text(splitDesc, margin, 86);
+  doc.setFontSize(8);
+  doc.text(`JobsReport  •  ${dateStr} ${timeStr}`, margin, 19);
+  doc.text(`#${(report.id || '').substring(0, 8).toUpperCase()}`, pageW - margin, 19, { align: 'right' });
 
-  const descHeight = splitDesc.length * 5;
-  let currentY = 86 + descHeight + 10;
+  // ── INFO BLOCK ───────────────────────────────────────────────────────────
+  let y = 38;
 
-  // Totals
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${t('hours')}: ${report.totalHours}h`, margin, currentY);
-  currentY += 15;
-
-  // Signature
-  if (signature) {
+  const drawLabelValue = (label: string, value: string, x: number, yPos: number, maxW = 90) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text(label.toUpperCase(), x, yPos);
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(t('complianceSignature').toUpperCase(), margin, currentY);
-    doc.addImage(signature, 'PNG', margin, currentY + 2, 60, 30);
-    currentY += 40;
+    doc.setTextColor(15, 23, 42);
+    const lines = doc.splitTextToSize(value || '---', maxW);
+    doc.text(lines, x, yPos + 5);
+    return yPos + 5 + lines.length * 5;
+  };
+
+  // Left column
+  drawLabelValue(t('date'), report.date || '---', margin, y);
+  drawLabelValue(t('clients'), report.clientName || '---', margin, y + 18);
+
+  // Right column
+  drawLabelValue(t('project'), report.projectName || '---', margin + contentW / 2, y);
+  if (report.projectAddress) {
+    drawLabelValue(t('address'), report.projectAddress, margin + contentW / 2, y + 18);
   }
 
-  // Photos on a new page if they exist
+  y += 40;
+
+  // Divider
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, pageW - margin, y);
+  y += 8;
+
+  // ── DESCRIZIONE LAVORI ───────────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30, 64, 175);
+  doc.text('DESCRIZIONE LAVORI', margin, y);
+  y += 6;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(51, 65, 85);
+  const descLines = doc.splitTextToSize(report.description || '---', contentW);
+  doc.text(descLines, margin, y);
+  y += descLines.length * 5 + 8;
+
+  // Divider
+  doc.line(margin, y, pageW - margin, y);
+  y += 8;
+
+  // ── SQUADRA DI LAVORO ────────────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30, 64, 175);
+  doc.text('SQUADRA DI LAVORO', margin, y);
+  y += 4;
+
+  // Build team table data
+  const teamRows: any[] = [];
+  const mainHours = report.manualTotalHours !== undefined && report.manualTotalHours !== null
+    ? Number(report.manualTotalHours)
+    : Number(report.totalHours) || 0;
+
+  teamRows.push([
+    report.userName || '---',
+    report.startTime || '---',
+    report.endTime || '---',
+    `${mainHours.toFixed(2)} h`,
+    t('mainWorker') || 'Principale'
+  ]);
+
+  let totalTeamHours = mainHours;
+
+  (report.additionalWorkers || []).forEach((aw: any) => {
+    const hours = aw.manualTotalHours !== undefined && aw.manualTotalHours !== null
+      ? Number(aw.manualTotalHours)
+      : Number(aw.totalHours) || 0;
+    totalTeamHours += hours;
+    teamRows.push([
+      aw.personName || '---',
+      aw.startTime || '---',
+      aw.endTime || '---',
+      `${hours.toFixed(2)} h`,
+      aw.membershipType || 'Interno'
+    ]);
+  });
+
+  autoTable(doc, {
+    startY: y,
+    head: [[t('name') || 'Nome', t('startTime') || 'Inizio', t('endTime') || 'Fine', t('hours') || 'Ore', 'Tipo']],
+    body: teamRows,
+    foot: [['', '', 'TOTALE ORE SQUADRA', `${totalTeamHours.toFixed(2)} h`, '']],
+    theme: 'grid',
+    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 3 },
+    bodyStyles: { fontSize: 8, cellPadding: 3, textColor: [30, 41, 59] },
+    footStyles: { fillColor: [241, 245, 249], textColor: [30, 64, 175], fontSize: 9, fontStyle: 'bold', cellPadding: 3 },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: 60 },
+      1: { cellWidth: 25, halign: 'center' },
+      2: { cellWidth: 25, halign: 'center' },
+      3: { cellWidth: 25, halign: 'center' },
+      4: { cellWidth: 30, halign: 'center' }
+    }
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 10;
+
+  // ── FIRMA ────────────────────────────────────────────────────────────────
+  // Divider
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageW - margin, y);
+  y += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30, 64, 175);
+  doc.text('FIRMA DEL CLIENTE', margin, y);
+
   if (photos && photos.length > 0) {
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.setTextColor(30, 64, 175);
-    doc.text(t('compliancePhotos').toUpperCase(), margin, 20);
-    
-    let photoY = 30;
-    photos.forEach((photo) => {
-      // Each photo takes about half a page (approx 120mm height)
-      if (photoY > 200) {
-        doc.addPage();
-        photoY = 20;
-      }
-      // Aspect ratio handling would be better but for simplicity we use a fixed box
-      doc.addImage(photo, 'JPEG', margin, photoY, 180, 100);
-      photoY += 110;
-    });
+    doc.text(t('compliancePhotos').toUpperCase() || 'FOTO EVIDENZA', margin + contentW / 2, y);
+  }
+  y += 4;
+
+  const signatureBoxH = 35;
+  // Signature box
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(margin, y, photos.length > 0 ? contentW / 2 - 4 : contentW, signatureBoxH, 2, 2);
+
+  if (signature) {
+    doc.addImage(signature, 'PNG', margin + 2, y + 2, photos.length > 0 ? contentW / 2 - 8 : contentW - 4, signatureBoxH - 4);
+  } else {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Nessuna firma', margin + (photos.length > 0 ? contentW / 4 - 4 : contentW / 2), y + signatureBoxH / 2, { align: 'center' });
   }
 
-  doc.save(`Compliance_${report.date}_${report.projectName.replace(/\s/g, '_')}.pdf`);
+  // First photo inline (if available)
+  if (photos && photos.length > 0) {
+    try {
+      doc.addImage(photos[0], 'JPEG', margin + contentW / 2 + 2, y, contentW / 2 - 2, signatureBoxH);
+    } catch (e) { /* skip if photo format not supported */ }
+  }
+
+  y += signatureBoxH + 6;
+
+  // Firma line label
+  doc.setDrawColor(203, 213, 225);
+  doc.line(margin, y, margin + (photos.length > 0 ? contentW / 2 - 8 : contentW - 4), y);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`${report.clientName || 'Cliente'}  —  ${report.date}`, margin, y + 4);
+
+  // ── SECONDA FOTO su nuova pagina ─────────────────────────────────────────
+  if (photos && photos.length > 1) {
+    doc.addPage();
+
+    doc.setFillColor(30, 64, 175);
+    doc.rect(0, 0, pageW, 18, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('FOTO EVIDENZA', margin, 12);
+
+    let photoY = 28;
+    try {
+      doc.addImage(photos[1], 'JPEG', margin, photoY, contentW, 120);
+    } catch (e) { /* skip */ }
+  }
+
+  // ── FOOTER ───────────────────────────────────────────────────────────────
+  const totalPages = doc.internal.pages.length - 1;
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    const footerY = doc.internal.pageSize.getHeight() - 8;
+    doc.text(`JobsReport Compliance  •  ${report.projectName}  •  ${dateStr}`, margin, footerY);
+    doc.text(`${i} / ${totalPages}`, pageW - margin, footerY, { align: 'right' });
+  }
+
+  // ── APRI NEL BROWSER ─────────────────────────────────────────────────────
+  const fileName = `Compliance_${report.date}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
+  const blobUrl = doc.output('bloburl');
+  window.open(blobUrl, '_blank');
+  // Also trigger download as fallback
+  doc.save(fileName);
 };
