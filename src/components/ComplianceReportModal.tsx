@@ -57,7 +57,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotos(prev => [...prev, reader.result as string].slice(0, 2));
+        setPhotos(prev => [...prev, reader.result as string].slice(0, 6));
       };
       reader.readAsDataURL(file);
     });
@@ -113,50 +113,38 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
           {/* Photos Section */}
           <section>
             <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block">
-              1. {t('compliancePhotos')} (Max 2)
+              1. {t('compliancePhotos')} ({photos.length}/6)
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {photos.map((photo, idx) => (
                 <div key={idx} className="relative aspect-video bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group">
                   <img src={photo} alt="Evidence" className="w-full h-full object-cover" />
                   <button
                     onClick={() => removePhoto(idx)}
-                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} />
                   </button>
+                  <span className="absolute bottom-1 left-2 text-[9px] font-black text-white/80 bg-black/40 px-1.5 py-0.5 rounded-full">#{idx + 1}</span>
                 </div>
               ))}
-              {photos.length < 2 && (
+              {photos.length < 6 && (
                 <div className="aspect-video bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 p-4">
-                  <Camera size={28} className="text-blue-400" />
+                  <Camera size={24} className="text-blue-400" />
                   <div className="flex gap-2 w-full">
-                    {/* Camera button (mobile only - opens camera directly) */}
+                    {/* Camera button — opens camera directly on mobile */}
                     <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-blue-700 transition-colors">
-                      <Camera size={14} /> Fotocamera
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={handlePhotoChange}
-                      />
+                      <Camera size={13} /> {t('complianceAddPhoto')}
+                      <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoChange} />
                     </label>
-                    {/* Gallery / File browser button */}
+                    {/* Gallery / File browser */}
                     <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-slate-200 transition-colors">
-                      <Camera size={14} /> Galleria
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handlePhotoChange}
-                        multiple
-                      />
+                      <Camera size={13} /> Galleria
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} multiple />
                     </label>
                   </div>
                 </div>
               )}
-
             </div>
           </section>
 

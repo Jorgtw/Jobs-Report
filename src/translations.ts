@@ -380,6 +380,12 @@ export const translations = {
     complianceUpgradeTitle: "Funzionalità Premium",
     complianceUpgradeDesc: "Questa funzionalità (Foto + Firma + PDF Professionale) è riservata agli account Premium.",
     complianceUpgradeCTA: "Sblocca con Donazione",
+    workTeam: "Squadra di Lavoro",
+    descriptionOfWork: "Descrizione Lavori",
+    totalTeamHours: "Totale Ore Squadra",
+    workerCol: "Operaio",
+    clientSignature: "Firma del Cliente",
+    photoEvidence: "Foto Evidenza",
     presRealInterface: "Interfaccia Reale",
     privacy: "Privacy",
     terms: "Termini di Servizio",
@@ -754,6 +760,12 @@ export const translations = {
     complianceUpgradeTitle: "Premium Feature",
     complianceUpgradeDesc: "This feature (Photos + Signature + Professional PDF) is reserved for Premium accounts.",
     complianceUpgradeCTA: "Unlock with Donation",
+    workTeam: "Work Team",
+    descriptionOfWork: "Description of Work",
+    totalTeamHours: "Total Team Hours",
+    workerCol: "Worker",
+    clientSignature: "Customer Signature",
+    photoEvidence: "Photo Evidence",
   },
   da: {
     dashboard: "Oversigt",
@@ -1104,6 +1116,12 @@ export const translations = {
     complianceUpgradeTitle: "Premium-funktion",
     complianceUpgradeDesc: "Denne funktion (Fotos + Underskrift + Professionel PDF) er forbeholdt Premium-konti.",
     complianceUpgradeCTA: "Lås op med donation",
+    workTeam: "Arbejdshold",
+    descriptionOfWork: "Arbejdsbeskrivelse",
+    totalTeamHours: "Samlede holdtimer",
+    workerCol: "Medarbejder",
+    clientSignature: "Kundens underskrift",
+    photoEvidence: "Bevisfoto",
     demoPasswordDisabled: "Adgangskodeændring er deaktiveret for demokonti."
   },
   es: {
@@ -1455,6 +1473,12 @@ export const translations = {
     complianceUpgradeTitle: "Función Premium",
     complianceUpgradeDesc: "Esta función (Fotos + Firma + PDF Profesional) está reservada para cuentas Premium.",
     complianceUpgradeCTA: "Desbloquear con Donación",
+    workTeam: "Equipo de Trabajo",
+    descriptionOfWork: "Descripción de Trabajos",
+    totalTeamHours: "Total Horas Equipo",
+    workerCol: "Operario",
+    clientSignature: "Firma del Cliente",
+    photoEvidence: "Fotos de Evidencia",
     demoPasswordDisabled: "El cambio de contraseña está deshabilitado para las cuentas de demostración."
   },
   pl: {
@@ -1806,6 +1830,12 @@ export const translations = {
     complianceUpgradeTitle: "Funkcja Premium",
     complianceUpgradeDesc: "Ta funkcja (Zdjęcia + Podpis + Profesjonalny PDF) jest zarezerwowana dla kont Premium.",
     complianceUpgradeCTA: "Odblokuj przez Darowiznę",
+    workTeam: "Zespół Roboczy",
+    descriptionOfWork: "Opis Prac",
+    totalTeamHours: "Łączne Godziny Zespołu",
+    workerCol: "Pracownik",
+    clientSignature: "Podpis Klienta",
+    photoEvidence: "Zdjęcia Dowodowe",
     demoPasswordDisabled: "Zmiana hasła jest wyłączona dla kont demonstracyjnych."
   },
   tr: {
@@ -2151,6 +2181,12 @@ export const translations = {
     complianceUpgradeTitle: "Premium Özellik",
     complianceUpgradeDesc: "Bu özellik (Fotoğraflar + İmza + Profesyonel PDF) Premium hesaplar için ayrılmıştır.",
     complianceUpgradeCTA: "Bağış ile Kilidi Aç",
+    workTeam: "Çalışma Ekibi",
+    descriptionOfWork: "İş Tanımı",
+    totalTeamHours: "Toplam Ekip Saati",
+    workerCol: "İşçi",
+    clientSignature: "Müşteri İmzası",
+    photoEvidence: "Kanıt Fotoğrafları",
     demoPasswordDisabled: "Demo hesapları için şifre değiştirme devre dışı bırakılmıştır."
   }
 };

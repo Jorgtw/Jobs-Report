@@ -268,7 +268,7 @@ export const generateCompliancePDF = async (
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
-  doc.text('DESCRIZIONE LAVORI', margin, y);
+  doc.text(t('descriptionOfWork').toUpperCase(), margin, y);
   y += 6;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -284,7 +284,7 @@ export const generateCompliancePDF = async (
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
-  doc.text('SQUADRA DI LAVORO', margin, y);
+  doc.text(t('workTeam').toUpperCase(), margin, y);
   y += 4;
 
   const mainHours = report.manualTotalHours !== undefined && report.manualTotalHours !== null
@@ -304,13 +304,13 @@ export const generateCompliancePDF = async (
 
   autoTable(doc, {
     startY: y,
-    head: [['Operaio', 'Ore']],
+    head: [[t('workerCol'), t('hours')]],
     body: teamRows,
-    foot: [['TOTALE ORE SQUADRA', `${totalTeamHours.toFixed(2)} h`]],
+    foot: [[t('totalTeamHours').toUpperCase(), `${totalTeamHours.toFixed(2)} h`]],
     theme: 'grid',
-    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 9, fontStyle: 'bold', cellPadding: 4 },
-    bodyStyles: { fontSize: 10, cellPadding: 4, textColor: [30, 41, 59] },
-    footStyles: { fillColor: [241, 245, 249], textColor: [30, 64, 175], fontSize: 10, fontStyle: 'bold', cellPadding: 4 },
+    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 2 },
+    bodyStyles: { fontSize: 9, cellPadding: 2, textColor: [30, 41, 59] },
+    footStyles: { fillColor: [241, 245, 249], textColor: [30, 64, 175], fontSize: 9, fontStyle: 'bold', cellPadding: 2 },
     alternateRowStyles: { fillColor: [248, 250, 252] },
     columnStyles: {
       0: { cellWidth: 140 },
@@ -332,8 +332,8 @@ export const generateCompliancePDF = async (
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
-  doc.text('FIRMA DEL CLIENTE', margin, y);
-  if (hasPhoto) doc.text('FOTO EVIDENZA', margin + contentW / 2, y);
+  doc.text(t('clientSignature').toUpperCase(), margin, y);
+  if (hasPhoto) doc.text(t('photoEvidence').toUpperCase(), margin + contentW / 2, y);
   y += 4;
 
   doc.setDrawColor(203, 213, 225);
@@ -355,17 +355,26 @@ export const generateCompliancePDF = async (
   doc.setTextColor(100, 116, 139);
   doc.text(`${report.clientName || 'Cliente'}  —  ${report.date}`, margin, y + 4);
 
-  // ── SECONDA FOTO su nuova pagina ─────────────────────────────────────────
+  // ── FOTO AGGIUNTIVE su pagine successive (2 per pagina) ─────────────────
   if (photos && photos.length > 1) {
-    doc.addPage();
-    doc.setFillColor(30, 64, 175);
-    doc.rect(0, 0, pageW, 18, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text('FOTO EVIDENZA — 2', margin, 12);
-    try { doc.addImage(photos[1], 'JPEG', margin, 26, contentW, 130); }
-    catch (_) { /* skip */ }
+    const extraPhotos = photos.slice(1); // skip first (already shown inline)
+    for (let pi = 0; pi < extraPhotos.length; pi += 2) {
+      doc.addPage();
+      doc.setFillColor(30, 64, 175);
+      doc.rect(0, 0, pageW, 18, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(`${t('photoEvidence').toUpperCase()} — ${pi + 2}${extraPhotos[pi + 1] ? `/${pi + 3}` : ''}`, margin, 12);
+
+      try { doc.addImage(extraPhotos[pi], 'JPEG', margin, 24, contentW, 120); }
+      catch (_) { /* skip */ }
+
+      if (extraPhotos[pi + 1]) {
+        try { doc.addImage(extraPhotos[pi + 1], 'JPEG', margin, 150, contentW, 120); }
+        catch (_) { /* skip */ }
+      }
+    }
   }
 
   // ── FOOTER SU OGNI PAGINA ────────────────────────────────────────────────
