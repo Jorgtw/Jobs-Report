@@ -5,6 +5,7 @@ export interface Company {
   id: string;
   name: string;
   status: 'active' | 'inactive';
+  is_premium?: boolean;
   createdAt: number;
 }
 
@@ -32,6 +33,7 @@ export interface User {
   role: Role;
   status: UserStatus;
   companyId?: string | null;
+  isPremium?: boolean;
   hourlyRate?: number;
   extraCost?: number;
   overtimeHourlyRate?: number;

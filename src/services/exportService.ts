@@ -179,3 +179,80 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     alert("Errore scaricando l'Excel: " + err.message);
   }
 };
+
+export const generateCompliancePDF = async (report: any, photos: string[], signature: string, lang: Language) => {
+  const t = getT(lang);
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const now = new Date().toLocaleString();
+  const margin = 14;
+
+  // Header
+  doc.setFontSize(22);
+  doc.setTextColor(30, 64, 175);
+  doc.text(t('complianceReport').toUpperCase(), margin, 20);
+
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`${t('date')}: ${report.date}`, margin, 30);
+  doc.text(`${t('generatedOn')}: ${now}`, margin, 35);
+
+  // Work Details
+  doc.setDrawColor(229, 231, 235);
+  doc.line(margin, 40, 196, 40);
+
+  doc.setFontSize(12);
+  doc.setTextColor(30, 41, 59);
+  doc.setFont('helvetica', 'bold');
+  doc.text(t('project').toUpperCase(), margin, 50);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`${t('clients')}: ${report.clientName}`, margin, 58);
+  doc.text(`${t('project')}: ${report.projectName}`, margin, 64);
+  doc.text(`${t('personnel')}: ${report.userName}`, margin, 70);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text(t('description').toUpperCase(), margin, 80);
+  doc.setFont('helvetica', 'normal');
+  const splitDesc = doc.splitTextToSize(report.description || '---', 170);
+  doc.text(splitDesc, margin, 86);
+
+  const descHeight = splitDesc.length * 5;
+  let currentY = 86 + descHeight + 10;
+
+  // Totals
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${t('hours')}: ${report.totalHours}h`, margin, currentY);
+  currentY += 15;
+
+  // Signature
+  if (signature) {
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(t('complianceSignature').toUpperCase(), margin, currentY);
+    doc.addImage(signature, 'PNG', margin, currentY + 2, 60, 30);
+    currentY += 40;
+  }
+
+  // Photos on a new page if they exist
+  if (photos && photos.length > 0) {
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.setTextColor(30, 64, 175);
+    doc.text(t('compliancePhotos').toUpperCase(), margin, 20);
+    
+    let photoY = 30;
+    photos.forEach((photo) => {
+      // Each photo takes about half a page (approx 120mm height)
+      if (photoY > 200) {
+        doc.addPage();
+        photoY = 20;
+      }
+      // Aspect ratio handling would be better but for simplicity we use a fixed box
+      doc.addImage(photo, 'JPEG', margin, photoY, 180, 100);
+      photoY += 110;
+    });
+  }
+
+  doc.save(`Compliance_${report.date}_${report.projectName.replace(/\s/g, '_')}.pdf`);
+};

@@ -220,6 +220,7 @@ class DBService {
       id: c.id,
       name: c.name,
       status: c.status || 'active',
+      is_premium: !!c.is_premium,
       createdAt: new Date(c.created_at).getTime()
     };
   }
@@ -246,6 +247,13 @@ class DBService {
       }
       return comp;
     });
+  }
+
+  async togglePremiumStatus(id: string, currentStatus: boolean) {
+    const newStatus = !currentStatus;
+    const { error } = await supabase.from('companies').update({ is_premium: newStatus }).eq('id', id);
+    if (error) throw error;
+    return newStatus;
   }
 
   async updateCompany(id: string, updates: any) {
@@ -347,14 +355,18 @@ class DBService {
     }
 
     // Controlla se l'azienda a cui appartiene è disattivata (per bloccare il login)
+    let isPremium = false;
     if (dbUser.company_id) {
-      const { data: compData, error: compErr } = await supabase.from('companies').select('status').eq('id', dbUser.company_id).single();
-      if (!compErr && compData && compData.status === 'inactive') {
-        throw new Error('Company is inactive');
+      const { data: compData, error: compErr } = await supabase.from('companies').select('status, is_premium').eq('id', dbUser.company_id).single();
+      if (!compErr && compData) {
+        if (compData.status === 'inactive') {
+          throw new Error('Company is inactive');
+        }
+        isPremium = !!compData.is_premium;
       }
     }
 
-    return this.mapSupabaseWorker(dbUser);
+    return this.mapSupabaseWorker(dbUser, isPremium);
   }
 
   async addUser(user: any) {
@@ -385,7 +397,7 @@ class DBService {
     if (error) throw error;
   }
 
-  private mapSupabaseWorker(w: any): any {
+  private mapSupabaseWorker(w: any, isPremium?: boolean): any {
     return {
       id: w.id,
       name: w.name,
@@ -396,6 +408,7 @@ class DBService {
       username: w.username || '',
       password: w.password_hash || w.password || '',
       companyId: w.company_id || null,
+      isPremium: isPremium ?? !!w.is_premium, // Fallback if injected or from DB join if implemented later
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,

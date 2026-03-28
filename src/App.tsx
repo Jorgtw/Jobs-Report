@@ -33,6 +33,7 @@ import {
   PlusCircle,
   LayoutDashboard,
   BookOpen,
+  CheckCircle2,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -43,6 +44,9 @@ import PresentationView from './PresentationView';
 import LoginView from './LoginView';
 import PrivacyView from './PrivacyView';
 import { RegistrationRequestView } from './RegistrationRequestView';
+import { UpgradeModal } from './components/UpgradeModal';
+import { ComplianceReportModal } from './components/ComplianceReportModal';
+import { generateCompliancePDF } from './services/exportService';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -2021,6 +2025,13 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [personnel, setPersonnel] = useState<User[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [complianceReportToSign, setComplianceReportToSign] = useState<WorkReport | null>(null);
+
+  useEffect(() => {
+    db.getClients().then(setClients);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -2259,6 +2270,25 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     setIsModalOpen(true);
   };
 
+  const handleComplianceClick = (r: WorkReport) => {
+    if (!user.isPremium) {
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+    setComplianceReportToSign(r);
+  };
+
+  const handleGenerateCompliance = async (photos: string[], signature: string) => {
+    if (!complianceReportToSign) return;
+    const reportData = {
+      ...complianceReportToSign,
+      clientName: clients.find(c => c.id === projects.find(p => p.id === complianceReportToSign.projectId)?.clientId)?.name || '---',
+      projectName: projects.find(p => p.id === complianceReportToSign.projectId)?.name || '---',
+      userName: personnel.find(u => u.id === complianceReportToSign.userId)?.name || user.name
+    };
+    await generateCompliancePDF(reportData, photos, signature, lang);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -2419,6 +2449,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-0.5" title={r.description}>{r.description}</div>}
                   </div>
                   <div className="flex gap-1.5">
+                    <button onClick={() => handleComplianceClick(r)} className="p-2 text-indigo-600 bg-indigo-50 active:bg-indigo-100 rounded-lg transition-colors border border-indigo-100" title={t('complianceReport')}><CheckCircle2 size={16} /></button>
                     <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors border border-emerald-100" title={t('duplicate')}><Copy size={16} /></button>
                     {canEditReport(r) && (
                       <>
@@ -2491,6 +2522,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     </td>
                     <td className="px-3 py-1.5 text-right whitespace-nowrap">
                       <div className="flex gap-1.5 justify-end">
+                        <button onClick={() => handleComplianceClick(r)} className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title={t('complianceReport')}><CheckCircle2 size={14} /></button>
                         <button onClick={() => handleDuplicate(r)} className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('duplicate')}><Copy size={14} /></button>
                         {canEditReport(r) && (
                           <>
@@ -2885,6 +2917,18 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
           </div>
         </div>
       )}
+      {isUpgradeModalOpen && (
+        <UpgradeModal lang={lang} onClose={() => setIsUpgradeModalOpen(false)} />
+      )}
+
+      {complianceReportToSign && (
+        <ComplianceReportModal 
+          report={complianceReportToSign} 
+          lang={lang} 
+          onClose={() => setComplianceReportToSign(null)} 
+          onGenerate={handleGenerateCompliance} 
+        />
+      )}
     </div>
   );
 };
@@ -2948,6 +2992,11 @@ const CompaniesView: React.FC = () => {
     loadCompanies();
   };
 
+  const handleTogglePremium = async (id: string, currentPremium: boolean) => {
+    await db.togglePremiumStatus(id, currentPremium);
+    loadCompanies();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -2987,6 +3036,7 @@ const CompaniesView: React.FC = () => {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('companyName')}</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Premium</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('companyStatus')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('actions')}</th>
               </tr>
@@ -2995,6 +3045,15 @@ const CompaniesView: React.FC = () => {
               {companies.map(c => (
                 <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
+                  <td className="px-5 py-4">
+                    <button 
+                      onClick={() => handleTogglePremium(c.id, !!c.is_premium)}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${c.is_premium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 shadow-sm hover:scale-105' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                    >
+                      <Building2 size={12} />
+                      {c.is_premium ? 'PREMIUM' : 'BASE'}
+                    </button>
+                  </td>
                   <td className="px-5 py-4">
                     <span className={`px-3 py-1 text-xs font-bold rounded-full ${c.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
                       {c.status === 'active' ? t('active') : t('inactive')}
