@@ -197,6 +197,15 @@ export const generateCompliancePDF = async (
   const dateStr = now.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
+  // Convert ISO date (yyyy-mm-dd) to European format (dd/mm/yyyy)
+  const formatDateEU = (isoDate: string) => {
+    if (!isoDate) return '---';
+    const parts = isoDate.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return isoDate;
+  };
+  const reportDateEU = formatDateEU(report.date);
+
   // ── HEADER BAR ──────────────────────────────────────────────────────────
   doc.setFillColor(30, 64, 175);
   doc.rect(0, 0, pageW, 28, 'F');
@@ -255,7 +264,7 @@ export const generateCompliancePDF = async (
     return yPos + 5 + lines.length * 5;
   };
 
-  drawLabelValue(t('date'), report.date || '---', margin, y);
+  drawLabelValue(t('date'), reportDateEU, margin, y);
   drawLabelValue(t('clients'), report.clientName || '---', margin, y + 18);
   drawLabelValue(t('project'), report.projectName || '---', margin + contentW / 2, y);
   if (report.projectAddress) drawLabelValue(t('address'), report.projectAddress, margin + contentW / 2, y + 18);
@@ -353,7 +362,7 @@ export const generateCompliancePDF = async (
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text(`${report.clientName || 'Cliente'}  —  ${report.date}`, margin, y + 4);
+  doc.text(`${report.clientName || 'Cliente'}  —  ${reportDateEU}`, margin, y + 4);
 
   // ── FOTO AGGIUNTIVE su pagine successive (2 per pagina) ─────────────────
   if (photos && photos.length > 1) {
@@ -391,7 +400,7 @@ export const generateCompliancePDF = async (
   }
 
   // ── APRI NEL BROWSER + SCARICA ───────────────────────────────────────────
-  const fileName = `Compliance_${report.date}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
+  const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
   const pdfBase64 = doc.output('datauristring');
   window.open(doc.output('bloburl'), '_blank');
   doc.save(fileName);
@@ -406,7 +415,7 @@ export const generateCompliancePDF = async (
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             to: emailsToNotify,
-            subject: `[JobsReport] Compliance Report — ${report.projectName} — ${report.date}`,
+            subject: `[JobsReport] Compliance Report — ${report.projectName} — ${reportDateEU}`,
             companyName: report.companyName || '',
             projectName: report.projectName || '',
             clientName: report.clientName || '',
