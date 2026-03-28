@@ -2960,7 +2960,8 @@ const CompaniesView: React.FC = () => {
     adminId: '',
     adminName: '',
     username: '',
-    password: ''
+    password: '',
+    isPremium: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -2971,7 +2972,8 @@ const CompaniesView: React.FC = () => {
       adminId: c.adminId || '',
       adminName: c.adminName || '',
       username: c.username || '',
-      password: c.password || ''
+      password: c.password || '',
+      isPremium: !!c.is_premium
     });
     setIsModalOpen(true);
   };
@@ -3003,6 +3005,7 @@ const CompaniesView: React.FC = () => {
     try {
       if (editingId) {
         await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password);
+        await db.setPremiumStatus(editingId, formData.isPremium);
       } else {
         await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
       }
@@ -3017,7 +3020,7 @@ const CompaniesView: React.FC = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '' });
+    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false });
     setIsModalOpen(true);
   };
 
@@ -3105,6 +3108,25 @@ const CompaniesView: React.FC = () => {
                   <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
                 </FullWidthField>
               </div>
+              {editingId && (
+                <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div>
+                    <p className="text-sm font-bold text-amber-800">Piano Premium</p>
+                    <p className="text-xs text-amber-600">Abilita le funzionalità Premium (Compliance Report, Foto, Firma)</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
+                      formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
+                      formData.isPremium ? 'translate-x-8' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              )}
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
                 <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">

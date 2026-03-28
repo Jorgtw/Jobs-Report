@@ -256,6 +256,11 @@ class DBService {
     return newStatus;
   }
 
+  async setPremiumStatus(id: string, isPremium: boolean) {
+    const { error } = await supabase.from('companies').update({ is_premium: isPremium }).eq('id', id);
+    if (error) throw error;
+  }
+
   async updateCompany(id: string, updates: any) {
     const { error } = await supabase.from('companies').update(updates).eq('id', id);
     if (error) throw error;
