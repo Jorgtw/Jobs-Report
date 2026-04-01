@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 
 class DBService {
   private currentCompanyId: string | null = null;
+  private isSuperAdminRole: boolean = false;
 
   constructor() { }
 
@@ -10,8 +11,12 @@ class DBService {
     this.currentCompanyId = id;
   }
 
-  private requireCompanyId() {
-    if (!this.currentCompanyId) {
+  public setIsSuperAdmin(isSA: boolean) {
+    this.isSuperAdminRole = isSA;
+  }
+
+  private requireCompanyId(): string | null {
+    if (!this.currentCompanyId && !this.isSuperAdminRole) {
       throw new Error("company_id is required but not set in DBService.");
     }
     return this.currentCompanyId;
@@ -95,7 +100,10 @@ class DBService {
 
   async getSubcontractors() {
     const compId = this.requireCompanyId();
-    const { data, error } = await supabase.from('subcontractors').select('*').eq('company_id', compId);
+    let query = supabase.from('subcontractors').select('*');
+    if (compId) query = query.eq('company_id', compId);
+    
+    const { data, error } = await query;
     if (error) {
       console.error('Error fetching subcontractors:', error);
       return [];
@@ -128,7 +136,10 @@ class DBService {
 
   async getUsers() {
     const compId = this.requireCompanyId();
-    const { data, error } = await supabase.from('workers').select('*').eq('company_id', compId);
+    let query = supabase.from('workers').select('*');
+    if (compId) query = query.eq('company_id', compId);
+
+    const { data, error } = await query;
     if (error) {
       console.error('Error fetching workers:', error);
       return [];
@@ -411,7 +422,14 @@ class DBService {
       }
     }
 
-    return this.mapSupabaseWorker(workerData, isPremium);
+    const user = this.mapSupabaseWorker(workerData, isPremium);
+    
+    // Check if truly superadmin via user_roles for extra safety
+    const isSA = await this.checkIsSuperAdmin(user.id);
+    this.setIsSuperAdmin(isSA);
+    if (isSA) user.role = 'superadmin';
+
+    return user;
   }
 
   async addUser(user: any) {

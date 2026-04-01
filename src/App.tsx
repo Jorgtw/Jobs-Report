@@ -3234,11 +3234,16 @@ const App: React.FC = () => {
     if (user && user.id) {
       if ((user.role as any) === 'superadmin') {
         setIsSuperAdmin(true);
+        db.setIsSuperAdmin(true);
       } else {
-        db.checkIsSuperAdmin(user.id).then(setIsSuperAdmin).catch(console.error);
+        db.checkIsSuperAdmin(user.id).then(isSA => {
+          setIsSuperAdmin(isSA);
+          db.setIsSuperAdmin(isSA);
+        }).catch(console.error);
       }
     } else {
       setIsSuperAdmin(false);
+      db.setIsSuperAdmin(false);
     }
   }, [user]);
 
