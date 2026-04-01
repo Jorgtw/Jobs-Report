@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { supabase } from './services/supabase';
 import {
   FileText,
   Users,
