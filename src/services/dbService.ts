@@ -390,7 +390,7 @@ class DBService {
     const { data: workerData, error: workerErr } = await supabase
       .from('workers')
       .select('*')
-      .eq('username', username)
+      .ilike('username', username.trim())
       .eq('status', 'active')
       .single();
 
