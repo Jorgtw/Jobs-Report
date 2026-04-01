@@ -413,7 +413,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
     // Actually, HomeView is inside App component's file, so we can pass handleLogout if we want.
     // For now, let's just clear storage and reload or use the existing logout logic if available.
     db.setCompanyId(null);
-    localStorage.removeItem('ws_auth');
+    localStorage.removeItem('ws_auth'); supabase.auth.signOut();
     localStorage.removeItem('ws_auth_admin');
     window.location.reload(); // Simple way to reset everything
   };
@@ -3251,7 +3251,7 @@ const App: React.FC = () => {
     db.setCompanyId(null);
     setUser(null);
     setAdminUser(null);
-    localStorage.removeItem('ws_auth');
+    localStorage.removeItem('ws_auth'); supabase.auth.signOut();
     localStorage.removeItem('ws_auth_admin');
     setIsSuperAdmin(false);
   };

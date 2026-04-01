@@ -364,40 +364,45 @@ class DBService {
   // ----------------------------------------------------
 
   async loginUser(username: string, password?: string) {
-    // We cannot use getUsers() during login because requireCompanyId() would throw.
-    // We must query the database directly by username.
-    const { data, error } = await supabase
+    if (!password) return null;
+    
+    // 1. Usa la nuova RPC per ottenere l'email dall'username (bypassa RLS in modo sicuro)
+    const { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: username });
+    
+    if (emailError || !userEmail) {
+      console.error('Non trovo l\'utente o utente non attivo:', emailError);
+      return null;
+    }
+
+    // 2. Fai il login con Supabase Auth usando l'email ottenuta
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: userEmail,
+      password: password
+    });
+
+    if (authError || !authData.user) {
+      console.error('Errore credenziali Supabase Auth:', authError);
+      return null;
+    }
+
+    // 3. Ora che l'utente è loggato in Supabase, le RLS sono sbloccate per la sua azienda!
+    // Scarichiamo il record "worker" completo.
+    const { data: workerData, error: workerErr } = await supabase
       .from('workers')
       .select('*')
       .eq('username', username)
       .eq('status', 'active')
-      .limit(1);
+      .single();
 
-    if (error) {
-      console.error('Login error:', error);
+    if (workerErr || !workerData) {
+      console.error('Record worker non trovato dopo il login:', workerErr);
       return null;
     }
 
-    if (!data || data.length === 0) return null;
-
-    const dbUser = data[0];
-
-    // Password verification logic
-    if (password) {
-      const hashedInput = await this.hashPassword(password);
-      const storedHash = dbUser.password_hash || dbUser.password;
-
-      // If the stored password matches the hash OR the plain text password (for migration)
-      // We also check for exact match with 'password' field if it exists
-      if (storedHash !== hashedInput && storedHash !== password && dbUser.password !== password) {
-        return null;
-      }
-    }
-
-    // Controlla se l'azienda a cui appartiene è disattivata (per bloccare il login)
+    // 4. Check premium e status azienda
     let isPremium = false;
-    if (dbUser.company_id) {
-      const { data: compData, error: compErr } = await supabase.from('companies').select('status, is_premium').eq('id', dbUser.company_id).single();
+    if (workerData.company_id) {
+      const { data: compData, error: compErr } = await supabase.from('companies').select('status, is_premium').eq('id', workerData.company_id).single();
       if (!compErr && compData) {
         if (compData.status === 'inactive') {
           throw new Error('Company is inactive');
@@ -406,7 +411,7 @@ class DBService {
       }
     }
 
-    return this.mapSupabaseWorker(dbUser, isPremium);
+    return this.mapSupabaseWorker(workerData, isPremium);
   }
 
   async addUser(user: any) {
@@ -446,13 +451,15 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username || '',
-      password: w.password_hash || w.password || '',
+      password: w.password_hash || w.password || '', // mantenuto per retrocompatibilità UI
       companyId: w.company_id || null,
-      isPremium: isPremium ?? !!w.is_premium, // Fallback if injected or from DB join if implemented later
+      authId: w.auth_id || null,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
       extraCost: Number(w.extra_cost) || 0,
+      isInternal: true,
+      isPremium: isPremium ?? !!w.is_premium,
       address: w.address || w.billing_address || w.billingAddress || w.home_address || '',
       notes: w.internal_note || w.Notes || w.notes || '',
       createdAt: new Date(w.created_at).getTime()
