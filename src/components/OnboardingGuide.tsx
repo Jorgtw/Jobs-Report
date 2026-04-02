@@ -143,13 +143,40 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     }
   };
 
+  const lastElementRef = useRef<HTMLElement | null>(null);
+
+  // Apply elevation (z-index) to the target element
+  useEffect(() => {
+    // Cleanup previous element
+    if (lastElementRef.current) {
+      lastElementRef.current.style.zIndex = '';
+      lastElementRef.current.style.position = '';
+    }
+
+    if (isVisible && currentStep?.target) {
+      const el = document.querySelector(currentStep.target) as HTMLElement;
+      if (el) {
+        el.style.zIndex = '9999';
+        el.style.position = 'relative';
+        lastElementRef.current = el;
+      }
+    }
+
+    return () => {
+      if (lastElementRef.current) {
+        lastElementRef.current.style.zIndex = '';
+        lastElementRef.current.style.position = '';
+      }
+    };
+  }, [stepIndex, isVisible, currentStep]);
+
   return (
-    <div className={`fixed inset-0 z-[9999] transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* 4-Rect Overlay approach for maximum reliability */}
+    <div className={`fixed inset-0 z-[9997] transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* 4-Rect Overlay approach with z-index 9998 */}
       {!targetRect ? (
-        <div className="fixed inset-0 bg-slate-900/75 pointer-events-auto" />
+        <div className="fixed inset-0 bg-slate-900/75 z-[9998] pointer-events-auto" />
       ) : (
-        <>
+        <div className="fixed inset-0 z-[9998] pointer-events-none">
           {/* Top */}
           <div 
             className="fixed top-0 left-0 w-full bg-slate-900/75 pointer-events-auto transition-all duration-300"
@@ -181,13 +208,13 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
               left: `${targetRect.left + targetRect.width + 4}px`
             }}
           />
-        </>
+        </div>
       )}
 
       {/* Target Pulse Effect */}
       {targetRect && (
         <div 
-          className="absolute z-10 border-2 border-blue-400 rounded-xl animate-pulse pointer-events-none"
+          className="absolute z-[9999] border-2 border-blue-400 rounded-xl animate-pulse pointer-events-none"
           style={{
             top: targetRect.top - 4,
             left: targetRect.left - 4,
@@ -197,9 +224,9 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
         />
       )}
 
-      {/* Content Bubble */}
+      {/* Content Bubble with z-index 10000 */}
       <div 
-        className="absolute z-20 w-[90vw] max-w-sm bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-300"
+        className="absolute z-[10000] w-[90vw] max-w-sm bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-300"
         style={bubblePosition() as React.CSSProperties}
       >
         <div className="flex justify-between items-start mb-4">
