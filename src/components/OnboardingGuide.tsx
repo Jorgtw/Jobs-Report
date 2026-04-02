@@ -23,11 +23,14 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   const [isVisible, setIsVisible] = useState(false);
   const requestRef = useRef<number>();
 
+  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
   const t = (key: string) => {
     return (translations[lang] as any)[key] || (translations['it'] as any)[key] || key;
   };
 
   const steps: OnboardingStep[] = useMemo(() => {
+    // ... same as before
     const baseSteps: OnboardingStep[] = [
       { 
         titleKey: 'onboarding_welcome_title', 
@@ -38,21 +41,21 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
         target: '[data-onboarding="sidebar-clients"]', 
         titleKey: 'onboarding_clients_title', 
         bodyKey: 'onboarding_clients_body', 
-        position: 'right',
+        position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
         target: '[data-onboarding="sidebar-projects"]', 
         titleKey: 'onboarding_projects_title', 
         bodyKey: 'onboarding_projects_body', 
-        position: 'right',
+        position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
         target: '[data-onboarding="sidebar-personnel"]', 
         titleKey: 'onboarding_personnel_title', 
         bodyKey: 'onboarding_personnel_body', 
-        position: 'right',
+        position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
@@ -68,11 +71,9 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
       }
     ];
 
-    // Simple role-based filtering (e.g. operators might not see admin steps)
-    if (userRole !== 'admin') return []; // For now onboarding is only for admins
-
+    if (userRole !== 'admin') return [];
     return baseSteps;
-  }, [userRole]);
+  }, [userRole, windowSize.width]);
 
   const currentStep = steps[stepIndex];
 
@@ -80,9 +81,11 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     if (currentStep?.target) {
       const el = document.querySelector(currentStep.target);
       if (el) {
-        setTargetRect(el.getBoundingClientRect());
-      } else {
-        setTargetRect(null);
+        const rect = el.getBoundingClientRect();
+        // If element is not visible or has no size, don't set rect yet
+        if (rect.width > 0 && rect.height > 0) {
+          setTargetRect(rect);
+        }
       }
     } else {
       setTargetRect(null);
@@ -91,8 +94,12 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   };
 
   useEffect(() => {
+    const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', handleResize);
+    
     requestRef.current = requestAnimationFrame(updateTargetRect);
     return () => {
+      window.removeEventListener('resize', handleResize);
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, [currentStep]);
@@ -101,8 +108,9 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     if (currentStep) {
       onStepChange?.(currentStep);
     }
-    // Delay visibility to wait for sidebar animations if needed
-    const timer = setTimeout(() => setIsVisible(true), currentStep?.requiresSidebar ? 300 : 50);
+    // Added a more robust delay for sidebar steps to wait for animation
+    const delay = currentStep?.requiresSidebar ? 500 : 100;
+    const timer = setTimeout(() => setIsVisible(true), delay);
     return () => {
       clearTimeout(timer);
       setIsVisible(false);
@@ -124,9 +132,17 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   if (!currentStep || steps.length === 0) return null;
 
   const bubblePosition = () => {
-    if (!targetRect || currentStep.position === 'center') return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+    if (!targetRect || currentStep.position === 'center' || windowSize.width < 640) {
+      return { 
+        top: windowSize.width < 640 ? 'auto' : '50%',
+        bottom: windowSize.width < 640 ? '20px' : 'auto',
+        left: '50%', 
+        transform: windowSize.width < 640 ? 'translateX(-50%)' : 'translate(-50%, -50%)',
+        margin: '0 auto'
+      };
+    }
 
-    const padding = 12;
+    const padding = 16;
     const { top, left, width, height } = targetRect;
 
     switch (currentStep.position) {
@@ -137,6 +153,10 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
       case 'top':
         return { top: top - padding, left: left + width / 2, transform: 'translate(-50%, -100%)' };
       case 'bottom':
+        const spaceBelow = windowSize.height - (top + height);
+        if (spaceBelow < 250) { // Not enough space below, force top
+          return { top: top - padding, left: left + width / 2, transform: 'translate(-50%, -100%)' };
+        }
         return { top: top + height + padding, left: left + width / 2, transform: 'translate(-50%, 0)' };
       default:
         return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
