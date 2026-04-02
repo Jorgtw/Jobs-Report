@@ -171,7 +171,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   }, [stepIndex, isVisible, currentStep]);
 
   return (
-    <div className={`fixed inset-0 z-[10000] pointer-events-none transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`fixed inset-0 z-[10000] pointer-events-none transition-opacity duration-300 onboarding-active ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       {/* Target Pulse Highlight (No Shadow/Overlay) */}
       {targetRect && (
         <div 

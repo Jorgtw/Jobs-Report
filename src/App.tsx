@@ -246,7 +246,7 @@ const AppLayout: React.FC<{
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <aside className="hidden md:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>
-      {isMobileMenuOpen && (
+      {isMobileMenuOpen && !document.querySelector('.onboarding-active') && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
       <div className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
