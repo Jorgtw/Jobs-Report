@@ -143,31 +143,32 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     }
   };
 
+  // Calculate the SVG path for the overlay with a hole
+  const overlayPath = useMemo(() => {
+    const sw = window.innerWidth;
+    const sh = window.innerHeight;
+    
+    // Main background (clockwise)
+    const base = `M 0 0 h ${sw} v ${sh} h ${-sw} Z`;
+    
+    if (!targetRect) return base;
+    
+    // Hole (counter-clockwise to subtract with evenodd)
+    const { left: x, top: y, width: w, height: h } = targetRect;
+    const padding = 4;
+    const hole = `M ${x - padding} ${y - padding} v ${h + padding * 2} h ${w + padding * 2} v ${-(h + padding * 2)} Z`;
+    
+    return `${base} ${hole}`;
+  }, [targetRect]);
+
   return (
     <div className={`fixed inset-0 z-[9999] transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* SVG Overlay with Hole */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
-        <defs>
-          <mask id="onboarding-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {targetRect && (
-              <rect
-                x={targetRect.left - 4}
-                y={targetRect.top - 4}
-                width={targetRect.width + 8}
-                height={targetRect.height + 8}
-                fill="black"
-                rx="12"
-              />
-            )}
-          </mask>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
+      {/* SVG Overlay with Hole using evenodd path */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-auto">
+        <path
+          fillRule="evenodd"
           fill="rgba(15, 23, 42, 0.75)"
-          mask="url(#onboarding-mask)"
-          className="pointer-events-auto"
+          d={overlayPath}
         />
       </svg>
 
