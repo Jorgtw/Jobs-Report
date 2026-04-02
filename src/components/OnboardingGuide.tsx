@@ -170,35 +170,17 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     };
   }, [stepIndex, isVisible, currentStep]);
 
-  // Calculate the clip-path for the hole
-  const clipPath = useMemo(() => {
-    if (!targetRect) return 'none';
-    
-    const p = 4; // padding
-    const { top: y, left: x, width: w, height: h } = targetRect;
-    const { innerWidth: sw, innerHeight: sh } = window;
-
-    // A polygon that covers the whole screen and then carves the hole
-    // Format: outer-rect (0,0 -> sw,0 -> sw,sh -> 0,sh -> 0,0) 
-    // then inner-rect hole (x,y -> x+w,y -> x+w,y+h -> x,y+h -> x,y)
-    return `polygon(
-      0% 0%, 0% 100%, 100% 100%, 100% 0%, 0% 0%, 
-      ${x-p}px ${y-p}px, ${x+w+p}px ${y-p}px, ${x+w+p}px ${y+h+p}px, ${x-p}px ${y+h+p}px, ${x-p}px ${y-p}px
-    )`;
-  }, [targetRect]);
-
   return (
     <div className={`fixed inset-0 z-[9997] transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Single Overlay with a Hole punched through via clip-path */}
-      <div 
-        className="fixed inset-0 bg-slate-900/75 z-[9998] pointer-events-auto transition-all duration-300"
-        style={{ clipPath }}
-      />
+      {/* Fallback full-screen overlay for steps without target (Welcome/Finish) */}
+      {!targetRect && (
+        <div className="fixed inset-0 bg-slate-900/75 z-[9998] pointer-events-auto" />
+      )}
 
-      {/* Target Pulse Effect */}
+      {/* Target Pulse Effect & Spotlight Overlay (Box Shadow) */}
       {targetRect && (
         <div 
-          className="absolute z-[9999] border-2 border-blue-400 rounded-xl animate-pulse pointer-events-none"
+          className="fixed z-[9999] border-2 border-blue-400 rounded-xl animate-pulse pointer-events-none shadow-[0_0_0_5000px_rgba(15,23,42,0.75)]"
           style={{
             top: targetRect.top - 4,
             left: targetRect.left - 4,
