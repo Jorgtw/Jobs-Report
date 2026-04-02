@@ -143,34 +143,46 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     }
   };
 
-  // Calculate the SVG path for the overlay with a hole
-  const overlayPath = useMemo(() => {
-    const sw = window.innerWidth;
-    const sh = window.innerHeight;
-    
-    // Main background (clockwise)
-    const base = `M 0 0 h ${sw} v ${sh} h ${-sw} Z`;
-    
-    if (!targetRect) return base;
-    
-    // Hole (counter-clockwise to subtract with evenodd)
-    const { left: x, top: y, width: w, height: h } = targetRect;
-    const padding = 4;
-    const hole = `M ${x - padding} ${y - padding} v ${h + padding * 2} h ${w + padding * 2} v ${-(h + padding * 2)} Z`;
-    
-    return `${base} ${hole}`;
-  }, [targetRect]);
-
   return (
-    <div className={`fixed inset-0 z-[9999] transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* SVG Overlay with Hole using evenodd path */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-auto">
-        <path
-          fillRule="evenodd"
-          fill="rgba(15, 23, 42, 0.75)"
-          d={overlayPath}
-        />
-      </svg>
+    <div className={`fixed inset-0 z-[9999] transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* 4-Rect Overlay approach for maximum reliability */}
+      {!targetRect ? (
+        <div className="fixed inset-0 bg-slate-900/75 pointer-events-auto" />
+      ) : (
+        <>
+          {/* Top */}
+          <div 
+            className="fixed top-0 left-0 w-full bg-slate-900/75 pointer-events-auto transition-all duration-300"
+            style={{ height: `${targetRect.top - 4}px` }}
+          />
+          {/* Bottom */}
+          <div 
+            className="fixed left-0 w-full bg-slate-900/75 pointer-events-auto transition-all duration-300"
+            style={{ 
+              top: `${targetRect.top + targetRect.height + 4}px`,
+              bottom: 0
+            }}
+          />
+          {/* Left */}
+          <div 
+            className="fixed left-0 bg-slate-900/75 pointer-events-auto transition-all duration-300"
+            style={{ 
+              top: `${targetRect.top - 4}px`,
+              height: `${targetRect.height + 8}px`,
+              width: `${targetRect.left - 4}px`
+            }}
+          />
+          {/* Right */}
+          <div 
+            className="fixed right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300"
+            style={{ 
+              top: `${targetRect.top - 4}px`,
+              height: `${targetRect.height + 8}px`,
+              left: `${targetRect.left + targetRect.width + 4}px`
+            }}
+          />
+        </>
+      )}
 
       {/* Target Pulse Effect */}
       {targetRect && (
