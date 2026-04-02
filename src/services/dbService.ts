@@ -22,6 +22,23 @@ class DBService {
     return this.currentCompanyId;
   }
 
+  async uploadFile(bucket: string, path: string, file: Blob | File) {
+    const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  async getSignedUrl(bucket: string, path: string, expiresInSeconds: number = 604800) {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresInSeconds);
+    if (error) throw error;
+    return data.signedUrl;
+  }
+
+
+
 
   private formatForTimestamp(date: string, time: string | null | undefined): string | null {
     if (!time) return null;

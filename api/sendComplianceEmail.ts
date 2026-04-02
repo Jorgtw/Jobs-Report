@@ -3,7 +3,7 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { to, subject, companyName, projectName, clientName, date, totalHours, userName, pdfBase64 } = req.body;
+  const { to, subject, companyName, projectName, clientName, date, totalHours, userName, pdfBase64, pdfUrl } = req.body;
 
   if (!to || !Array.isArray(to) || to.length === 0) {
     return res.status(400).json({ error: 'No recipient emails provided' });
@@ -19,7 +19,8 @@ Responsabile: ${userName}
 Totale ore squadra: ${totalHours} h
 
 Il report è stato generato da ${companyName || 'JobsReport'}.
-Il PDF è allegato a questa email.
+
+SCARICA REPORT: ${pdfUrl || 'Disponibile previa richiesta'}
 
 ---
 Generato automaticamente da JobsReport
@@ -45,19 +46,26 @@ Generato automaticamente da JobsReport
         <td style="padding: 12px 8px; color: #1e40af; font-size: 20px; font-weight: bold;">${totalHours} h</td>
       </tr>
     </table>
+    
+    <div style="margin: 32px 0; text-align: center;">
+      <a href="${pdfUrl || '#'}" style="background: #1e40af; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        📥 Scarica Report PDF
+      </a>
+      <p style="margin-top: 12px; font-size: 11px; color: #64748b;">(Il link è valido per 7 giorni)</p>
+    </div>
+
     <p style="margin-top: 24px; font-size: 12px; color: #94a3b8; text-align: center;">
-      Il PDF del Compliance Report è allegato a questa email.
-      <br>Generato automaticamente da <strong>JobsReport</strong>
+      Generato automaticamente da <strong>JobsReport</strong>
     </p>
   </div>
 </body>
 </html>
   `.trim();
 
-  // Prepare PDF attachment from base64 data URI
+  // Prepare PDF attachment (optional fallback, normally we use pdfUrl now)
   let attachments: any[] = [];
   if (pdfBase64) {
-    const base64Data = pdfBase64.split(',')[1]; // Remove "data:application/pdf;base64," prefix
+    const base64Data = pdfBase64.split(',')[1];
     attachments = [{
       filename: `Compliance_${date}_${(projectName || 'Report').replace(/\s+/g, '_')}.pdf`,
       content: base64Data,
@@ -65,6 +73,7 @@ Generato automaticamente da JobsReport
       disposition: 'attachment',
     }];
   }
+
 
   try {
     const response = await fetch('https://api.resend.com/emails', {

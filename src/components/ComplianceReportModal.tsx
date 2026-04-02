@@ -57,7 +57,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotos(prev => [...prev, reader.result as string].slice(0, 6));
+        setPhotos(prev => [...prev, reader.result as string].slice(0, 3));
       };
       reader.readAsDataURL(file);
     });
@@ -113,7 +113,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
           {/* Photos Section */}
           <section>
             <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block">
-              1. {t('compliancePhotos')} ({photos.length}/6)
+              1. {t('compliancePhotos')} ({photos.length}/3)
             </label>
             <div className="grid grid-cols-2 gap-3">
               {photos.map((photo, idx) => (
@@ -128,7 +128,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                   <span className="absolute bottom-1 left-2 text-[9px] font-black text-white/80 bg-black/40 px-1.5 py-0.5 rounded-full">#{idx + 1}</span>
                 </div>
               ))}
-              {photos.length < 6 && (
+              {photos.length < 3 && (
                 <div className="aspect-video bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 p-4">
                   <Camera size={24} className="text-blue-400" />
                   <div className="flex gap-2 w-full">

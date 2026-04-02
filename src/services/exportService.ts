@@ -2,6 +2,8 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { utils, writeFile } from 'xlsx';
 import { translations, Language } from '../translations';
+import { db } from './dbService';
+
 
 const getT = (lang: Language) => (key: keyof typeof translations['it']) => {
   const currentTranslations = translations[lang] || translations['it'];
@@ -248,7 +250,7 @@ export const generateCompliancePDF = async (
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.5);
   doc.line(margin, y, pageW - margin, y);
-  y += 8;
+  y += 6; // Compacted from 8
 
   // ── DATI CANTIERE ────────────────────────────────────────────────────────
   const drawLabelValue = (label: string, value: string, x: number, yPos: number, maxW = 88) => {
@@ -265,31 +267,31 @@ export const generateCompliancePDF = async (
   };
 
   drawLabelValue(t('date'), reportDateEU, margin, y);
-  drawLabelValue(t('clients'), report.clientName || '---', margin, y + 18);
+  drawLabelValue(t('clients'), report.clientName || '---', margin, y + 14); // Compacted from 18
   drawLabelValue(t('project'), report.projectName || '---', margin + contentW / 2, y);
-  if (report.projectAddress) drawLabelValue(t('address'), report.projectAddress, margin + contentW / 2, y + 18);
-  y += 40;
+  if (report.projectAddress) drawLabelValue(t('address'), report.projectAddress, margin + contentW / 2, y + 14); // Compacted from 18
+  y += 32; // Compacted from 40
 
   // ── DESCRIZIONE LAVORI ───────────────────────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
-  y += 8;
+  y += 6; // Compacted from 8
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
   doc.text(t('descriptionOfWork').toUpperCase(), margin, y);
-  y += 6;
+  y += 5; // Compacted from 6
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(51, 65, 85);
   const descLines = doc.splitTextToSize(report.description || '---', contentW);
   doc.text(descLines, margin, y);
-  y += descLines.length * 5 + 8;
+  y += descLines.length * 5 + 6; // Compacted from 8
 
   // ── SQUADRA DI LAVORO — solo Nome + Ore ─────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
-  y += 8;
+  y += 6; // Compacted from 8
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
@@ -327,22 +329,20 @@ export const generateCompliancePDF = async (
     }
   });
 
-  y = (doc as any).lastAutoTable.finalY + 10;
+  y = (doc as any).lastAutoTable.finalY + 8; // Compacted from 10
 
-  // ── FIRMA + FOTO ─────────────────────────────────────────────────────────
+  // ── FIRMA ────────────────────────────────────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
-  y += 8;
+  y += 6; // Compacted from 8
 
-  const hasPhoto = photos && photos.length > 0;
-  const sigW = hasPhoto ? contentW / 2 - 4 : contentW;
-  const sigH = 38;
+  const sigW = contentW * 0.6; // Slightly narrower sig area
+  const sigH = 34; // Slightly shorter
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
   doc.text(t('clientSignature').toUpperCase(), margin, y);
-  if (hasPhoto) doc.text(t('photoEvidence').toUpperCase(), margin + contentW / 2, y);
   y += 4;
 
   doc.setDrawColor(203, 213, 225);
@@ -351,12 +351,8 @@ export const generateCompliancePDF = async (
   if (signature) {
     doc.addImage(signature, 'PNG', margin + 2, y + 2, sigW - 4, sigH - 4);
   }
-  if (hasPhoto) {
-    try { doc.addImage(photos[0], 'JPEG', margin + contentW / 2 + 2, y, contentW / 2 - 2, sigH); }
-    catch (_) { /* skip unsupported format */ }
-  }
 
-  y += sigH + 5;
+  y += sigH + 4;
   doc.setDrawColor(203, 213, 225);
   doc.line(margin, y, margin + sigW, y);
   doc.setFont('helvetica', 'normal');
@@ -364,25 +360,44 @@ export const generateCompliancePDF = async (
   doc.setTextColor(100, 116, 139);
   doc.text(`${report.clientName || 'Cliente'}  —  ${reportDateEU}`, margin, y + 4);
 
-  // ── FOTO AGGIUNTIVE su pagine successive (2 per pagina) ─────────────────
-  if (photos && photos.length > 1) {
-    const extraPhotos = photos.slice(1); // skip first (already shown inline)
-    for (let pi = 0; pi < extraPhotos.length; pi += 2) {
-      doc.addPage();
-      doc.setFillColor(30, 64, 175);
-      doc.rect(0, 0, pageW, 18, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text(`${t('photoEvidence').toUpperCase()} — ${pi + 2}${extraPhotos[pi + 1] ? `/${pi + 3}` : ''}`, margin, 12);
+  // ── PAGE 2: PHOTO EVIDENCE (Grid 2+1 for 3 photos) ───────────────────────
+  if (photos && photos.length > 0) {
+    doc.addPage();
+    
+    // Header page 2
+    doc.setFillColor(30, 64, 175);
+    doc.rect(0, 0, pageW, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(t('photoEvidence').toUpperCase(), margin, 13);
+    
+    const photoSpacing = 6;
+    const photoW = (contentW - photoSpacing) / 2;
+    const photoH = 90; // Standard size for top 2
+    let currentY = 30;
 
-      try { doc.addImage(extraPhotos[pi], 'JPEG', margin, 24, contentW, 120); }
-      catch (_) { /* skip */ }
+    // First row: 2 photos
+    for (let i = 0; i < Math.min(2, photos.length); i++) {
+        const xPos = margin + i * (photoW + photoSpacing);
+        try {
+            doc.addImage(photos[i], 'JPEG', xPos, currentY, photoW, photoH);
+            doc.setFontSize(7);
+            doc.setTextColor(148, 163, 184);
+            doc.text(`Photo #${i + 1}`, xPos, currentY + photoH + 4);
+        } catch (_) { /* skip */ }
+    }
 
-      if (extraPhotos[pi + 1]) {
-        try { doc.addImage(extraPhotos[pi + 1], 'JPEG', margin, 150, contentW, 120); }
-        catch (_) { /* skip */ }
-      }
+    // Second row: 1 large centered photo (if 3 photos exist)
+    if (photos.length >= 3) {
+        currentY += photoH + 15;
+        const bottomPhotoW = contentW * 0.8; // Slightly larger for emphasis
+        const bottomPhotoH = 100;
+        const centerX = margin + (contentW - bottomPhotoW) / 2;
+        try {
+            doc.addImage(photos[2], 'JPEG', centerX, currentY, bottomPhotoW, bottomPhotoH);
+            doc.text(`Photo #3`, centerX, currentY + bottomPhotoH + 4);
+        } catch (_) { /* skip */ }
     }
   }
 
@@ -401,15 +416,31 @@ export const generateCompliancePDF = async (
 
   // ── APRI NEL BROWSER + SCARICA ───────────────────────────────────────────
   const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
-  const pdfBase64 = doc.output('datauristring');
   window.open(doc.output('bloburl'), '_blank');
   doc.save(fileName);
 
-  // ── INVIO EMAIL AGLI ADMIN ───────────────────────────────────────────────
+
+  // ── CARICAMENTO SU STORAGE + INVIO EMAIL ────────────────────────────────
   if (adminEmails.length > 0) {
     const emailsToNotify = adminEmails.filter(Boolean);
     if (emailsToNotify.length > 0) {
       try {
+        // 1. Genera Blob dal PDF
+        const pdfBlob = doc.output('blob');
+        
+        // 2. Definisci il percorso: company_id/reports/filename
+        const compId = report.companyId || (report as any).company_id;
+        if (!compId) throw new Error("Missing companyId for storage upload");
+        
+        const storagePath = `${compId}/reports/${fileName}`;
+
+        // 3. Carica su Supabase Storage
+        await db.uploadFile('compliance-reports', storagePath, pdfBlob);
+
+        // 4. Ottieni Signed URL (valido 7 giorni)
+        const signedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
+
+        // 5. Invia Email con il link
         await fetch('/api/sendComplianceEmail', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -422,12 +453,13 @@ export const generateCompliancePDF = async (
             date: report.date || '',
             totalHours: totalTeamHours.toFixed(2),
             userName: report.userName || '',
-            pdfBase64,
+            pdfUrl: signedUrl, // Passiamo l'URL invece del base64
           }),
         });
       } catch (e) {
-        console.warn('Email notification failed (non-blocking):', e);
+        console.warn('Storage upload or Email notification failed:', e);
       }
     }
   }
 };
+

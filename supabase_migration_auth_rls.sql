@@ -145,6 +145,14 @@ CREATE POLICY "SuperAdmin: all subcontractors"    ON public.subcontractors    FO
 CREATE POLICY "SuperAdmin: all reports"           ON public.reports           FOR ALL USING (public.is_super_admin());
 CREATE POLICY "SuperAdmin: all rapportini"        ON public.rapportini_workers FOR ALL USING (public.is_super_admin());
 
+-- USER ROLES: permette di leggere il proprio ruolo (necessario per il login) e ai SuperAdmin di vedere tutto
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users: view own role" ON public.user_roles 
+  FOR SELECT TO authenticated USING (
+    user_id = (SELECT id FROM public.workers WHERE auth_id = auth.uid() LIMIT 1)
+  );
+CREATE POLICY "SuperAdmin: all roles" ON public.user_roles FOR ALL USING (public.is_super_admin());
+
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- SEZIONE 6: VERIFICA (query di controllo — non modifica nulla)
