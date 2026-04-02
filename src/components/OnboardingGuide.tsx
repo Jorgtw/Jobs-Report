@@ -170,46 +170,30 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
     };
   }, [stepIndex, isVisible, currentStep]);
 
+  // Calculate the clip-path for the hole
+  const clipPath = useMemo(() => {
+    if (!targetRect) return 'none';
+    
+    const p = 4; // padding
+    const { top: y, left: x, width: w, height: h } = targetRect;
+    const { innerWidth: sw, innerHeight: sh } = window;
+
+    // A polygon that covers the whole screen and then carves the hole
+    // Format: outer-rect (0,0 -> sw,0 -> sw,sh -> 0,sh -> 0,0) 
+    // then inner-rect hole (x,y -> x+w,y -> x+w,y+h -> x,y+h -> x,y)
+    return `polygon(
+      0% 0%, 0% 100%, 100% 100%, 100% 0%, 0% 0%, 
+      ${x-p}px ${y-p}px, ${x+w+p}px ${y-p}px, ${x+w+p}px ${y+h+p}px, ${x-p}px ${y+h+p}px, ${x-p}px ${y-p}px
+    )`;
+  }, [targetRect]);
+
   return (
     <div className={`fixed inset-0 z-[9997] transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* 4-Rect Overlay approach with z-index 9998 */}
-      {!targetRect ? (
-        <div className="fixed inset-0 bg-slate-900/75 z-[9998] pointer-events-auto" />
-      ) : (
-        <div className="fixed inset-0 z-[9998] pointer-events-none">
-          {/* Top */}
-          <div 
-            className="fixed top-0 left-0 w-full bg-slate-900/75 pointer-events-auto transition-all duration-300"
-            style={{ height: `${targetRect.top - 4}px` }}
-          />
-          {/* Bottom */}
-          <div 
-            className="fixed left-0 w-full bg-slate-900/75 pointer-events-auto transition-all duration-300"
-            style={{ 
-              top: `${targetRect.top + targetRect.height + 4}px`,
-              bottom: 0
-            }}
-          />
-          {/* Left */}
-          <div 
-            className="fixed left-0 bg-slate-900/75 pointer-events-auto transition-all duration-300"
-            style={{ 
-              top: `${targetRect.top - 4}px`,
-              height: `${targetRect.height + 8}px`,
-              width: `${targetRect.left - 4}px`
-            }}
-          />
-          {/* Right */}
-          <div 
-            className="fixed right-0 bg-slate-900/75 pointer-events-auto transition-all duration-300"
-            style={{ 
-              top: `${targetRect.top - 4}px`,
-              height: `${targetRect.height + 8}px`,
-              left: `${targetRect.left + targetRect.width + 4}px`
-            }}
-          />
-        </div>
-      )}
+      {/* Single Overlay with a Hole punched through via clip-path */}
+      <div 
+        className="fixed inset-0 bg-slate-900/75 z-[9998] pointer-events-auto transition-all duration-300"
+        style={{ clipPath }}
+      />
 
       {/* Target Pulse Effect */}
       {targetRect && (
