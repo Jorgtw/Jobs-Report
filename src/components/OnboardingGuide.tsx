@@ -171,28 +171,23 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   }, [stepIndex, isVisible, currentStep]);
 
   return (
-    <div className={`fixed inset-0 z-[9997] transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Fallback full-screen overlay for steps without target (Welcome/Finish) */}
-      {!targetRect && (
-        <div className="fixed inset-0 bg-slate-900/75 z-[9998] pointer-events-auto" />
-      )}
-
-      {/* Target Pulse Effect & Spotlight Overlay (Box Shadow) */}
+    <div className={`fixed inset-0 z-[10000] pointer-events-none transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Target Pulse Highlight (No Shadow/Overlay) */}
       {targetRect && (
         <div 
-          className="fixed z-[9999] border-2 border-blue-400 rounded-xl animate-pulse pointer-events-none shadow-[0_0_0_5000px_rgba(15,23,42,0.75)]"
+          className="fixed z-10 border-[3px] border-blue-500 rounded-xl animate-pulse ring-4 ring-blue-500/20"
           style={{
-            top: targetRect.top - 4,
-            left: targetRect.left - 4,
-            width: targetRect.width + 8,
-            height: targetRect.height + 8
+            top: targetRect.top - 6,
+            left: targetRect.left - 6,
+            width: targetRect.width + 12,
+            height: targetRect.height + 12
           }}
         />
       )}
 
-      {/* Content Bubble with z-index 10000 */}
+      {/* Content Bubble (Pointer Events Auto to allow clicking buttons) */}
       <div 
-        className="absolute z-[10000] w-[90vw] max-w-sm bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-300"
+        className="absolute z-20 w-[90vw] max-w-sm bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-300 pointer-events-auto"
         style={bubblePosition() as React.CSSProperties}
       >
         <div className="flex justify-between items-start mb-4">
