@@ -47,6 +47,7 @@ import PrivacyView from './PrivacyView';
 import { RegistrationRequestView } from './RegistrationRequestView';
 import { UpgradeModal } from './components/UpgradeModal';
 import { ComplianceReportModal } from './components/ComplianceReportModal';
+import Tooltip from './components/common/Tooltip';
 import { generateCompliancePDF } from './services/exportService';
 
 // --- i18n Context ---
@@ -1364,13 +1365,15 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} />
                 </FullWidthField>
                 <FullWidthField label={t('person.hourlyRate')}>
-                  <div className="relative flex items-center">
+                  <div className="flex items-center gap-2">
                     <input type="number" step="0.01" value={formData.hourlyRate} onChange={e => setFormData({ ...formData, hourlyRate: parseFloat(e.target.value) || 0 })} className={inputClasses} />
+                    <Tooltip text={t('tooltip_hourlyRate')} />
                   </div>
                 </FullWidthField>
                 <FullWidthField label={t('person.overtimeHourlyRate')}>
-                  <div className="relative flex items-center">
+                  <div className="flex items-center gap-2">
                     <input type="number" step="0.01" value={formData.overtimeHourlyRate} onChange={e => setFormData({ ...formData, overtimeHourlyRate: parseFloat(e.target.value) || 0 })} className={inputClasses} />
+                    <Tooltip text={t('tooltip_overtimeHourlyRate')} />
                   </div>
                 </FullWidthField>
                 {/* Username and Password only for Internal personnel */}
@@ -1780,8 +1783,9 @@ const ProjectsView: React.FC = () => {
                 )}
                 {!formData.isInternal && (
                   <FullWidthField label={t('project.amount')}>
-                    <div className="relative flex items-center">
+                    <div className="flex items-center gap-2">
                       <input type="number" step="0.01" value={formData.sellingPrice} onChange={e => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })} className={inputClasses} />
+                      <Tooltip text={t('tooltip_sellingPrice')} />
                     </div>
                   </FullWidthField>
                 )}
