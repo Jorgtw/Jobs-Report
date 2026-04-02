@@ -48,6 +48,7 @@ import { RegistrationRequestView } from './RegistrationRequestView';
 import { UpgradeModal } from './components/UpgradeModal';
 import { ComplianceReportModal } from './components/ComplianceReportModal';
 import Tooltip from './components/common/Tooltip';
+import OnboardingGuide from './components/OnboardingGuide';
 import { generateCompliancePDF } from './services/exportService';
 
 // --- i18n Context ---
@@ -190,8 +191,14 @@ const InstallButton: React.FC<{ variant?: 'sidebar' | 'login' }> = ({ variant = 
 };
 
 // --- Layout ---
-const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => void, children: React.ReactNode }> = ({ user, isSuperAdmin, onLogout, children }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const AppLayout: React.FC<{ 
+  user: User, 
+  isSuperAdmin: boolean, 
+  onLogout: () => void, 
+  children: React.ReactNode,
+  isMobileMenuOpen: boolean,
+  setIsMobileMenuOpen: (open: boolean) => void
+}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -212,6 +219,7 @@ const AppLayout: React.FC<{ user: User, isSuperAdmin: boolean, onLogout: () => v
             key={link.path}
             to={link.path}
             onClick={onItemClick}
+            data-onboarding={`sidebar-${link.path.replace('/', '')}`}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${location.pathname === link.path ? 'bg-blue-50 text-blue-600 font-bold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
           >
             <link.icon className={`w-5 h-5 ${location.pathname === link.path ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
@@ -436,6 +444,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
           <Link
             key={link.path}
             to={link.path}
+            data-onboarding={`home-${link.path.replace('/', '')}`}
             className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
           >
             <div className={`${link.color} p-2.5 rounded-xl text-white shadow-sm transition-transform group-hover:scale-110`}>
@@ -1148,6 +1157,17 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
         <p className="text-slate-500 text-sm mt-2 max-w-lg mx-auto leading-relaxed">
           {t('helpSupportContact')}
         </p>
+        <button 
+          onClick={() => {
+            localStorage.removeItem('onboarding_v1');
+            window.location.hash = '/home';
+            window.location.reload();
+          }}
+          className="mt-6 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2 mx-auto"
+        >
+          <Smartphone size={18} />
+          {t('onboarding_restart')}
+        </button>
       </div>
     </div>
   );
@@ -2345,7 +2365,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               invoiceStatus: 'Pending'
             });
             setIsModalOpen(true);
-          }} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all">
+          }} 
+          data-onboarding="new-report-btn"
+          className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"
+          >
             <Plus size={16} className="mr-2 inline" /> 
             <span className="hidden sm:inline">{t('newReport')}</span>
             <span className="sm:hidden">{t('addBtn')}</span>
@@ -3231,6 +3254,10 @@ const App: React.FC = () => {
   });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('onboarding_v1');
+  });
 
   useEffect(() => { localStorage.setItem('ws_lang', lang); }, [lang]);
 
@@ -3314,7 +3341,13 @@ const App: React.FC = () => {
               !user ? (
                 <Navigate to="/" replace />
               ) : (
-                <AppLayout user={user} isSuperAdmin={isSuperAdmin} onLogout={handleLogout}>
+                <AppLayout 
+                  user={user} 
+                  isSuperAdmin={isSuperAdmin} 
+                  onLogout={handleLogout}
+                  isMobileMenuOpen={isMobileMenuOpen}
+                  setIsMobileMenuOpen={setIsMobileMenuOpen}
+                >
                   {adminUser && (
                     <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
                       <div className="flex items-center gap-2">
@@ -3344,6 +3377,28 @@ const App: React.FC = () => {
             } 
           />
         </Routes>
+        {showOnboarding && user && user.role === 'admin' && (
+          <OnboardingGuide 
+            lang={lang} 
+            userRole={user.role} 
+            onComplete={() => {
+              localStorage.setItem('onboarding_v1', 'completed');
+              setShowOnboarding(false);
+              setIsMobileMenuOpen(false);
+            }}
+            onStepChange={(step) => {
+              if (step.requiresSidebar) {
+                setIsMobileMenuOpen(true);
+              } else {
+                // If the next step is not in the sidebar, we might want to close it?
+                // But only if it's on mobile. Let's be smart.
+                if (window.innerWidth < 1024) {
+                  setIsMobileMenuOpen(false);
+                }
+              }
+            }}
+          />
+        )}
       </HashRouter>
     </LanguageContext.Provider>
   );
