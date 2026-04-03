@@ -476,29 +476,32 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   const [projects, setProjects] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [subcontractors, setSubcontractors] = useState<any[]>([]);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const loadData = async () => {
+    const [s, c, p, w, sub] = await Promise.all([
+      db.getSummary(),
+      db.getClients(),
+      db.getProjects(),
+      db.getUsers(),
+      db.getSubcontractors(),
+    ]);
+    if (user.role === 'supervisor') {
+      const assignedProjectIds = p.filter((proj: any) => canUserAccessProject(proj, user.id)).map((proj: any) => proj.id);
+      const filteredS = s.filter((item: any) => assignedProjectIds.includes(item.projectId));
+      setSummary(filteredS);
+    } else {
+      setSummary(s);
+    }
+    setClients(c);
+    setProjects(p);
+    setUsers(w);
+    setSubcontractors(sub);
+  };
 
   useEffect(() => {
-    const load = async () => {
-      const [s, c, p, w, sub] = await Promise.all([
-        db.getSummary(),
-        db.getClients(),
-        db.getProjects(),
-        db.getUsers(),
-        db.getSubcontractors(),
-      ]);
-      if (user.role === 'supervisor') {
-        const assignedProjectIds = p.filter((proj: any) => canUserAccessProject(proj, user.id)).map((proj: any) => proj.id);
-        const filteredS = s.filter((item: any) => assignedProjectIds.includes(item.projectId));
-        setSummary(filteredS);
-      } else {
-        setSummary(s);
-      }
-      setClients(c);
-      setProjects(p);
-      setUsers(w);
-      setSubcontractors(sub);
-    };
-    load();
+    loadData();
   }, []);
 
   const [filters, setFilters] = useState({
@@ -617,6 +620,25 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
     exportToExcel(rows, lang);
   };
 
+  const handleDeleteOperation = async (exportType: 'pdf' | 'excel' | 'none') => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      if (exportType === 'pdf') handleExportPDF();
+      if (exportType === 'excel') handleExportExcel();
+
+      const uniqueReportIds = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
+      await db.deleteReports(uniqueReportIds);
+      
+      await loadData();
+      setIsArchiveModalOpen(false);
+    } catch (err: any) {
+      alert("Errore durante l'eliminazione: " + err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -722,8 +744,64 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
               </select>
             </div>
           )}
+
+          {user.role === 'admin' && adminStatus === 'Pagato' && filteredData.length > 0 && (
+            <button
+              onClick={() => setIsArchiveModalOpen(true)}
+              className="w-full sm:w-auto px-4 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              <Trash2 size={14} />
+              {t('archiveAndDelete')}
+            </button>
+          )}
         </div>
       </div>
+
+      {isArchiveModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !isDeleting && setIsArchiveModalOpen(false)}></div>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center text-rose-600 mb-4">
+                <ShieldAlert size={32} />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 mb-2">{t('deleteConfirmationTitle')}</h2>
+              <p className="text-sm text-slate-500 mb-6">{t('deleteWarning')}</p>
+              
+              <div className="w-full space-y-3">
+                <button
+                  disabled={isDeleting}
+                  onClick={() => handleDeleteOperation('pdf')}
+                  className="w-full py-3 px-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-red-500/20 disabled:opacity-50"
+                >
+                  <FileDown size={18} /> {t('exportAndProceed')} (PDF)
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => handleDeleteOperation('excel')}
+                  className="w-full py-3 px-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                >
+                  <FileSpreadsheet size={18} /> {t('exportAndProceed')} (Excel)
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => handleDeleteOperation('none')}
+                  className="w-full py-3 px-4 bg-white text-slate-400 font-bold rounded-xl hover:bg-slate-50 border border-slate-200 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+                >
+                  <Trash2 size={16} /> {t('skipExportAndDelete')}
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => setIsArchiveModalOpen(false)}
+                  className="w-full py-3 px-4 text-slate-400 font-bold hover:text-slate-600 transition-all text-sm uppercase tracking-widest pt-2 disabled:opacity-50"
+                >
+                  {t('onboarding_skip')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-slate-200 flex flex-wrap lg:flex-nowrap justify-between items-center p-4 gap-6 shadow-sm">
         <div className="flex flex-col flex-1">

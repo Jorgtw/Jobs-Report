@@ -852,6 +852,33 @@ class DBService {
 
     return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenseItems: [] });
   }
+
+  async deleteReports(ids: string[]) {
+    if (!ids || ids.length === 0) return;
+    
+    // 1. First delete from rapportini_workers (using rapportino_id)
+    const { error: workersError } = await supabase
+      .from('rapportini_workers')
+      .delete()
+      .in('rapportino_id', ids);
+    
+    if (workersError) {
+      console.error('Error deleting report workers:', workersError);
+      throw workersError;
+    }
+
+    // 2. Then delete from reports
+    const { error: reportsError } = await supabase
+      .from('reports')
+      .delete()
+      .in('id', ids);
+
+    if (reportsError) {
+      console.error('Error deleting reports:', reportsError);
+      throw reportsError;
+    }
+  }
+
   async updateReport(id: string, updates: any) {
     const additionalWorkers = updates.additionalWorkers;
     delete updates.additionalWorkers;
