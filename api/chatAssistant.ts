@@ -58,7 +58,7 @@ DETTAGLI TECNICI:
 - Per aggiungere su Android: Chrome -> Tre puntini -> Aggiungi a schermata Home.
 `,
       },
-      { apiVersion: "v1" }
+      { apiVersion: "v1beta" }
     );
 
     const chat = model.startChat({
