@@ -331,35 +331,34 @@ const CompactDashboard: React.FC = () => {
     loadStats();
   }, []);
 
-  const SmallCard = ({ label, value, to, valueColor = "text-slate-900" }: { label: string, value: string | number, to: string, valueColor?: string }) => (
-    <Link to={to} className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col gap-1">
-      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
-      <span className={`text-lg font-black tracking-tight ${valueColor}`}>{value}</span>
+  const SmallStat = ({ label, value, to, valueColor = "text-slate-900" }: { label: string, value: string | number, to: string, valueColor?: string }) => (
+    <Link to={to} className="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors overflow-hidden">
+      <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1 truncate">{label}</span>
+      <span className={`text-sm font-black tracking-tighter truncate ${valueColor}`}>{value}</span>
     </Link>
   );
 
   const formatNum = (val: number) => val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex items-center gap-2 mb-4 ml-1">
-        <div className="w-1 h-3.5 bg-blue-600 rounded-full"></div>
-        <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{t('worksInProgress')}</h2>
+    <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+      <div className="flex items-center gap-2 mb-3 ml-0.5">
+        <h2 className="text-[9px] font-black text-slate-900 uppercase tracking-[0.2em]">{t('worksInProgress')}</h2>
       </div>
       
-      <div className="space-y-2">
+      <div className="divide-y divide-slate-50">
         {/* Row 1: Counters */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <SmallCard label={t('projects')} value={stats.activeProjects} to="/projects" />
-          <SmallCard label={t('reports')} value={stats.pendingReports} to="/reports" />
-          <SmallCard label={t('hours')} value={stats.pendingHours.toLocaleString('it-IT', { maximumFractionDigits: 1 })} to="/reports" />
+        <div className="grid grid-cols-3 gap-2 pb-2">
+          <SmallStat label={t('projects')} value={stats.activeProjects} to="/projects" />
+          <SmallStat label={t('reports')} value={stats.pendingReports} to="/reports" />
+          <SmallStat label={t('hours')} value={stats.pendingHours.toLocaleString('it-IT', { maximumFractionDigits: 1 })} to="/reports" />
         </div>
         
         {/* Row 2: Economic Values */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <SmallCard label={t('estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" />
-          <SmallCard label={t('toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" />
-          <SmallCard label={t('margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} />
+        <div className="grid grid-cols-3 gap-2 pt-2">
+          <SmallStat label={t('estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" />
+          <SmallStat label={t('toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" />
+          <SmallStat label={t('margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} />
         </div>
       </div>
     </div>
@@ -439,30 +438,30 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
 
       {user.role === 'admin' ? <CompactDashboard /> : <MonthlyHoursCard user={user} />}
 
-      <nav className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <nav className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {actions.map((link) => (
           <Link
             key={link.path}
             to={link.path}
             data-onboarding={`home-${link.path.replace('/', '')}`}
-            className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
+            className="flex items-center gap-3 p-2.5 bg-white border border-slate-100 rounded-xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
           >
-            <div className={`${link.color} p-2.5 rounded-xl text-white shadow-sm transition-transform group-hover:scale-110`}>
-              <link.icon size={20} />
+            <div className={`${link.color} p-2 rounded-lg text-white shadow-sm transition-transform group-hover:scale-105`}>
+              <link.icon size={16} />
             </div>
-            <span className="text-xs font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors">{link.name}</span>
-            <ChevronRight size={14} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+            <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
+            <ChevronRight size={12} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
           </Link>
         ))}
         
         <button 
           onClick={handleManualLogout}
-          className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-red-500 hover:bg-red-50 transition-all group shadow-sm active:scale-[0.98] sm:col-span-2 mt-4"
+          className="flex items-center gap-3 p-2.5 bg-white border border-slate-100 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group shadow-sm active:scale-[0.98] sm:col-span-2 mt-2"
         >
-          <div className="bg-slate-100 p-2.5 rounded-xl text-slate-400 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white">
-            <LogOut size={20} />
+          <div className="bg-slate-100 p-2 rounded-lg text-slate-400 shadow-sm transition-transform group-hover:scale-105 group-hover:bg-red-500 group-hover:text-white">
+            <LogOut size={16} />
           </div>
-          <span className="text-xs font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('logout')}</span>
+          <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('logout')}</span>
         </button>
       </nav>
     </div>
