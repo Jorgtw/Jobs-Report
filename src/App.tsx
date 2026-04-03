@@ -253,12 +253,19 @@ const AppLayout: React.FC<{
         <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
+        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 relative">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
             <h2 className="text-sm font-semibold text-slate-500 hidden sm:block uppercase tracking-wider">
               {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('welcome') : '')}
             </h2>
+          </div>
+          
+          {/* Mobile Centered Company Name */}
+          <div className="absolute left-1/2 -translate-x-1/2 lg:hidden flex flex-col items-center">
+            <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest truncate max-w-[40vw]">
+              {user.companyName}
+            </span>
           </div>
           <div className="flex items-center gap-4">
             <LanguageSelector />
