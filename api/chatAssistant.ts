@@ -75,7 +75,16 @@ DETTAGLI TECNICI:
     });
   } catch (error: any) {
     console.error("AI Assistant Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const maskedKey = apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : "NOT_FOUND";
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      debug: {
+        model: "gemini-2.0-flash-lite",
+        apiVersion: "v1beta",
+        apiKeyMasked: maskedKey,
+        fullError: error
+      }
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
