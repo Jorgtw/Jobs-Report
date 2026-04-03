@@ -429,17 +429,19 @@ class DBService {
 
     // 4. Check premium e status azienda
     let isPremium = false;
+    let companyName = '';
     if (workerData.company_id) {
-      const { data: compData, error: compErr } = await supabase.from('companies').select('status, is_premium').eq('id', workerData.company_id).single();
+      const { data: compData, error: compErr } = await supabase.from('companies').select('name, status, is_premium').eq('id', workerData.company_id).single();
       if (!compErr && compData) {
         if (compData.status === 'inactive') {
           throw new Error('Company is inactive');
         }
         isPremium = !!compData.is_premium;
+        companyName = compData.name;
       }
     }
 
-    const user = this.mapSupabaseWorker(workerData, isPremium);
+    const user = this.mapSupabaseWorker(workerData, isPremium, companyName);
     
     // Check if truly superadmin via user_roles for extra safety
     const isSA = await this.checkIsSuperAdmin(user.id);
@@ -477,7 +479,7 @@ class DBService {
     if (error) throw error;
   }
 
-  private mapSupabaseWorker(w: any, isPremium?: boolean): any {
+  private mapSupabaseWorker(w: any, isPremium?: boolean, companyName?: string): any {
     return {
       id: w.id,
       name: w.name,
@@ -495,6 +497,7 @@ class DBService {
       extraCost: Number(w.extra_cost) || 0,
       isInternal: true,
       isPremium: isPremium ?? !!w.is_premium,
+      companyName: companyName || '',
       address: w.address || w.billing_address || w.billingAddress || w.home_address || '',
       notes: w.internal_note || w.Notes || w.notes || '',
       createdAt: new Date(w.created_at).getTime()

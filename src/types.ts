@@ -33,6 +33,7 @@ export interface User {
   role: Role;
   status: UserStatus;
   companyId?: string | null;
+  companyName?: string;
   isPremium?: boolean;
   hourlyRate?: number;
   extraCost?: number;

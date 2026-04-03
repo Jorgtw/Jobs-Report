@@ -265,7 +265,14 @@ const AppLayout: React.FC<{
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
-                <p className="text-xs text-slate-500 mt-1 capitalize">{t(user.role as any)}</p>
+                <div className="flex flex-col items-end mt-1">
+                  <p className="text-[10px] font-extrabold text-blue-600 leading-none uppercase tracking-tight">
+                    {user.companyName}
+                  </p>
+                  <p className="text-[10px] text-slate-400 capitalize bg-slate-50 px-1.5 py-0.5 rounded mt-0.5 border border-slate-100 font-medium">
+                    {t(user.role as any)}
+                  </p>
+                </div>
               </div>
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
             </div>
@@ -3275,6 +3282,18 @@ const App: React.FC = () => {
     } else {
       setIsSuperAdmin(false);
       db.setIsSuperAdmin(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user && user.companyId && !user.companyName) {
+      db.getCompanyDetails(user.companyId).then(comp => {
+        if (comp && comp.name) {
+          const updatedUser = { ...user, companyName: comp.name };
+          setUser(updatedUser);
+          localStorage.setItem('ws_auth', JSON.stringify(updatedUser));
+        }
+      }).catch(console.error);
     }
   }, [user]);
 
