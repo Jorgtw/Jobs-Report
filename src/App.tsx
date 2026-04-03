@@ -50,6 +50,7 @@ import { ComplianceReportModal } from './components/ComplianceReportModal';
 import Tooltip from './components/common/Tooltip';
 import OnboardingGuide from './components/OnboardingGuide';
 import { generateCompliancePDF } from './services/exportService';
+import AIChatAssistant from './components/AIChatAssistant';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -287,6 +288,7 @@ const AppLayout: React.FC<{
         </header>
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
+      <AIChatAssistant />
     </div>
   );
 };
