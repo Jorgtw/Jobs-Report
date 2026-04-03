@@ -64,7 +64,7 @@ const AIChatAssistant: React.FC = () => {
                 <Bot size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight">Assistente Jobs Report v2.0</h3>
+                <h3 className="text-sm font-black tracking-tight">Assistente Jobs Report</h3>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manuale Parlante</p>
               </div>
             </div>
