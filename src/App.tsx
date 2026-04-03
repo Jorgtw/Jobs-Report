@@ -298,7 +298,8 @@ const CompactDashboard: React.FC = () => {
     hours: 0,
     reports: 0,
     activeProjects: 0,
-    margin: 0
+    pendingCount: 0,
+    pendingValue: 0
   });
 
   useEffect(() => {
@@ -320,15 +321,17 @@ const CompactDashboard: React.FC = () => {
       const hours = monthlyData.reduce((acc, s) => acc + s.totalHours, 0);
       const reports = new Set(monthlyData.map(s => s.id.split('_')[0])).size;
       const activeProjectsCount = allProjects.filter(p => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
-      const revenue = monthlyData.reduce((acc, s) => acc + (s.revenue || 0), 0);
-      const cost = monthlyData.reduce((acc, s) => acc + s.cost + (s.totalExpenses || 0), 0);
-      const margin = revenue - cost;
+      
+      const pendingData = summary.filter(s => (s.invoiceStatus || 'Pending') === 'Pending');
+      const pendingCount = new Set(pendingData.map(s => s.id.split('_')[0])).size;
+      const pendingValue = pendingData.reduce((acc, s) => acc + (s.revenue || 0), 0);
 
       setStats({
         hours,
         reports,
         activeProjects: activeProjectsCount,
-        margin
+        pendingCount,
+        pendingValue
       });
     };
     loadStats();
@@ -370,10 +373,10 @@ const CompactDashboard: React.FC = () => {
         to="/projects" 
       />
       <Card 
-        label={t('margin')} 
-        value={`${stats.margin.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
+        label={t('statusPending')} 
+        value={`${stats.pendingCount} (${stats.pendingValue.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })})`} 
         icon={ClipboardList} 
-        color={stats.margin >= 0 ? "text-emerald-600" : "text-red-600"} 
+        color="text-amber-600" 
         to="/work-summary" 
       />
     </div>
