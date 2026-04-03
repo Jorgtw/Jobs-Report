@@ -24,9 +24,10 @@ export default async function handler(req: Request) {
     const { message, history } = await req.json();
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash-latest",
-      systemInstruction: `Sei l'assistente virtuale ufficiale dell'app "Jobs Report". 
+    const model = genAI.getGenerativeModel(
+      { 
+        model: "gemini-1.5-flash",
+        systemInstruction: `Sei l'assistente virtuale ufficiale dell'app "Jobs Report". 
 Il tuo compito è aiutare gli utenti a capire come usare l'applicazione basandoti esclusivamente sul manuale fornito.
 
 REGOLE COMPORTAMENTALI:
@@ -56,7 +57,9 @@ DETTAGLI TECNICI:
 - Per aggiungere l'app su iPhone: Safari -> Condividi -> Aggiungi a schermata Home.
 - Per aggiungere su Android: Chrome -> Tre puntini -> Aggiungi a schermata Home.
 `,
-    });
+      },
+      { apiVersion: "v1" }
+    );
 
     const chat = model.startChat({
       history: history || [],
