@@ -31,16 +31,8 @@ const AIChatAssistant: React.FC = () => {
   }, [synth]);
 
   const stripMarkdown = (text: string) => {
-    // Remove bold, italic, and other common markdown symbols for cleaner speech
-    return text
-      .replace(/\*\*/g, '')
-      .replace(/\*/g, '')
-      .replace(/__/g, '')
-      .replace(/_/g, '')
-      .replace(/###/g, '')
-      .replace(/##/g, '')
-      .replace(/#/g, '')
-      .trim();
+    // Rimuove in un colpo solo asterischi, cancelletti, underscore e backtick
+    return text.replace(/[*#_~`]/g, '').trim();
   };
 
   const speak = (text: string) => {
