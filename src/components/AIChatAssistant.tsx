@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Volume2, VolumeX, Square } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'model';
@@ -11,7 +11,10 @@ const AIChatAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSpeakingEnabled, setIsSpeakingEnabled] = useState(true);
+  const [isCurrentlySpeaking, setIsCurrentlySpeaking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -19,6 +22,38 @@ const AIChatAssistant: React.FC = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isOpen]);
+
+  // Handle Speech Cleanup
+  useEffect(() => {
+    return () => {
+      if (synth) synth.cancel();
+    };
+  }, [synth]);
+
+  const speak = (text: string) => {
+    if (!isSpeakingEnabled || !synth) return;
+    
+    synth.cancel(); // Stop any current speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Auto-detect language (simple guess or fallback to IT)
+    utterance.lang = 'it-IT'; 
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setIsCurrentlySpeaking(true);
+    utterance.onend = () => setIsCurrentlySpeaking(false);
+    utterance.onerror = () => setIsCurrentlySpeaking(false);
+
+    synth.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    if (synth) {
+      synth.cancel();
+      setIsCurrentlySpeaking(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -42,6 +77,9 @@ const AIChatAssistant: React.FC = () => {
       const data = await response.json();
       if (data.text) {
         setMessages([...newMessages, { role: 'model', parts: [{ text: data.text }] }]);
+        if (isSpeakingEnabled) {
+          speak(data.text);
+        }
       } else if (data.error) {
         setMessages([...newMessages, { role: 'model', parts: [{ text: "Mi dispiace, si è verificato un errore: " + data.error }] }]);
       }
@@ -68,12 +106,30 @@ const AIChatAssistant: React.FC = () => {
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manuale Parlante</p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => {
+                  if (isCurrentlySpeaking) {
+                    stopSpeaking();
+                  } else {
+                    setIsSpeakingEnabled(!isSpeakingEnabled);
+                  }
+                }}
+                title={isSpeakingEnabled ? "Disattiva voce" : "Attiva voce"}
+                className={`p-1.5 rounded-lg transition-colors ${isSpeakingEnabled ? 'text-blue-400 hover:bg-white/10' : 'text-slate-500 hover:bg-white/10'}`}
+              >
+                {isCurrentlySpeaking ? <Square size={16} fill="currentColor" /> : (isSpeakingEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />)}
+              </button>
+              <button 
+                onClick={() => {
+                  stopSpeaking();
+                  setIsOpen(false);
+                }}
+                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}
