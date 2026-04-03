@@ -295,11 +295,12 @@ const AppLayout: React.FC<{
 const CompactDashboard: React.FC = () => {
   const { t } = useTranslation();
   const [stats, setStats] = useState({
-    hours: 0,
-    reports: 0,
     activeProjects: 0,
-    pendingCount: 0,
-    pendingValue: 0
+    pendingReports: 0,
+    pendingHours: 0,
+    pendingExpenses: 0,
+    pendingToInvoice: 0,
+    pendingMargin: 0
   });
 
   useEffect(() => {
@@ -309,76 +310,58 @@ const CompactDashboard: React.FC = () => {
         db.getProjects()
       ]);
 
-      const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-
-      const monthlyData = summary.filter(s => {
-        const d = new Date(s.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      });
-
-      const hours = monthlyData.reduce((acc, s) => acc + s.totalHours, 0);
-      const reports = new Set(monthlyData.map(s => s.id.split('_')[0])).size;
       const activeProjectsCount = allProjects.filter(p => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
-      
       const pendingData = summary.filter(s => (s.invoiceStatus || 'Pending') === 'Pending');
-      const pendingCount = new Set(pendingData.map(s => s.id.split('_')[0])).size;
-      const pendingValue = pendingData.reduce((acc, s) => acc + (s.revenue || 0), 0);
+      
+      const pendingReports = new Set(pendingData.map(s => s.id.split('_')[0])).size;
+      const pendingHours = pendingData.reduce((acc, s) => acc + (s.totalHours || 0), 0);
+      const pendingExpenses = pendingData.reduce((acc, s) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
+      const pendingToInvoice = pendingData.reduce((acc, s) => acc + (s.revenue || 0), 0);
+      const pendingMargin = pendingToInvoice - pendingExpenses;
 
       setStats({
-        hours,
-        reports,
         activeProjects: activeProjectsCount,
-        pendingCount,
-        pendingValue
+        pendingReports,
+        pendingHours,
+        pendingExpenses,
+        pendingToInvoice,
+        pendingMargin
       });
     };
     loadStats();
   }, []);
 
-  const Card = ({ label, value, icon: Icon, color, to }: { label: string, value: string | number, icon: any, color: string, to: string }) => (
-    <Link to={to} className="flex-1 bg-white p-3 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-center min-h-[64px]">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon size={12} className={color} />
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{label}</span>
-      </div>
-      <div className="text-sm font-black text-slate-900 truncate">
-        {value}
-      </div>
+  const SmallCard = ({ label, value, to, valueColor = "text-slate-900" }: { label: string, value: string | number, to: string, valueColor?: string }) => (
+    <Link to={to} className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col gap-1">
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+      <span className={`text-lg font-black tracking-tight ${valueColor}`}>{value}</span>
     </Link>
   );
 
+  const formatNum = (val: number) => val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-      <Card 
-        label={t('hours')} 
-        value={`${stats.hours.toLocaleString('it-IT', { maximumFractionDigits: 1 })}h`} 
-        icon={Clock} 
-        color="text-blue-500" 
-        to="/reports" 
-      />
-      <Card 
-        label={t('reports')} 
-        value={stats.reports} 
-        icon={FileText} 
-        color="text-emerald-500" 
-        to="/reports" 
-      />
-      <Card 
-        label={t('activeProjects')} 
-        value={stats.activeProjects} 
-        icon={Briefcase} 
-        color="text-amber-500" 
-        to="/projects" 
-      />
-      <Card 
-        label={t('statusPending')} 
-        value={`${stats.pendingCount} (${stats.pendingValue.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })})`} 
-        icon={ClipboardList} 
-        color="text-amber-600" 
-        to="/work-summary" 
-      />
+    <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center gap-2 mb-4 ml-1">
+        <div className="w-1 h-3.5 bg-blue-600 rounded-full"></div>
+        <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{t('worksInProgress')}</h2>
+      </div>
+      
+      <div className="space-y-2">
+        {/* Row 1: Counters */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <SmallCard label={t('projects')} value={stats.activeProjects} to="/projects" />
+          <SmallCard label={t('reports')} value={stats.pendingReports} to="/reports" />
+          <SmallCard label={t('hours')} value={stats.pendingHours.toLocaleString('it-IT', { maximumFractionDigits: 1 })} to="/reports" />
+        </div>
+        
+        {/* Row 2: Economic Values */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <SmallCard label={t('estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" />
+          <SmallCard label={t('toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" />
+          <SmallCard label={t('margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} />
+        </div>
+      </div>
     </div>
   );
 };
