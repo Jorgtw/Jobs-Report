@@ -133,19 +133,39 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
 
   const bubblePosition = () => {
     if (!targetRect || currentStep.position === 'center' || windowSize.width < 640) {
+      if (windowSize.width < 640) {
+        return { 
+          bottom: '24px',
+          left: '16px',
+          right: '16px',
+          width: 'auto'
+        };
+      }
       return { 
-        bottom: windowSize.width < 640 ? '24px' : '50%',
+        top: '50%',
         left: '50%', 
-        transform: windowSize.width < 640 ? 'translateX(-50%)' : 'translate(-50%, -50%)',
-        margin: '0 auto',
-        top: windowSize.width < 640 ? 'auto' : '50%'
+        transform: 'translate(-50%, -50%)'
       };
     }
 
     const padding = 16;
+    const bubbleWidth = 384; // max-w-sm
     const { top, left, width, height } = targetRect;
+    
+    // Determine actual position based on screen space (collision detection)
+    let pos = currentStep.position || 'bottom';
+    
+    if (pos === 'right' && left + width + bubbleWidth + padding > windowSize.width) {
+      pos = 'bottom';
+    }
+    if (pos === 'bottom' && top + height + 280 > windowSize.height) {
+      pos = 'top';
+    }
+    if (pos === 'top' && top - 280 < 0) {
+      pos = 'bottom';
+    }
 
-    switch (currentStep.position) {
+    switch (pos) {
       case 'right':
         return { top: top + height / 2, left: left + width + padding, transform: 'translateY(-50%)' };
       case 'left':
@@ -153,14 +173,25 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
       case 'top':
         return { top: top - padding, left: left + width / 2, transform: 'translate(-50%, -100%)' };
       case 'bottom':
-        const spaceBelow = windowSize.height - (top + height);
-        if (spaceBelow < 250) { // Not enough space below, force top
-          return { top: top - padding, left: left + width / 2, transform: 'translate(-50%, -100%)' };
-        }
-        return { top: top + height + padding, left: left + width / 2, transform: 'translate(-50%, 0)' };
       default:
-        return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+        return { top: top + height + padding, left: left + width / 2, transform: 'translate(-50%, 0)' };
     }
+  };
+
+  // Helper to get actual position for arrow rendering
+  const getActualPosition = () => {
+    if (!targetRect || currentStep.position === 'center' || windowSize.width < 640) return 'center';
+    
+    const padding = 16;
+    const bubbleWidth = 384;
+    const { top, left, width, height } = targetRect;
+    let pos = currentStep.position || 'bottom';
+    
+    if (pos === 'right' && left + width + bubbleWidth + padding > windowSize.width) pos = 'bottom';
+    if (pos === 'bottom' && top + height + 280 > windowSize.height) pos = 'top';
+    if (pos === 'top' && top - 280 < 0) pos = 'bottom';
+    
+    return pos;
   };
 
   const lastElementRef = useRef<HTMLElement | null>(null);
@@ -246,12 +277,12 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
         </div>
 
         {/* Arrow for target pointing */}
-        {targetRect && currentStep.position !== 'center' && windowSize.width >= 640 && (
+        {targetRect && getActualPosition() !== 'center' && windowSize.width >= 640 && (
           <div 
             className={`absolute w-4 h-4 bg-white rotate-45 border-slate-100 border-l border-t ${
-              currentStep.position === 'bottom' ? '-top-2 left-1/2 -translate-x-1/2' : 
-              currentStep.position === 'top' ? '-bottom-2 left-1/2 -translate-x-1/2 border-r border-b border-l-0 border-t-0' :
-              currentStep.position === 'right' ? '-left-2 top-1/2 -translate-y-1/2 border-b border-l' :
+              getActualPosition() === 'bottom' ? '-top-2 left-1/2 -translate-x-1/2' : 
+              getActualPosition() === 'top' ? '-bottom-2 left-1/2 -translate-x-1/2 border-r border-b border-l-0 border-t-0' :
+              getActualPosition() === 'right' ? '-left-2 top-1/2 -translate-y-1/2 border-b border-l' :
               '-right-2 top-1/2 -translate-y-1/2 border-r border-t border-b-0 border-l-0'
             }`}
           />
