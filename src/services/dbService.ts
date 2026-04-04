@@ -314,13 +314,23 @@ class DBService {
 
   async togglePremiumStatus(id: string, currentStatus: boolean) {
     const newStatus = !currentStatus;
-    const { error } = await supabase.from('companies').update({ is_premium: newStatus }).eq('id', id);
+    const updates: any = { is_premium: newStatus };
+    if (newStatus) {
+      updates.premium_since = new Date().toISOString();
+    } else {
+      updates.premium_since = null;
+    }
+    const { error } = await supabase.from('companies').update(updates).eq('id', id);
     if (error) throw error;
     return newStatus;
   }
 
   async setPremiumStatus(id: string, isPremium: boolean) {
-    const { error } = await supabase.from('companies').update({ is_premium: isPremium }).eq('id', id);
+    const updates: any = { is_premium: isPremium };
+    if (isPremium) {
+      updates.premium_since = new Date().toISOString();
+    }
+    const { error } = await supabase.from('companies').update(updates).eq('id', id);
     if (error) throw error;
   }
 
@@ -388,6 +398,60 @@ class DBService {
     // 4. Elimina la ditta
     const { error } = await supabase.from('companies').delete().eq('id', id);
     if (error) throw error;
+  }
+
+  // --- Global Stats (SuperAdmin Only) ---
+  async getGlobalWeeklyStats() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const isoDate = sevenDaysAgo.toISOString();
+
+    const [newCompanies, activeCompanies, totalReports, newPremiums] = await Promise.all([
+      // 1. New Companies
+      supabase.from('companies').select('id', { count: 'exact', head: true }).gt('created_at', isoDate),
+      // 2. Active Companies (had at least one report in last 7 days)
+      supabase.from('reports').select('company_id', { count: 'exact', head: false }).gt('created_at', isoDate),
+      // 3. Total Reports
+      supabase.from('reports').select('id', { count: 'exact', head: true }).gt('created_at', isoDate),
+      // 4. New Premium Upgrades
+      supabase.from('companies').select('id', { count: 'exact', head: true }).gt('premium_since', isoDate)
+    ]);
+
+    // Unique active company count
+    const uniqueActiveCompanies = activeCompanies.data ? new Set(activeCompanies.data.map(r => r.company_id)).size : 0;
+
+    return {
+      newCompanies: newCompanies.count || 0,
+      activeCompanies: uniqueActiveCompanies,
+      totalReports: totalReports.count || 0,
+      newPremiums: newPremiums.count || 0
+    };
+  }
+
+  async getGlobalWeeklyActiveCompaniesList() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const isoDate = sevenDaysAgo.toISOString();
+
+    // Get reports and their related company names
+    const { data: reports, error } = await supabase
+      .from('reports')
+      .select('company_id, companies(name)')
+      .gt('created_at', isoDate);
+
+    if (error) return [];
+
+    const statsMap: Record<string, { name: string, count: number }> = {};
+    reports.forEach((r: any) => {
+      const cid = r.company_id;
+      const name = r.companies?.name || 'Unknown';
+      if (!statsMap[cid]) {
+        statsMap[cid] = { name, count: 0 };
+      }
+      statsMap[cid].count++;
+    });
+
+    return Object.values(statsMap).sort((a, b) => b.count - a.count).slice(0, 5);
   }
   // ----------------------------------------------------
 

@@ -51,6 +51,7 @@ import Tooltip from './components/common/Tooltip';
 import OnboardingGuide from './components/OnboardingGuide';
 import { generateCompliancePDF } from './services/exportService';
 import AIChatAssistant from './components/AIChatAssistant';
+import SuperAdminDashboard from './components/SuperAdminDashboard';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -443,7 +444,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('activityManagement')}</p>
       </div>
 
-      {user.role === 'admin' ? <CompactDashboard /> : <MonthlyHoursCard user={user} />}
+      {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' ? <CompactDashboard /> : <MonthlyHoursCard user={user} />)}
 
       <nav className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {actions.map((link) => (
