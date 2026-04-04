@@ -444,6 +444,9 @@ export const translations = {
     aiUserLabel: "Tu",
     aiBotLabel: "Assistente AI",
     chatWithAI: "Chatta con l'assistente AI",
+    mobileWelcomeChatTitle: "Benvenuto su Mobile!",
+    mobileWelcomeChatBody: "Hai domande su come usare l'app? Chatta con l'assistente AI",
+    mobileWelcomeChatBtn: "Chatta con l'Assistente AI",
   },
   en: {
     dashboard: "Dashboard",
@@ -866,6 +869,9 @@ export const translations = {
     aiUserLabel: "You",
     aiBotLabel: "AI Assistant",
     chatWithAI: "Chat with AI Assistant",
+    mobileWelcomeChatTitle: "Welcome to Mobile!",
+    mobileWelcomeChatBody: "Questions on how to use the app? Chat with our AI assistant",
+    mobileWelcomeChatBtn: "Chat with AI Assistant",
   },
   da: {
     dashboard: "Oversigt",
@@ -1234,6 +1240,9 @@ export const translations = {
     aiUserLabel: "Dig",
     aiBotLabel: "AI Assistent",
     chatWithAI: "Chat med AI-assistent",
+    mobileWelcomeChatTitle: "Velkommen til Mobil!",
+    mobileWelcomeChatBody: "Har du spørgsmål til, hvordan du bruger appen? Chat med vores AI-assistent",
+    mobileWelcomeChatBtn: "Chat med AI-assistent",
   },
   es: {
     dashboard: "Panel",
@@ -1572,7 +1581,7 @@ export const translations = {
     headerBreak: "PAUSA",
     headerTotal: "TOT",
     privacy: "Privacidad",
-    terms: "Términos de Servicio",
+    terms: "Términos de Servizio",
     impersonating: "Suplantando a",
     backToAdmin: "Volver a Admin",
     backToApp: "Volver a la app",
@@ -1630,6 +1639,9 @@ export const translations = {
     aiUserLabel: "Tú",
     aiBotLabel: "Asistente AI",
     chatWithAI: "Chatear con el asistente de IA",
+    mobileWelcomeChatTitle: "¡Bienvenido a Móvil!",
+    mobileWelcomeChatBody: "¿Tienes preguntas sobre cómo usar la aplicación? Chatea con nuestro asistente de IA",
+    mobileWelcomeChatBtn: "Chatear con el Asistente de IA",
   },
   pl: {
     dashboard: "Panel",
@@ -2026,6 +2038,9 @@ export const translations = {
     aiUserLabel: "Ty",
     aiBotLabel: "Asystent AI",
     chatWithAI: "Czatuj z asystentem AI",
+    mobileWelcomeChatTitle: "Witaj w aplikacji mobilnej!",
+    mobileWelcomeChatBody: "Masz pytania dotyczące korzystania z aplikacji? Porozmawiaj z naszym asystentem AI",
+    mobileWelcomeChatBtn: "Czatuj z asystentem AI",
   },
   tr: {
     dashboard: "Panel",
@@ -2416,5 +2431,8 @@ export const translations = {
     aiUserLabel: "Siz",
     aiBotLabel: "AI Asistanı",
     chatWithAI: "AI Asistanı ile sohbet et",
+    mobileWelcomeChatTitle: "Mobil'e Hoş Geldiniz!",
+    mobileWelcomeChatBody: "Uygulamayı nasıl kullanacağınızla ilgili sorularınız mı var? AI asistanımızla sohbet edin",
+    mobileWelcomeChatBtn: "AI Asistanı ile Sohbet Et",
   },
 };

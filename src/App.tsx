@@ -36,6 +36,8 @@ import {
   BookOpen,
   CheckCircle2,
   Sparkles,
+  Bot,
+  MessageSquare,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -419,7 +421,7 @@ const MonthlyHoursCard: React.FC<{ user: User }> = ({ user }) => {
 };
 
 // --- Home View (Launcher) ---
-const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
+const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean }> = ({ user, isSuperAdmin, isMobile }) => {
   const { t } = useTranslation();
   const navLinks = getNavLinks(t, isSuperAdmin);
   const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
@@ -438,6 +440,12 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 animate-in fade-in duration-500">
+      {(isMobile && !localStorage.getItem('mobile_welcome_v1')) && (
+        <MobileWelcomeBanner onOpenChat={() => {
+          localStorage.setItem('mobile_welcome_v1', 'seen');
+          window.dispatchEvent(new CustomEvent('open-ai-chat'));
+        }} />
+      )}
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           {t('welcome')}, {user.name.split(' ')[0]}
@@ -1140,7 +1148,39 @@ const HelpCard: React.FC<{ title: string; children: React.ReactNode; icon: React
   </div>
 );
 
-const HelpView: React.FC<{ user: User }> = ({ user }) => {
+// --- Mobile Welcome Banner ---
+const MobileWelcomeBanner: React.FC<{ onOpenChat: () => void }> = ({ onOpenChat }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 shadow-xl shadow-blue-200 mb-6 text-white relative overflow-hidden group">
+      <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+        <Sparkles size={120} />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="bg-white/20 p-1.5 rounded-lg">
+            <Bot size={18} className="text-white" />
+          </div>
+          <h3 className="text-sm font-black uppercase tracking-widest text-blue-100">
+            {t('mobileWelcomeChatTitle' as any) || 'Benvenuto su Mobile!'}
+          </h3>
+        </div>
+        <h2 className="text-xl font-bold mb-4 leading-tight">
+          {t('mobileWelcomeChatBody' as any) || 'Hai domande su come usare l\'app? Chatta con l\'assistente AI'}
+        </h2>
+        <button 
+          onClick={onOpenChat}
+          className="bg-white text-blue-600 px-6 py-2.5 rounded-xl font-black shadow-lg hover:shadow-xl active:scale-95 transition-all text-sm flex items-center gap-2"
+        >
+          <MessageSquare size={16} />
+          {t('mobileWelcomeChatBtn' as any) || 'Apri Chat AI'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile }) => {
   const { t } = useTranslation();
   const isAdmin = user?.role === 'admin';
 
@@ -1252,20 +1292,22 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
             className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2 group"
           >
             <Sparkles size={18} className="text-blue-400 group-hover:scale-110 transition-transform" />
-            {t('chatWithAI') || 'Chatta con l\'assistente AI'}
+            {t('chatWithAI')}
           </button>
           
-          <button 
-            onClick={() => {
-              localStorage.removeItem('onboarding_v1');
-              window.location.hash = '/home';
-              window.location.reload();
-            }}
-            className="w-full sm:w-auto px-8 py-3 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-          >
-            <Smartphone size={18} />
-            {t('onboarding_restart')}
-          </button>
+          {!isMobile && (
+            <button 
+              onClick={() => {
+                localStorage.removeItem('onboarding_v1');
+                window.location.hash = '/home';
+                window.location.reload();
+              }}
+              className="w-full sm:w-auto px-8 py-3 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+            >
+              <Smartphone size={18} />
+              {t('onboarding_restart')}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -3354,9 +3396,20 @@ const App: React.FC = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('onboarding_v1');
+    return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setShowOnboarding(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => { localStorage.setItem('ws_lang', lang); }, [lang]);
 
@@ -3473,7 +3526,7 @@ const App: React.FC = () => {
                     </div>
                   )}
                   <Routes>
-                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
+                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} isMobile={isMobile} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
@@ -3482,7 +3535,7 @@ const App: React.FC = () => {
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
                     <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} />} />
-                    <Route path="/help" element={<HelpView user={user} />} />
+                    <Route path="/help" element={<HelpView user={user} isMobile={isMobile} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                 </AppLayout>
