@@ -19,6 +19,7 @@ import {
   FileSpreadsheet,
   ClipboardList,
   ShieldAlert,
+  AlertCircle,
   Eye,
   EyeOff,
   ChevronRight,
@@ -1367,8 +1368,13 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
     e.preventDefault();
     try {
       const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
+      const isSensitive = !!(editingId && (formData.email !== users.find(u => u.id === editingId)?.email || formData.password !== users.find(u => u.id === editingId)?.password));
+
       if (editingId) {
         await db.updateUser(editingId, data);
+        if (isSensitive) {
+          alert(t('emailUpdateSuccess' as any) || 'Credenziali aggiornate con successo!');
+        }
       } else {
         await db.addUser(data);
       }
@@ -1458,6 +1464,12 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
               {isEditingDemo && (
                 <div className="bg-amber-50 text-amber-800 p-3 rounded-xl text-xs font-semibold border border-amber-200">
                   {t('demoFieldsLocked')}
+                </div>
+              )}
+              {editingId && !formData.subcontractorId && (
+                <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-[10px] font-bold border border-blue-100 flex items-start gap-2">
+                  <AlertCircle size={14} className="shrink-0" />
+                  {t('loginCredentialsWarning' as any)}
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">

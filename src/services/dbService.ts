@@ -516,21 +516,53 @@ class DBService {
   }
 
   async addUser(user: any) {
-    // We explicitly remove hashing to make passwords visible
-    const sbObj = {
-      ...this.mapAppWorkerToSupabase(user),
-      company_id: this.requireCompanyId(),
-      created_at: new Date().toISOString()
-    };
-    const { data, error } = await supabase.from('workers').insert([sbObj]).select();
-    if (error) throw error;
-    return this.mapSupabaseWorker(data[0]);
+    const auth = localStorage.getItem('sb-gqetgbqlxljhhcaggoke-auth-token');
+    const token = auth ? JSON.parse(auth).access_token : '';
+    
+    // Sync with Supabase Auth via Admin API
+    const response = await fetch('/api/admin-auth-update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+         action: 'create',
+         updates: user
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to create user via admin API');
+    return data.data;
   }
 
   async updateUser(id: string, updates: any) {
-    // We explicitly remove hashing to make passwords visible
-    const sbObj = this.mapAppWorkerToSupabase(updates);
-    const { error } = await supabase.from('workers').update(sbObj).eq('id', id);
+    const isSensitive = !!(updates.email || updates.password);
+
+    if (isSensitive) {
+      // Sync with Supabase Auth via Admin API
+      const auth = localStorage.getItem('sb-gqetgbqlxljhhcaggoke-auth-token');
+      const token = auth ? JSON.parse(auth).access_token : '';
+      
+      const response = await fetch('/api/admin-auth-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+           targetUserId: id,
+           updates
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to update user via admin API');
+      return data;
+    }
+
+    const { error } = await supabase.from('workers').update(this.mapAppWorkerToSupabase(updates)).eq('id', id);
     if (error) throw error;
   }
 
