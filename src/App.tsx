@@ -35,6 +35,7 @@ import {
   LayoutDashboard,
   BookOpen,
   CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -1237,22 +1238,35 @@ const HelpView: React.FC<{ user: User }> = ({ user }) => {
       </div>
 
       <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 text-center">
-        <HelpCircle className="mx-auto text-blue-500 mb-3" size={32} />
-        <h3 className="font-bold text-slate-900 text-lg">{t('helpContactHeader')}</h3>
-        <p className="text-slate-500 text-sm mt-2 max-w-lg mx-auto leading-relaxed">
+        <div className="w-16 h-16 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-4">
+          <HelpCircle className="text-blue-500" size={32} />
+        </div>
+        <h3 className="font-black text-slate-900 text-xl tracking-tight">{t('helpContactHeader')}</h3>
+        <p className="text-slate-500 text-sm mt-3 max-w-lg mx-auto leading-relaxed font-medium">
           {t('helpSupportContact')}
         </p>
-        <button 
-          onClick={() => {
-            localStorage.removeItem('onboarding_v1');
-            window.location.hash = '/home';
-            window.location.reload();
-          }}
-          className="mt-6 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2 mx-auto"
-        >
-          <Smartphone size={18} />
-          {t('onboarding_restart')}
-        </button>
+        
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat'))}
+            className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2 group"
+          >
+            <Sparkles size={18} className="text-blue-400 group-hover:scale-110 transition-transform" />
+            {t('chatWithAI') || 'Chatta con l\'assistente AI'}
+          </button>
+          
+          <button 
+            onClick={() => {
+              localStorage.removeItem('onboarding_v1');
+              window.location.hash = '/home';
+              window.location.reload();
+            }}
+            className="w-full sm:w-auto px-8 py-3 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+          >
+            <Smartphone size={18} />
+            {t('onboarding_restart')}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -443,6 +443,7 @@ export const translations = {
     aiErrorPrefix: "Mi dispiace, si è verificato un errore: ",
     aiUserLabel: "Tu",
     aiBotLabel: "Assistente AI",
+    chatWithAI: "Chatta con l'assistente AI",
   },
   en: {
     dashboard: "Dashboard",
@@ -864,6 +865,7 @@ export const translations = {
     aiErrorPrefix: "I'm sorry, an error occurred: ",
     aiUserLabel: "You",
     aiBotLabel: "AI Assistant",
+    chatWithAI: "Chat with AI Assistant",
   },
   da: {
     dashboard: "Oversigt",
@@ -1231,6 +1233,7 @@ export const translations = {
     aiErrorPrefix: "Jeg beklager, der opstod en fejl: ",
     aiUserLabel: "Dig",
     aiBotLabel: "AI Assistent",
+    chatWithAI: "Chat med AI-assistent",
   },
   es: {
     dashboard: "Panel",
@@ -1626,6 +1629,7 @@ export const translations = {
     aiErrorPrefix: "Lo siento, ha ocurrido un error: ",
     aiUserLabel: "Tú",
     aiBotLabel: "Asistente AI",
+    chatWithAI: "Chatear con el asistente de IA",
   },
   pl: {
     dashboard: "Panel",
@@ -2021,6 +2025,7 @@ export const translations = {
     aiErrorPrefix: "Przepraszam, wystąpił błąd: ",
     aiUserLabel: "Ty",
     aiBotLabel: "Asystent AI",
+    chatWithAI: "Czatuj z asystentem AI",
   },
   tr: {
     dashboard: "Panel",
@@ -2410,5 +2415,6 @@ export const translations = {
     aiErrorPrefix: "Üzgünüm, bir hata oluştu: ",
     aiUserLabel: "Siz",
     aiBotLabel: "AI Asistanı",
+    chatWithAI: "AI Asistanı ile sohbet et",
   },
 };
