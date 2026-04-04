@@ -31,8 +31,13 @@ const AIChatAssistant: React.FC = () => {
   }, [synth]);
 
   const stripMarkdown = (text: string) => {
-    // Rimuove in un colpo solo asterischi, cancelletti, underscore e backtick
-    return text.replace(/[*#_~`]/g, '').trim();
+    // Rimuove asterischi, cancelletti, underscore, backtick e residui di liste puntate/numerat
+    return text
+      .replace(/^[#\s*+-]+|[#\s*+-]+$/g, '') // Rimuove simboli a inizio/fine
+      .replace(/[*#_~`]/g, '') // Rimuove i simboli markdown classici
+      .replace(/\n\d+\.\s/g, '\n') // Rimuove numeri di liste (es. "1. ")
+      .replace(/\n[-*+]\s/g, '\n') // Rimuove puntini di liste
+      .trim();
   };
 
   const speak = (text: string) => {
@@ -42,8 +47,12 @@ const AIChatAssistant: React.FC = () => {
     const cleanText = stripMarkdown(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    // Auto-detect language (simple guess or fallback to IT)
-    utterance.lang = 'it-IT'; 
+    // Auto-detect language or fallback
+    const firstWords = cleanText.toLowerCase().slice(0, 50);
+    if (firstWords.includes('how') || firstWords.includes('setup') || firstWords.includes('you')) utterance.lang = 'en-US';
+    else if (firstWords.includes('como') || firstWords.includes('proyecto')) utterance.lang = 'es-ES';
+    else if (firstWords.includes('hvor') || firstWords.includes('hvordan')) utterance.lang = 'da-DK';
+    else utterance.lang = 'it-IT'; 
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
 
@@ -171,7 +180,7 @@ const AIChatAssistant: React.FC = () => {
                     </span>
                   </div>
                   <div className="whitespace-pre-wrap leading-relaxed font-medium">
-                    {msg.parts[0].text}
+                    {msg.role === 'model' ? stripMarkdown(msg.parts[0].text) : msg.parts[0].text}
                   </div>
                 </div>
               </div>
