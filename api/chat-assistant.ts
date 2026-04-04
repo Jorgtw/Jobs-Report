@@ -30,19 +30,21 @@ export default async function handler(req: Request) {
         systemInstruction: `Sei un collega esperto dell'app "Jobs Report". Il tuo compito è aiutare i tuoi colleghi a capire come usare l'applicazione in modo semplice e naturale.
 
 REGOLE DI RISPOSTA (FONDAMENTALI):
-1. LINGUA: Rispondi SEMPRE nella stessa lingua usata dall'utente (es. se scrivono in inglese, rispondi in inglese; se in danese, in danese; ecc.).
-2. NO MARKDOWN: Rispondi esclusivamente in TESTO SEMPLICE. NON usare asterischi (*), NON usare cancelletti (#), NON usare grassetti o corsivi.
-3. TONO: Sii conversazionale, amichevole e diretto, come un collega che spiega a un altro. Evita liste numerate o elenchi puntati lunghi; preferisci frasi complete e discorsive.
-4. PRIVACY: Se ti chiedono dati sensibili (fatturato, stipendi, nomi clienti), spiega che non hai l'autorizzazione per vederli e suggerisci di guardare nelle sezioni "Sommario" o "Dashboard".
+1. FORMATO: Rispondi SEMPRE in formato JSON con questo schema: { "lang": "...", "text": "..." }.
+2. LINGUA: Nel campo "lang", inserisci il codice BCP-47 della lingua che stai usando (es. "it-IT", "en-US", "es-ES", "da-DK", "pl-PL", "tr-TR"). Nel campo "text", scrivi la risposta.
+3. NO MARKDOWN: Il testo in "text" deve essere TESTO SEMPLICE. NON usare asterischi (*), NON usare cancelletti (#), NON usare grassetti.
+4. TONO: Sii conversazionale, amichevole e diretto, come un collega. Evita liste numerate, preferisci il discorso diretto.
+5. PRIVACY: Se chiedono dati sensibili, spiega che non hai l'autorizzazione e suggerisci di guardare nelle sezioni "Sommario" o "Dashboard".
 
 CONTESTO APP:
 Jobs Report gestisce cantieri e ore.
 - Operatori: caricano ore e spese.
 - Supervisor: gestiscono i loro progetti e team.
 - Admin: vedono tutto, costi e ricavi compresi.
-- Funzioni: Rapportini (ore/spese), Progetti (cantieri), Personale (tariffe), Sommario (analisi economica).
-- PWA: Si installa da Safari (Condividi -> Schermata Home) o Chrome (Tre puntini -> Aggiungi).
 `,
+        generationConfig: {
+          responseMimeType: "application/json",
+        }
       },
       { apiVersion: "v1beta" }
     );
@@ -53,9 +55,18 @@ Jobs Report gestisce cantieri e ore.
 
     const result = await chat.sendMessage(message);
     const response = await result.response;
-    const text = response.text();
+    const rawContent = response.text();
+    
+    // Parse the JSON output from Gemini
+    let content;
+    try {
+      content = JSON.parse(rawContent);
+    } catch (e) {
+      // Fallback in case of invalid JSON
+      content = { text: rawContent, lang: "it-IT" };
+    }
 
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify(content), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

@@ -40,19 +40,24 @@ const AIChatAssistant: React.FC = () => {
       .trim();
   };
 
-  const speak = (text: string) => {
+  const speak = (text: string, lang?: string) => {
     if (!isSpeakingEnabled || !synth) return;
     
     synth.cancel(); // Stop any current speech
     const cleanText = stripMarkdown(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    // Auto-detect language or fallback
-    const firstWords = cleanText.toLowerCase().slice(0, 50);
-    if (firstWords.includes('how') || firstWords.includes('setup') || firstWords.includes('you')) utterance.lang = 'en-US';
-    else if (firstWords.includes('como') || firstWords.includes('proyecto')) utterance.lang = 'es-ES';
-    else if (firstWords.includes('hvor') || firstWords.includes('hvordan')) utterance.lang = 'da-DK';
-    else utterance.lang = 'it-IT'; 
+    // Use provided lang from AI or auto-detect as fallback
+    if (lang) {
+      utterance.lang = lang;
+    } else {
+      const firstWords = cleanText.toLowerCase().slice(0, 50);
+      if (firstWords.includes('how') || firstWords.includes('setup') || firstWords.includes('you')) utterance.lang = 'en-US';
+      else if (firstWords.includes('como') || firstWords.includes('proyecto')) utterance.lang = 'es-ES';
+      else if (firstWords.includes('hvor') || firstWords.includes('hvordan')) utterance.lang = 'da-DK';
+      else utterance.lang = 'it-IT'; 
+    }
+    
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
 
@@ -93,7 +98,7 @@ const AIChatAssistant: React.FC = () => {
       if (data.text) {
         setMessages([...newMessages, { role: 'model', parts: [{ text: data.text }] }]);
         if (isSpeakingEnabled) {
-          speak(data.text);
+          speak(data.text, data.lang);
         }
       } else if (data.error) {
         setMessages([...newMessages, { role: 'model', parts: [{ text: "Mi dispiace, si è verificato un errore: " + data.error }] }]);
