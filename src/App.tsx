@@ -203,6 +203,11 @@ const AppLayout: React.FC<{
   const location = useLocation();
   const { t } = useTranslation();
 
+  // Close mobile menu automatically on route change
+  React.useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname, setIsMobileMenuOpen]);
+
   const navLinks = getNavLinks(t, isSuperAdmin);
   const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.includes(user.role));
 
@@ -3374,6 +3379,7 @@ const App: React.FC = () => {
     localStorage.setItem('ws_auth', JSON.stringify(u));
     window.location.hash = '/home'; // Go to Welcome Page (HomeView) after login
     setUser(u);
+    setIsMobileMenuOpen(false); // Ensure menu is closed after login
   };
   const handleLogout = () => {
     db.setCompanyId(null);
@@ -3382,6 +3388,7 @@ const App: React.FC = () => {
     localStorage.removeItem('ws_auth'); supabase.auth.signOut();
     localStorage.removeItem('ws_auth_admin');
     setIsSuperAdmin(false);
+    setIsMobileMenuOpen(false); // Reset menu state on logout
   };
 
   const handleImpersonate = (targetUser: User) => {
