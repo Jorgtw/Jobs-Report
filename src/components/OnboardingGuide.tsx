@@ -45,16 +45,16 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
         requiresSidebar: true
       },
       { 
-        target: '[data-onboarding="sidebar-projects"]', 
-        titleKey: 'onboarding_projects_title', 
-        bodyKey: 'onboarding_projects_body', 
+        target: '[data-onboarding="sidebar-personnel"]', 
+        titleKey: 'onboarding_personnel_title', 
+        bodyKey: 'onboarding_personnel_body', 
         position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
-        target: '[data-onboarding="sidebar-personnel"]', 
-        titleKey: 'onboarding_personnel_title', 
-        bodyKey: 'onboarding_personnel_body', 
+        target: '[data-onboarding="sidebar-projects"]', 
+        titleKey: 'onboarding_projects_title', 
+        bodyKey: 'onboarding_projects_body', 
         position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
@@ -82,10 +82,13 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
       const el = document.querySelector(currentStep.target);
       if (el) {
         const rect = el.getBoundingClientRect();
-        // If element is not visible or has no size, don't set rect yet
         if (rect.width > 0 && rect.height > 0) {
           setTargetRect(rect);
+        } else {
+          setTargetRect(null);
         }
+      } else {
+        setTargetRect(null);
       }
     } else {
       setTargetRect(null);
@@ -142,9 +145,9 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
         };
       }
       return { 
-        top: '50%',
+        bottom: '80px',
         left: '50%', 
-        transform: 'translate(-50%, -50%)'
+        transform: 'translateX(-50%)'
       };
     }
 
@@ -165,16 +168,31 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
       pos = 'bottom';
     }
 
+    // Left collision detection: ensure bubble (384px) doesn't go below 16px from left
+    // For 'top' and 'bottom', we use left: targetCenter - bubbleWidth/2
+    let leftStyle: any = left + width / 2;
+    let transformStyle = 'translate(-50%, 0)';
+
+    if (pos === 'top' || pos === 'bottom') {
+      const targetCenter = left + width / 2;
+      const idealLeft = targetCenter - bubbleWidth / 2;
+      if (idealLeft < 16) {
+        leftStyle = 16 + bubbleWidth / 2;
+      }
+      transformStyle = pos === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)';
+    }
+
     switch (pos) {
       case 'right':
         return { top: top + height / 2, left: left + width + padding, transform: 'translateY(-50%)' };
       case 'left':
-        return { top: top + height / 2, left: left - padding, transform: 'translate(-100%, -50%)' };
+        const leftVal = Math.max(16 + bubbleWidth, left - padding);
+        return { top: top + height / 2, left: leftVal, transform: 'translate(-100%, -50%)' };
       case 'top':
-        return { top: top - padding, left: left + width / 2, transform: 'translate(-50%, -100%)' };
+        return { top: top - padding, left: leftStyle, transform: transformStyle };
       case 'bottom':
       default:
-        return { top: top + height + padding, left: left + width / 2, transform: 'translate(-50%, 0)' };
+        return { top: top + height + padding, left: leftStyle, transform: transformStyle };
     }
   };
 
