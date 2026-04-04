@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Volume2, VolumeX, Square } from 'lucide-react';
+import { LanguageContext } from '../App';
 
 interface Message {
   role: 'user' | 'model';
@@ -7,6 +8,7 @@ interface Message {
 }
 
 const AIChatAssistant: React.FC = () => {
+  const { t } = useContext(LanguageContext);
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,23 +33,21 @@ const AIChatAssistant: React.FC = () => {
   }, [synth]);
 
   const stripMarkdown = (text: string) => {
-    // Rimuove asterischi, cancelletti, underscore, backtick e residui di liste puntate/numerat
     return text
-      .replace(/^[#\s*+-]+|[#\s*+-]+$/g, '') // Rimuove simboli a inizio/fine
-      .replace(/[*#_~`]/g, '') // Rimuove i simboli markdown classici
-      .replace(/\n\d+\.\s/g, '\n') // Rimuove numeri di liste (es. "1. ")
-      .replace(/\n[-*+]\s/g, '\n') // Rimuove puntini di liste
+      .replace(/^[#\s*+-]+|[#\s*+-]+$/g, '')
+      .replace(/[*#_~`]/g, '')
+      .replace(/\n\d+\.\s/g, '\n')
+      .replace(/\n[-*+]\s/g, '\n')
       .trim();
   };
 
   const speak = (text: string, lang?: string) => {
     if (!isSpeakingEnabled || !synth) return;
     
-    synth.cancel(); // Stop any current speech
+    synth.cancel();
     const cleanText = stripMarkdown(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    // Use provided lang from AI or auto-detect as fallback
     if (lang) {
       utterance.lang = lang;
     } else {
@@ -90,7 +90,7 @@ const AIChatAssistant: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: input,
-          history: messages, // Send existing history
+          history: messages,
         }),
       });
 
@@ -101,10 +101,10 @@ const AIChatAssistant: React.FC = () => {
           speak(data.text, data.lang);
         }
       } else if (data.error) {
-        setMessages([...newMessages, { role: 'model', parts: [{ text: "Mi dispiace, si è verificato un errore: " + data.error }] }]);
+        setMessages([...newMessages, { role: 'model', parts: [{ text: t('aiErrorPrefix') + data.error }] }]);
       }
     } catch (error) {
-      setMessages([...newMessages, { role: 'model', parts: [{ text: "Errore di connessione con l'assistente AI." }] }]);
+      setMessages([...newMessages, { role: 'model', parts: [{ text: t('aiErrorConnection') }] }]);
     } finally {
       setIsLoading(false);
     }
@@ -112,18 +112,16 @@ const AIChatAssistant: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
-      {/* Chat Window */}
       {isOpen && (
         <div className="mb-4 w-[calc(100vw-3rem)] sm:w-[400px] h-[500px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 duration-300">
-          {/* Header */}
           <div className="bg-slate-900 p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <Bot size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight">Assistente Jobs Report</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manuale Parlante</p>
+                <h3 className="text-sm font-black tracking-tight">{t('aiAssistantName')}</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('aiAssistantSubtitle')}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -135,7 +133,6 @@ const AIChatAssistant: React.FC = () => {
                     setIsSpeakingEnabled(!isSpeakingEnabled);
                   }
                 }}
-                title={isSpeakingEnabled ? "Disattiva voce" : "Attiva voce"}
                 className={`p-1.5 rounded-lg transition-colors ${isSpeakingEnabled ? 'text-blue-400 hover:bg-white/10' : 'text-slate-500 hover:bg-white/10'}`}
               >
                 {isCurrentlySpeaking ? <Square size={16} fill="currentColor" /> : (isSpeakingEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />)}
@@ -152,7 +149,6 @@ const AIChatAssistant: React.FC = () => {
             </div>
           </div>
 
-          {/* Messages Area */}
           <div 
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4"
@@ -163,7 +159,7 @@ const AIChatAssistant: React.FC = () => {
                   <Sparkles size={24} />
                 </div>
                 <p className="text-xs font-bold text-slate-500 px-10">
-                  Ciao! Sono il manuale intelligente di Jobs Report. Chiedimi pure come funziona l'app!
+                  {t('aiWelcomeMessage')}
                 </p>
               </div>
             )}
@@ -181,7 +177,7 @@ const AIChatAssistant: React.FC = () => {
                   <div className="flex items-center gap-2 mb-1 opacity-60">
                     {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
                     <span className="text-[10px] font-black uppercase tracking-tighter">
-                      {msg.role === 'user' ? 'Tu' : 'AI Assistant'}
+                      {msg.role === 'user' ? t('aiUserLabel') : t('aiBotLabel')}
                     </span>
                   </div>
                   <div className="whitespace-pre-wrap leading-relaxed font-medium">
@@ -195,20 +191,19 @@ const AIChatAssistant: React.FC = () => {
               <div className="flex justify-start">
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 rounded-tl-none flex items-center gap-2">
                   <Loader2 size={16} className="animate-spin text-blue-500" />
-                  <span className="text-xs font-bold text-slate-400">L'assistente sta scrivendo...</span>
+                  <span className="text-xs font-bold text-slate-400">{t('aiWriting')}</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Input Area */}
           <div className="p-4 bg-white border-t border-slate-100 flex gap-2">
             <input 
               type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Fai una domanda sull'app..."
+              placeholder={t('aiPlaceholder')}
               className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
             />
             <button 
@@ -222,7 +217,6 @@ const AIChatAssistant: React.FC = () => {
         </div>
       )}
 
-      {/* Toggle Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group ${
