@@ -447,6 +447,7 @@ export const translations = {
     mobileWelcomeChatTitle: "Benvenuto su Mobile!",
     mobileWelcomeChatBody: "Hai domande su come usare l'app? Chatta con l'assistente AI",
     mobileWelcomeChatBtn: "Chatta con l'Assistente AI",
+    needHelpChat: "Hai bisogno di aiuto?",
   },
   en: {
     dashboard: "Dashboard",
@@ -872,6 +873,7 @@ export const translations = {
     mobileWelcomeChatTitle: "Welcome to Mobile!",
     mobileWelcomeChatBody: "Questions on how to use the app? Chat with our AI assistant",
     mobileWelcomeChatBtn: "Chat with AI Assistant",
+    needHelpChat: "Need help?",
   },
   da: {
     dashboard: "Oversigt",
@@ -1243,6 +1245,7 @@ export const translations = {
     mobileWelcomeChatTitle: "Velkommen til Mobil!",
     mobileWelcomeChatBody: "Har du spørgsmål til, hvordan du bruger appen? Chat med vores AI-assistent",
     mobileWelcomeChatBtn: "Chat med AI-assistent",
+    needHelpChat: "Har du brug for hjælp?",
   },
   es: {
     dashboard: "Panel",
@@ -1642,6 +1645,7 @@ export const translations = {
     mobileWelcomeChatTitle: "¡Bienvenido a Móvil!",
     mobileWelcomeChatBody: "¿Tienes preguntas sobre cómo usar la aplicación? Chatea con nuestro asistente de IA",
     mobileWelcomeChatBtn: "Chatear con el Asistente de IA",
+    needHelpChat: "¿Necesitas ayuda?",
   },
   pl: {
     dashboard: "Panel",
@@ -2041,6 +2045,7 @@ export const translations = {
     mobileWelcomeChatTitle: "Witaj w aplikacji mobilnej!",
     mobileWelcomeChatBody: "Masz pytania dotyczące korzystania z aplikacji? Porozmawiaj z naszym asystentem AI",
     mobileWelcomeChatBtn: "Czatuj z asystentem AI",
+    needHelpChat: "Potrzebujesz pomocy?",
   },
   tr: {
     dashboard: "Panel",
@@ -2434,5 +2439,6 @@ export const translations = {
     mobileWelcomeChatTitle: "Mobil'e Hoş Geldiniz!",
     mobileWelcomeChatBody: "Uygulamayı nasıl kullanacağınızla ilgili sorularınız mı var? AI asistanımızla sohbet edin",
     mobileWelcomeChatBtn: "AI Asistanı ile Sohbet Et",
+    needHelpChat: "Yardıma mı ihtiyacınız var?",
   },
 };

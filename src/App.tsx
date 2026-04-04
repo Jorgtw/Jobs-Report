@@ -36,8 +36,6 @@ import {
   BookOpen,
   CheckCircle2,
   Sparkles,
-  Bot,
-  MessageSquare,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -440,12 +438,6 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 animate-in fade-in duration-500">
-      {(isMobile && !localStorage.getItem('mobile_welcome_v1')) && (
-        <MobileWelcomeBanner onOpenChat={() => {
-          localStorage.setItem('mobile_welcome_v1', 'seen');
-          window.dispatchEvent(new CustomEvent('open-ai-chat'));
-        }} />
-      )}
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           {t('welcome')}, {user.name.split(' ')[0]}
@@ -454,6 +446,18 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
       </div>
 
       {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' ? <CompactDashboard /> : <MonthlyHoursCard user={user} />)}
+
+      {isMobile && (
+        <div className="flex justify-center mb-6">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat'))}
+            className="flex items-center gap-2 px-6 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold hover:bg-blue-100 transition-all border border-blue-100/50 shadow-sm animate-pulse-subtle"
+          >
+            <Sparkles size={14} />
+            {t('needHelpChat' as any) || 'Hai bisogno di aiuto?'}
+          </button>
+        </div>
+      )}
 
       <nav className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {actions.map((link) => (
@@ -1147,38 +1151,6 @@ const HelpCard: React.FC<{ title: string; children: React.ReactNode; icon: React
     </div>
   </div>
 );
-
-// --- Mobile Welcome Banner ---
-const MobileWelcomeBanner: React.FC<{ onOpenChat: () => void }> = ({ onOpenChat }) => {
-  const { t } = useTranslation();
-  return (
-    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 shadow-xl shadow-blue-200 mb-6 text-white relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-        <Sparkles size={120} />
-      </div>
-      <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="bg-white/20 p-1.5 rounded-lg">
-            <Bot size={18} className="text-white" />
-          </div>
-          <h3 className="text-sm font-black uppercase tracking-widest text-blue-100">
-            {t('mobileWelcomeChatTitle' as any) || 'Benvenuto su Mobile!'}
-          </h3>
-        </div>
-        <h2 className="text-xl font-bold mb-4 leading-tight">
-          {t('mobileWelcomeChatBody' as any) || 'Hai domande su come usare l\'app? Chatta con l\'assistente AI'}
-        </h2>
-        <button 
-          onClick={onOpenChat}
-          className="bg-white text-blue-600 px-6 py-2.5 rounded-xl font-black shadow-lg hover:shadow-xl active:scale-95 transition-all text-sm flex items-center gap-2"
-        >
-          <MessageSquare size={16} />
-          {t('mobileWelcomeChatBtn' as any) || 'Apri Chat AI'}
-        </button>
-      </div>
-    </div>
-  );
-};
 
 const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile }) => {
   const { t } = useTranslation();
