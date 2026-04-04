@@ -82,7 +82,7 @@ export const canUserAccessProject = (project: Partial<Project>, userId: string) 
 // --- Shared Styles ---
 const inputClasses = "flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
 const filterInputClasses = "flex-1 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-xs disabled:bg-slate-50";
-const modalClasses = "bg-white rounded-2xl p-4 w-full max-w-4xl relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh]";
+const modalClasses = "bg-white sm:rounded-3xl p-4 sm:p-8 w-full h-full sm:h-auto sm:max-w-4xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 overflow-y-auto sm:max-h-[95vh]";
 
 const FullWidthField: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({ label, children, className = "" }) => (
   <div className={`flex flex-col gap-1 ${className}`}>
@@ -250,7 +250,7 @@ const AppLayout: React.FC<{
       {isMobileMenuOpen && !document.querySelector('.onboarding-active') && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
-      <div className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-full sm:w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
@@ -760,9 +760,9 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       </div>
 
       {isArchiveModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !isDeleting && setIsArchiveModalOpen(false)}></div>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white sm:rounded-3xl p-6 w-full h-full sm:h-auto sm:max-w-md relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-200 overflow-y-auto">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center text-rose-600 mb-4">
                 <ShieldAlert size={32} />
@@ -1413,7 +1413,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-6 border-b pb-4">
@@ -1623,7 +1623,7 @@ const ClientsView: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-6 border-b pb-4">
@@ -1826,7 +1826,7 @@ const ProjectsView: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-4 border-b pb-2">
@@ -2054,7 +2054,7 @@ const SubcontractorsView: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-4 border-b pb-2">

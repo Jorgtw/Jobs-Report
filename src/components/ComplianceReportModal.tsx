@@ -93,9 +93,9 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center sm:p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-white rounded-3xl p-6 w-full max-w-2xl relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh]">
+      <div className="bg-white sm:rounded-3xl p-6 w-full h-full sm:h-auto sm:max-w-2xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-200 overflow-y-auto sm:max-h-[95vh]">
         <div className="flex justify-between items-center mb-6 border-b pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">

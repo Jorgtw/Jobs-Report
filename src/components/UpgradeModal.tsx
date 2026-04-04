@@ -14,9 +14,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, lang }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center sm:p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-white rounded-3xl p-8 w-full max-w-lg relative z-10 shadow-2xl animate-in zoom-in-95 duration-300">
+      <div className="bg-white sm:rounded-3xl p-8 w-full h-full sm:h-auto sm:max-w-lg relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 overflow-y-auto">
         <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-600 transition-colors">
           <X size={24} />
         </button>

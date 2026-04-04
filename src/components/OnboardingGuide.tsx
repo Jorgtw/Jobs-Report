@@ -134,11 +134,11 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   const bubblePosition = () => {
     if (!targetRect || currentStep.position === 'center' || windowSize.width < 640) {
       return { 
-        top: windowSize.width < 640 ? 'auto' : '50%',
-        bottom: windowSize.width < 640 ? '20px' : 'auto',
+        bottom: windowSize.width < 640 ? '24px' : '50%',
         left: '50%', 
         transform: windowSize.width < 640 ? 'translateX(-50%)' : 'translate(-50%, -50%)',
-        margin: '0 auto'
+        margin: '0 auto',
+        top: windowSize.width < 640 ? 'auto' : '50%'
       };
     }
 
@@ -193,7 +193,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
   return (
     <div className={`fixed inset-0 z-[10000] pointer-events-none transition-opacity duration-300 onboarding-active ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       {/* Target Pulse Highlight (No Shadow/Overlay) */}
-      {targetRect && (
+      {targetRect && windowSize.width >= 640 && (
         <div 
           className="fixed z-10 border-[3px] border-blue-500 rounded-xl animate-pulse ring-4 ring-blue-500/20"
           style={{
@@ -207,7 +207,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
 
       {/* Content Bubble (Pointer Events Auto to allow clicking buttons) */}
       <div 
-        className="absolute z-20 w-[90vw] max-w-sm bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-300 pointer-events-auto"
+        className="absolute z-20 w-[calc(100vw-2rem)] sm:w-[90vw] sm:max-w-sm bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-300 pointer-events-auto"
         style={bubblePosition() as React.CSSProperties}
       >
         <div className="flex justify-between items-start mb-4">
@@ -246,7 +246,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
         </div>
 
         {/* Arrow for target pointing */}
-        {targetRect && currentStep.position !== 'center' && (
+        {targetRect && currentStep.position !== 'center' && windowSize.width >= 640 && (
           <div 
             className={`absolute w-4 h-4 bg-white rotate-45 border-slate-100 border-l border-t ${
               currentStep.position === 'bottom' ? '-top-2 left-1/2 -translate-x-1/2' : 
