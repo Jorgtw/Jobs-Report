@@ -6,6 +6,11 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+/* Blocca lo scroll del body quando una modal (identificata dall'overlay con blur) è aperta */
+body:has(.fixed.inset-0.backdrop-blur-sm) {
+  overflow: hidden;
+}
+
 @layer utilities {
   .animate-in {
     animation: fadeIn 0.3s ease-out;
