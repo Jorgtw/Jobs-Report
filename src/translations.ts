@@ -448,6 +448,9 @@ export const translations = {
     mobileWelcomeChatBody: "Hai domande su come usare l'app? Chatta con l'assistente AI",
     mobileWelcomeChatBtn: "Chatta con l'Assistente AI",
     needHelpChat: "Hai bisogno di aiuto?",
+    emailUpdateSuccess: "Email aggiornata con successo! Il nuovo login è attivo.",
+    passwordUpdateSuccess: "Password aggiornata con successo!",
+    loginCredentialsWarning: "Attenzione: modificando email o password cambierai le credenziali di accesso dell'utente.",
   },
   en: {
     dashboard: "Dashboard",
@@ -874,6 +877,9 @@ export const translations = {
     mobileWelcomeChatBody: "Questions on how to use the app? Chat with our AI assistant",
     mobileWelcomeChatBtn: "Chat with AI Assistant",
     needHelpChat: "Need help?",
+    emailUpdateSuccess: "Email updated successfully! New login is active.",
+    passwordUpdateSuccess: "Password updated successfully!",
+    loginCredentialsWarning: "Warning: changing email or password will alter the user's login credentials.",
   },
   da: {
     dashboard: "Oversigt",
@@ -1246,6 +1252,9 @@ export const translations = {
     mobileWelcomeChatBody: "Har du spørgsmål til, hvordan du bruger appen? Chat med vores AI-assistent",
     mobileWelcomeChatBtn: "Chat med AI-assistent",
     needHelpChat: "Har du brug for hjælp?",
+    emailUpdateSuccess: "Email opdateret med succes! Nyt login er aktivt.",
+    passwordUpdateSuccess: "Adgangskode opdateret med succes!",
+    loginCredentialsWarning: "Advarsel: ændring af e-mail o g adgangskode vil ændre brugerens login-legitimationsoplysninger.",
   },
   es: {
     dashboard: "Panel",
@@ -1646,6 +1655,9 @@ export const translations = {
     mobileWelcomeChatBody: "¿Tienes preguntas sobre cómo usar la aplicación? Chatea con nuestro asistente de IA",
     mobileWelcomeChatBtn: "Chatear con el Asistente de IA",
     needHelpChat: "¿Necesitas ayuda?",
+    emailUpdateSuccess: "¡Email actualizado con éxito! Il nuovo login è attivo.",
+    passwordUpdateSuccess: "¡Contraseña actualizada con successo!",
+    loginCredentialsWarning: "Advertencia: cambiar el correo electrónico o la contraseña alterará le credenciales de acceso del usuario.",
   },
   pl: {
     dashboard: "Panel",
@@ -2046,6 +2058,9 @@ export const translations = {
     mobileWelcomeChatBody: "Masz pytania dotyczące korzystania z aplikacji? Porozmawiaj z naszym asystentem AI",
     mobileWelcomeChatBtn: "Czatuj z asystentem AI",
     needHelpChat: "Potrzebujesz pomocy?",
+    emailUpdateSuccess: "E-mail zaktualizowany pomyślnie! Nowy login jest aktywny.",
+    passwordUpdateSuccess: "Hasło zaktualizowane pomyślnie!",
+    loginCredentialsWarning: "Ostrzeżenie: zmiana adresu e-mail lub hasła spowoduje zmianę poświadczeń logowania użytkownika.",
   },
   tr: {
     dashboard: "Panel",
@@ -2440,5 +2455,8 @@ export const translations = {
     mobileWelcomeChatBody: "Uygulamayı nasıl kullanacağınızla ilgili sorularınız mı var? AI asistanımızla sohbet edin",
     mobileWelcomeChatBtn: "AI Asistanı ile Sohbet Et",
     needHelpChat: "Yardıma mı ihtiyacınız var?",
+    emailUpdateSuccess: "E-posta başarıyla güncellendi! Yeni giriş aktif.",
+    passwordUpdateSuccess: "Şifre başarıyla güncellendi!",
+    loginCredentialsWarning: "Uyarı: e-postayı veya şifreyi değiştirmek, kullanıcının giriş bilgilerini değiştirecektir.",
   },
 };
