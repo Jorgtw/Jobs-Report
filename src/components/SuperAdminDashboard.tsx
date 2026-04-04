@@ -5,8 +5,7 @@ import {
   FileText, 
   Award, 
   TrendingUp,
-  Clock,
-  ExternalLink
+  Clock
 } from 'lucide-react';
 import { LanguageContext } from '../App';
 import { db } from '../services/dbService';
@@ -16,20 +15,16 @@ interface MiniCardProps {
   value: string | number;
   icon: React.ReactNode;
   color: string;
-  trend?: string;
 }
 
-const MiniCard: React.FC<MiniCardProps> = ({ title, value, icon, color, trend }) => (
-  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md hover:border-slate-200">
-    <div className={`p-3 rounded-xl ${color} text-white shadow-sm ring-4 ring-white`}>
-      {icon}
+const MiniCard: React.FC<MiniCardProps> = ({ title, value, icon, color }) => (
+  <div className="bg-white px-3 py-2.5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 transition-all hover:shadow-md hover:border-slate-200">
+    <div className={`p-2 rounded-lg ${color} text-white shrink-0`}>
+      {React.cloneElement(icon as React.ReactElement, { size: 14 })}
     </div>
     <div className="min-w-0">
-      <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{title}</p>
-      <div className="flex items-baseline gap-2">
-        <h3 className="text-xl font-black text-slate-900">{value}</h3>
-        {trend && <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5"><TrendingUp size={10} /> {trend}</span>}
-      </div>
+      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">{title}</p>
+      <h3 className="text-base font-black text-slate-900 leading-none">{value}</h3>
     </div>
   </div>
 );
@@ -42,7 +37,7 @@ const SuperAdminDashboard: React.FC = () => {
     totalReports: 0,
     newPremiums: 0
   });
-  const [topActive, setTopActive] = useState<{name: string, count: number}[]>([]);
+  const [topActive, setTopActive] = useState<{ name: string, count: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,103 +60,113 @@ const SuperAdminDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-48">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
       {/* Header compatto */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <Activity className="text-blue-600" size={24} /> 
+          <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <Activity className="text-blue-600" size={20} />
             {t('weeklyOverview')}
           </h2>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">{t('last7DaysData')}</p>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1">{t('last7DaysData')}</p>
         </div>
-        <a 
-          href="#/companies" 
-          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+        <a
+          href="#/companies"
+          className="inline-flex items-center gap-2 px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition-all active:scale-95 whitespace-nowrap"
         >
-          {t('companiesManagement')} <ExternalLink size={14} />
+          {t('companiesManagement')}
         </a>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MiniCard 
-          title={t('newCompanies')} 
-          value={stats.newCompanies} 
-          icon={<Building2 size={20} />} 
-          color="bg-blue-600" 
+      {/* KPI Cards (Grid Compatta) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <MiniCard
+          title={t('newCompanies')}
+          value={stats.newCompanies}
+          icon={<Building2 />}
+          color="bg-blue-600"
         />
-        <MiniCard 
-          title={t('activeCompanies')} 
-          value={stats.activeCompanies} 
-          icon={<Activity size={20} />} 
-          color="bg-emerald-500" 
+        <MiniCard
+          title={t('activeCompanies')}
+          value={stats.activeCompanies}
+          icon={<Activity />}
+          color="bg-emerald-500"
         />
-        <MiniCard 
-          title={t('newPremiums')} 
-          value={stats.newPremiums} 
-          icon={<Award size={20} />} 
-          color="bg-amber-500" 
+        <MiniCard
+          title={t('newPremiums')}
+          value={stats.newPremiums}
+          icon={<Award />}
+          color="bg-amber-500"
         />
-        <MiniCard 
-          title={t('totalReports')} 
-          value={stats.totalReports} 
-          icon={<FileText size={20} />} 
-          color="bg-indigo-600" 
+        <MiniCard
+          title={t('totalReports')}
+          value={stats.totalReports}
+          icon={<FileText />}
+          color="bg-indigo-600"
         />
       </div>
 
-      {/* Sezione Bottom: Ranking e Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Active Companies */}
-        <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-4">
-            <div className="p-2 bg-blue-50 rounded-lg"><TrendingUp className="text-blue-600" size={18} /></div>
-            <h3 className="font-extrabold text-slate-900 uppercase text-[11px] tracking-widest leading-none">{t('mostActiveWeekly')}</h3>
+      {/* Main Content */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-1.5 bg-blue-50 rounded-md text-blue-600">
+            <TrendingUp size={14} />
           </div>
-          
-          <div className="space-y-3 mt-4">
-            {topActive.length === 0 ? (
-              <p className="text-xs text-slate-400 italic text-center py-4">{t('noData')}</p>
-            ) : (
-              topActive.map((co, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-blue-50/50 hover:border-blue-100 transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 group-hover:text-blue-600 group-hover:border-blue-200 transition-colors">
-                      {idx + 1}
-                    </div>
-                    <span className="text-sm font-bold text-slate-700">{co.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black text-blue-600">{co.count}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">{t('reports')}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">{t('mostActiveWeekly')}</h3>
         </div>
 
-        {/* Info Box / Notes */}
-        <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[60px] rounded-full group-hover:bg-blue-500/20 transition-all"></div>
-          <div className="relative z-10">
-            <div className="p-2 bg-white/10 rounded-lg w-fit mb-4"><Clock size={20} className="text-blue-400" /></div>
-            <h3 className="text-lg font-black tracking-tight mb-2">{t('pendingRequestsReminder')}</h3>
-            <p className="text-[11px] text-slate-400 font-medium leading-relaxed mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {topActive.length === 0 ? (
+            <p className="text-[11px] text-slate-400 italic text-center py-4 md:col-span-2">{t('noData')}</p>
+          ) : (
+            topActive.map((co, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-100 hover:bg-white transition-all group">
+                <div className="flex items-center gap-2 max-w-[70%]">
+                  <span className="text-[10px] font-black text-slate-300 w-4 group-hover:text-blue-400">0{idx + 1}</span>
+                  <span className="text-xs font-bold text-slate-700 truncate">{co.name}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black text-blue-600">{co.count}</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase">{t('reports')}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Footer Info (Horizontalized & Secondary Style) */}
+      <div className="flex flex-col sm:flex-row gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+        <div className="flex-1 flex gap-3 items-start">
+          <div className="p-1.5 bg-white rounded-lg border border-slate-200 shrink-0 text-amber-500">
+            <Clock size={16} />
+          </div>
+          <div>
+            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('pendingRequestsReminder')}</h4>
+            <p className="text-[10px] text-slate-500 font-medium leading-tight">
               {t('pendingRequestsDesc')}
             </p>
-            <div className="pt-4 border-t border-white/10">
-              <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 font-sans">{t('quickSupport')}</div>
-              <p className="text-xs font-bold text-slate-300">{t('quickSupportDesc')}</p>
-            </div>
+          </div>
+        </div>
+        
+        <div className="w-px bg-slate-200 mx-1 hidden sm:block"></div>
+
+        <div className="flex-1 flex gap-3 items-start">
+          <div className="p-1.5 bg-white rounded-lg border border-slate-200 shrink-0 text-blue-500">
+            <Activity size={16} />
+          </div>
+          <div>
+            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('quickSupport')}</h4>
+            <p className="text-[10px] text-slate-500 font-medium leading-tight">
+              {t('quickSupportDesc')}
+            </p>
           </div>
         </div>
       </div>
