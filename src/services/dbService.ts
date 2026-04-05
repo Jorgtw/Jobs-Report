@@ -570,7 +570,16 @@ class DBService {
         })
       });
 
-      const data = await response.json();
+      let data: any;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response from admin API:', text);
+        throw new Error(`Server error (${response.status}): The server returned an unexpected response format.`);
+      }
+
       if (!response.ok) throw new Error(data.error || 'Failed to update user via admin API');
       return data;
     }
