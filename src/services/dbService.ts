@@ -538,9 +538,22 @@ class DBService {
   }
 
   async updateUser(id: string, updates: any) {
-    const isSensitive = !!(updates.email || updates.password);
+    const mappedUpdates = this.mapAppWorkerToSupabase(updates);
+    
+    // Check if email or password ACTUALLY changed to avoid redundant API calls
+    let isSensitiveUpdate = false;
+    const isEditingUser = !!updates.username || !!updates.email || !!updates.password;
 
-    if (isSensitive) {
+    if (isEditingUser && (updates.email || updates.password)) {
+      const currentUser = await this.getUserById(id);
+      if (currentUser) {
+        const emailChanged = updates.email && updates.email !== currentUser.email;
+        const passwordChanged = updates.password && updates.password !== currentUser.password;
+        isSensitiveUpdate = !!(emailChanged || passwordChanged);
+      }
+    }
+
+    if (isSensitiveUpdate) {
       // Sync with Supabase Auth via Admin API
       const auth = localStorage.getItem('sb-gqetgbqlxljhhcaggoke-auth-token');
       const token = auth ? JSON.parse(auth).access_token : '';
@@ -553,7 +566,7 @@ class DBService {
         },
         body: JSON.stringify({
            targetUserId: id,
-           updates
+           updates: mappedUpdates // Send already mapped snake_case fields
         })
       });
 
@@ -562,7 +575,7 @@ class DBService {
       return data;
     }
 
-    const { error } = await supabase.from('workers').update(this.mapAppWorkerToSupabase(updates)).eq('id', id);
+    const { error } = await supabase.from('workers').update(mappedUpdates).eq('id', id);
     if (error) throw error;
   }
 

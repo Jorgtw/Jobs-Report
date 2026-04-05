@@ -113,9 +113,12 @@ export default async function handler(req: any, res: any) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Sync Auth if email or password changed
+    // Sync Auth if email or password changed (with auto-confirm)
     const authUpdates: any = {};
-    if (updates.email && updates.email !== targetData.email) authUpdates.email = updates.email;
+    if (updates.email && updates.email !== targetData.email) {
+      authUpdates.email = updates.email;
+      authUpdates.email_confirm = true; // Auto-confirm email changes by admin
+    }
     if (updates.password) authUpdates.password = updates.password;
 
     if ((authUpdates.email || authUpdates.password) && targetData.auth_id) {
@@ -141,7 +144,14 @@ export default async function handler(req: any, res: any) {
       .eq('id', targetUserId);
 
     if (finalDbError) {
-      return res.status(500).json({ error: 'Update failed in database', detailed: finalDbError });
+      // ROLLBACK: If DB update fails, attempt to revert Auth email to previous value
+      if (authUpdates.email && targetData.auth_id) {
+        await supabaseAdmin.auth.admin.updateUserById(targetData.auth_id, {
+          email: targetData.email,
+          email_confirm: true
+        });
+      }
+      return res.status(500).json({ error: 'Update failed in database. Auth has been rolled back where possible.', detailed: finalDbError });
     }
 
     return res.status(200).json({ success: true });
