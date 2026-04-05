@@ -17,6 +17,7 @@ import {
   Building2,
   FileDown,
   FileSpreadsheet,
+  Table,
   ClipboardList,
   ShieldAlert,
   AlertCircle,
@@ -2483,8 +2484,31 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   exportToPDF(personalRows, lang, user.name);
                 }}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-indigo-700 transition-all uppercase tracking-tight"
+                title={t('personalExportBtn')}
               >
                 <FileDown size={14} className="mr-1.5" /> {t('personalExportBtn')}
+              </button>
+              <button 
+                onClick={() => {
+                  const personalRows = filteredReports.map(r => {
+                    const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
+                    return {
+                      date: r.date,
+                      projectName: projects.find(p => p.id === r.projectId)?.name || '---',
+                      clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
+                      workerName: user.name,
+                      description: r.description || '',
+                      hours: pours,
+                      hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
+                      paid: r.invoiceStatus === 'Pending' ? t('statusPending') : (r.invoiceStatus === 'Fatturato' ? t('statusInvoiced') : (r.invoiceStatus === 'Pagato' ? t('statusPaid') : (r.invoiceStatus || t('statusPending'))))
+                    };
+                  });
+                  exportToExcel(personalRows, lang);
+                }}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-emerald-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-emerald-700 transition-all uppercase tracking-tight"
+                title={t('exportPersonalExcel')}
+              >
+                <Table size={14} className="mr-1.5" /> {t('exportPersonalExcel')}
               </button>
             </div>
           )}
