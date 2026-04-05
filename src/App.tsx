@@ -375,18 +375,15 @@ const CompactDashboard: React.FC = () => {
   );
 };
 
-// --- Monthly Hours Card for Workers ---
-const MonthlyHoursCard: React.FC<{ user: User }> = ({ user }) => {
+// --- Pending Hours Card for Workers ---
+const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
   const { t } = useTranslation();
   const [hours, setHours] = useState<number | null>(null);
 
   useEffect(() => {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
     db.getReports(user.id, user.role).then(reports => {
-      const filtered = reports.filter(r => new Date(r.date) >= startOfMonth);
+      // Filtriamo solo i rapportini in stato "Pending" (non ancora pagati)
+      const filtered = reports.filter(r => (r.invoiceStatus || 'Pending') === 'Pending');
       const total = filtered.reduce((sum: number, r: any) => {
         let h = 0;
         if (r.userId === user.id) h += (r.totalHours || 0);
@@ -403,15 +400,15 @@ const MonthlyHoursCard: React.FC<{ user: User }> = ({ user }) => {
   return (
     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-6 flex items-center justify-between group hover:shadow-md transition-all">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+        <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
           <Clock size={24} />
         </div>
         <div>
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('monthlyHoursSummary')}</h3>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('currentMonth')}</p>
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('pendingHoursSummary')}</h3>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('pendingStatusSubtitle')}</p>
         </div>
       </div>
-      <div className="text-3xl font-black text-blue-600">
+      <div className="text-3xl font-black text-amber-600">
         {hours.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         <span className="text-sm font-bold ml-1 text-slate-400">h</span>
       </div>
@@ -446,7 +443,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('activityManagement')}</p>
       </div>
 
-      {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' ? <CompactDashboard /> : <MonthlyHoursCard user={user} />)}
+      {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
 
       {isMobile && (
         <div className="flex justify-center mb-6">
@@ -2464,7 +2461,33 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900">{t('reports')}</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
+          {user.role !== 'admin' && (
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button 
+                onClick={() => {
+                  const personalRows = filteredReports.map(r => {
+                    const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
+                    const [y, m, d] = (r.date || '').split('-');
+                    return {
+                      date: y && m && d ? `${d}/${m}/${y.substring(2)}` : r.date,
+                      projectName: projects.find(p => p.id === r.projectId)?.name || '---',
+                      clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
+                      workerName: user.name,
+                      description: r.description || '',
+                      hours: pours,
+                      hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
+                      paid: r.invoiceStatus === 'Pending' ? t('statusPending') : (r.invoiceStatus === 'Fatturato' ? t('statusInvoiced') : (r.invoiceStatus === 'Pagato' ? t('statusPaid') : (r.invoiceStatus || t('statusPending'))))
+                    };
+                  });
+                  exportToPDF(personalRows, lang, user.name);
+                }}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-indigo-700 transition-all uppercase tracking-tight"
+              >
+                <FileDown size={14} className="mr-1.5" /> {t('personalExportBtn')}
+              </button>
+            </div>
+          )}
           <button 
             onClick={() => setShowFilters(!showFilters)} 
             className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`}
@@ -2605,7 +2628,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             const dateObj = new Date(r.date);
             const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
             const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
-            const totalCombinedHours = (r.totalHours + (r.additionalWorkers || []).reduce((s, aw) => s + aw.totalHours, 0)).toFixed(2);
+            const personalHours = (r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0)).toFixed(2);
 
             return (
               <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
@@ -2638,7 +2661,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <Users size={12} /> <span className="font-bold">{totalWorkersCount}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
-                    <Clock size={12} /> <span className="font-bold">{totalCombinedHours}h</span>
+                    <Clock size={12} /> <span className="font-bold">{personalHours}h</span>
                   </div>
                   {r.invoiceStatus && (
                     <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${
@@ -2667,7 +2690,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <th className="px-3 py-2 font-black">{t('project')}</th>
                 <th className="px-3 py-2 font-black hidden lg:table-cell">{t('description')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('peopleLabel')}</th>
-                <th className="px-3 py-2 font-black text-center w-24">{t('totalHoursLabel')}</th>
+                <th className="px-3 py-2 font-black text-center w-24">{t('personalHoursLabel')}</th>
                 <th className="px-3 py-2 font-black text-right w-36">{t('actions')}</th>
               </tr>
             </thead>
@@ -2677,7 +2700,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 const dateObj = new Date(r.date);
                 const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
                 const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
-                const totalCombinedHours = (r.totalHours + (r.additionalWorkers || []).reduce((s, aw) => s + aw.totalHours, 0)).toFixed(2);
+                const personalHours = (r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0)).toFixed(2);
 
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
@@ -2691,7 +2714,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     </td>
                     <td className="px-3 py-1.5 text-center">
                       <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100">
-                        {totalCombinedHours}h
+                        {personalHours}h
                       </span>
                     </td>
                     <td className="px-3 py-1.5 text-right whitespace-nowrap">
