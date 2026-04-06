@@ -142,3 +142,32 @@ export interface ReportSummary {
   isInternal?: boolean;
   createdAt: number;
 }
+
+export type MessageType = 'note' | 'issue' | 'confirmation';
+
+export interface ProjectMessage {
+  id: string;
+  companyId: string;
+  projectId: string;
+  reportId?: string;
+  senderId: string;
+  senderName?: string;
+  type: MessageType;
+  content: string;
+  createdAt: number;
+}
+
+export type CommunicationTargetType = 'all' | 'role' | 'project' | 'user';
+
+export interface InternalCommunication {
+  id: string;
+  companyId: string;
+  senderId: string;
+  senderName?: string;
+  title: string;
+  content: string;
+  targetType: CommunicationTargetType;
+  targetId?: string;
+  createdAt: number;
+  isRead?: boolean;
+}

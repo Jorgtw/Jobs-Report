@@ -1,4 +1,4 @@
-import { Role, ReportSummary, Client } from '../types';
+import { Role, ReportSummary, Client, ProjectMessage, InternalCommunication, CommunicationTargetType, MessageType } from '../types';
 import { supabase } from './supabase';
 
 class DBService {
@@ -400,7 +400,94 @@ class DBService {
     if (error) throw error;
   }
 
-  // --- Global Stats (SuperAdmin Only) ---
+  // --- Internal Communications ---
+
+  async getInternalCommunications(): Promise<InternalCommunication[]> {
+    const compId = this.requireCompanyId();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('internal_communications')
+      .select(`
+        *,
+        communication_read_receipts!left(user_id)
+      `)
+      .eq('company_id', compId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching internal communications:', error);
+      return [];
+    }
+
+    return data.map((c: any) => ({
+      id: c.id,
+      companyId: c.company_id,
+      senderId: c.sender_id,
+      title: c.title,
+      content: c.content,
+      targetType: c.target_type as CommunicationTargetType,
+      targetId: c.target_id,
+      createdAt: new Date(c.created_at).getTime(),
+      senderName: c.sender_name,
+      isRead: c.communication_read_receipts?.some((r: any) => r.user_id === user.id) || false
+    }));
+  }
+
+  async sendInternalCommunication(comm: Omit<InternalCommunication, 'id' | 'createdAt' | 'companyId'>) {
+    const compId = this.requireCompanyId();
+    const { data, error } = await supabase
+      .from('internal_communications')
+      .insert([{ ...comm, company_id: compId }])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async markCommunicationAsRead(communicationId: string, userId: string) {
+    const { error } = await supabase.from('communication_read_receipts').upsert([
+      { 
+        communication_id: communicationId, 
+        user_id: userId, 
+        read_at: new Date().toISOString() 
+      }
+    ], { onConflict: 'communication_id,user_id' });
+
+    if (error) {
+      console.error('Error marking communication as read:', error);
+      throw error;
+    }
+  }
+
+  async getUnreadCommunicationsCount(): Promise<number> {
+    const compId = this.requireCompanyId();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return 0;
+
+    // Get all communications for the company
+    const { data: comms, error: commsError } = await supabase
+      .from('internal_communications')
+      .select('id')
+      .eq('company_id', compId);
+
+    if (commsError || !comms) return 0;
+
+    // Get all read receipts for this user
+    const { data: receipts, error: receiptsError } = await supabase
+      .from('communication_read_receipts')
+      .select('communication_id')
+      .eq('user_id', user.id);
+
+    if (receiptsError || !receipts) return comms.length;
+
+    const readIds = new Set(receipts.map(r => r.communication_id));
+    return comms.filter(c => !readIds.has(c.id)).length;
+  }
+
+  // --- Utility Methods ---
   async getGlobalWeeklyStats() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -818,6 +905,55 @@ class DBService {
   async deleteProject(id: string) {
     const { error } = await supabase.from('projects').delete().eq('id', id);
     if (error) throw error;
+  }
+
+  // --- Project Messaging ---
+  async getProjectMessages(projectId: string): Promise<ProjectMessage[]> {
+    const compId = this.requireCompanyId();
+    const { data, error } = await supabase
+      .from('messages')
+      .select(`
+        *,
+        sender:workers(name)
+      `)
+      .eq('project_id', projectId)
+      .eq('company_id', compId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching project messages:', error);
+      return [];
+    }
+
+    return data.map((m: any) => ({
+      id: m.id,
+      companyId: m.company_id,
+      projectId: m.project_id,
+      senderId: m.sender_id,
+      senderName: m.sender?.name || 'Utente',
+      type: m.type as MessageType,
+      content: m.content,
+      createdAt: new Date(m.created_at).getTime()
+    }));
+  }
+
+  async sendMessage(projectId: string, senderId: string, content: string, type: 'note' | 'issue' | 'confirmation' = 'note') {
+    const compId = this.requireCompanyId();
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([{
+        project_id: projectId,
+        sender_id: senderId,
+        company_id: compId,
+        content,
+        type,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   private mapSupabaseReport(r: any): any {

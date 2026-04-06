@@ -55,6 +55,7 @@ import OnboardingGuide from './components/OnboardingGuide';
 import { generateCompliancePDF } from './services/exportService';
 import AIChatAssistant from './components/AIChatAssistant';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
+import ProjectMessages from './components/ProjectMessages';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -100,7 +101,7 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
   const links = [
     { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
     { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
-    { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin'], color: 'bg-amber-500' },
+    { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin', 'supervisor', 'operator'], color: 'bg-amber-500' },
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
     { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
@@ -1754,13 +1755,14 @@ const ClientsView: React.FC = () => {
 };
 
 // --- Projects View ---
-const ProjectsView: React.FC = () => {
-  const { t } = useTranslation();
+const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
+  const { t, lang } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [activeProjectTab, setActiveProjectTab] = useState<'details' | 'messages'>('details');
 
   useEffect(() => {
     const load = async () => {
@@ -1807,6 +1809,7 @@ const ProjectsView: React.FC = () => {
       isInternal: p.isInternal || false,
       assignedWorkerIds: p.assignedWorkerIds || []
     });
+    setActiveProjectTab('details');
     setIsModalOpen(true);
   };
 
@@ -1838,9 +1841,9 @@ const ProjectsView: React.FC = () => {
     if (isInternal) {
       const internalClient = await db.getInternalClient();
       if (internalClient) {
-        internalClientId = internalClient.id;
+          internalClientId = internalClient.id;
       } else {
-        internalClientId = 'internal'; // Fallback to placeholder, addProject will try again
+          internalClientId = 'internal'; 
       }
     }
 
@@ -1861,25 +1864,30 @@ const ProjectsView: React.FC = () => {
       isInternal,
       assignedWorkerIds: []
     });
+    setActiveProjectTab('details');
     setIsModalOpen(true);
   };
+
+  const editingProject = editingId ? projects.find(p => p.id === editingId) : null;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-slate-900">{t('projects')}</h1>
-        <div className="flex gap-2">
-          <button onClick={() => resetForm(false)} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
-            <Plus size={16} /> {t('newProject')}
-          </button>
-        </div>
+        {user.role === 'admin' && (
+          <div className="flex gap-2">
+            <button onClick={() => resetForm(false)} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+              <Plus size={16} /> {t('newProject')}
+            </button>
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-1 gap-4">
-        {projects.map(p => {
+        {projects.filter(p => (user.role === 'admin' || user.role === 'supervisor') ? true : canUserAccessProject(p, user.id)).map(p => {
           const client = clients.find(c => c.id === p.clientId);
           return (
             <div key={p.id} className={`bg-white p-5 rounded-2xl border ${p.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
-              <div className="flex items-center gap-4 min-w-0">
+              <div className="flex items-center gap-4 min-w-0 cursor-pointer flex-1" onClick={() => handleEdit(p)}>
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${p.status === 'active' ? 'bg-amber-50 text-amber-500' : 'bg-slate-50 text-slate-400'}`}>
                   <Briefcase size={24} />
                 </div>
@@ -1892,8 +1900,10 @@ const ProjectsView: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
-                <button onClick={() => handleEdit(p)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"><Pencil size={18} /></button>
-                <button onClick={() => handleDelete(p.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>
+                {user.role === 'admin' && <button onClick={() => handleDelete(p.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>}
+                <button onClick={() => handleEdit(p)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
+                  {user.role === 'admin' ? <Pencil size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
           );
@@ -1905,116 +1915,146 @@ const ProjectsView: React.FC = () => {
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-bold text-slate-900">{editingId ? t('editProject') : t('newProject')}</h2>
+              <h2 className="text-xl font-bold text-slate-900">{editingId ? (user.role === 'admin' ? t('editProject') : editingProject?.name) : t('newProject')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                <FullWidthField label={t('isInternalProject')} className="md:col-span-2">
-                  <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
-                    <button type="button" onClick={() => setFormData({ ...formData, isInternal: false, clientId: '' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${!formData.isInternal ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('no')}</button>
-                    <button type="button" onClick={() => setFormData({ ...formData, isInternal: true, clientId: 'internal', financialAgreement: 'fixed', sellingPrice: 0 })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.isInternal ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}>{t('yes')}</button>
+
+            {/* Tabs */}
+            {editingId && (
+              <div className="flex bg-slate-100 p-1 rounded-xl w-full mb-6 max-w-sm">
+                <button 
+                  type="button" 
+                  onClick={() => setActiveProjectTab('details')} 
+                  className={`flex-1 px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tight ${activeProjectTab === 'details' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  <Briefcase size={14} className="inline mr-2" />
+                  {t('projectDetailsLabel' as any) || 'Dettagli'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setActiveProjectTab('messages')} 
+                  className={`flex-1 px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tight ${activeProjectTab === 'messages' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  <Mail size={14} className="inline mr-2" />
+                  {t('messagesTab')}
+                </button>
+              </div>
+            )}
+
+            {activeProjectTab === 'details' ? (
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <FullWidthField label={t('isInternalProject')} className="md:col-span-2">
+                    <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
+                      <button type="button" disabled={user.role !== 'admin'} onClick={() => setFormData({ ...formData, isInternal: false, clientId: '' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${!formData.isInternal ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('no')}</button>
+                      <button type="button" disabled={user.role !== 'admin'} onClick={() => setFormData({ ...formData, isInternal: true, clientId: 'internal', financialAgreement: 'fixed', sellingPrice: 0 })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.isInternal ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}>{t('yes')}</button>
+                    </div>
+                  </FullWidthField>
+                  <FullWidthField label={t('project.client')}>
+                    {!formData.isInternal && (
+                      <select disabled={user.role !== 'admin'} required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} className={inputClasses}>
+                        <option value="">{t('select')}</option>
+                        {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    )}
+                    {formData.isInternal && (
+                      <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-sm italic">
+                        {t('activityInternal')}
+                      </div>
+                    )}
+                  </FullWidthField>
+                  <FullWidthField label={t('project.title')}>
+                    <input type="text" disabled={user.role !== 'admin'} required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
+                  </FullWidthField>
+                  <div className="md:col-span-2">
+                    <FullWidthField label={t('description')}>
+                      <textarea rows={2} disabled={user.role !== 'admin'} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} />
+                    </FullWidthField>
                   </div>
-                </FullWidthField>
-                <FullWidthField label={t('project.client')}>
+                  <FullWidthField label={t('project.address')}>
+                    <input type="text" disabled={user.role !== 'admin'} value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} />
+                  </FullWidthField>
                   {!formData.isInternal && (
-                    <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} className={inputClasses}>
-                      <option value="">{t('select')}</option>
-                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <FullWidthField label={t('project.billingType')}>
+                      <div className="flex bg-slate-100 p-1 rounded-xl">
+                        <button type="button" disabled={user.role !== 'admin'} onClick={() => setFormData({ ...formData, financialAgreement: 'hourly' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'hourly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingHourly')}</button>
+                        <button type="button" disabled={user.role !== 'admin'} onClick={() => setFormData({ ...formData, financialAgreement: 'fixed' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'fixed' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingFixed')}</button>
+                      </div>
+                    </FullWidthField>
                   )}
                   {formData.isInternal && (
-                    <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-sm italic">
-                      {t('activityInternal')}
-                    </div>
+                    <FullWidthField label={t('project.billingType')}>
+                      <div className="px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-amber-700 text-sm font-bold">
+                        {t('nonBillable')}
+                      </div>
+                    </FullWidthField>
                   )}
-                </FullWidthField>
-                <FullWidthField label={t('project.title')}>
-                  <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
-                </FullWidthField>
-                <div className="md:col-span-2">
-                  <FullWidthField label={t('description')}>
-                    <textarea rows={2} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} />
-                  </FullWidthField>
-                </div>
-                <FullWidthField label={t('project.address')}>
-                  <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} />
-                </FullWidthField>
-                {!formData.isInternal && (
-                  <FullWidthField label={t('project.billingType')}>
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
-                      <button type="button" onClick={() => setFormData({ ...formData, financialAgreement: 'hourly' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'hourly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingHourly')}</button>
-                      <button type="button" onClick={() => setFormData({ ...formData, financialAgreement: 'fixed' })} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.financialAgreement === 'fixed' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.billingFixed')}</button>
+                  {!formData.isInternal && (
+                    <FullWidthField label={t('project.amount')}>
+                      <div className="flex items-center gap-2">
+                        <input type="number" disabled={user.role !== 'admin'} step="0.01" value={formData.sellingPrice} onChange={e => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })} className={inputClasses} />
+                        <Tooltip text={t('tooltip_sellingPrice')} />
+                      </div>
+                    </FullWidthField>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FullWidthField label={t('project.contactPerson')}>
+                      <input type="text" disabled={user.role !== 'admin'} value={formData.siteContactName} onChange={e => setFormData({ ...formData, siteContactName: e.target.value })} className={inputClasses} />
+                    </FullWidthField>
+                    <FullWidthField label={t('project.phone')}>
+                      <input type="tel" disabled={user.role !== 'admin'} value={formData.siteContactPhone} onChange={e => setFormData({ ...formData, siteContactPhone: e.target.value })} className={inputClasses} />
+                    </FullWidthField>
+                  </div>
+                  <div className="md:col-span-2">
+                    <FullWidthField label={t('project.notes')}>
+                      <textarea rows={2} disabled={user.role !== 'admin'} value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses} />
+                    </FullWidthField>
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('project.assignedPersonnel') as any}:</label>
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {personnel.map(u => (
+                        <label key={u.id} className="flex items-center gap-2 p-1.5 hover:bg-white rounded-lg transition-colors cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            disabled={user.role !== 'admin'}
+                            checked={formData.assignedWorkerIds.includes(u.id)}
+                            onChange={e => {
+                              const newIds = e.target.checked 
+                                ? [...formData.assignedWorkerIds, u.id]
+                                : formData.assignedWorkerIds.filter(id => id !== u.id);
+                              setFormData({ ...formData, assignedWorkerIds: newIds });
+                            }}
+                            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-xs font-medium text-slate-700 group-hover:text-blue-600">{u.name}</span>
+                        </label>
+                      ))}
                     </div>
-                  </FullWidthField>
-                )}
-                {formData.isInternal && (
-                  <FullWidthField label={t('project.billingType')}>
-                    <div className="px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-amber-700 text-sm font-bold">
-                      {t('nonBillable')}
-                    </div>
-                  </FullWidthField>
-                )}
-                {!formData.isInternal && (
-                  <FullWidthField label={t('project.amount')}>
-                    <div className="flex items-center gap-2">
-                      <input type="number" step="0.01" value={formData.sellingPrice} onChange={e => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })} className={inputClasses} />
-                      <Tooltip text={t('tooltip_sellingPrice')} />
-                    </div>
-                  </FullWidthField>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <FullWidthField label={t('project.contactPerson')}>
-                    <input type="text" value={formData.siteContactName} onChange={e => setFormData({ ...formData, siteContactName: e.target.value })} className={inputClasses} />
-                  </FullWidthField>
-                  <FullWidthField label={t('project.phone')}>
-                    <input type="tel" value={formData.siteContactPhone} onChange={e => setFormData({ ...formData, siteContactPhone: e.target.value })} className={inputClasses} />
-                  </FullWidthField>
-                </div>
-                <div className="md:col-span-2">
-                  <FullWidthField label={t('project.notes')}>
-                    <textarea rows={2} value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses} />
-                  </FullWidthField>
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('project.assignedPersonnel') as any}:</label>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {personnel.map(u => (
-                      <label key={u.id} className="flex items-center gap-2 p-1.5 hover:bg-white rounded-lg transition-colors cursor-pointer group">
-                        <input
-                          type="checkbox"
-                          checked={formData.assignedWorkerIds.includes(u.id)}
-                          onChange={e => {
-                            const newIds = e.target.checked 
-                              ? [...formData.assignedWorkerIds, u.id]
-                              : formData.assignedWorkerIds.filter(id => id !== u.id);
-                            setFormData({ ...formData, assignedWorkerIds: newIds });
-                          }}
-                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-xs font-medium text-slate-700 group-hover:text-blue-600">{u.name}</span>
-                      </label>
-                    ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
-                <div className="flex items-center gap-3">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">{t('project.status')}:</label>
-                  <div className="flex bg-slate-100 p-1 rounded-xl">
-                    <button type="button" onClick={() => setFormData({ ...formData, status: 'active' })} className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.status === 'active' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.active')}</button>
-                    <button type="button" onClick={() => setFormData({ ...formData, status: 'closed' })} className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.status === 'closed' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400'}`}>{t('closed')}</button>
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
+                  <div className="flex items-center gap-3">
+                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">{t('project.status')}:</label>
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                      <button type="button" disabled={user.role !== 'admin'} onClick={() => setFormData({ ...formData, status: 'active' })} className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.status === 'active' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('project.active')}</button>
+                      <button type="button" disabled={user.role !== 'admin'} onClick={() => setFormData({ ...formData, status: 'closed' })} className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.status === 'closed' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400'}`}>{t('closed')}</button>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 w-full sm:w-auto">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                    {user.role === 'admin' && (
+                      <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
+                        {editingId ? t('update') : t('save')}
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
-                  <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-                    {editingId ? t('update') : t('save')}
-                  </button>
-                </div>
-              </div>
-            </form>
+              </form>
+            ) : (
+              <ProjectMessages projectId={editingId!} user={user} lang={lang} />
+            )}
           </div>
         </div>
       )}
@@ -3592,7 +3632,7 @@ const App: React.FC = () => {
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
-                    <Route path="/projects" element={user.role === 'admin' ? <ProjectsView /> : <Navigate to="/" />} />
+                    <Route path="/projects" element={<ProjectsView user={user} />} />
                     <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
