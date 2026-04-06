@@ -1,8 +1,9 @@
-import { Role, ReportSummary, Client, ProjectMessage, InternalCommunication, CommunicationTargetType, MessageType } from '../types';
+import { Role, ReportSummary, Client, InternalCommunication, CommunicationTargetType, MessageType } from '../types';
 import { supabase } from './supabase';
 
 class DBService {
   private currentCompanyId: string | null = null;
+  private currentUserId: string | null = null;
   private isSuperAdminRole: boolean = false;
 
   constructor() { }
@@ -11,15 +12,26 @@ class DBService {
     this.currentCompanyId = id;
   }
 
+  public setUserId(id: string | null) {
+    this.currentUserId = id;
+  }
+
   public setIsSuperAdmin(isSA: boolean) {
     this.isSuperAdminRole = isSA;
   }
 
-  private requireCompanyId(): string | null {
+  private requireCompanyId(): string {
     if (!this.currentCompanyId && !this.isSuperAdminRole) {
       throw new Error("company_id is required but not set in DBService.");
     }
-    return this.currentCompanyId;
+    return this.currentCompanyId || '';
+  }
+
+  private requireUserId(): string {
+    if (!this.currentUserId) {
+      throw new Error("user_id is required but not set in DBService.");
+    }
+    return this.currentUserId;
   }
 
   async uploadFile(bucket: string, path: string, file: Blob | File) {
@@ -400,92 +412,6 @@ class DBService {
     if (error) throw error;
   }
 
-  // --- Internal Communications ---
-
-  async getInternalCommunications(): Promise<InternalCommunication[]> {
-    const compId = this.requireCompanyId();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
-
-    const { data, error } = await supabase
-      .from('internal_communications')
-      .select(`
-        *,
-        communication_read_receipts!left(user_id)
-      `)
-      .eq('company_id', compId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching internal communications:', error);
-      return [];
-    }
-
-    return data.map((c: any) => ({
-      id: c.id,
-      companyId: c.company_id,
-      senderId: c.sender_id,
-      title: c.title,
-      content: c.content,
-      targetType: c.target_type as CommunicationTargetType,
-      targetId: c.target_id,
-      createdAt: new Date(c.created_at).getTime(),
-      senderName: c.sender_name,
-      isRead: c.communication_read_receipts?.some((r: any) => r.user_id === user.id) || false
-    }));
-  }
-
-  async sendInternalCommunication(comm: Omit<InternalCommunication, 'id' | 'createdAt' | 'companyId'>) {
-    const compId = this.requireCompanyId();
-    const { data, error } = await supabase
-      .from('internal_communications')
-      .insert([{ ...comm, company_id: compId }])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  }
-
-  async markCommunicationAsRead(communicationId: string, userId: string) {
-    const { error } = await supabase.from('communication_read_receipts').upsert([
-      { 
-        communication_id: communicationId, 
-        user_id: userId, 
-        read_at: new Date().toISOString() 
-      }
-    ], { onConflict: 'communication_id,user_id' });
-
-    if (error) {
-      console.error('Error marking communication as read:', error);
-      throw error;
-    }
-  }
-
-  async getUnreadCommunicationsCount(): Promise<number> {
-    const compId = this.requireCompanyId();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return 0;
-
-    // Get all communications for the company
-    const { data: comms, error: commsError } = await supabase
-      .from('internal_communications')
-      .select('id')
-      .eq('company_id', compId);
-
-    if (commsError || !comms) return 0;
-
-    // Get all read receipts for this user
-    const { data: receipts, error: receiptsError } = await supabase
-      .from('communication_read_receipts')
-      .select('communication_id')
-      .eq('user_id', user.id);
-
-    if (receiptsError || !receipts) return comms.length;
-
-    const readIds = new Set(receipts.map(r => r.communication_id));
-    return comms.filter(c => !readIds.has(c.id)).length;
-  }
 
   // --- Utility Methods ---
   async getGlobalWeeklyStats() {
@@ -907,53 +833,117 @@ class DBService {
     if (error) throw error;
   }
 
-  // --- Project Messaging ---
-  async getProjectMessages(projectId: string): Promise<ProjectMessage[]> {
+  // --- Sezione Comunicazioni Interne (Fase 1 + 2) ---
+  async getCommunications(options?: { projectId?: string, targetType?: CommunicationTargetType }): Promise<InternalCommunication[]> {
     const compId = this.requireCompanyId();
-    const { data, error } = await supabase
-      .from('messages')
+    const userId = this.requireUserId();
+    
+    let query = supabase
+      .from('internal_communications')
       .select(`
         *,
-        sender:workers(name)
+        sender:workers(name),
+        receipts:communication_read_receipts(user_id)
       `)
-      .eq('project_id', projectId)
       .eq('company_id', compId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching project messages:', error);
-      return [];
+    if (options?.projectId) {
+      query = query.eq('target_type', 'project').eq('target_id', options.projectId);
+    }
+    if (options?.targetType) {
+      query = query.eq('target_type', options.targetType);
     }
 
-    return data.map((m: any) => ({
-      id: m.id,
-      companyId: m.company_id,
-      projectId: m.project_id,
-      senderId: m.sender_id,
-      senderName: m.sender?.name || 'Utente',
-      type: m.type as MessageType,
-      content: m.content,
-      createdAt: new Date(m.created_at).getTime()
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return data.map((c: any) => ({
+      id: c.id,
+      companyId: c.company_id,
+      senderId: c.sender_id,
+      senderName: c.sender?.name || 'Utente',
+      title: c.title,
+      content: c.content,
+      type: (c.type || 'note') as MessageType,
+      targetType: c.target_type as CommunicationTargetType,
+      targetId: c.target_id,
+      createdAt: new Date(c.created_at).getTime(),
+      isRead: c.receipts?.some((r: any) => r.user_id === userId) || false
     }));
   }
 
-  async sendMessage(projectId: string, senderId: string, content: string, type: 'note' | 'issue' | 'confirmation' = 'note') {
+  async sendCommunication(data: {
+    content: string;
+    type?: MessageType;
+    targetType: CommunicationTargetType;
+    targetIds: string[];
+    title?: string;
+  }) {
     const compId = this.requireCompanyId();
-    const { data, error } = await supabase
-      .from('messages')
-      .insert([{
-        project_id: projectId,
-        sender_id: senderId,
-        company_id: compId,
-        content,
-        type,
-        created_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
+    const userId = this.requireUserId();
+
+    const payloads = data.targetIds.length > 0 && data.targetType === 'user'
+      ? data.targetIds.map(tid => ({
+          company_id: compId,
+          sender_id: userId,
+          content: data.content,
+          type: data.type || 'note',
+          target_type: 'user',
+          target_id: tid,
+          title: data.title || ''
+        }))
+      : [{
+          company_id: compId,
+          sender_id: userId,
+          content: data.content,
+          type: data.type || 'note',
+          target_type: data.targetType,
+          target_id: data.targetIds[0] || null,
+          title: data.title || ''
+        }];
+
+    const { error } = await supabase
+      .from('internal_communications')
+      .insert(payloads);
 
     if (error) throw error;
-    return data;
+  }
+
+  async markAsRead(communicationId: string) {
+    const userId = this.requireUserId();
+    const { error } = await supabase
+      .from('communication_read_receipts')
+      .upsert({ communication_id: communicationId, user_id: userId });
+    if (error) throw error;
+  }
+
+  async getUnreadCount(): Promise<number> {
+    if (!this.currentUserId || !this.currentCompanyId) return 0;
+    try {
+      const { data: receipts } = await supabase
+        .from('communication_read_receipts')
+        .select('communication_id')
+        .eq('user_id', this.currentUserId);
+      
+      const readIds = receipts?.map(r => r.communication_id) || [];
+      
+      let query = supabase
+        .from('internal_communications')
+        .select('*', { count: 'exact', head: true })
+        .eq('company_id', this.currentCompanyId);
+
+      if (readIds.length > 0) {
+        query = query.not('id', 'in', `(${readIds.join(',')})`);
+      }
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    } catch (err) {
+      console.error('Error getting unread count:', err);
+      return 0;
+    }
   }
 
   private mapSupabaseReport(r: any): any {

@@ -56,6 +56,7 @@ import { generateCompliancePDF } from './services/exportService';
 import AIChatAssistant from './components/AIChatAssistant';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import ProjectMessages from './components/ProjectMessages';
+import CommunicationsHub from './components/CommunicationsHub';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -102,9 +103,10 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
     { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
     { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
     { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin', 'supervisor', 'operator'], color: 'bg-amber-500' },
+    { name: t('internalCommMenu'), path: '/communications', icon: Mail, roles: ['admin', 'supervisor', 'operator'], color: 'bg-blue-600' },
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
-    { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin'], color: 'bg-indigo-500' },
+    { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin', 'supervisor'], color: 'bg-indigo-500' },
     { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' },
     { name: t('help'), path: '/help', icon: HelpCircle, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-600' }
   ];
@@ -203,8 +205,9 @@ const AppLayout: React.FC<{
   onLogout: () => void, 
   children: React.ReactNode,
   isMobileMenuOpen: boolean,
-  setIsMobileMenuOpen: (open: boolean) => void
-}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen }) => {
+  setIsMobileMenuOpen: (open: boolean) => void,
+  unreadCount: number
+}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -235,6 +238,11 @@ const AppLayout: React.FC<{
           >
             <link.icon className={`w-5 h-5 ${location.pathname === link.path ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
             <span>{link.name}</span>
+            {link.path === '/communications' && unreadCount > 0 && (
+              <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
+                {unreadCount}
+              </span>
+            )}
           </Link>
         ))}
       </nav>
@@ -445,7 +453,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('activityManagement')}</p>
       </div>
 
-      {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
+      {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' || user.role === 'supervisor' ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
 
       {isMobile && (
         <div className="flex justify-center mb-6">
@@ -1989,7 +1997,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                       </div>
                     </FullWidthField>
                   )}
-                  {!formData.isInternal && (
+                  {!formData.isInternal && user.role !== 'operator' && (
                     <FullWidthField label={t('project.amount')}>
                       <div className="flex items-center gap-2">
                         <input type="number" disabled={user.role !== 'admin'} step="0.01" value={formData.sellingPrice} onChange={e => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })} className={inputClasses} />
@@ -3517,6 +3525,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (user && user.id) {
+      db.setUserId(user.id);
       if ((user.role as any) === 'superadmin') {
         setIsSuperAdmin(true);
         db.setIsSuperAdmin(true);
@@ -3529,6 +3538,7 @@ const App: React.FC = () => {
     } else {
       setIsSuperAdmin(false);
       db.setIsSuperAdmin(false);
+      db.setUserId(null);
     }
   }, [user]);
 
@@ -3544,8 +3554,27 @@ const App: React.FC = () => {
     }
   }, [user]);
 
+  // Unread communications polling
+  const [unreadCount, setUnreadCount] = useState(0);
+  useEffect(() => {
+    if (!user) return;
+    const updateUnread = async () => {
+      try {
+        const count = await db.getUnreadCount();
+        setUnreadCount(count);
+        (window as any).unreadCommunicationsCount = count;
+      } catch (e) {
+        console.error("Unread polling error:", e);
+      }
+    };
+    updateUnread();
+    const interval = setInterval(updateUnread, 30000); // 30s
+    return () => clearInterval(interval);
+  }, [user]);
+
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);
+    db.setUserId(u.id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
     window.location.hash = '/home'; // Go to Welcome Page (HomeView) after login
     setUser(u);
@@ -3570,6 +3599,7 @@ const App: React.FC = () => {
     }
     // Switch to target user
     db.setCompanyId(targetUser.companyId || (targetUser as any).company_id);
+    db.setUserId(targetUser.id);
     localStorage.setItem('ws_auth', JSON.stringify(targetUser));
     setUser(targetUser);
     window.location.hash = '/';
@@ -3578,6 +3608,7 @@ const App: React.FC = () => {
   const handleBackToAdmin = () => {
     if (!adminUser) return;
     db.setCompanyId(adminUser.companyId || (adminUser as any).company_id);
+    db.setUserId(adminUser.id);
     localStorage.setItem('ws_auth', JSON.stringify(adminUser));
     setUser(adminUser);
     setAdminUser(null);
@@ -3615,6 +3646,7 @@ const App: React.FC = () => {
                   onLogout={handleLogout}
                   isMobileMenuOpen={isMobileMenuOpen}
                   setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  unreadCount={unreadCount}
                 >
                   {adminUser && (
                     <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
@@ -3630,9 +3662,10 @@ const App: React.FC = () => {
                   <Routes>
                     <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} isMobile={isMobile} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
-                    <Route path="/work-summary" element={user.role === 'admin' ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
+                    <Route path="/work-summary" element={(user.role === 'admin' || user.role === 'supervisor') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
                     <Route path="/projects" element={<ProjectsView user={user} />} />
+                    <Route path="/communications" element={<CommunicationsHub user={user} lang={lang} />} />
                     <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />

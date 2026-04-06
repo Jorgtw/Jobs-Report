@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail } from 'lucide-react';
 import { db } from '../services/dbService';
-import { User } from '../types';
+import { User, InternalCommunication, MessageType } from '../types';
 import { translations } from '../translations';
 
 interface ProjectMessagesProps {
@@ -16,16 +16,16 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
     return currentTranslations[key] || (translations['it'] as any)[key] || key;
   };
 
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<InternalCommunication[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [msgType, setMsgType] = useState<'note' | 'issue' | 'confirmation'>('note');
+  const [msgType, setMsgType] = useState<MessageType>('note');
   const [loading, setLoading] = useState(true);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const loadMessages = async () => {
     try {
-      const data = await db.getProjectMessages(projectId);
-      setMessages(data);
+      const data = await db.getCommunications({ projectId });
+      setMessages(data.reverse()); // Reverse because db returns DESC and we want flow
     } catch (err) {
       console.error(err);
     } finally {
@@ -48,7 +48,12 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
     if (!newMessage.trim()) return;
 
     try {
-      await db.sendMessage(projectId, user.id, newMessage, msgType);
+      await db.sendCommunication({
+        content: newMessage,
+        type: msgType,
+        targetType: 'project',
+        targetIds: [projectId]
+      });
       setNewMessage('');
       loadMessages();
     } catch (err) {
@@ -69,14 +74,14 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
           </div>
         ) : (
           messages.map((m) => {
-            const isMe = m.sender_id === user.id;
-            const date = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const day = new Date(m.created_at).toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+            const isMe = m.senderId === user.id;
+            const date = new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const day = new Date(m.createdAt).toLocaleDateString([], { day: '2-digit', month: '2-digit' });
 
             return (
               <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                 <div className="flex items-center gap-2 mb-1 px-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{m.sender_name || 'Utente'}</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{m.senderName || 'Utente'}</span>
                   <span className="text-[9px] text-slate-300 font-bold">{day} {date}</span>
                 </div>
                 <div className={`max-w-[85%] p-3 rounded-2xl shadow-sm text-sm relative group ${

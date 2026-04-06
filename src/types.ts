@@ -163,9 +163,10 @@ export interface InternalCommunication {
   id: string;
   companyId: string;
   senderId: string;
-  senderName?: string;
+  senderName: string;
   title: string;
   content: string;
+  type: MessageType;
   targetType: CommunicationTargetType;
   targetId?: string;
   createdAt: number;
