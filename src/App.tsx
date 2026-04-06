@@ -1005,6 +1005,23 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Preventive email validation
+      if (profileForm.email) {
+        const { data: existingUser } = await supabase
+          .from('workers')
+          .select('id, name')
+          .eq('email', profileForm.email)
+          .maybeSingle();
+
+        if (existingUser && existingUser.id !== user.id) {
+          setProfileMessage({ 
+            text: t('emailAlreadyInUse' as any) || "Questa email è già in uso da un altro utente.", 
+            type: 'error' 
+          });
+          return;
+        }
+      }
+
       await db.updateUser(user.id, profileForm);
       const updatedUser = { ...user, ...profileForm };
       if (onUpdate) onUpdate(updatedUser);
@@ -1365,6 +1382,20 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Preventive email validation
+      if (formData.email) {
+        const { data: existingUser } = await supabase
+          .from('workers')
+          .select('id, name')
+          .eq('email', formData.email)
+          .maybeSingle();
+
+        if (existingUser && existingUser.id !== editingId) {
+          alert(t('emailAlreadyInUse' as any) || "Questa email è già in uso da un altro utente.");
+          return;
+        }
+      }
+
       const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
       const isSensitive = !!(editingId && (formData.email !== users.find(u => u.id === editingId)?.email || formData.password !== users.find(u => u.id === editingId)?.password));
 

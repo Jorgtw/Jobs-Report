@@ -458,6 +458,7 @@ export const translations = {
     emailUpdateSuccess: "Email aggiornata con successo! Il nuovo login è attivo.",
     passwordUpdateSuccess: "Password aggiornata con successo!",
     loginCredentialsWarning: "Attenzione: modificando email o password cambierai le credenziali di accesso dell'utente.",
+    emailAlreadyInUse: "Questa email è già in uso da un altro utente.",
   },
   en: {
     dashboard: "Dashboard",
@@ -894,6 +895,7 @@ export const translations = {
     emailUpdateSuccess: "Email updated successfully! New login is active.",
     passwordUpdateSuccess: "Password updated successfully!",
     loginCredentialsWarning: "Warning: changing email or password will alter the user's login credentials.",
+    emailAlreadyInUse: "This email is already in use by another user.",
   },
   da: {
     dashboard: "Oversigt",
@@ -1276,6 +1278,7 @@ export const translations = {
     emailUpdateSuccess: "Email opdateret med succes! Nyt login er aktivt.",
     passwordUpdateSuccess: "Adgangskode opdateret med succes!",
     loginCredentialsWarning: "Advarsel: ændring af e-mail o g adgangskode vil ændre brugerens login-legitimationsoplysninger.",
+    emailAlreadyInUse: "Denne e-mail er allerede i brug af en anden bruger.",
   },
   es: {
     dashboard: "Panel",
@@ -1686,6 +1689,7 @@ export const translations = {
     emailUpdateSuccess: "¡Email actualizado con éxito! Il nuovo login è attivo.",
     passwordUpdateSuccess: "¡Contraseña actualizada con successo!",
     loginCredentialsWarning: "Advertencia: cambiar el correo electrónico o la contraseña alterará le credenciales de acceso del usuario.",
+    emailAlreadyInUse: "Este correo electrónico ya está en uso por otro usuario.",
   },
   pl: {
     dashboard: "Panel",
@@ -2096,6 +2100,7 @@ export const translations = {
     emailUpdateSuccess: "E-mail zaktualizowany pomyślnie! Nowy login jest aktywny.",
     passwordUpdateSuccess: "Hasło zaktualizowane pomyślnie!",
     loginCredentialsWarning: "Ostrzeżenie: zmiana adresu e-mail lub hasła spowoduje zmianę poświadczeń logowania użytkownika.",
+    emailAlreadyInUse: "Ten e-mail jest już używany przez innego użytkownika.",
   },
   tr: {
     dashboard: "Panel",
@@ -2500,5 +2505,6 @@ export const translations = {
     emailUpdateSuccess: "E-posta başarıyla güncellendi! Yeni giriş aktif.",
     passwordUpdateSuccess: "Şifre başarıyla güncellendi!",
     loginCredentialsWarning: "Uyarı: e-postayı veya şifreyi değiştirmek, kullanıcının giriş bilgilerini değiştirecektir.",
+    emailAlreadyInUse: "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.",
   },
 };
