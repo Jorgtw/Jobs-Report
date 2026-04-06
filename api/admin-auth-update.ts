@@ -130,14 +130,27 @@ export default async function handler(req: any, res: any) {
     if (updates.password) authUpdates.password = updates.password;
 
     if ((authUpdates.email || authUpdates.password) && targetData.auth_id) {
+      // --- DIAGNOSTIC LOGS ---
+      console.log('--- ADMIN AUTH UPDATE DIAGNOSTICS ---');
+      console.log('Target Auth ID:', targetData.auth_id);
+      console.log('Auth Updates Payload:', JSON.stringify(authUpdates));
+
       const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
         targetData.auth_id,
         authUpdates
       );
+
       if (authUpdateError) {
+        console.error('--- SUPABASE AUTH ERROR ---');
+        console.error(authUpdateError);
         return res.status(500).json({ 
-          error: `Failed to update user in Auth: ${authUpdateError.message}`, 
-          detailed: authUpdateError 
+          error: `Failed to update user in Auth (ID: ${targetData.auth_id}): ${authUpdateError.message}`, 
+          detailed: authUpdateError,
+          diagnostic: {
+            auth_id: targetData.auth_id,
+            payload: authUpdates,
+            full_error: JSON.stringify(authUpdateError)
+          }
         });
       }
     }
