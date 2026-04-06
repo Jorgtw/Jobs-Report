@@ -71,7 +71,10 @@ export default async function handler(req: any, res: any) {
       });
 
       if (authCreateError) {
-        return res.status(500).json({ error: 'Failed to create user in Auth', detailed: authCreateError });
+        return res.status(500).json({ 
+          error: `Failed to create user in Auth: ${authCreateError.message}`, 
+          detailed: authCreateError 
+        });
       }
 
       const authId = authData.user.id;
@@ -132,7 +135,10 @@ export default async function handler(req: any, res: any) {
         authUpdates
       );
       if (authUpdateError) {
-        return res.status(500).json({ error: 'Failed to update user in Auth', detailed: authUpdateError });
+        return res.status(500).json({ 
+          error: `Failed to update user in Auth: ${authUpdateError.message}`, 
+          detailed: authUpdateError 
+        });
       }
     }
 
