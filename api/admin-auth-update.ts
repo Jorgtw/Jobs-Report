@@ -39,8 +39,8 @@ export default async function handler(req: any, res: any) {
     // 2. Fetch requester's role and company from database
     const { data: requesterData, error: requesterDbError } = await supabaseAdmin
       .from('workers')
-      .select('role, company_id')
-      .eq('id', requesterAuthUser.id)
+      .select('id, role, company_id')
+      .eq('auth_id', requesterAuthUser.id)
       .single();
 
     if (requesterDbError || !requesterData) {
@@ -48,7 +48,7 @@ export default async function handler(req: any, res: any) {
     }
 
     // Check if requester is Admin or SuperAdmin
-    const { data: saRole } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', requesterAuthUser.id).maybeSingle();
+    const { data: saRole } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', requesterData.id).maybeSingle();
     const isSuperAdmin = saRole?.role === 'superadmin';
     const isAdmin = requesterData.role === 'admin' || isSuperAdmin;
 
