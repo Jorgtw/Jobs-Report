@@ -138,7 +138,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
       const updated = await db.getCommunications();
       setComms(updated);
     } catch (err: any) {
-      alert(t('sendError' as any) || 'Errore durante l\'invio: ' + err.message);
+      alert(t('send_error' as any) || 'Errore durante l\'invio: ' + err.message);
     } finally {
       setIsSending(false);
     }
