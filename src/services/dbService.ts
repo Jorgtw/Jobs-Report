@@ -894,31 +894,34 @@ class DBService {
     const compId = this.requireCompanyId();
     const userId = this.requireUserId();
 
-    const payloads = data.targetIds.length > 0 && data.targetType === 'user'
+    const payloads = data.targetType === 'user' && data.targetIds.length > 0
       ? data.targetIds.map(tid => ({
           company_id: compId,
           sender_id: userId,
           content: data.content,
-          project_id: data.projectId || null,
           type: data.type || 'note',
           target_type: 'user',
-          target_id: tid
+          target_id: tid,
+          project_id: data.projectId || null
         }))
       : [{
           company_id: compId,
           sender_id: userId,
           content: data.content,
-          project_id: data.projectId || (data.targetType === 'project' ? data.targetIds[0] : null),
           type: data.type || 'note',
           target_type: data.targetType,
-          target_id: data.targetIds[0] || null
+          target_id: data.targetType === 'user' ? data.targetIds[0] : (data.targetType === 'project' ? data.targetIds[0] : null),
+          project_id: data.projectId || (data.targetType === 'project' ? data.targetIds[0] : null)
         }];
 
     const { error } = await supabase
       .from('internal_communications')
       .insert(payloads);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase Insert Error:", error);
+      throw error;
+    }
   }
 
   async markAsRead(communicationId: string) {
