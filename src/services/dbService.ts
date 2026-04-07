@@ -16,6 +16,10 @@ class DBService {
     this.currentUserId = id;
   }
 
+  public getUserIdSafe(): string | null {
+    return this.currentUserId;
+  }
+
   public setIsSuperAdmin(isSA: boolean) {
     this.isSuperAdminRole = isSA;
   }
@@ -835,21 +839,23 @@ class DBService {
 
   // --- Sezione Comunicazioni Interne (Fase 1 + 2) ---
   async getCommunications(options?: { projectId?: string, targetType?: CommunicationTargetType }): Promise<InternalCommunication[]> {
-    const compId = this.requireCompanyId();
-    const userId = this.requireUserId();
+    const compId = this.currentCompanyId;
+    if (!compId && !this.isSuperAdminRole) return [];
+    
+    const userId = this.getUserIdSafe();
+    if (!userId) return [];
     
     let query = supabase
       .from('internal_communications')
       .select(`
         *,
-        sender:workers(name),
+        sender:workers!sender_id(name),
         receipts:communication_read_receipts(user_id)
       `)
-      .eq('company_id', compId)
+      .eq('company_id', compId || '')
       .order('created_at', { ascending: false });
 
     if (options?.projectId) {
-      // Catch both direct project targets AND messages with project metadata (Ref:)
       query = query.or(`and(target_type.eq.project,target_id.eq.${options.projectId}),project_id.eq.${options.projectId}`);
     }
     if (options?.targetType) {
@@ -857,9 +863,12 @@ class DBService {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching communications:', error);
+      return [];
+    }
 
-    return data.map((c: any) => ({
+    return (data || []).map((c: any) => ({
       id: c.id,
       companyId: c.company_id,
       senderId: c.sender_id,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Mail, Send, Filter, CheckCircle2, AlertCircle, Info, Users, Briefcase, Bell, Search, Trash2, CheckCircle } from 'lucide-react';
+import { Mail, Send, Filter, CheckCircle2, AlertCircle, Info, Users, Briefcase, Search, CheckCircle, User as UserIcon, Sparkles, Shield } from 'lucide-react';
 import { db } from '../services/dbService';
 import { User, InternalCommunication, CommunicationTargetType, MessageType } from '../types';
 import { translations } from '../translations';
@@ -161,6 +161,56 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
     );
   }
 
+  if (!user.isPremium) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 px-4 text-center animate-in fade-in zoom-in duration-700">
+        <div className="bg-white p-12 rounded-3xl border border-amber-100 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Sparkles size={120} className="text-amber-600" />
+          </div>
+          
+          <div className="w-24 h-24 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-8 text-amber-600 shadow-inner">
+            <Shield size={48} />
+          </div>
+          
+          <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">
+            {t('premium_feature_title' as any) || 'Funzionalità Premium'}
+          </h2>
+          
+          <p className="text-slate-500 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+            {t('premium_feature_desc' as any) || 'Le comunicazioni interne e la bacheca aziendale sono disponibili esclusivamente per gli utenti con piano Premium.'}
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-left">
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="text-blue-600 mb-2"><Users size={20}/></div>
+                <div className="font-bold text-slate-900 text-sm mb-1">Messaggi Globali</div>
+                <div className="text-slate-500 text-xs text-balance">Invia avvisi a tutto il personale in un colpo solo.</div>
+            </div>
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="text-amber-600 mb-2"><Briefcase size={20}/></div>
+                <div className="font-bold text-slate-900 text-sm mb-1">Note per Progetto</div>
+                <div className="text-slate-500 text-xs text-balance">Organizza la comunicazione dedicata per ogni singolo cantiere.</div>
+            </div>
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="text-emerald-600 mb-2"><CheckCircle size={20}/></div>
+                <div className="font-bold text-slate-900 text-sm mb-1">Ricevute di Lettura</div>
+                <div className="text-slate-500 text-xs text-balance">Verifica chi ha visualizzato i tuoi messaggi in tempo reale.</div>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
+            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-blue-200 hover:scale-105 transition-all flex items-center gap-3 mx-auto"
+          >
+            <Sparkles size={20} />
+            {t('upgrade_now' as any) || 'Passa a Premium ora'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container-fluid p-0">
       <div className="row g-4">
@@ -251,16 +301,16 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
                     </button>
                     <button 
                         type="button" 
-                        onClick={() => setNewMessage({ ...newMessage, type: 'alert' })}
-                        className={`type-btn ${newMessage.type === 'alert' ? 'active' : ''}`}
+                        onClick={() => setNewMessage({ ...newMessage, type: 'issue' })}
+                        className={`type-btn ${newMessage.type === 'issue' ? 'active' : ''}`}
                     >
                         <AlertCircle size={18} />
                         <span>{t('alert' as any) || 'Segnalazione'}</span>
                     </button>
                     <button 
                         type="button" 
-                        onClick={() => setNewMessage({ ...newMessage, type: 'success' })}
-                        className={`type-btn ${newMessage.type === 'success' ? 'active' : ''}`}
+                        onClick={() => setNewMessage({ ...newMessage, type: 'confirmation' })}
+                        className={`type-btn ${newMessage.type === 'confirmation' ? 'active' : ''}`}
                     >
                         <CheckCircle2 size={18} />
                         <span>{t('confirmation' as any) || 'Conferma'}</span>
@@ -346,14 +396,14 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
                     <div id="results" className="p-0">
                         {
                             filteredComms.length > 0 ? (
-                                filteredComms.map((i, index) => (
+                                filteredComms.map((i) => (
                                     <HistoryItem
                                         key={i.id}
                                         icon={i.type === 'note' ? (
                                             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
                                                 <Info size={18} />
                                             </div>
-                                        ) : i.type === 'alert' ? (
+                                        ) : i.type === 'issue' ? (
                                             <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
                                                 <AlertCircle size={18} />
                                             </div>

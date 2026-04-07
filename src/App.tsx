@@ -98,12 +98,12 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 );
 
 // --- Navigation Config ---
-const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
+const getNavLinks = (t: any, isSuperAdmin: boolean = false, isPremium: boolean = false) => {
   const links = [
     { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
     { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
     { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin', 'supervisor', 'operator'], color: 'bg-amber-500' },
-    { name: t('internalCommMenu'), path: '/communications', icon: Mail, roles: ['admin', 'supervisor', 'operator'], color: 'bg-blue-600' },
+    { name: t('internalCommMenu'), path: '/communications', icon: Mail, roles: ['admin', 'supervisor', 'operator'], color: 'bg-blue-600', premiumOnly: true },
     { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
     { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
     { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin', 'supervisor'], color: 'bg-indigo-500' },
@@ -117,7 +117,8 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
       { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
     ];
   }
-  return links;
+  
+  return links.filter(l => !l.premiumOnly || isPremium);
 };
 
 // --- Language Selector ---
@@ -216,7 +217,7 @@ const AppLayout: React.FC<{
     setIsMobileMenuOpen(false);
   }, [location.pathname, setIsMobileMenuOpen]);
 
-  const navLinks = getNavLinks(t, isSuperAdmin);
+  const navLinks = getNavLinks(t, isSuperAdmin, user.isPremium);
   const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.includes(user.role));
 
   const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
@@ -429,7 +430,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean }> = ({ user, isSuperAdmin, isMobile }) => {
   const { t } = useTranslation();
-  const navLinks = getNavLinks(t, isSuperAdmin);
+  const navLinks = getNavLinks(t, isSuperAdmin, user.isPremium);
   const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
 
   const handleManualLogout = () => {
