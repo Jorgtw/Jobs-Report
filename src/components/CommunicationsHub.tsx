@@ -43,7 +43,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
       ]);
       setComms(c);
       setProjects(p);
-      setPersonnel(u.filter((usr: any) => usr.status === 'active' && usr.id !== user.id));
+      setPersonnel(u.filter((usr: any) => usr.id !== user.id));
     } catch (err) {
       console.error(err);
     } finally {
