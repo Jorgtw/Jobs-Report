@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.internal_communications (
     content TEXT NOT NULL,
     target_type TEXT NOT NULL DEFAULT 'all' CHECK (target_type IN ('all', 'role', 'project', 'user')),
     target_id TEXT, -- Può contenere l'ID del ruolo, del progetto o dell'utente specifico
+    project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL, -- Riferimento opzionale al progetto
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -38,7 +39,7 @@ CREATE POLICY "Users: view relevant communications" ON public.internal_communica
             (target_type = 'role' AND target_id = (SELECT role::text FROM public.workers WHERE id = auth.uid())) OR
             (target_type = 'project' AND target_id IN (
                 -- Progetti a cui l'utente è assegnato
-                SELECT id::text FROM public.projects WHERE assigned_worker_ids @> array[auth.uid()::text]
+                SELECT id::text FROM public.projects WHERE assigned_worker_ids @> array[auth.uid()]
             )) OR
             (target_type = 'user' AND target_id = auth.uid()::text)
         )

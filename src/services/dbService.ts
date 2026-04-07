@@ -849,7 +849,8 @@ class DBService {
       .order('created_at', { ascending: false });
 
     if (options?.projectId) {
-      query = query.eq('target_type', 'project').eq('target_id', options.projectId);
+      // Catch both direct project targets AND messages with project metadata (Ref:)
+      query = query.or(`and(target_type.eq.project,target_id.eq.${options.projectId}),project_id.eq.${options.projectId}`);
     }
     if (options?.targetType) {
       query = query.eq('target_type', options.targetType);
@@ -863,11 +864,11 @@ class DBService {
       companyId: c.company_id,
       senderId: c.sender_id,
       senderName: c.sender?.name || 'Utente',
-      title: c.title,
       content: c.content,
       type: (c.type || 'note') as MessageType,
       targetType: c.target_type as CommunicationTargetType,
       targetId: c.target_id,
+      projectId: c.project_id,
       createdAt: new Date(c.created_at).getTime(),
       isRead: c.receipts?.some((r: any) => r.user_id === userId) || false
     }));
@@ -879,6 +880,7 @@ class DBService {
     targetType: CommunicationTargetType;
     targetIds: string[];
     title?: string;
+    projectId?: string;
   }) {
     const compId = this.requireCompanyId();
     const userId = this.requireUserId();
@@ -888,19 +890,19 @@ class DBService {
           company_id: compId,
           sender_id: userId,
           content: data.content,
+          project_id: data.projectId || null,
           type: data.type || 'note',
           target_type: 'user',
-          target_id: tid,
-          title: data.title || ''
+          target_id: tid
         }))
       : [{
           company_id: compId,
           sender_id: userId,
           content: data.content,
+          project_id: data.projectId || (data.targetType === 'project' ? data.targetIds[0] : null),
           type: data.type || 'note',
           target_type: data.targetType,
-          target_id: data.targetIds[0] || null,
-          title: data.title || ''
+          target_id: data.targetIds[0] || null
         }];
 
     const { error } = await supabase

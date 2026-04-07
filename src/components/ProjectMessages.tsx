@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail } from 'lucide-react';
+import { Mail, Send } from 'lucide-react';
 import { db } from '../services/dbService';
 import { User, InternalCommunication, MessageType } from '../types';
 import { translations } from '../translations';
@@ -19,13 +19,20 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
   const [messages, setMessages] = useState<InternalCommunication[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [msgType, setMsgType] = useState<MessageType>('note');
+  const [targetType, setTargetType] = useState<'project' | 'user'>('project');
+  const [targetUserId, setTargetUserId] = useState<string>('');
+  const [personnel, setPersonnel] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  const loadMessages = async () => {
+  const loadData = async () => {
     try {
-      const data = await db.getCommunications({ projectId });
-      setMessages(data.reverse()); // Reverse because db returns DESC and we want flow
+      const [comms, users] = await Promise.all([
+        db.getCommunications({ projectId }),
+        db.getUsers()
+      ]);
+      setMessages(comms.reverse());
+      setPersonnel(users.filter(u => u.status === 'active' && u.id !== user.id));
     } catch (err) {
       console.error(err);
     } finally {
@@ -34,7 +41,7 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
   };
 
   useEffect(() => {
-    loadMessages();
+    loadData();
   }, [projectId]);
 
   useEffect(() => {
@@ -46,16 +53,21 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+    if (targetType === 'user' && !targetUserId) {
+      alert(t('selectAtLeastOneUser' as any) || 'Seleziona un destinatario');
+      return;
+    }
 
     try {
       await db.sendCommunication({
         content: newMessage,
         type: msgType,
-        targetType: 'project',
-        targetIds: [projectId]
+        targetType: targetType,
+        targetIds: targetType === 'project' ? [projectId] : [targetUserId],
+        projectId: projectId
       });
       setNewMessage('');
-      loadMessages();
+      loadData();
     } catch (err) {
       alert(t('saveError') + JSON.stringify(err));
     }
@@ -103,26 +115,64 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
       </div>
 
       {/* Input Area */}
-      <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-slate-200 space-y-3">
+      <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-slate-200 space-y-3 shadow-top">
+        <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">A: Destinatario</label>
+                <select 
+                    className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none"
+                    value={targetType}
+                    onChange={e => setTargetType(e.target.value as any)}
+                >
+                    <option value="project">{t('target_project')}</option>
+                    <option value="user">{t('personal') || 'Utente Specifico'}</option>
+                </select>
+            </div>
+
+            {targetType === 'user' ? (
+                <div className="space-y-1 animate-in slide-in-from-right duration-200">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Utente</label>
+                    <select 
+                        required
+                        className="w-full px-2 py-1.5 bg-blue-50 border border-blue-100 rounded-lg text-[10px] font-bold outline-none text-blue-700"
+                        value={targetUserId}
+                        onChange={e => setTargetUserId(e.target.value)}
+                    >
+                        <option value="">{t('selectUser' as any) || 'Scegli...'}</option>
+                        {personnel.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                </div>
+            ) : (
+                <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Ref:</label>
+                    <div className="w-full px-2 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-400 italic">
+                        Cantiere Corrente
+                    </div>
+                </div>
+            )}
+        </div>
+
         <div className="flex gap-2">
           {['note', 'issue', 'confirmation'].map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => setMsgType(type as any)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all border ${
+              className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all border ${
                 msgType === type 
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105' 
+                  ? 'bg-[#1e40af] text-white border-[#1e40af] shadow-sm transform scale-[1.02]' 
                   : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              {t(`type${type.charAt(0).toUpperCase() + type.slice(1)}`)}
+              {type === 'note' ? '📝' : type === 'issue' ? '⚠️' : '✅'} {t(`type${type.charAt(0).toUpperCase() + type.slice(1)}`)}
             </button>
           ))}
         </div>
+
         <div className="flex gap-2">
           <input
             type="text"
+            required
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder={t('writeMessage')}
@@ -130,9 +180,9 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user, lang
           />
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+            className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center group"
           >
-            <Mail size={18} />
+            <Send size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </button>
         </div>
       </form>

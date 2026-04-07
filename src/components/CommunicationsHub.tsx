@@ -23,11 +23,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
   // New Message State
   const [isSending, setIsSending] = useState(false);
   const [newMessage, setNewMessage] = useState({
-    title: '',
     content: '',
     type: 'note' as MessageType,
     targetType: 'all' as CommunicationTargetType,
-    targetIds: [] as string[]
+    targetIds: [] as string[],
+    projectId: '' as string
   });
 
   // Reference Data
@@ -59,7 +59,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
     return comms.filter(c => {
       const matchType = filter === 'all' || c.targetType === filter;
       const matchSearch = c.content.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (c.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                           c.senderName.toLowerCase().includes(searchTerm.toLowerCase());
       return matchType && matchSearch;
     });
@@ -84,14 +83,14 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
         type: newMessage.type,
         targetType: newMessage.targetType,
         targetIds: newMessage.targetIds,
-        title: newMessage.title
+        projectId: newMessage.projectId || undefined
       });
       setNewMessage({
-        title: '',
         content: '',
         type: 'note',
         targetType: 'all',
-        targetIds: []
+        targetIds: [],
+        projectId: ''
       });
       loadData();
     } catch (err) {
@@ -149,86 +148,126 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
         </div>
 
         {(user.role === 'admin' || user.role === 'supervisor') && (
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
             <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Send size={14} /> {t('new_communication')}
             </h2>
-            <form onSubmit={handleSend} className="space-y-3">
-              <input
-                type="text"
-                placeholder={t('communication_title')}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-colors"
-                value={newMessage.title}
-                onChange={e => setNewMessage({ ...newMessage, title: e.target.value })}
-              />
-              
-              <select
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none"
-                value={newMessage.targetType}
-                onChange={e => setNewMessage({ ...newMessage, targetType: e.target.value as any, targetIds: [] })}
-              >
-                <option value="all">{t('target_all')}</option>
-                <option value="project">{t('target_project')}</option>
-                <option value="user">{t('individualWorkers' as any) || 'Lavoratori Singoli'}</option>
-              </select>
 
-              {newMessage.targetType === 'project' && (
+            <form onSubmit={handleSend} className="space-y-4">
+              {/* SEZIONE A: (Destinatario) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">A: Destinatario</label>
+                  <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setNewMessage({ ...newMessage, targetType: 'all', targetIds: [] })}
+                      className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${
+                        newMessage.targetType === 'all' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-400'
+                      }`}
+                    >
+                      {t('all') || 'Tutti'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewMessage({ ...newMessage, targetType: 'user' })}
+                      className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${
+                        newMessage.targetType === 'user' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-400'
+                      }`}
+                    >
+                      {t('selection') || 'Lavoratori'}
+                    </button>
+                  </div>
+                </div>
+
+                {newMessage.targetType === 'user' && (
+                  <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-1">
+                    {personnel.map(p => (
+                      <label key={p.id} className="flex items-center gap-2.5 px-2 py-1.5 hover:bg-white rounded-lg cursor-pointer border border-transparent hover:border-slate-100 group/item">
+                        <input
+                          type="checkbox"
+                          checked={newMessage.targetIds.includes(p.id)}
+                          onChange={e => {
+                            const ids = e.target.checked 
+                              ? [...newMessage.targetIds, p.id]
+                              : newMessage.targetIds.filter(id => id !== p.id);
+                            setNewMessage({ ...newMessage, targetIds: ids });
+                          }}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                        />
+                        <span className="text-[10px] font-bold text-slate-600 group-hover/item:text-blue-600 transition-colors uppercase">{p.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* SEZIONE REFERENZA: (Progetto Correlato) */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Referenza:</label>
                 <select
-                  required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none"
-                  onChange={e => setNewMessage({ ...newMessage, targetIds: [e.target.value] })}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold uppercase outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                  value={newMessage.projectId || ''}
+                  onChange={e => setNewMessage({ ...newMessage, projectId: e.target.value })}
                 >
-                  <option value="">{t('selectProject' as any) || 'Seleziona Progetto'}</option>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  <option value="">📁 {t('internal_communication') || 'Comunicazione Interna'}</option>
+                  {projects.map(p => (
+                    <option key={p.id} value={p.id}>🏛️ {p.name}</option>
+                  ))}
                 </select>
-              )}
+              </div>
 
-              {newMessage.targetType === 'user' && (
-                <div className="max-h-32 overflow-y-auto border border-slate-100 rounded-xl p-2 space-y-1 bg-slate-50/50">
-                  {personnel.map(p => (
-                    <label key={p.id} className="flex items-center gap-2 px-2 py-1 hover:bg-white rounded-lg cursor-pointer transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={newMessage.targetIds.includes(p.id)}
-                        onChange={e => {
-                          const ids = e.target.checked 
-                            ? [...newMessage.targetIds, p.id]
-                            : newMessage.targetIds.filter(id => id !== p.id);
-                          setNewMessage({ ...newMessage, targetIds: ids });
-                        }}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-[10px] font-bold text-slate-600">{p.name}</span>
-                    </label>
+              {/* SEZIONE TIPO: */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Tipo:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'note', icon: '📝', label: t('typeNote') },
+                    { id: 'issue', icon: '⚠️', label: t('typeIssue') },
+                    { id: 'confirmation', icon: '✅', label: t('typeConfirmation') }
+                  ].map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setNewMessage({ ...newMessage, type: item.id as MessageType })}
+                      className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${
+                        newMessage.type === item.id 
+                          ? 'bg-blue-600 border-blue-600 shadow-sm text-white' 
+                          : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="text-sm">{item.icon}</span>
+                      <span className="text-[8px] font-black uppercase tracking-tighter">{item.label}</span>
+                    </button>
                   ))}
                 </div>
-              )}
+              </div>
 
-              <select
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none"
-                value={newMessage.type}
-                onChange={e => setNewMessage({ ...newMessage, type: e.target.value as any })}
-              >
-                <option value="note">{t('typeNote')}</option>
-                <option value="issue">{t('typeIssue')}</option>
-                <option value="confirmation">{t('typeConfirmation')}</option>
-              </select>
-
-              <textarea
-                required
-                placeholder={t('communication_content')}
-                rows={3}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-500 transition-colors resize-none"
-                value={newMessage.content}
-                onChange={e => setNewMessage({ ...newMessage, content: e.target.value })}
-              />
+              {/* MESSAGGIO: */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Messaggio:</label>
+                <textarea
+                  required
+                  placeholder={t('writeMessage')}
+                  rows={4}
+                  className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-colors resize-none shadow-inner"
+                  value={newMessage.content}
+                  onChange={e => setNewMessage({ ...newMessage, content: e.target.value })}
+                />
+              </div>
 
               <button
                 type="submit"
                 disabled={isSending}
-                className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
               >
-                <Send size={14} /> {isSending ? t('sending') : (t('send' as any) || 'Invia')}
+                {isSending ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Send size={14} /> {t('send') || 'Invia'}
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -286,13 +325,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
                       <span className="text-[9px] text-slate-300">• {new Date(c.createdAt).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                       {!c.isRead && <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>}
                     </div>
-                    {c.title && <h3 className="text-sm font-black text-slate-900 leading-tight">{c.title}</h3>}
                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{c.content}</p>
                     
-                    {c.targetType === 'project' && (
+                    { (c.targetType === 'project' || c.projectId) && (
                         <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black uppercase border border-amber-100">
                             <Briefcase size={10} />
-                            {projects.find(p => p.id === c.targetId)?.name || 'Progetto'}
+                            {projects.find(p => p.id === (c.targetId || c.projectId))?.name || 'Progetto'}
                         </div>
                     )}
                   </div>

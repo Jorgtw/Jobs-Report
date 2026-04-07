@@ -164,11 +164,11 @@ export interface InternalCommunication {
   companyId: string;
   senderId: string;
   senderName: string;
-  title: string;
   content: string;
   type: MessageType;
   targetType: CommunicationTargetType;
   targetId?: string;
+  projectId?: string;
   createdAt: number;
   isRead?: boolean;
 }
