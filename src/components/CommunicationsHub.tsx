@@ -215,112 +215,116 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
     <div className="container-fluid p-0">
       <div className="row g-4">
         {/* Main Panel - Composition Form */}
-        <div className="col-12 col-lg-5 order-2 order-lg-1">
-          <div className="custom-card shadow-sm border-0 h-100 p-4" style={{ backgroundColor: '#fff', borderRadius: '16px' }}>
-            <div className="d-flex align-items-center gap-2 mb-4 border-bottom pb-3">
-              <Mail className="text-blue-600" size={24} />
-              <h2 className="h5 fw-bold m-0">{t('new_communication' as any) || 'Nuova Comunicazione'}</h2>
+        <div className="col-12 col-lg-4 order-2 order-lg-1">
+          <div className="custom-card shadow-sm border-0 h-100 p-3" style={{ backgroundColor: '#fff', borderRadius: '16px' }}>
+            <div className="d-flex align-items-center gap-2 mb-3 border-bottom pb-2">
+              <Mail className="text-blue-600" size={20} />
+              <h2 className="h6 fw-bold m-0">{t('new_communication' as any) || 'Nuova Comunicazione'}</h2>
             </div>
             
-            <form onSubmit={handleSend} className="space-y-6">
-              {/* Recipient Selection */}
-              <div className="mb-4">
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-2 d-block">
-                  A: {t('recipient' as any) || 'Destinatario'}
-                </label>
-                <div className="custom-badge-group mb-2">
-                    <button 
-                        type="button"
-                        onClick={() => setNewMessage({ ...newMessage, targetType: 'all', targetIds: [] })}
-                        className={`badge-item ${newMessage.targetType === 'all' ? 'active' : ''}`}
-                    >
-                        <div className="icon-circle"><Users size={12}/></div>
-                        {t('all' as any) || 'Tutti'}
-                    </button>
-                    <button 
-                        type="button"
-                        onClick={() => setNewMessage({ ...newMessage, targetType: 'user' })}
-                        className={`badge-item ${newMessage.targetType === 'user' ? 'active' : ''}`}
-                    >
-                        <div className="icon-circle"><UserIcon size={12}/></div>
-                        {t('selection' as any) || 'Selezione'}
-                    </button>
+            <form onSubmit={handleSend} className="space-y-4">
+              <div className="row g-3">
+                {/* Recipient Selection */}
+                <div className="col-12">
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-2 d-block">
+                    A: {t('recipient' as any) || 'Destinatario'}
+                  </label>
+                  <div className="custom-badge-group mb-2">
+                      <button 
+                          type="button"
+                          onClick={() => setNewMessage({ ...newMessage, targetType: 'all', targetIds: [] })}
+                          className={`badge-item py-1 ${newMessage.targetType === 'all' ? 'active' : ''}`}
+                      >
+                          <div className="icon-circle" style={{ width: '18px', height: '18px' }}><Users size={10}/></div>
+                          <span style={{ fontSize: '12px' }}>{t('all' as any) || 'Tutti'}</span>
+                      </button>
+                      <button 
+                          type="button" 
+                          onClick={() => setNewMessage({ ...newMessage, targetType: 'user' })}
+                          className={`badge-item py-1 ${newMessage.targetType === 'user' ? 'active' : ''}`}
+                      >
+                          <div className="icon-circle" style={{ width: '18px', height: '18px' }}><UserIcon size={10}/></div>
+                          <span style={{ fontSize: '12px' }}>{t('selection' as any) || 'Selezione'}</span>
+                      </button>
+                  </div>
+
+                  {newMessage.targetType === 'user' && (
+                      <div className="multi-select mt-2 animate-in fade-in duration-200" style={{ maxHeight: '120px' }}>
+                          {personnel.length === 0 ? (
+                               <p className="text-muted small p-1">{t('no_workers_available' as any) || 'Nessun collaboratore disponibile'}</p>
+                          ) : (
+                              personnel.map(p => (
+                                  <button
+                                      key={p.id}
+                                      type="button"
+                                      onClick={() => toggleWorkerSelection(p.id)}
+                                      className={`worker-pill py-1 px-2 ${newMessage.targetIds.includes(p.id) ? 'active' : ''}`}
+                                      style={{ fontSize: '11px' }}
+                                  >
+                                      {p.name}
+                                      {newMessage.targetIds.includes(p.id) && <CheckCircle size={10} className="ms-1" />}
+                                  </button>
+                              ))
+                          )}
+                      </div>
+                  )}
                 </div>
 
-                {newMessage.targetType === 'user' && (
-                    <div className="multi-select mt-2 animate-in fade-in duration-200">
-                        {personnel.length === 0 ? (
-                             <p className="text-muted small p-2">{t('no_workers_available' as any) || 'Nessun collaboratore disponibile'}</p>
-                        ) : (
-                            personnel.map(p => (
-                                <button
-                                    key={p.id}
-                                    type="button"
-                                    onClick={() => toggleWorkerSelection(p.id)}
-                                    className={`worker-pill ${newMessage.targetIds.includes(p.id) ? 'active' : ''}`}
-                                >
-                                    {p.name}
-                                    {newMessage.targetIds.includes(p.id) && <CheckCircle size={12} className="ml-1" />}
-                                </button>
-                            ))
-                        )}
-                    </div>
-                )}
-              </div>
-
-              {/* Reference Project */}
-              <div className="mb-4">
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-2 d-block">
-                  {t('reference' as any) || 'Referenza'}
-                </label>
-                <select 
-                  className="form-select-custom w-100"
-                  value={newMessage.projectId}
-                  onChange={(e) => setNewMessage({ ...newMessage, projectId: e.target.value })}
-                >
-                  <option value="">{t('internal_communication' as any) || 'Comunicazione Interna'}</option>
-                  {projects.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                {/* Reference Project */}
+                <div className="col-12">
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-1 d-block">
+                    {t('reference' as any) || 'Referenza'}
+                  </label>
+                  <select 
+                    className="form-select-custom w-100 py-2"
+                    value={newMessage.projectId}
+                    onChange={(e) => setNewMessage({ ...newMessage, projectId: e.target.value })}
+                    style={{ fontSize: '13px' }}
+                  >
+                    <option value="">{t('internal_communication' as any) || 'Comunicazione Interna'}</option>
+                    {projects.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Message Type */}
-              <div className="mb-4">
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-2 d-block">
+              <div className="mb-2">
+                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-1 d-block">
                   {t('type' as any) || 'Tipo'}
                 </label>
-                <div className="type-selector">
+                <div className="type-selector compact">
                     <button 
                         type="button" 
                         onClick={() => setNewMessage({ ...newMessage, type: 'note' })}
-                        className={`type-btn ${newMessage.type === 'note' ? 'active' : ''}`}
+                        className={`type-btn py-2 ${newMessage.type === 'note' ? 'active' : ''}`}
                     >
-                        <Info size={18} />
-                        <span>{t('note' as any) || 'Nota'}</span>
+                        <Info size={14} />
+                        <span style={{ fontSize: '11px' }}>{t('note' as any) || 'Nota'}</span>
                     </button>
                     <button 
                         type="button" 
                         onClick={() => setNewMessage({ ...newMessage, type: 'issue' })}
-                        className={`type-btn ${newMessage.type === 'issue' ? 'active' : ''}`}
+                        className={`type-btn py-2 ${newMessage.type === 'issue' ? 'active' : ''}`}
                     >
-                        <AlertCircle size={18} />
-                        <span>{t('alert' as any) || 'Segnalazione'}</span>
+                        <AlertCircle size={14} />
+                        <span style={{ fontSize: '11px' }}>{t('alert' as any) || 'Segnalazione'}</span>
                     </button>
                     <button 
                         type="button" 
                         onClick={() => setNewMessage({ ...newMessage, type: 'confirmation' })}
-                        className={`type-btn ${newMessage.type === 'confirmation' ? 'active' : ''}`}
+                        className={`type-btn py-2 ${newMessage.type === 'confirmation' ? 'active' : ''}`}
                     >
-                        <CheckCircle2 size={18} />
-                        <span>{t('confirmation' as any) || 'Conferma'}</span>
+                        <CheckCircle2 size={14} />
+                        <span style={{ fontSize: '11px' }}>{t('confirmation' as any) || 'Conferma'}</span>
                     </button>
                 </div>
               </div>
 
               {/* Message Content */}
-              <div className="mb-4">
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-2 d-block">
+              <div className="mb-2">
+                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-1 d-block">
                   {t('message' as any) || 'Messaggio'}
                 </label>
                 <textarea
@@ -328,18 +332,20 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
                   placeholder={t('writeMessage' as any) || 'Scrivi un messaggio...'}
                   value={newMessage.content}
                   onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
+                  style={{ minHeight: '80px', fontSize: '13px' }}
                 />
               </div>
 
               <button 
                 type="submit" 
                 disabled={isSending || !newMessage.content.trim()}
-                className="btn-send w-100"
+                className="btn-send w-100 py-2"
+                style={{ borderRadius: '12px', fontWeight: 'bold' }}
               >
                 {isSending ? (
-                  <div className="spinner-border spinner-border-sm mr-2" role="status"></div>
+                  <div className="spinner-border spinner-border-sm me-2" role="status"></div>
                 ) : (
-                  <Send size={18} className="mr-2" />
+                  <Send size={16} className="me-2" />
                 )}
                 {t('send' as any) || 'Invia'}
               </button>
@@ -348,8 +354,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
         </div>
 
         {/* Results Panel - Feed */}
-        <div className="col-12 col-lg-7 order-1 order-lg-2">
-          <div className="custom-card shadow-sm border-0 h-100 p-0 overflow-hidden" style={{ backgroundColor: '#fff', borderRadius: '16px' }}>
+        <div className="col-12 col-lg-8 order-1 order-lg-2">
+          <div className="custom-card shadow-sm border-0 h-100 p-0 overflow-hidden" style={{ backgroundColor: '#fff', borderRadius: '16px', minHeight: 'calc(100vh - 160px)' }}>
             <div className="p-4 border-bottom">
                 <div className="d-flex align-items-center justify-content-between mb-3">
                     <h2 className="h4 fw-bold m-0">{t('internal_communications' as any) || 'Comunicazioni'}</h2>
@@ -544,23 +550,23 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
             color: #2563eb;
         }
 
-        .type-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+        .type-selector.compact {
+            display: flex;
+            gap: 8px;
         }
 
         .type-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 12px;
+            padding: 8px 4px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             background: white;
-            gap: 8px;
+            gap: 4px;
             transition: all 0.2s;
             color: #64748b;
+            flex: 1;
         }
 
         .type-btn:hover {
@@ -576,13 +582,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
 
         .custom-textarea {
             width: 100%;
-            padding: 14px;
+            padding: 10px 14px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
-            min-height: 120px;
+            min-height: 80px;
             resize: none;
             transition: all 0.2s;
-            font-size: 14px;
+            font-size: 13px;
             background: #f8fafc;
         }
 
@@ -595,12 +601,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
 
         .form-select-custom {
             width: 100%;
-            padding: 12px;
+            padding: 8px 12px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
-            background: #f8fafc;
-            font-size: 14px;
-            font-weight: 500;
+            background-color: #f8fafc;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -610,6 +615,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it'
             border-color: #2563eb;
             background: white;
         }
+
 
         .btn-send {
             width: 100%;
