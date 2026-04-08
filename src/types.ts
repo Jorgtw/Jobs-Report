@@ -143,32 +143,33 @@ export interface ReportSummary {
   createdAt: number;
 }
 
-export type MessageType = 'note' | 'issue' | 'confirmation';
+export type CommStatus =
+  'open' | 'acknowledged' | 'in_progress' |
+  'closed' | 'archived' | 'deleted';
 
-export interface ProjectMessage {
-  id: string;
-  companyId: string;
-  projectId: string;
-  reportId?: string;
-  senderId: string;
-  senderName?: string;
-  type: MessageType;
-  content: string;
-  createdAt: number;
-}
-
-export type CommunicationTargetType = 'all' | 'role' | 'project' | 'user';
+export type CommType = 'note' | 'issue' | 'confirmation';
+export type CommTargetType = 'all' | 'user' | 'project';
 
 export interface InternalCommunication {
   id: string;
   companyId: string;
   senderId: string;
   senderName: string;
-  content: string;
-  type: MessageType;
-  targetType: CommunicationTargetType;
+  targetType: CommTargetType;
   targetId?: string;
   projectId?: string;
+  parentId?: string;
+  content: string;
+  type: CommType;
+  status: CommStatus;
+  isAcknowledged: boolean;
+  acknowledgedAt?: string;
+  assignedTo?: string;
+  assignedToName?: string;
+  closedAt?: string;
+  lastActivityAt: string;
+  updatedAt: string;
   createdAt: number;
-  isRead?: boolean;
+  isRead: boolean;
+  replies?: InternalCommunication[];
 }

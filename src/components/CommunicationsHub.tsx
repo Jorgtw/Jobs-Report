@@ -1,696 +1,663 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Mail, Send, Filter, CheckCircle2, AlertCircle, Info, Users, Briefcase, Search, CheckCircle, User as UserIcon, Sparkles, Shield } from 'lucide-react';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Send, 
+  Inbox, 
+  Send as Outbox, 
+  Archive, 
+  Plus, 
+  Search, 
+  FileText, 
+  Clock, 
+  CheckCircle2, 
+  X,
+  UserCheck,
+  Check
+} from 'lucide-react';
 import { db } from '../services/dbService';
-import { User, InternalCommunication, CommunicationTargetType, MessageType } from '../types';
-import { translations } from '../translations';
+import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
+import { LanguageContext, localeMap } from '../App';
+import { supabase } from '../services/supabase';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface CommunicationsHubProps {
-  user: User;
-  lang?: any;
+  currentUser: AppUser;
+  isPremium?: boolean;
 }
 
-const HistoryItem: React.FC<{
-    icon: React.ReactNode;
-    title: string;
-    subtitle: string;
-    date: string;
-    actions?: React.ReactNode;
-    statusBadge?: React.ReactNode;
-}> = ({ icon, title, subtitle, date, actions, statusBadge }) => (
-    <div className="card-item d-flex align-items-start gap-3 p-3 border-bottom hover-bg-light transition-all">
-        <div className="flex-shrink-0 mt-1">
-            {icon}
-        </div>
-        <div className="flex-grow-1 min-w-0">
-            <div className="d-flex align-items-center justify-content-between mb-1 gap-2">
-                <div className="d-flex align-items-center gap-2">
-                    <span className="fw-bold text-dark text-truncate" style={{ fontSize: '0.9rem' }}>{title}</span>
-                    {statusBadge}
-                </div>
-                <span className="text-muted flex-shrink-0" style={{ fontSize: '0.75rem' }}>{date}</span>
-            </div>
-            <div className="text-secondary text-wrap" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-                {subtitle}
-            </div>
-            {actions && <div className="mt-2 d-flex align-items-center gap-2">
-                {actions}
-            </div>}
-        </div>
-    </div>
-);
-
-const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ user, lang = 'it' }) => {
-  const t = (key: string): string => {
-    const currentTranslations = (translations as any)[lang] || translations['it'];
-    return currentTranslations[key] || (translations['it'] as any)[key] || key;
+const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPremium }) => {
+  const { t, lang } = React.useContext(LanguageContext);
+  
+  const formatDate = (date: number | Date | string, options: Intl.DateTimeFormatOptions = { 
+    day: '2-digit', 
+    month: 'short', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  }) => {
+    return new Intl.DateTimeFormat(localeMap[lang] || 'it-IT', options).format(new Date(date));
   };
 
-  const [comms, setComms] = useState<InternalCommunication[]>([]);
+  // State
+  const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'archive'>('inbox');
+  const [communications, setCommunications] = useState<InternalCommunication[]>([]);
+  const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
+  const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<CommunicationTargetType | 'all'>('all');
+  const [threadLoading, setThreadLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const [isSending, setIsSending] = useState(false);
-  const [newMessage, setNewMessage] = useState({
+  const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  // New Message Form State
+  const [newMsg, setNewMsg] = useState({
     content: '',
-    type: 'note' as MessageType,
-    targetType: 'all' as CommunicationTargetType,
+    type: 'note' as CommType,
+    targetType: 'all' as 'all' | 'user' | 'project',
     targetIds: [] as string[],
-    projectId: '' as string
+    projectId: ''
   });
 
-  const [personnel, setPersonnel] = useState<User[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
+  // Data for Selects
+  const [workers, setWorkers] = useState<AppUser[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
-  // Split loading to be robust as requested
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        const c = await db.getCommunications();
-        setComms(c);
-      } catch (err) {
-        console.error("Error loading messages:", err);
-        setComms([]);
-      }
+    fetchMainData();
+    fetchSupportData();
+
+    // REALTIME SUBSCRIPTION
+    const channel = supabase
+      .channel('internal_comms_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'internal_communications',
+          filter: `company_id=eq.${currentUser.companyId}`
+        },
+        () => {
+          fetchMainData();
+          if (selectedThread) {
+            fetchThread(selectedThread.id);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
+  }, [activeTab, currentUser.companyId]);
 
-    const loadProjects = async () => {
-      try {
-        const p = await db.getProjects();
-        setProjects(p);
-      } catch (err) {
-        console.error("Error loading projects:", err);
-        setProjects([]);
-      }
-    };
+  useEffect(() => {
+    if (selectedThread) {
+      scrollToBottom();
+    }
+  }, [threadMessages]);
 
-    const loadPersonnel = async () => {
-      try {
-        const u = await db.getUsers();
-        // Point 1 Fix: Ensure personnel list is populated (exclude self)
-        setPersonnel(u.filter((usr: any) => usr.id !== user.id));
-      } catch (err) {
-        console.error("Error loading personnel:", err);
-        setPersonnel([]);
-      }
-    };
-
-    const init = async () => {
-      setLoading(true);
-      await Promise.all([loadMessages(), loadProjects(), loadPersonnel()]);
-      setLoading(false);
-    };
-
-    init();
-  }, [user.id]);
-
-  const filteredComms = useMemo(() => {
-    return comms.filter(c => {
-      const matchType = filter === 'all' || c.targetType === filter;
-      const matchSearch = c.content.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          c.senderName.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchType && matchSearch;
-    });
-  }, [comms, filter, searchTerm]);
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.content.trim()) return;
-
-    setIsSending(true);
+  const fetchMainData = async () => {
+    setLoading(true);
     try {
-      await db.sendCommunication({
-        content: newMessage.content,
-        type: newMessage.type,
-        targetType: newMessage.targetType,
-        targetIds: newMessage.targetType === 'all' ? [] : newMessage.targetIds,
-        projectId: newMessage.projectId || undefined
-      });
-      
-      setNewMessage({
-        content: '',
-        type: 'note',
-        targetType: 'all',
-        targetIds: [],
-        projectId: ''
-      });
-      
-      const updated = await db.getCommunications();
-      setComms(updated);
-    } catch (err: any) {
-      alert(t('send_error' as any) || 'Errore durante l\'invio: ' + err.message);
+      const data = await db.getCommunications({ type: activeTab });
+      setCommunications(data);
+    } catch (err) {
+      console.error('Error fetching communications:', err);
     } finally {
-      setIsSending(false);
+      setLoading(false);
     }
   };
 
-  const toggleWorkerSelection = (id: string) => {
-    setNewMessage(prev => ({
-      ...prev,
-      targetIds: prev.targetIds.includes(id) 
-        ? prev.targetIds.filter(tid => tid !== id)
-        : [...prev.targetIds, id]
-    }));
+  const fetchSupportData = async () => {
+    try {
+      const [w, p] = await Promise.all([db.getUsers(), db.getProjects()]);
+      setWorkers(w.filter(u => u.id !== currentUser.id));
+      setProjects(p);
+    } catch (err) {
+      console.error('Error fetching support data:', err);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const fetchThread = async (rootId: string) => {
+    setThreadLoading(true);
+    try {
+      const messages = await db.getThread(rootId);
+      setThreadMessages(messages);
+      // Mark root as read
+      await db.markAsRead(rootId);
+    } catch (err) {
+      console.error('Error fetching thread:', err);
+    } finally {
+      setThreadLoading(false);
+    }
+  };
 
-  if (!user.isPremium) {
-    return (
-      <div className="max-w-4xl mx-auto py-12 px-4 text-center animate-in fade-in zoom-in duration-700">
-        <div className="bg-white p-12 rounded-3xl border border-amber-100 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <Sparkles size={120} className="text-amber-600" />
-          </div>
-          
-          <div className="w-24 h-24 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-8 text-amber-600 shadow-inner">
-            <Shield size={48} />
-          </div>
-          
-          <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">
-            {t('premium_feature_title' as any) || 'Funzionalità Premium'}
-          </h2>
-          
-          <p className="text-slate-500 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-            {t('premium_feature_desc' as any) || 'Le comunicazioni interne e la bacheca aziendale sono disponibili esclusivamente per gli utenti con piano Premium.'}
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-left">
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="text-blue-600 mb-2"><Users size={20}/></div>
-                <div className="font-bold text-slate-900 text-sm mb-1">Messaggi Globali</div>
-                <div className="text-slate-500 text-xs text-balance">Invia avvisi a tutto il personale in un colpo solo.</div>
-            </div>
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="text-amber-600 mb-2"><Briefcase size={20}/></div>
-                <div className="font-bold text-slate-900 text-sm mb-1">Note per Progetto</div>
-                <div className="text-slate-500 text-xs text-balance">Organizza la comunicazione dedicata per ogni singolo cantiere.</div>
-            </div>
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="text-emerald-600 mb-2"><CheckCircle size={20}/></div>
-                <div className="font-bold text-slate-900 text-sm mb-1">Ricevute di Lettura</div>
-                <div className="text-slate-500 text-xs text-balance">Verifica chi ha visualizzato i tuoi messaggi in tempo reale.</div>
-            </div>
-          </div>
+  const handleSelectThread = (comm: InternalCommunication) => {
+    setSelectedThread(comm);
+    fetchThread(comm.id);
+  };
 
-          <button 
-            onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
-            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-blue-200 hover:scale-105 transition-all flex items-center gap-3 mx-auto"
-          >
-            <Sparkles size={20} />
-            {t('upgrade_now' as any) || 'Passa a Premium ora'}
-          </button>
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedThread) return;
+    setSending(true);
+    try {
+      // Logic for reply: target is the original sender if we are the target, or vice versa
+      const targetId = selectedThread.senderId === currentUser.id 
+        ? selectedThread.targetId 
+        : selectedThread.senderId;
+
+      await db.sendCommunication({
+        content: replyText,
+        parentId: selectedThread.id,
+        targetType: selectedThread.targetType,
+        targetId: targetId,
+        projectId: selectedThread.projectId,
+        type: selectedThread.type
+      });
+      setReplyText('');
+      fetchThread(selectedThread.id);
+    } catch (err) {
+      console.error('Error sending reply:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCreateNew = async () => {
+    if (!newMsg.content.trim()) return;
+    setSending(true);
+    try {
+      await db.sendCommunication({
+        content: newMsg.content,
+        type: newMsg.type,
+        targetType: newMsg.targetType,
+        targetIds: newMsg.targetIds,
+        projectId: newMsg.projectId
+      });
+      setIsNewMessageModalOpen(false);
+      setNewMsg({ content: '', type: 'note', targetType: 'all', targetIds: [], projectId: '' });
+      fetchMainData();
+    } catch (err) {
+      console.error('Error creating communication:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleStatusAction = async (action: 'ack' | 'take' | 'close' | 'archive' | 'delete', commId: string) => {
+    try {
+      switch (action) {
+        case 'ack': await db.acknowledgeComm(commId); break;
+        case 'take': await db.takeInCharge(commId); break;
+        case 'close': await db.closeComm(commId); break;
+        case 'archive': await db.archiveComm(commId); break;
+        case 'delete': await db.deleteComm(commId); break;
+      }
+      fetchMainData();
+      if (selectedThread?.id === commId) {
+        const updated = await db.getThread(commId);
+        setThreadMessages(updated);
+        // Refresh root status
+        const root = updated.find(m => m.id === commId);
+        if (root) setSelectedThread(root);
+      }
+    } catch (err) {
+      console.error(`Error performing ${action}:`, err);
+    }
+  };
+
+  const exportPDF = () => {
+    if (!selectedThread) return;
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text(t('internal_communication'), 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`${t('reference')}: ${selectedThread.id}`, 14, 30);
+    doc.text(`${t('status')}: ${t(selectedThread.status)}`, 14, 35);
+    doc.text(`${t('date')}: ${formatDate(selectedThread.createdAt, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 40);
+
+    // Metadata Table
+    (doc as any).autoTable({
+      startY: 45,
+      head: [[t('sender'), t('recipient'), t('type'), t('project')]],
+      body: [[
+        selectedThread.senderName,
+        selectedThread.targetType === 'all' ? t('all') : (selectedThread.targetId || 'N/A'),
+        t(selectedThread.type as any),
+        projects.find(p => p.id === selectedThread.projectId)?.name || t('none')
+      ]],
+      theme: 'grid',
+      headStyles: { fillColor: [63, 81, 181] }
+    });
+
+    // Content
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text(t('thread'), 14, (doc as any).lastAutoTable.finalY + 15);
+
+    let startY = (doc as any).lastAutoTable.finalY + 20;
+
+    threadMessages.forEach((msg) => {
+      const dateStr = formatDate(msg.createdAt, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const header = `${msg.senderName} - ${dateStr}`;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(header, 14, startY);
+      
+      startY += 5;
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(msg.content, pageWidth - 28);
+      doc.text(lines, 14, startY);
+      
+      startY += (lines.length * 5) + 10;
+      
+      if (startY > 270) {
+        doc.addPage();
+        startY = 20;
+      }
+    });
+
+    doc.save(`Comunicazione_${selectedThread.id.substring(0,8)}.pdf`);
+  };
+
+  const filteredComms = communications.filter(c => 
+    c.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.senderName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!isPremium && currentUser.role !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] p-6 bg-gray-50 dark:bg-gray-900 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+        <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
         </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('premium_feature_title')}</h2>
+        <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-8">
+          {t('premium_feature_desc')}
+        </p>
+        <button className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-lg transition-all">
+          {t('upgrade_now')}
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="container-fluid p-0">
-      <div className="row g-4">
-        {/* Main Panel - Composition Form */}
-        <div className="col-12 col-lg-4 order-2 order-lg-1">
-          <div className="custom-card shadow-sm border-0 h-100 p-3" style={{ backgroundColor: '#fff', borderRadius: '16px' }}>
-            <div className="d-flex align-items-center gap-2 mb-3 border-bottom pb-2">
-              <Mail className="text-blue-600" size={20} />
-              <h2 className="h6 fw-bold m-0">{t('new_communication' as any) || 'Nuova Comunicazione'}</h2>
+    <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+      {/* LEFT SIDEBAR - 30% */}
+      <div className="w-1/3 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('internal_communications')}</h2>
+            <button 
+              onClick={() => setIsNewMessageModalOpen(true)}
+              className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder={t('search')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            />
+          </div>
+
+          {/* Navigation Tabs */}
+          <div className="flex p-1 bg-gray-200/50 dark:bg-gray-800 rounded-xl">
+            <button 
+              onClick={() => setActiveTab('inbox')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Inbox className="w-4 h-4" /> {t('inbox')}
+            </button>
+            <button 
+              onClick={() => setActiveTab('sent')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'sent' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Outbox className="w-4 h-4" /> {t('outbox')}
+            </button>
+            <button 
+              onClick={() => setActiveTab('archive')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'archive' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Archive className="w-4 h-4" /> {t('archive')}
+            </button>
+          </div>
+        </div>
+
+        {/* List Content */}
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : filteredComms.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
+                <FileText className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-500">{t('no_internal_communications')}</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {filteredComms.map((comm) => (
+                <button
+                  key={comm.id}
+                  onClick={() => handleSelectThread(comm)}
+                  className={`w-full text-left p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-l-4 ${selectedThread?.id === comm.id ? 'border-indigo-600 bg-indigo-50/30 dark:bg-indigo-900/10' : 'border-transparent'} ${!comm.isRead ? 'bg-blue-50/20 dark:bg-blue-900/5' : ''}`}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">{t(comm.type as any)}</span>
+                    <span className="text-[10px] text-gray-400">{formatDate(comm.createdAt)}</span>
+                  </div>
+                  <h4 className={`text-sm font-semibold mb-1 line-clamp-1 ${!comm.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                    {comm.senderName}
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                    {comm.content}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      comm.status === 'open' ? 'bg-yellow-100 text-yellow-700' :
+                      comm.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
+                      comm.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
+                      comm.status === 'closed' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {t(comm.status as any)}
+                    </span>
+                    {comm.projectId && (
+                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> {projects.find(p => p.id === comm.projectId)?.name || 'Project'}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT DETAIL VIEW - 70% */}
+      <div className="w-2/3 flex flex-col bg-gray-50/30 dark:bg-gray-900/50">
+        {selectedThread ? (
+          <>
+            {/* Detail Header */}
+            <div className="p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-sm sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
+                  {selectedThread.senderName.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    {selectedThread.senderName}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-tighter ${
+                      selectedThread.status === 'open' ? 'bg-yellow-100 text-yellow-700' :
+                      selectedThread.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
+                      selectedThread.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
+                      selectedThread.status === 'closed' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {t(selectedThread.status as any)}
+                    </span>
+                  </h3>
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDate(selectedThread.createdAt, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
+                    {selectedThread.assignedToName && <span className="flex items-center gap-1 text-purple-600 font-medium"><UserCheck className="w-3 h-3" /> {selectedThread.assignedToName}</span>}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {/* Actions based on Status & Role */}
+                {selectedThread.status === 'open' && selectedThread.senderId !== currentUser.id && (
+                  <button 
+                    onClick={() => handleStatusAction('ack', selectedThread.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> {t('acknowledge')}
+                  </button>
+                )}
+                {(selectedThread.status === 'open' || selectedThread.status === 'acknowledged') && (currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
+                  <button 
+                    onClick={() => handleStatusAction('take', selectedThread.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                  >
+                    <UserCheck className="w-4 h-4" /> {t('takeInCharge')}
+                  </button>
+                )}
+                {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && (
+                  <button 
+                    onClick={() => handleStatusAction('close', selectedThread.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                  >
+                    <Check className="w-4 h-4" /> {t('closed')}
+                  </button>
+                )}
+                {selectedThread.status === 'closed' && (
+                  <button 
+                    onClick={() => handleStatusAction('archive', selectedThread.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                  >
+                    <Archive className="w-4 h-4" /> {t('archiveCommunication')}
+                  </button>
+                )}
+                <button 
+                  onClick={exportPDF}
+                  className="p-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-lg transition-colors"
+                  title={t('exportHistory')}
+                >
+                  <FileText className="w-5 h-5" />
+                </button>
+                {currentUser.role === 'admin' && (
+                  <button 
+                    onClick={() => handleStatusAction('delete', selectedThread.id)}
+                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Conversation Thread */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {threadLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+              ) : (
+                threadMessages.map((msg) => {
+                  const isMe = msg.senderId === currentUser.id;
+                  return (
+                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${isMe ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>
+                          {msg.senderName.charAt(0)}
+                        </div>
+                        <div className={`group relative`}>
+                          {!isMe && <p className="text-[10px] font-bold text-gray-500 mb-1 ml-2 uppercase tracking-widest">{msg.senderName}</p>}
+                          <div className={`px-4 py-3 rounded-2xl text-sm shadow-sm leading-relaxed ${isMe ? 'bg-indigo-600 text-white rounded-tr-none shadow-indigo-200 dark:shadow-none' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none border border-gray-100 dark:border-gray-700'}`}>
+                            {msg.content}
+                          </div>
+                          <p className={`text-[9px] mt-1 text-gray-400 font-medium ${isMe ? 'text-right mr-2' : 'text-left ml-2'}`}>
+                            {formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}
+                            {isMe && msg.isRead && <span className="ml-2 text-blue-500">✓✓</span>}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Bottom Bar / Reply */}
+            {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) ? (
+              <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0">
+                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl border border-gray-200 dark:border-gray-700">
+                  <textarea 
+                    rows={1}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder={t('writeMessage')}
+                    className="flex-1 px-4 py-2 bg-transparent outline-none text-sm resize-none text-gray-900 dark:text-white"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendReply();
+                      }
+                    }}
+                  />
+                  <button 
+                    disabled={!replyText.trim() || sending}
+                    onClick={handleSendReply}
+                    className="p-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-xl transition-all shadow-sm"
+                  >
+                    <Send className={`w-5 h-5 ${sending ? 'animate-pulse' : ''}`} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 bg-gray-100 dark:bg-gray-800/50 text-center border-t border-gray-200 dark:border-gray-700">
+                 <p className="text-sm font-medium text-gray-500 italic">
+                   {selectedThread.status === 'closed' ? "Questa conversazione è stata chiusa. Archivia per completare il ciclo." : "Conversazione archiviata."}
+                 </p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-6">
+              <Inbox className="w-10 h-10 text-indigo-400/50" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('internal_communications')}</h3>
+            <p className="text-gray-500 max-w-sm">
+              {t('noThreadSelected')}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* NEW MESSAGE MODAL */}
+      {isNewMessageModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('new_communication')}</h2>
+              <button onClick={() => setIsNewMessageModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
             </div>
             
-            <form onSubmit={handleSend} className="space-y-4">
-              <div className="row g-3">
-                {/* Recipient Selection */}
-                <div className="col-12">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-2 d-block">
-                    A: {t('recipient' as any) || 'Destinatario'}
-                  </label>
-                  <div className="custom-badge-group mb-2">
-                      <button 
-                          type="button"
-                          onClick={() => setNewMessage({ ...newMessage, targetType: 'all', targetIds: [] })}
-                          className={`badge-item py-1 ${newMessage.targetType === 'all' ? 'active' : ''}`}
-                      >
-                          <div className="icon-circle" style={{ width: '18px', height: '18px' }}><Users size={10}/></div>
-                          <span style={{ fontSize: '12px' }}>{t('all' as any) || 'Tutti'}</span>
-                      </button>
-                      <button 
-                          type="button" 
-                          onClick={() => setNewMessage({ ...newMessage, targetType: 'user' })}
-                          className={`badge-item py-1 ${newMessage.targetType === 'user' ? 'active' : ''}`}
-                      >
-                          <div className="icon-circle" style={{ width: '18px', height: '18px' }}><UserIcon size={10}/></div>
-                          <span style={{ fontSize: '12px' }}>{t('selection' as any) || 'Selezione'}</span>
-                      </button>
-                  </div>
-
-                  {newMessage.targetType === 'user' && (
-                      <div className="multi-select mt-2 animate-in fade-in duration-200" style={{ maxHeight: '120px' }}>
-                          {personnel.length === 0 ? (
-                               <p className="text-muted small p-1">{t('no_workers_available' as any) || 'Nessun collaboratore disponibile'}</p>
-                          ) : (
-                              personnel.map(p => (
-                                  <button
-                                      key={p.id}
-                                      type="button"
-                                      onClick={() => toggleWorkerSelection(p.id)}
-                                      className={`worker-pill py-1 px-2 ${newMessage.targetIds.includes(p.id) ? 'active' : ''}`}
-                                      style={{ fontSize: '11px' }}
-                                  >
-                                      {p.name}
-                                      {newMessage.targetIds.includes(p.id) && <CheckCircle size={10} className="ms-1" />}
-                                  </button>
-                              ))
-                          )}
-                      </div>
-                  )}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('recipient')}</label>
+                <div className="flex gap-2 mb-3">
+                  {['all', 'user', 'project'].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setNewMsg(prev => ({ ...prev, targetType: type as any, targetIds: [] }))}
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all ${newMsg.targetType === type ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-indigo-400'}`}
+                    >
+                      {t(type as any)}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Reference Project */}
-                <div className="col-12">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-1 d-block">
-                    {t('reference' as any) || 'Referenza'}
-                  </label>
+                {newMsg.targetType === 'user' && (
                   <select 
-                    className="form-select-custom w-100 py-2"
-                    value={newMessage.projectId}
-                    onChange={(e) => setNewMessage({ ...newMessage, projectId: e.target.value })}
-                    style={{ fontSize: '13px' }}
+                    multiple
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm h-32"
+                    onChange={(e) => {
+                      const options = Array.from(e.target.selectedOptions);
+                      setNewMsg(prev => ({ ...prev, targetIds: options.map(o => o.value) }));
+                    }}
                   >
-                    <option value="">{t('internal_communication' as any) || 'Comunicazione Interna'}</option>
+                    {workers.map(w => (
+                      <option key={w.id} value={w.id}>{w.name} ({w.role})</option>
+                    ))}
+                  </select>
+                )}
+
+                {newMsg.targetType === 'project' && (
+                  <select 
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm"
+                    value={newMsg.projectId}
+                    onChange={(e) => setNewMsg(prev => ({ ...prev, projectId: e.target.value }))}
+                  >
+                    <option value="">{t('selectProject')}</option>
                     {projects.map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
+                )}
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('type')}</label>
+                   <div className="flex gap-2">
+                     {['note', 'issue', 'confirmation'].map((tType) => (
+                       <button
+                         key={tType}
+                         onClick={() => setNewMsg(prev => ({ ...prev, type: tType as any }))}
+                         className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${newMsg.type === tType ? 'bg-indigo-100 border-indigo-500 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}
+                       >
+                         {t(tType as any)}
+                       </button>
+                     ))}
+                   </div>
                 </div>
               </div>
 
-              {/* Message Type */}
-              <div className="mb-2">
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-1 d-block">
-                  {t('type' as any) || 'Tipo'}
-                </label>
-                <div className="type-selector compact">
-                    <button 
-                        type="button" 
-                        onClick={() => setNewMessage({ ...newMessage, type: 'note' })}
-                        className={`type-btn py-2 ${newMessage.type === 'note' ? 'active' : ''}`}
-                    >
-                        <Info size={14} />
-                        <span style={{ fontSize: '11px' }}>{t('note' as any) || 'Nota'}</span>
-                    </button>
-                    <button 
-                        type="button" 
-                        onClick={() => setNewMessage({ ...newMessage, type: 'issue' })}
-                        className={`type-btn py-2 ${newMessage.type === 'issue' ? 'active' : ''}`}
-                    >
-                        <AlertCircle size={14} />
-                        <span style={{ fontSize: '11px' }}>{t('alert' as any) || 'Segnalazione'}</span>
-                    </button>
-                    <button 
-                        type="button" 
-                        onClick={() => setNewMessage({ ...newMessage, type: 'confirmation' })}
-                        className={`type-btn py-2 ${newMessage.type === 'confirmation' ? 'active' : ''}`}
-                    >
-                        <CheckCircle2 size={14} />
-                        <span style={{ fontSize: '11px' }}>{t('confirmation' as any) || 'Conferma'}</span>
-                    </button>
-                </div>
-              </div>
-
-              {/* Message Content */}
-              <div className="mb-2">
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight mb-1 d-block">
-                  {t('message' as any) || 'Messaggio'}
-                </label>
-                <textarea
-                  className="custom-textarea"
-                  placeholder={t('writeMessage' as any) || 'Scrivi un messaggio...'}
-                  value={newMessage.content}
-                  onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
-                  style={{ minHeight: '80px', fontSize: '13px' }}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('message')}</label>
+                <textarea 
+                  rows={4}
+                  value={newMsg.content}
+                  onChange={(e) => setNewMsg(prev => ({ ...prev, content: e.target.value }))}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  placeholder={t('writeMessage')}
                 />
               </div>
 
               <button 
-                type="submit" 
-                disabled={isSending || !newMessage.content.trim()}
-                className="btn-send w-100 py-2"
-                style={{ borderRadius: '12px', fontWeight: 'bold' }}
+                disabled={sending || (newMsg.targetType === 'user' && newMsg.targetIds.length === 0) || (newMsg.targetType === 'project' && !newMsg.projectId) || !newMsg.content.trim()}
+                onClick={handleCreateNew}
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 dark:shadow-none transition-all flex items-center justify-center gap-2"
               >
-                {isSending ? (
-                  <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-                ) : (
-                  <Send size={16} className="me-2" />
-                )}
-                {t('send' as any) || 'Invia'}
+                {sending ? <Clock className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                {t('send')}
               </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Results Panel - Feed */}
-        <div className="col-12 col-lg-8 order-1 order-lg-2">
-          <div className="custom-card shadow-sm border-0 h-100 p-0 overflow-hidden" style={{ backgroundColor: '#fff', borderRadius: '16px', minHeight: 'calc(100vh - 160px)' }}>
-            <div className="p-4 border-bottom">
-                <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h2 className="h4 fw-bold m-0">{t('internal_communications' as any) || 'Comunicazioni'}</h2>
-                    {/* Compact Filter Button (Point 3) */}
-                    <div className="d-flex gap-2">
-                        <button 
-                            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                            onClick={() => setFilter('all')}
-                            title="Tutti"
-                        >
-                            <Filter size={18} />
-                        </button>
-                        <button 
-                            className={`filter-btn ${filter === 'user' ? 'active' : ''}`}
-                            onClick={() => setFilter('user')}
-                            title="Personali"
-                        >
-                            <UserIcon size={18} />
-                        </button>
-                        <button 
-                            className={`filter-btn ${filter === 'project' ? 'active' : ''}`}
-                            onClick={() => setFilter('project')}
-                            title="Progetti"
-                        >
-                            <Briefcase size={18} />
-                        </button>
-                    </div>
-                </div>
-                <div className="p-relative">
-                    <Search className="position-absolute translate-middle-y text-muted" style={{ top: '50%', left: '12px' }} size={16} />
-                    <input 
-                        type="text" 
-                        placeholder={t('search' as any) || 'Cerca...'}
-                        className="form-control-custom w-100 ps-5"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ paddingLeft: '40px', height: '42px', borderRadius: '10px', border: '1px solid #e2e8f0' }}
-                    />
-                </div>
-            </div>
-
-            <div className="card-body p-0 pt-2 h-100 w-100 d-flex flex-column" id="results-card-body">
-                <div className="p-relative h-100 w-100 scroll-wrapper" style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
-                    <div id="results" className="p-0">
-                        {
-                            filteredComms.length > 0 ? (
-                                filteredComms.map((i) => (
-                                    <HistoryItem
-                                        key={i.id}
-                                        icon={i.type === 'note' ? (
-                                            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                                                <Info size={18} />
-                                            </div>
-                                        ) : i.type === 'issue' ? (
-                                            <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
-                                                <AlertCircle size={18} />
-                                            </div>
-                                        ) : (
-                                            <div className="p-2 bg-green-50 text-green-600 rounded-xl">
-                                                <CheckCircle2 size={18} />
-                                            </div>
-                                        )}
-                                        title={i.senderName}
-                                        subtitle={i.content}
-                                        date={new Date(i.createdAt).toLocaleString(lang === 'it' ? 'it-IT' : 'en-GB')}
-                                        statusBadge={
-                                            <div className="d-flex gap-1">
-                                                {i.projectId && (
-                                                    <span className="status-badge">
-                                                        <Briefcase size={10} /> {i.projectId.substring(0, 8)}...
-                                                    </span>
-                                                )}
-                                                <span className={`status-badge ${i.isRead ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}`}>
-                                                    {i.isRead ? <CheckCircle size={10} /> : <CheckCircle2 size={10} />}
-                                                    {i.isRead ? t('read') : t('sent')}
-                                                </span>
-                                            </div>
-                                        }
-                                    />
-                                ))
-                            ) : (
-                                <div className="text-center py-5">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <Mail className="text-slate-300" size={32} />
-                                    </div>
-                                    <p className="text-slate-400 font-medium">{t('no_internal_communications')}</p>
-                                </div>
-                            )
-                        }
-                    </div>
-                </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <style>{`
-        .custom-card {
-            border: none;
-            border-radius: 16px;
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
-        .custom-badge-group {
-            display: flex;
-            background: #f8fafc;
-            padding: 4px;
-            border-radius: 12px;
-            gap: 4px;
-            border: 1px solid #f1f5f9;
-        }
-
-        .badge-item {
-            flex: 1;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: none;
-            background: transparent;
-            color: #64748b;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .badge-item:hover:not(.active) {
-            background: rgba(0, 0, 0, 0.02);
-            color: #1e293b;
-        }
-
-        .badge-item.active {
-            background: white;
-            color: #2563eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .badge-item.active .icon-circle {
-            background: #2563eb;
-            color: white;
-        }
-
-        .icon-circle {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .multi-select {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-
-        .worker-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #64748b;
-        }
-
-        .worker-pill:hover {
-            border-color: #2563eb;
-            color: #2563eb;
-        }
-
-        .worker-pill.active {
-            background: #eff6ff;
-            border-color: #2563eb;
-            color: #2563eb;
-        }
-
-        .type-selector.compact {
-            display: flex;
-            gap: 8px;
-        }
-
-        .type-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 4px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            gap: 4px;
-            transition: all 0.2s;
-            color: #64748b;
-            flex: 1;
-        }
-
-        .type-btn:hover {
-            border-color: #cbd5e1;
-            background: #f8fafc;
-        }
-
-        .type-btn.active {
-            border-color: #2563eb;
-            background: #eff6ff;
-            color: #2563eb;
-        }
-
-        .custom-textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            min-height: 80px;
-            resize: none;
-            transition: all 0.2s;
-            font-size: 13px;
-            background: #f8fafc;
-        }
-
-        .custom-textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.05);
-        }
-
-        .form-select-custom {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            background-color: #f8fafc;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .form-select-custom:focus {
-            outline: none;
-            border-color: #2563eb;
-            background: white;
-        }
-
-
-        .btn-send {
-            width: 100%;
-            padding: 14px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(37,99,235,0.25);
-        }
-
-        .btn-send:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(37,99,235,0.3);
-        }
-
-        .btn-send:active {
-            transform: translateY(0);
-        }
-
-        .btn-send:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .filter-btn {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 10px;
-            border-radius: 10px;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:hover {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-
-        .filter-btn.active {
-            background: #eff6ff;
-            border-color: #2563eb;
-            color: #2563eb;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            background: #f1f5f9;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-        }
-
-        .hover-bg-light:hover {
-            background-color: #f8fafc;
-        }
-      `}</style>
+      )}
     </div>
   );
 };
