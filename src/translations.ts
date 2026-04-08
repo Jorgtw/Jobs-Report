@@ -510,6 +510,7 @@ export const translations = {
     emailAlreadyInUse: "Questa email è già in uso da un altro utente.",
     user: "Utente",
     optional: "Opzionale",
+    selectUsers: "Seleziona uno o più utenti...",
   },
   en: {
     dashboard: "Dashboard",
@@ -998,6 +999,7 @@ export const translations = {
     emailAlreadyInUse: "This email is already in use by another user.",
     user: "User",
     optional: "Optional",
+    selectUsers: "Select one or more users...",
   },
   da: {
     dashboard: "Oversigt",
@@ -1385,6 +1387,7 @@ export const translations = {
     emailAlreadyInUse: "Denne e-mail er allerede i brug af en anden bruger.",
     user: "Bruger",
     optional: "Valgfri",
+    selectUsers: "Vælg en eller flere brugere...",
   },
   es: {
     dashboard: "Panel",
@@ -1801,6 +1804,7 @@ export const translations = {
     emailAlreadyInUse: "Este correo electrónico ya está en uso por otro usuario.",
     user: "Usuario",
     optional: "Opcional",
+    selectUsers: "Seleccione uno o más usuarios...",
   },
   pl: {
     dashboard: "Panel",
@@ -2216,6 +2220,7 @@ export const translations = {
     emailAlreadyInUse: "Ten e-mail jest już używany przez innego użytkownika.",
     user: "Użytkownik",
     optional: "Opcjonalny",
+    selectUsers: "Wybierz jednego o więcej użytkowników...",
   },
   tr: {
     dashboard: "Panel",
@@ -2625,5 +2630,6 @@ export const translations = {
     emailAlreadyInUse: "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.",
     user: "Kullanıcı",
     optional: "İsteğe bağlı",
+    selectUsers: "Bir veya birden fazla kullanıcı seçin...",
   },
 };

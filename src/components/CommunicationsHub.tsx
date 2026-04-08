@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Users,
   Sparkles,
-  ChevronLeft
+  ChevronLeft,
+  ChevronDown
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -30,6 +31,91 @@ interface CommunicationsHubProps {
   currentUser: AppUser;
   isPremium?: boolean;
 }
+
+const UserMultiSelect = ({ 
+  users, 
+  selectedIds, 
+  onChange, 
+  placeholder,
+  t 
+}: { 
+  users: AppUser[], 
+  selectedIds: string[], 
+  onChange: (ids: string[]) => void,
+  placeholder: string,
+  t: any
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleUser = (id: string) => {
+    const newIds = selectedIds.includes(id)
+      ? selectedIds.filter(i => i !== id)
+      : [...selectedIds, id];
+    onChange(newIds);
+  };
+
+  const selectedUsers = users.filter(u => selectedIds.includes(u.id));
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="min-h-[42px] w-full px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus-within:ring-2 focus-within:ring-blue-500 flex flex-wrap gap-2 items-center cursor-pointer transition-all"
+      >
+        {selectedUsers.length > 0 ? (
+          selectedUsers.map(u => (
+            <span key={u.id} className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg text-xs font-bold flex items-center gap-1 group animate-in fade-in zoom-in duration-200">
+              {u.name}
+              <button 
+                onClick={(e) => { e.stopPropagation(); toggleUser(u.id); }}
+                className="hover:text-blue-900 transition-colors"
+              >
+                <X size={12} strokeWidth={3} />
+              </button>
+            </span>
+          ))
+        ) : (
+          <span className="text-gray-400">{placeholder}</span>
+        )}
+        <div className="ml-auto text-gray-400">
+          <ChevronDown size={16} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-[110] w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          {users.length === 0 ? (
+            <div className="p-4 text-center text-xs text-gray-400 font-medium">
+              {t('no_workers_available')}
+            </div>
+          ) : (
+            users.map(u => (
+              <button
+                key={u.id}
+                onClick={() => toggleUser(u.id)}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center justify-between group ${selectedIds.includes(u.id) ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 text-slate-700'}`}
+              >
+                <span>{u.name} <span className="text-[10px] opacity-60 ml-1">({t(u.role as any)})</span></span>
+                {selectedIds.includes(u.id) && <Check size={14} strokeWidth={3} />}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPremium }) => {
   const { t, lang } = React.useContext(LanguageContext);
@@ -657,18 +743,15 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 </div>
 
                 {newMsg.targetType === 'user' && (
-                  <select 
-                    multiple
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none mb-3"
-                    onChange={(e) => {
-                      const options = Array.from(e.target.selectedOptions);
-                      setNewMsg(prev => ({ ...prev, targetIds: options.map(o => o.value) }));
-                    }}
-                  >
-                    {workers.map(w => (
-                      <option key={w.id} value={w.id}>{w.name} ({w.role})</option>
-                    ))}
-                  </select>
+                  <div className="mb-3">
+                    <UserMultiSelect 
+                      users={workers}
+                      selectedIds={newMsg.targetIds}
+                      onChange={(ids) => setNewMsg(prev => ({ ...prev, targetIds: ids }))}
+                      placeholder={t('selectUsers' as any) || "Seleziona uno o più utenti..."}
+                      t={t}
+                    />
+                  </div>
                 )}
 
                 <div className="pt-2 border-t border-gray-50 mt-2">
