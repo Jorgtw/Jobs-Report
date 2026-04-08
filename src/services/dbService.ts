@@ -888,7 +888,8 @@ class DBService {
     }
 
     if (filters.type === 'inbox') {
-      query = query.or(`target_type.eq.all,target_id.eq.${userId}`)
+      // In Arrivo: Target è l'utente/all OPPURE l'utente è il mittente (per vedere risposte)
+      query = query.or(`target_type.eq.all,target_id.eq.${userId},sender_id.eq.${userId}`)
                    .not('status', 'in', '("archived","deleted")');
     } else if (filters.type === 'sent') {
       query = query.eq('sender_id', userId)
@@ -897,13 +898,42 @@ class DBService {
       query = query.eq('status', 'archived');
     }
 
+    // Get read receipts
+    const { data: receipts } = await supabase.from('communication_read_receipts').select('communication_id').eq('user_id', userId);
+    const readIds = receipts?.map(r => r.communication_id) || [];
+
     const { data, error } = await query.order('last_activity_at', { ascending: false });
     if (error) {
       console.error('Error fetching communications:', error);
       return [];
     }
 
-    return (data || []).map(c => this.mapSupabaseComm(c, userId));
+    const { data: unreadData } = await supabase
+      .from('internal_communications')
+      .select('id, parent_id')
+      .eq('company_id', compId)
+      .or(`target_type.eq.all,target_id.eq.${userId}`)
+      .not('id', 'in', `(${readIds.join(',') || '00000000-0000-0000-0000-000000000000'})`);
+    
+    const unreadMessageIds = new Set(unreadData?.map(m => m.id) || []);
+    const unreadParentIds = new Set(unreadData?.filter(m => m.parent_id).map(m => m.parent_id) || []);
+
+    const mapped = (data || []).map((c: any) => {
+      const isActuallyRead = !unreadMessageIds.has(c.id) && !unreadParentIds.has(c.id);
+      return {
+        ...this.mapSupabaseComm(c, userId),
+        isRead: isActuallyRead
+      };
+    });
+
+    if (filters.type === 'inbox') {
+      return mapped.filter(c => 
+        (c.targetId === userId || c.targetType === 'all') || 
+        (c.senderId === userId && !c.isRead)
+      );
+    }
+
+    return mapped;
   }
 
   async getThread(rootId: string): Promise<InternalCommunication[]> {
@@ -923,7 +953,31 @@ class DBService {
       return [];
     }
 
-    return (data || []).map(c => this.mapSupabaseComm(c, userId));
+    // Mark all unread messages in this thread as read
+    const messages = data || [];
+    const unreadInThread = messages.filter(m => 
+      (m.target_id === userId || m.target_type === 'all')
+    );
+
+    if (unreadInThread.length > 0) {
+      // Get current receipts to avoid duplicates
+      const { data: existing } = await supabase
+        .from('communication_read_receipts')
+        .select('communication_id')
+        .eq('user_id', userId)
+        .in('communication_id', unreadInThread.map(m => m.id));
+      
+      const existingIds = new Set(existing?.map(e => e.communication_id) || []);
+      const toMark = unreadInThread.filter(m => !existingIds.has(m.id));
+
+      if (toMark.length > 0) {
+        await supabase
+          .from('communication_read_receipts')
+          .insert(toMark.map(m => ({ communication_id: m.id, user_id: userId })));
+      }
+    }
+
+    return messages.map(c => this.mapSupabaseComm(c, userId));
   }
 
   async sendCommunication(data: {
