@@ -16,7 +16,8 @@ import {
   Lock,
   MessageSquare,
   Users,
-  Sparkles
+  Sparkles,
+  ChevronLeft
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -53,6 +54,15 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
+  const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // New Message Form State
   const [newMsg, setNewMsg] = useState({
@@ -191,6 +201,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const handleSelectThread = (comm: InternalCommunication) => {
     setSelectedThread(comm);
     fetchThread(comm.id);
+    if (isMobile) setMobileView('detail');
   };
 
   const handleSendReply = async () => {
@@ -345,9 +356,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-120px)] bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
       {/* LEFT SIDEBAR - 30% */}
-      <div className="w-1/3 border-r border-gray-100 flex flex-col bg-gray-50/20">
+      <div className={`${isMobile && mobileView === 'detail' ? 'hidden' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex flex-col bg-gray-50/20`}>
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-100 bg-gray-50/80">
           <div className="flex items-center justify-between mb-4">
@@ -450,13 +461,21 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       </div>
 
       {/* RIGHT DETAIL VIEW - 70% */}
-      <div className="w-2/3 flex flex-col bg-white">
+      <div className={`${isMobile && mobileView === 'list' ? 'hidden' : 'flex'} w-full md:w-2/3 flex flex-col bg-white`}>
         {selectedThread ? (
           <>
             {/* Detail Header */}
             <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {isMobile && (
+                  <button 
+                    onClick={() => setMobileView('list')}
+                    className="p-2 -ml-2 hover:bg-gray-50 rounded-full text-blue-600 transition-colors"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                )}
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold shrink-0">
                   {selectedThread.senderName.charAt(0)}
                 </div>
                 <div>
