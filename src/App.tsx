@@ -38,6 +38,7 @@ import {
   BookOpen,
   CheckCircle2,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
@@ -118,7 +119,7 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false, isPremium: boolean =
     ];
   }
   
-  return links.filter(l => !l.premiumOnly || isPremium);
+  return links;
 };
 
 // --- Language Selector ---
@@ -238,11 +239,15 @@ const AppLayout: React.FC<{
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${location.pathname === link.path ? 'bg-blue-50 text-blue-600 font-bold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
           >
             <link.icon className={`w-5 h-5 ${location.pathname === link.path ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
-            <span>{link.name}</span>
-            {link.path === '/communications' && unreadCount > 0 && (
-              <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
-                {unreadCount}
-              </span>
+            <span className="truncate">{link.name}</span>
+            {(link as any).premiumOnly && !user.isPremium ? (
+              <Lock size={12} className="ml-auto text-slate-300" />
+            ) : (
+              link.path === '/communications' && unreadCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
+                  {unreadCount}
+                </span>
+              )
             )}
           </Link>
         ))}
