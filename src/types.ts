@@ -148,6 +148,7 @@ export type CommStatus =
   'closed' | 'archived' | 'deleted';
 
 export type CommType = 'note' | 'issue' | 'confirmation';
+export type MessageType = CommType;
 export type CommTargetType = 'all' | 'user' | 'project';
 
 export interface InternalCommunication {
