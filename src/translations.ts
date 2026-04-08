@@ -508,6 +508,8 @@ export const translations = {
     mobileWelcomeChatBody: "Hai domande su come usare l'app? Chatta con l'assistente AI",
     mobileWelcomeChatBtn: "Chatta con l'Assistente AI",
     emailAlreadyInUse: "Questa email è già in uso da un altro utente.",
+    user: "Utente",
+    optional: "Opzionale",
   },
   en: {
     dashboard: "Dashboard",
@@ -994,6 +996,8 @@ export const translations = {
     mobileWelcomeChatBody: "Questions on how to use the app? Chat with our AI assistant",
     mobileWelcomeChatBtn: "Chat with AI Assistant",
     emailAlreadyInUse: "This email is already in use by another user.",
+    user: "User",
+    optional: "Optional",
   },
   da: {
     dashboard: "Oversigt",
@@ -1379,6 +1383,8 @@ export const translations = {
     needHelpChat: "Har du brug for hjælp?",
     emailUpdateSuccess: "Email opdateret med succes! Nyt login er aktivt.",
     emailAlreadyInUse: "Denne e-mail er allerede i brug af en anden bruger.",
+    user: "Bruger",
+    optional: "Valgfri",
   },
   es: {
     dashboard: "Panel",
@@ -1793,6 +1799,8 @@ export const translations = {
     emailUpdateSuccess: "¡Email actualizado con éxito! Il nuovo login è attivo.",
     passwordUpdateSuccess: "¡Contraseña actualizada con successo!",
     emailAlreadyInUse: "Este correo electrónico ya está en uso por otro usuario.",
+    user: "Usuario",
+    optional: "Opcional",
   },
   pl: {
     dashboard: "Panel",
@@ -2206,6 +2214,8 @@ export const translations = {
     needHelpChat: "Potrzebujesz pomocy?",
     emailUpdateSuccess: "E-mail zaktualizowany pomyślnie! Nowy login jest aktywny.",
     emailAlreadyInUse: "Ten e-mail jest już używany przez innego użytkownika.",
+    user: "Użytkownik",
+    optional: "Opcjonalny",
   },
   tr: {
     dashboard: "Panel",
@@ -2613,5 +2623,7 @@ export const translations = {
     needHelpChat: "Yardıma mı ihtiyacınız var?",
     emailUpdateSuccess: "E-posta başarıyla güncellendi! Yeni giriş aktif.",
     emailAlreadyInUse: "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.",
+    user: "Kullanıcı",
+    optional: "İsteğe bağlı",
   },
 };
