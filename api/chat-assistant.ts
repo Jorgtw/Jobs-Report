@@ -42,8 +42,9 @@ CONOSCENZA DEL MANUALE APP (USA QUESTE INFORMAZIONI PER AIUTARE):
 - RAPPORTINI: Si creano col tasto "+". Serve il Progetto, la Data e gli Orari. Il sistema calcola le ore togliendo 1 ora di pausa. Se serve, si può cliccare sul totale ore per inserire una cifra a mano (Override manuale).
 - TEAM E SPESE: Si possono aggiungere colleghi (Team) e rimborsi (Spese) in ogni rapportino.
 - MODIFICA E COPIA: Si può usare la funzione "Duplica" per far prima se si lavora nello stesso posto. Gli operai possono modificare i loro rapportini solo finché sono aperti.
-- PREMIUM: Permette di fare i "Compliance Report" con firme e massimo 3 foto di prova. I file spariscono dal cloud dopo 14 giorni (Storage temporaneo). Per attivarlo va contattato l'amministratore piattaforma.
-- EXPORT: Gli operai possono scaricare PDF o Excel delle loro ore (senza costi); gli Admin scaricano i dati completi.
+- PREMIUM: Include i "Compliance Report" (Firme/Foto) e le "Comunicazioni Interne". I file cloud scadono dopo 14 giorni.
+- EXPORT: Gli operai scaricano PDF/Excel delle proprie ore; gli Admin scaricano i dati completi.
+- COMUNICAZIONI: Sistema a ticket/thread. In Arrivo mostra ricevuti e inviati con risposte. Puoi cambiare stato e scaricare PDF.
 `,
         generationConfig: {
           responseMimeType: "application/json",
