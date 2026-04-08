@@ -281,12 +281,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   if (!isPremium && currentUser.role !== 'admin') {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] p-6 bg-gray-50 dark:bg-slate-950 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-900">
-        <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle2 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-100">
+        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-10 h-10 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-white mb-2">{t('premium_feature_title')}</h2>
-        <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-8">
+        <h2 className="text-2xl font-bold text-slate-950 mb-2">{t('premium_feature_title')}</h2>
+        <p className="text-gray-500 text-center max-w-md mb-8">
           {t('premium_feature_desc')}
         </p>
         <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg transition-all">
@@ -297,13 +297,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-slate-950 rounded-2xl border border-gray-200 dark:border-slate-900 overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100vh-120px)] bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
       {/* LEFT SIDEBAR - 30% */}
-      <div className="w-1/3 border-r border-gray-200 dark:border-slate-900 flex flex-col">
+      <div className="w-1/3 border-r border-gray-100 flex flex-col bg-gray-50/20">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-slate-900 bg-gray-50/50 dark:bg-slate-900/30">
+        <div className="p-4 border-b border-gray-100 bg-gray-50/80">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-950 dark:text-white">{t('internal_communications')}</h2>
+            <h2 className="text-xl font-bold text-slate-950">{t('internal_communications')}</h2>
             <button 
               onClick={() => setIsNewMessageModalOpen(true)}
               className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm"
@@ -320,27 +320,27 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               placeholder={t('search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
             />
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex p-1 bg-gray-200/50 dark:bg-slate-900 rounded-xl">
+          <div className="flex p-1 bg-gray-100 rounded-xl">
             <button 
               onClick={() => setActiveTab('inbox')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'inbox' ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-slate-800'}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'inbox' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
             >
               <Inbox className="w-4 h-4" /> {t('inbox')}
             </button>
             <button 
               onClick={() => setActiveTab('sent')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'sent' ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-slate-800'}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'sent' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
             >
               <Outbox className="w-4 h-4" /> {t('outbox')}
             </button>
             <button 
               onClick={() => setActiveTab('archive')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'archive' ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-slate-800'}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'archive' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
             >
               <Archive className="w-4 h-4" /> {t('archive')}
             </button>
@@ -348,34 +348,34 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         </div>
 
         {/* List Content */}
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-950">
+        <div className="flex-1 overflow-y-auto bg-white">
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : filteredComms.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-12 h-12 bg-gray-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-3">
-                <FileText className="w-6 h-6 text-gray-400" />
+              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                <FileText className="w-6 h-6 text-gray-300" />
               </div>
-              <p className="text-sm text-gray-500">{t('no_internal_communications')}</p>
+              <p className="text-sm text-gray-400">{t('no_internal_communications')}</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-slate-900">
+            <div className="divide-y divide-gray-50">
               {filteredComms.map((comm) => (
                 <button
                   key={comm.id}
                   onClick={() => handleSelectThread(comm)}
-                  className={`w-full text-left p-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-colors border-l-4 ${selectedThread?.id === comm.id ? 'border-blue-600 bg-indigo-50/30 dark:bg-indigo-900/10' : 'border-transparent'} ${!comm.isRead ? 'bg-blue-50/20 dark:bg-blue-900/5' : ''}`}
+                  className={`w-full text-left p-4 hover:bg-white transition-colors border-l-4 ${selectedThread?.id === comm.id ? 'border-blue-600 bg-white shadow-inner' : 'border-transparent'} ${!comm.isRead ? 'bg-blue-50/10' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">{t(comm.type as any)}</span>
+                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{t(comm.type as any)}</span>
                     <span className="text-[10px] text-gray-400">{formatDate(comm.createdAt)}</span>
                   </div>
-                  <h4 className={`text-sm font-semibold mb-1 line-clamp-1 ${!comm.isRead ? 'text-slate-950 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                  <h4 className={`text-sm font-semibold mb-1 line-clamp-1 ${!comm.isRead ? 'text-slate-950' : 'text-gray-500'}`}>
                     {comm.senderName}
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">
                     {comm.content}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
@@ -402,31 +402,31 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       </div>
 
       {/* RIGHT DETAIL VIEW - 70% */}
-      <div className="w-2/3 flex flex-col bg-gray-50/30 dark:bg-slate-950/50">
+      <div className="w-2/3 flex flex-col bg-white">
         {selectedThread ? (
           <>
             {/* Detail Header */}
-            <div className="p-4 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between shadow-sm sticky top-0 z-10">
+            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-blue-600 dark:text-indigo-300 font-bold">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
                   {selectedThread.senderName.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-950 dark:text-white flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-950 flex items-center gap-2">
                     {selectedThread.senderName}
                     <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-tighter ${
-                      selectedThread.status === 'open' ? 'bg-yellow-100 text-yellow-700' :
-                      selectedThread.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
-                      selectedThread.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
-                      selectedThread.status === 'closed' ? 'bg-green-100 text-green-700' :
-                      'bg-gray-100 text-slate-800'
+                      selectedThread.status === 'open' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                      selectedThread.status === 'acknowledged' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                      selectedThread.status === 'in_progress' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                      selectedThread.status === 'closed' ? 'bg-green-50 text-green-700 border border-green-200' :
+                      'bg-gray-50 text-slate-700 border border-gray-200'
                     }`}>
                       {t(selectedThread.status as any)}
                     </span>
                   </h3>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 text-xs text-gray-400">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDate(selectedThread.createdAt, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
-                    {selectedThread.assignedToName && <span className="flex items-center gap-1 text-purple-600 font-medium"><UserCheck className="w-3 h-3" /> {selectedThread.assignedToName}</span>}
+                    {selectedThread.assignedToName && <span className="flex items-center gap-1 text-blue-600 font-medium"><UserCheck className="w-3 h-3" /> {selectedThread.assignedToName}</span>}
                   </div>
                 </div>
               </div>
@@ -467,7 +467,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 )}
                 <button 
                   onClick={exportPDF}
-                  className="p-2 border border-gray-200 dark:border-slate-800 hover:bg-gray-100 dark:hover:bg-slate-900 text-gray-600 dark:text-gray-300 rounded-lg transition-colors"
+                  className="p-2 border border-gray-100 hover:bg-gray-50 text-gray-400 rounded-lg transition-colors"
                   title={t('exportHistory')}
                 >
                   <FileText className="w-5 h-5" />
@@ -475,7 +475,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {currentUser.role === 'admin' && (
                   <button 
                     onClick={() => handleStatusAction('delete', selectedThread.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -484,7 +484,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             </div>
 
             {/* Conversation Thread */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
               {threadLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -495,12 +495,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${isMe ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-slate-800 text-slate-800 dark:text-gray-300'}`}>
+                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${isMe ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-slate-700'}`}>
                           {msg.senderName.charAt(0)}
                         </div>
                         <div className={`group relative`}>
-                          {!isMe && <p className="text-[10px] font-bold text-gray-500 mb-1 ml-2 uppercase tracking-widest">{msg.senderName}</p>}
-                          <div className={`px-4 py-3 rounded-2xl text-sm shadow-sm leading-relaxed ${isMe ? 'bg-blue-600 text-white rounded-tr-none shadow-indigo-200 dark:shadow-none' : 'bg-white dark:bg-slate-900 text-slate-950 dark:text-gray-100 rounded-tl-none border border-gray-100 dark:border-slate-800'}`}>
+                          {!isMe && <p className="text-[10px] font-bold text-gray-400 mb-1 ml-2 uppercase tracking-widest">{msg.senderName}</p>}
+                          <div className={`px-4 py-3 rounded-2xl text-sm shadow-sm leading-relaxed ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-950 rounded-tl-none border border-gray-100'}`}>
                             {msg.content}
                           </div>
                           <p className={`text-[9px] mt-1 text-gray-400 font-medium ${isMe ? 'text-right mr-2' : 'text-left ml-2'}`}>
@@ -518,14 +518,14 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
             {/* Bottom Bar / Reply */}
             {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) ? (
-              <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 sticky bottom-0">
-                <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-950/50 p-2 rounded-2xl border border-gray-200 dark:border-slate-800">
+              <div className="p-4 bg-white border-t border-gray-100 sticky bottom-0">
+                <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100">
                   <textarea 
                     rows={1}
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder={t('writeMessage')}
-                    className="flex-1 px-4 py-2 bg-transparent outline-none text-sm resize-none text-slate-950 dark:text-white"
+                    className="flex-1 px-4 py-2 bg-transparent outline-none text-sm resize-none text-slate-950"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -543,8 +543,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 </div>
               </div>
             ) : (
-              <div className="p-6 bg-gray-100 dark:bg-slate-900/50 text-center border-t border-gray-200 dark:border-slate-800">
-                 <p className="text-sm font-medium text-gray-500 italic">
+              <div className="p-6 bg-gray-50 text-center border-t border-gray-100">
+                 <p className="text-sm font-medium text-gray-400 italic">
                    {selectedThread.status === 'closed' ? "Questa conversazione è stata chiusa. Archivia per completare il ciclo." : "Conversazione archiviata."}
                  </p>
               </div>
@@ -552,11 +552,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-6">
-              <Inbox className="w-10 h-10 text-indigo-400/50" />
+            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+              <Inbox className="w-10 h-10 text-blue-200" />
             </div>
-            <h3 className="text-xl font-bold text-slate-950 dark:text-white mb-2">{t('internal_communications')}</h3>
-            <p className="text-gray-500 max-w-sm">
+            <h3 className="text-xl font-bold text-slate-950 mb-2">{t('internal_communications')}</h3>
+            <p className="text-gray-400 max-w-sm">
               {t('noThreadSelected')}
             </p>
           </div>
@@ -565,11 +565,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
       {/* NEW MESSAGE MODAL */}
       {isNewMessageModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-950 dark:text-white">{t('new_communication')}</h2>
-              <button onClick={() => setIsNewMessageModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-950">{t('new_communication')}</h2>
+              <button onClick={() => setIsNewMessageModalOpen(false)} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -582,7 +582,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     <button
                       key={type}
                       onClick={() => setNewMsg(prev => ({ ...prev, targetType: type as any, targetIds: [] }))}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all ${newMsg.targetType === type ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-600 dark:text-gray-400 hover:border-indigo-400'}`}
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all ${newMsg.targetType === type ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-300'}`}
                     >
                       {t(type as any)}
                     </button>
@@ -592,7 +592,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {newMsg.targetType === 'user' && (
                   <select 
                     multiple
-                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm h-32"
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none"
                     onChange={(e) => {
                       const options = Array.from(e.target.selectedOptions);
                       setNewMsg(prev => ({ ...prev, targetIds: options.map(o => o.value) }));
@@ -606,7 +606,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
                 {newMsg.targetType === 'project' && (
                   <select 
-                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm"
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     value={newMsg.projectId}
                     onChange={(e) => setNewMsg(prev => ({ ...prev, projectId: e.target.value }))}
                   >
@@ -626,7 +626,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                        <button
                          key={tType}
                          onClick={() => setNewMsg(prev => ({ ...prev, type: tType as any }))}
-                         className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${newMsg.type === tType ? 'bg-indigo-100 border-indigo-500 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-600 dark:text-gray-400'}`}
+                         className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${newMsg.type === tType ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-sm' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-400'}`}
                        >
                          {t(tType as any)}
                        </button>
@@ -641,7 +641,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   rows={4}
                   value={newMsg.content}
                   onChange={(e) => setNewMsg(prev => ({ ...prev, content: e.target.value }))}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-950 placeholder:text-gray-400"
                   placeholder={t('writeMessage')}
                 />
               </div>
@@ -649,7 +649,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               <button 
                 disabled={sending || (newMsg.targetType === 'user' && newMsg.targetIds.length === 0) || (newMsg.targetType === 'project' && !newMsg.projectId) || !newMsg.content.trim()}
                 onClick={handleCreateNew}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 dark:shadow-none transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold shadow-xl shadow-blue-100 transition-all flex items-center justify-center gap-2"
               >
                 {sending ? <Clock className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                 {t('send')}
