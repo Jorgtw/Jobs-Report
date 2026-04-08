@@ -264,7 +264,7 @@ class DBService {
       id: c.id,
       name: c.name,
       status: c.status || 'active',
-      is_premium: !!c.is_premium,
+      isPremium: !!c.is_premium,
       address: c.address || '',
       phone: c.phone || '',
       email: c.email || '',

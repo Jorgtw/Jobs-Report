@@ -219,7 +219,7 @@ const AppLayout: React.FC<{
   }, [location.pathname, setIsMobileMenuOpen]);
 
   const navLinks = getNavLinks(t, isSuperAdmin);
-  const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.includes(user.role));
+  const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.some(r => r.toLowerCase() === user.role.toLowerCase()));
 
   const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
     <div className="flex flex-col h-full py-6">
@@ -436,7 +436,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean }> = ({ user, isSuperAdmin, isMobile }) => {
   const { t } = useTranslation();
   const navLinks = getNavLinks(t, isSuperAdmin);
-  const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.includes(user.role));
+  const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.some(r => r.toLowerCase() === user.role.toLowerCase()));
 
   const handleManualLogout = () => {
     // We can't easily reach the original handleLogout here, 
@@ -485,7 +485,11 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
               <link.icon size={16} />
             </div>
             <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
-            <ChevronRight size={12} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+            {(link as any).premiumOnly && !user.isPremium ? (
+              <Lock size={12} className="ml-auto text-slate-300" />
+            ) : (
+              <ChevronRight size={12} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+            )}
           </Link>
         ))}
         
@@ -3549,16 +3553,19 @@ const App: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (user && user.companyId && !user.companyName) {
+    if (user && user.companyId) {
       db.getCompanyDetails(user.companyId).then(comp => {
-        if (comp && comp.name) {
-          const updatedUser = { ...user, companyName: comp.name };
-          setUser(updatedUser);
-          localStorage.setItem('ws_auth', JSON.stringify(updatedUser));
+        if (comp) {
+          const updatedUser = { ...user, companyName: comp.name, isPremium: comp.isPremium };
+          // Only update if something changed to avoid loops
+          if (user.companyName !== comp.name || user.isPremium !== comp.isPremium) {
+            setUser(updatedUser);
+            localStorage.setItem('ws_auth', JSON.stringify(updatedUser));
+          }
         }
       }).catch(console.error);
     }
-  }, [user]);
+  }, [user?.companyId, user?.companyName, user?.isPremium]);
 
   // Unread communications polling
   const [unreadCount, setUnreadCount] = useState(0);
