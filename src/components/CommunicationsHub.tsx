@@ -68,7 +68,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [newMsg, setNewMsg] = useState({
     content: '',
     type: 'note' as CommType,
-    targetType: 'all' as 'all' | 'user' | 'project',
+    targetType: 'all' as 'all' | 'user',
     targetIds: [] as string[],
     projectId: ''
   });
@@ -645,13 +645,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('recipient')}</label>
                 <div className="flex gap-2 mb-3">
-                  {['all', 'user', 'project'].map((type) => (
+                  {['all', 'user'].map((type) => (
                     <button
                       key={type}
                       onClick={() => setNewMsg(prev => ({ ...prev, targetType: type as any, targetIds: [] }))}
                       className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all ${newMsg.targetType === type ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-300'}`}
                     >
-                      {t(type as any)}
+                      {type === 'all' ? t('all') : t('user')}
                     </button>
                   ))}
                 </div>
@@ -659,7 +659,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {newMsg.targetType === 'user' && (
                   <select 
                     multiple
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none mb-3"
                     onChange={(e) => {
                       const options = Array.from(e.target.selectedOptions);
                       setNewMsg(prev => ({ ...prev, targetIds: options.map(o => o.value) }));
@@ -671,7 +671,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   </select>
                 )}
 
-                {newMsg.targetType === 'project' && (
+                <div className="pt-2 border-t border-gray-50 mt-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('project')} ({t('optional') || 'Opzionale'})</label>
                   <select 
                     className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     value={newMsg.projectId}
@@ -682,7 +683,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
-                )}
+                </div>
               </div>
 
               <div className="flex gap-4">
@@ -714,7 +715,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               </div>
 
               <button 
-                disabled={sending || (newMsg.targetType === 'user' && newMsg.targetIds.length === 0) || (newMsg.targetType === 'project' && !newMsg.projectId) || !newMsg.content.trim()}
+                disabled={sending || (newMsg.targetType === 'user' && newMsg.targetIds.length === 0) || !newMsg.content.trim()}
                 onClick={handleCreateNew}
                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold shadow-xl shadow-blue-100 transition-all flex items-center justify-center gap-2"
               >
