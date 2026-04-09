@@ -19,4 +19,10 @@ export const common = {
   edit: "Modifica",
   cancel: "Annulla",
   loading: "Caricamento...",
+  today: "Oggi",
+  thisWeek: "Questa settimana",
+  thisMonth: "Questo mese",
+  customRange: "Intervallo personalizzato",
+  actions: "Azioni",
+  select: "Seleziona...",
 };
