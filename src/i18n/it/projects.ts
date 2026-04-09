@@ -26,6 +26,7 @@ export const projects = {
   
   // --- CLIENTI ---
   clientsTitle: 'Clienti',
+  allClients: 'Tutti i Clienti',
   clientNew: 'Nuovo Cliente',
   clientEdit: 'Modifica Cliente',
   client: 'Cliente',
