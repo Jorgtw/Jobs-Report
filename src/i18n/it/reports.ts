@@ -69,7 +69,6 @@ export const reports = {
   signatureClear: "Cancella Firma",
   signaturePlaceholder: "Firma qui col dito o mouse",
   signatureRequired: "Firma digitale richiesta",
-  complianceReport: "Rapporto di Conformità",
   upgradeRequired: "Questa funzionalità (Foto + Firma + PDF Professionale) è riservata agli account Premium.",
   allProjects: "Tutti i Progetti",
   allWorkers: "Tutti gli Operai",
@@ -103,5 +102,15 @@ export const reports = {
   addExpense: "Aggiungi spesa",
   amount: "Importo",
   placeholderExpenseType: "Es. Cena, Trasferta...",
-  adminStatusLabel: "Stato Amministrativo"
+  adminStatusLabel: "Stato Amministrativo",
+  complianceReport: "Rapporto di Conformità",
+  compliancePhotos: "Foto Documentazione",
+  complianceAddPhoto: "Aggiungi Foto",
+  complianceGallery: "Galleria",
+  complianceSignature: "Firma di Conformità",
+  complianceSignatureClear: "Cancella firma",
+  complianceSignaturePlaceholder: "Firma qui per accettazione",
+  complianceGeneratePDF: "Genera Rapporto (PDF)",
+  complianceSignatureRequired: "La firma è obbligatoria per procedere",
+  complianceErrorPDF: "Errore durante la generazione del PDF. Riprova."
 };

@@ -70,7 +70,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
 
   const handleGenerate = async () => {
     if (!hasSigned || sigCanvas.current?.isEmpty()) {
-      alert('⚠️ Per favore firma prima di generare il PDF.');
+      alert('⚠️ ' + t('reports.complianceSignatureRequired'));
       return;
     }
 
@@ -82,7 +82,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
       onClose();
     } catch (err) {
       console.error('PDF generation error:', err);
-      alert('Errore nella generazione del PDF. Riprova.');
+      alert(t('reports.complianceErrorPDF'));
     } finally {
       setIsGenerating(false);
     }
@@ -98,7 +98,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900">{t('complianceReport')}</h2>
+              <h2 className="text-xl font-black text-slate-900">{t('reports.complianceReport')}</h2>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{report.date}</p>
             </div>
           </div>
@@ -109,7 +109,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
           {/* Photos Section */}
           <section>
             <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block">
-              1. {t('compliancePhotos')} ({photos.length}/3)
+              1. {t('reports.compliancePhotos')} ({photos.length}/3)
             </label>
             <div className="grid grid-cols-2 gap-3">
               {photos.map((photo, idx) => (
@@ -130,12 +130,12 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                   <div className="flex gap-2 w-full">
                     {/* Camera button — opens camera directly on mobile */}
                     <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-blue-700 transition-colors">
-                      <Camera size={13} /> {t('complianceAddPhoto')}
+                      <Camera size={13} /> {t('reports.complianceAddPhoto')}
                       <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoChange} />
                     </label>
                     {/* Gallery / File browser */}
                     <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-slate-200 transition-colors">
-                      <Camera size={13} /> Galleria
+                      <Camera size={13} /> {t('reports.complianceGallery')}
                       <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} multiple />
                     </label>
                   </div>
@@ -148,14 +148,14 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
           <section>
             <div className="flex justify-between items-end mb-4">
               <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] block">
-                2. {t('complianceSignature')}
+                2. {t('reports.complianceSignature')}
                 {hasSigned && <span className="ml-2 text-emerald-500">✓</span>}
               </label>
               <button
                 onClick={handleClear}
                 className="text-[10px] font-bold text-red-500 uppercase hover:underline"
               >
-                {t('complianceSignatureClear')}
+                {t('reports.complianceSignatureClear')}
               </button>
             </div>
             <div ref={sigContainerRef} className="border-2 border-slate-200 rounded-2xl bg-slate-50 overflow-hidden shadow-inner">
@@ -171,7 +171,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
               <div className="bg-slate-100 py-1.5 px-4 text-center border-t border-slate-200 flex items-center justify-center gap-2">
                 <PenLine size={12} className="text-slate-400" />
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">
-                  {t('complianceSignaturePlaceholder')}
+                  {t('reports.complianceSignaturePlaceholder')}
                 </p>
               </div>
             </div>
@@ -193,10 +193,10 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
               ) : (
                 <FileDown size={20} />
               )}
-              {t('complianceGeneratePDF')}
+              {t('reports.complianceGeneratePDF')}
             </button>
             {!hasSigned && (
-              <p className="text-center text-xs text-slate-400 mt-2">⚠️ Firma richiesta per generare il PDF</p>
+              <p className="text-center text-xs text-slate-400 mt-2">⚠️ {t('reports.complianceSignatureRequired')}</p>
             )}
           </div>
         </div>
