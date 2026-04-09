@@ -20,7 +20,9 @@ export const projects = {
   status: 'Stato del progetto',
   statusActive: 'Attivo',
   statusInactive: 'Non attivo',
+  statusClosed: 'Chiuso',
   selectProject: 'Seleziona un progetto',
+  activityInternal: 'Interno / Magazzino',
   
   // --- CLIENTI ---
   clientsTitle: 'Clienti',
@@ -60,6 +62,8 @@ export const projects = {
   personRate: 'Prezzo orario',
   personOvertimeRate: 'Prezzo orario straordinario',
   personUsername: 'Utente (username)',
+  personPassword: 'Password',
+  personNotes: 'Note',
   personStatus: 'Stato',
   
   // --- SUBAPPALTI ---
@@ -68,10 +72,33 @@ export const projects = {
   subcontractorEdit: 'Modifica Ditta',
   subcontractorName: 'Nome della ditta',
   subcontractorContact: 'Persona di riferimento',
+  subcontractorPhone: 'Telefono',
+  subcontractorEmail: 'Email',
+  subcontractorAddress: 'Indirizzo',
+  subcontractorNotes: 'Note interne',
+  subcontractorStatus: 'Stato ditta',
+  subcontractorActive: 'Attivo',
+  subcontractorInactive: 'Inattivo',
+  subcontractorBillingType: 'Tipo fatturazione',
+  subcontractorAmount: 'Importo',
   subcontractorRef: 'Ditta di riferimento',
   
   // --- ECONOMIA ---
   billingTypeLabel: 'Condizione economica',
   billingHourly: 'a ore',
-  billingFixed: 'a corpo'
+  billingFixed: 'a corpo',
+  
+  // --- SUPERADMIN DASHBOARD ---
+  weeklyOverview: 'Panoramica Settimanale',
+  last7DaysData: 'Dati degli ultimi 7 giorni',
+  companiesManagement: 'Gestione Aziende',
+  newCompanies: 'Nuove Aziende',
+  activeCompanies: 'Aziende Attive',
+  newPremiums: 'Nuovi Premium',
+  totalReports: 'Rapportini Totali',
+  mostActiveWeekly: 'Le Più Attive della Settimana',
+  pendingRequestsReminder: 'Richieste in Sospeso',
+  pendingRequestsDesc: 'Ci sono nuove richieste di registrazione in attesa di approvazione.',
+  quickSupport: 'Supporto Rapido',
+  quickSupportDesc: 'Contatta il team tecnico per assistenza immediata sulla piattaforma.'
 } as const;

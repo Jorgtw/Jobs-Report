@@ -73,40 +73,40 @@ const SuperAdminDashboard: React.FC = () => {
         <div>
           <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
             <Activity className="text-blue-600" size={20} />
-            {t('weeklyOverview')}
+            {t('projects.weeklyOverview')}
           </h2>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1">{t('last7DaysData')}</p>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1">{t('projects.last7DaysData')}</p>
         </div>
         <a
           href="#/companies"
           className="inline-flex items-center gap-2 px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition-all active:scale-95 whitespace-nowrap"
         >
-          {t('companiesManagement')}
+          {t('projects.companiesManagement')}
         </a>
       </div>
 
       {/* KPI Cards (Grid Compatta) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MiniCard
-          title={t('newCompanies')}
+          title={t('projects.newCompanies')}
           value={stats.newCompanies}
           icon={<Building2 />}
           color="bg-blue-600"
         />
         <MiniCard
-          title={t('activeCompanies')}
+          title={t('projects.activeCompanies')}
           value={stats.activeCompanies}
           icon={<Activity />}
           color="bg-emerald-500"
         />
         <MiniCard
-          title={t('newPremiums')}
+          title={t('projects.newPremiums')}
           value={stats.newPremiums}
           icon={<Award />}
           color="bg-amber-500"
         />
         <MiniCard
-          title={t('totalReports')}
+          title={t('projects.totalReports')}
           value={stats.totalReports}
           icon={<FileText />}
           color="bg-indigo-600"
@@ -119,12 +119,12 @@ const SuperAdminDashboard: React.FC = () => {
           <div className="p-1.5 bg-blue-50 rounded-md text-blue-600">
             <TrendingUp size={14} />
           </div>
-          <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">{t('mostActiveWeekly')}</h3>
+          <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">{t('projects.mostActiveWeekly')}</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {topActive.length === 0 ? (
-            <p className="text-[11px] text-slate-400 italic text-center py-4 md:col-span-2">{t('noData')}</p>
+            <p className="text-[11px] text-slate-400 italic text-center py-4 md:col-span-2">{t('noData' as any)}</p>
           ) : (
             topActive.map((co, idx) => (
               <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-100 hover:bg-white transition-all group">
@@ -134,7 +134,7 @@ const SuperAdminDashboard: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-black text-blue-600">{co.count}</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase">{t('reports')}</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase">{t('common.reports')}</span>
                 </div>
               </div>
             ))
@@ -149,9 +149,9 @@ const SuperAdminDashboard: React.FC = () => {
             <Clock size={16} />
           </div>
           <div>
-            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('pendingRequestsReminder')}</h4>
+            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('projects.pendingRequestsReminder')}</h4>
             <p className="text-[10px] text-slate-500 font-medium leading-tight">
-              {t('pendingRequestsDesc')}
+              {t('projects.pendingRequestsDesc')}
             </p>
           </div>
         </div>
@@ -163,9 +163,9 @@ const SuperAdminDashboard: React.FC = () => {
             <Activity size={16} />
           </div>
           <div>
-            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('quickSupport')}</h4>
+            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('projects.quickSupport')}</h4>
             <p className="text-[10px] text-slate-500 font-medium leading-tight">
-              {t('quickSupportDesc')}
+              {t('projects.quickSupportDesc')}
             </p>
           </div>
         </div>
