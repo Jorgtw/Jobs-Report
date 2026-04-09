@@ -3,6 +3,7 @@ import { auth as itAuth } from './it/auth';
 import { legacy as itLegacy } from './it/legacy';
 import { communications as itCommunications } from './it/communications';
 import { projects as itProjects } from './it/projects';
+import { reports as itReports } from './it/reports';
 import { translations } from '../translations';
 
 export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
@@ -16,6 +17,7 @@ export const baseIT = {
   legacy: itLegacy,
   communications: itCommunications,
   projects: itProjects,
+  reports: itReports,
 };
 
 // --- TypeScript Magic for Dot Notation ---
@@ -24,6 +26,7 @@ export type TranslationKey =
   | `auth.${keyof typeof itAuth & string}`
   | `communications.${keyof typeof itCommunications & string}`
   | `projects.${keyof typeof itProjects & string}`
+  | `reports.${keyof typeof itReports & string}` 
   | string; 
 
 /**
@@ -32,11 +35,11 @@ export type TranslationKey =
  */
 export const allTranslations: Record<Language, any> = {
   it: baseIT,
-  en: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, legacy: translations.en },
-  es: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, legacy: translations.es },
-  pl: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, legacy: translations.pl },
-  tr: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, legacy: translations.tr },
-  da: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, legacy: translations.da },
+  en: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.en },
+  es: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.es },
+  pl: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.pl },
+  tr: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.tr },
+  da: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.da },
 };
 
 /**
