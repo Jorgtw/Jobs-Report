@@ -23,5 +23,9 @@ export const dashboard = {
   createCompanyBtn: 'Crea Nuova Azienda',
   editCompany: 'Modifica Azienda',
   companyName: 'Nome Azienda',
-  companyStatus: 'Stato Azienda'
+  companyStatus: 'Stato Azienda',
+  demoFieldsLocked: 'In questa versione demo alcuni dati non sono modificabili.',
+  impersonateUser: 'Simula Accesso Utente',
+  adminAdminName: 'Nome Admin',
+  adminAdminUsername: 'Username Admin'
 } as const;

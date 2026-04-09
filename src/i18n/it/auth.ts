@@ -17,4 +17,11 @@ export const auth = {
   forgotPasswordTitle: "Password Dimenticata",
   registerLink: "Registrati",
   registrationTitle: "Richiesta di registrazione",
+  loginCredentialsWarning: "Usa le tue credenziali aziendali per accedere.",
+  emailAlreadyInUse: "Questa email è già in uso da un altro utente.",
+  sendInstructions: "Invia istruzioni di accesso",
+  emailInstructionsSubject: "Le tue istruzioni di accesso per Jobs Report",
+  emailInstructionsBody: "Ciao,\n\necco i dati per accedere al portale Jobs Report:\n\nUsername: {email}\nPassword: {password}\n\nAccedi qui: {url}\n\nBuon lavoro!",
+  placeholderEmail: "Inserisci l'indirizzo email...",
+  placeholderPassword: "Inserisci la password...",
 };

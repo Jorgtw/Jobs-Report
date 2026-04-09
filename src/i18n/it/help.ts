@@ -55,8 +55,24 @@ export const help = {
   aiErrorPrefix: "Mi dispiace, si è verificato un errore: ",
   aiUserLabel: "Tu",
   aiBotLabel: "Assistente AI",
-  chatWithAI: "Chatta con l'assistente AI",
-  mobileWelcomeTitle: "Benvenuto su Mobile!",
-  mobileWelcomeBody: "Hai domande su come usare l'app? Chatta con l'assistente AI",
-  mobileWelcomeBtn: "Chatta con l'Assistente AI"
+  mobileWelcomeBtn: "Chatta con l'Assistente AI",
+  
+  // Aliases for refactoring consistency
+  get helpTitle() { return this.title },
+  get helpSubtitle() { return this.subtitle },
+  get helpGuideTitle() { return this.guideTitle },
+  get helpGuideBody() { return this.guideBody },
+  get helpGuideBtn() { return this.guideBtn },
+  get helpPwaTitle() { return this.pwaTitle },
+  get helpPwaBody() { return this.pwaBody },
+  get helpNewReportTitle() { return this.newReportTitle },
+  get helpNewReportBody() { return this.newReportBody },
+  get helpAdditionalWorkersTitle() { return this.additionalWorkersTitle },
+  get helpAdditionalWorkersBody() { return this.additionalWorkersBody },
+  get helpAdminSummaryTitle() { return this.adminSummaryTitle },
+  get helpAdminSummaryBody() { return this.adminSummaryBody },
+  get helpAdminPersonnelTitle() { return this.adminPersonnelTitle },
+  get helpAdminPersonnelBody() { return this.adminPersonnelBody },
+  get helpAdminInternalTitle() { return this.adminInternalTitle },
+  get helpAdminInternalBody() { return this.adminInternalBody },
 } as const;

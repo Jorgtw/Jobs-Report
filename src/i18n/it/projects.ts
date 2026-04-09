@@ -66,7 +66,12 @@ export const projects = {
   personPassword: 'Password',
   personNotes: 'Note',
   personStatus: 'Stato',
-  
+  personStatusActive: 'Attivo',
+  personStatusInactive: 'Non attivo',
+  tooltip_hourlyRate: 'Costo orario reale per l\'azienda (inclusi oneri)',
+  tooltip_overtimeHourlyRate: 'Costo orario per le ore di straordinario',
+  tooltipSellingPrice: 'Prezzo di vendita al cliente per questo specifico progetto',
+
   // --- SUBAPPALTI ---
   subcontractorsTitle: 'Subappalti',
   subcontractorNew: 'Nuova Ditta',
@@ -89,17 +94,7 @@ export const projects = {
   billingHourly: 'a ore',
   billingFixed: 'a corpo',
   
-  // --- SUPERADMIN DASHBOARD ---
-  weeklyOverview: 'Panoramica Settimanale',
-  last7DaysData: 'Dati degli ultimi 7 giorni',
-  companiesManagement: 'Gestione Aziende',
-  newCompanies: 'Nuove Aziende',
-  activeCompanies: 'Aziende Attive',
-  newPremiums: 'Nuovi Premium',
-  totalReports: 'Rapportini Totali',
-  mostActiveWeekly: 'Le Più Attive della Settimana',
-  pendingRequestsReminder: 'Richieste in Sospeso',
-  pendingRequestsDesc: 'Ci sono nuove richieste di registrazione in attesa di approvazione.',
-  quickSupport: 'Supporto Rapido',
-  quickSupportDesc: 'Contatta il team tecnico per assistenza immediata sulla piattaforma.'
+  // --- MESSAGES & TABS ---
+  messagesTab: 'Comunicazioni Progetto',
+  nonBillable: 'Non Fatturabile',
 } as const;

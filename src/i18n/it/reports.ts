@@ -26,6 +26,7 @@ export const reports = {
   placeholderActivity: "Cosa hai fatto oggi?",
   expenseTypePlaceholder: "Es. Cena, Trasferta...",
   expenseNotesPlaceholder: "Note spesa...",
+  placeholderExpenseNotes: "Note spesa...",
   activityManagement: "Gestione Attività",
   totalHoursLabel: "Ore totali",
   teamTotal: "Totale Complessivo (Squadra)",
