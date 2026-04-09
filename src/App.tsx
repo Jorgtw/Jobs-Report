@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
-import { Language } from './translations';
+import { Language, TranslationKey, resolveKey } from './i18n';
 import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
@@ -57,7 +57,6 @@ import AIChatAssistant from './components/AIChatAssistant';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import ProjectMessages from './components/ProjectMessages';
 import CommunicationsHub from './components/CommunicationsHub';
-import { TranslationKey, resolveKey } from './i18n';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -764,7 +763,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                 onChange={async (e) => {
                   const val = e.target.value;
                   if (!val) return;
-                  const confirmMsg = t('confirmUpdateStatus').replace('{count}', filteredData.length.toString()).replace('{status}', val === 'Pending' ? t('common.statusPending') : val === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'));
+                  const confirmMsg = t('reports.confirmUpdateStatus').replace('{count}', filteredData.length.toString()).replace('{status}', val === 'Pending' ? t('common.statusPending') : val === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'));
                   if (!window.confirm(confirmMsg)) {
                     e.target.value = '';
                     return;
@@ -775,13 +774,13 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                     const newData = await db.getSummary();
                     setSummary(user.role === 'supervisor' ? newData.filter(item => projects.filter(proj => canUserAccessProject(proj, user.id)).map(proj => proj.id).includes(item.projectId)) : newData);
                   } catch (err: any) {
-                    alert(t('updateError') + err.message);
+                    alert(t('reports.updateError') + err.message);
                   }
                   e.target.value = '';
                 }}
                 className="w-full sm:w-auto px-4 py-1.5 bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
               >
-                <option value="">{t('common.update')} {t('statusLabel')} ({filteredData.length})</option>
+                <option value="">{t('common.update')} {t('reports.statusLabel')} ({filteredData.length})</option>
                 <option value="Pending">{t('common.statusPending')}</option>
                 <option value="Fatturato">{t('common.statusInvoiced')}</option>
                 <option value="Pagato">{t('common.statusPaid')}</option>
@@ -839,7 +838,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                   onClick={() => setIsArchiveModalOpen(false)}
                   className="w-full py-3 px-4 text-slate-400 font-bold hover:text-slate-600 transition-all text-sm uppercase tracking-widest pt-2 disabled:opacity-50"
                 >
-                  {t('cancel')}
+                  {t('common.cancel')}
                 </button>
               </div>
             </div>

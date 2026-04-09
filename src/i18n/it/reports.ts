@@ -112,5 +112,8 @@ export const reports = {
   complianceSignaturePlaceholder: "Firma qui per accettazione",
   complianceGeneratePDF: "Genera Rapporto (PDF)",
   complianceSignatureRequired: "La firma è obbligatoria per procedere",
-  complianceErrorPDF: "Errore durante la generazione del PDF. Riprova."
+  complianceErrorPDF: "Errore durante la generazione del PDF. Riprova.",
+  confirmUpdateStatus: "Vuoi aggiornare lo stato di {count} record filtrati a {status}?",
+  updateError: "Errore durante l'aggiornamento: ",
+  statusLabel: "Stato"
 };
