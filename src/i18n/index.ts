@@ -6,6 +6,7 @@ import { projects as itProjects } from './it/projects';
 import { reports as itReports } from './it/reports';
 import { dashboard as itDashboard } from './it/dashboard';
 import { landing as itLanding } from './it/landing';
+import { help as itHelp } from './it/help';
 import { translations } from '../translations';
 
 export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
@@ -22,6 +23,7 @@ export const baseIT = {
   reports: itReports,
   dashboard: itDashboard,
   landing: itLanding,
+  help: itHelp,
 };
 
 // --- TypeScript Magic for Dot Notation ---
@@ -33,6 +35,7 @@ export type TranslationKey =
   | `reports.${keyof typeof itReports & string}` 
   | `dashboard.${keyof typeof itDashboard & string}`
   | `landing.${keyof typeof itLanding & string}`
+  | `help.${keyof typeof itHelp & string}`
   | string; 
 
 /**
