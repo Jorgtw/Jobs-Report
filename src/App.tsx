@@ -100,21 +100,21 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 // --- Navigation Config ---
 const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
   const links = [
-    { name: t('clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
-    { name: t('personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
-    { name: t('projects'), path: '/projects', icon: Briefcase, roles: ['admin', 'supervisor', 'operator'], color: 'bg-amber-500' },
+    { name: t('common.clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
+    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
+    { name: t('common.projects'), path: '/projects', icon: Briefcase, roles: ['admin', 'supervisor', 'operator'], color: 'bg-amber-500' },
     { name: t('internalCommMenu'), path: '/communications', icon: Mail, roles: ['admin', 'supervisor', 'operator'], color: 'bg-blue-600', premiumOnly: true },
-    { name: t('subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
-    { name: t('reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
-    { name: t('workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin', 'supervisor'], color: 'bg-indigo-500' },
-    { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' },
+    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
+    { name: t('common.reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
+    { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin', 'supervisor'], color: 'bg-indigo-500' },
+    { name: t('auth.profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' },
     { name: t('help'), path: '/help', icon: HelpCircle, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-600' }
   ];
 
   if (isSuperAdmin) {
     return [
-      { name: t('companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' },
-      { name: t('profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
+      { name: t('projects.companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' },
+      { name: t('auth.profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
     ];
   }
   
@@ -254,7 +254,7 @@ const AppLayout: React.FC<{
       <div className="px-3 pt-6 border-t border-slate-100">
         <button onClick={onLogout} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
           <LogOut className="w-5 h-5" />
-          <span className="font-medium">{t('logout')}</span>
+          <span className="font-medium">{t('common.logout')}</span>
         </button>
         <InstallButton variant="sidebar" />
         <Link
@@ -287,7 +287,7 @@ const AppLayout: React.FC<{
             </span>
 
             <h2 className="text-sm font-semibold text-slate-500 hidden lg:block uppercase tracking-wider">
-              {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('welcome') : '')}
+              {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('common.welcome') : '')}
             </h2>
           </div>
           
@@ -374,8 +374,8 @@ const CompactDashboard: React.FC = () => {
       <div className="divide-y divide-slate-50">
         {/* Row 1: Counters */}
         <div className="grid grid-cols-3 gap-2 pb-2">
-          <SmallStat label={t('projects')} value={stats.activeProjects} to="/projects" />
-          <SmallStat label={t('reports')} value={stats.pendingReports} to="/reports" />
+          <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" />
+          <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" />
           <SmallStat label={t('hours')} value={stats.pendingHours.toLocaleString('it-IT', { maximumFractionDigits: 1 })} to="/reports" />
         </div>
         
@@ -383,7 +383,7 @@ const CompactDashboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 pt-2">
           <SmallStat label={t('estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" />
           <SmallStat label={t('toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" />
-          <SmallStat label={t('margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} />
+          <SmallStat label={t('reports.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} />
         </div>
       </div>
     </div>
@@ -420,7 +420,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
         </div>
         <div>
           <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('pendingHoursSummary')}</h3>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('pendingStatusSubtitle')}</p>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('reports.pendingStatusSubtitle')}</p>
         </div>
       </div>
       <div className="text-3xl font-black text-amber-600">
@@ -453,9 +453,9 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
     <div className="max-w-2xl mx-auto py-6 px-4 animate-in fade-in duration-500">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          {t('welcome')}, {user.name.split(' ')[0]}
+          {t('common.welcome')}, {user.name.split(' ')[0]}
         </h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('activityManagement')}</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('reports.activityManagement')}</p>
       </div>
 
       {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' || user.role === 'supervisor' ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
@@ -499,7 +499,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
           <div className="bg-slate-100 p-2 rounded-lg text-slate-400 shadow-sm transition-transform group-hover:scale-105 group-hover:bg-red-500 group-hover:text-white">
             <LogOut size={16} />
           </div>
-          <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('logout')}</span>
+          <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
         </button>
       </nav>
     </div>
@@ -1012,12 +1012,12 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passForm.newPass !== passForm.confirmPass) {
-      setMessage({ text: t('passwordMismatch'), type: 'error' });
+      setMessage({ text: t('auth.passwordMismatch'), type: 'error' });
       return;
     }
     try {
       await db.updateUser(user.id, { password: passForm.newPass });
-      setMessage({ text: t('passwordChanged'), type: 'success' });
+      setMessage({ text: t('auth.passwordChanged'), type: 'success' });
       setPassForm({ newPass: '', confirmPass: '' });
     } catch (err) {
       setMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
@@ -1047,7 +1047,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
       await db.updateUser(user.id, profileForm);
       const updatedUser = { ...user, ...profileForm };
       if (onUpdate) onUpdate(updatedUser);
-      setProfileMessage({ text: t('profileUpdated'), type: 'success' });
+      setProfileMessage({ text: t('auth.profileUpdated'), type: 'success' });
     } catch (err) {
       setProfileMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
     }
@@ -1085,11 +1085,11 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
         {/* Contact Information Form */}
         <form onSubmit={handleProfileUpdate} className="space-y-4 mb-10 pb-10 border-b border-slate-50">
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <UserIcon size={16} className="text-blue-500" /> {t('personnel')}
+            <UserIcon size={16} className="text-blue-500" /> {t('common.personnel')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('email')}</label>
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('auth.email')}</label>
               <input
                 type="email"
                 value={profileForm.email}
@@ -1098,7 +1098,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('phone')}</label>
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('projects.personPhone')}</label>
               <input
                 type="tel"
                 value={profileForm.phone}
@@ -1107,7 +1107,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
               />
             </div>
             <div className="sm:col-span-2 flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('address')}</label>
+              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('projects.personAddress')}</label>
               <input
                 type="text"
                 value={profileForm.address}
@@ -1122,14 +1122,14 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
             </p>
           )}
           <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-black transition-all mt-2">
-            {t('save')}
+            {t('common.save')}
           </button>
         </form>
 
         {/* Password Change Form */}
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <ShieldAlert size={16} className="text-blue-500" /> {t('changePassword')}
+            <ShieldAlert size={16} className="text-blue-500" /> {t('auth.changePassword')}
           </h3>
           {isDemoAccount ? (
             <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium">
@@ -1139,7 +1139,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('newPassword')}</label>
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('auth.newPassword')}</label>
                   <input
                     type="password"
                     required
@@ -1149,7 +1149,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('confirmPassword')}</label>
+                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('auth.confirmPassword')}</label>
                   <input
                     type="password"
                     required
@@ -1165,7 +1165,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
                 </p>
               )}
               <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all mt-2">
-                {t('update')}
+                {t('common.update')}
               </button>
             </>
           )}
@@ -1610,9 +1610,9 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                       <Mail size={16} /> {t('sendInstructions')}
                     </button>
                   )}
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                   <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-                    {editingId ? t('update') : t('save')}
+                    {editingId ? t('common.update') : t('common.save')}
                   </button>
                 </div>
               </div>
@@ -1761,9 +1761,9 @@ const ClientsView: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                   <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-                    {editingId ? t('update') : t('save')}
+                    {editingId ? t('common.update') : t('common.save')}
                   </button>
                 </div>
               </div>
@@ -1974,7 +1974,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                   <FullWidthField label={t('projects.client')}>
                     {!formData.isInternal && (
                       <select disabled={user.role !== 'admin'} required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} className={inputClasses}>
-                        <option value="">{t('select')}</option>
+                        <option value="">{t('common.select')}</option>
                         {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     )}
@@ -1988,7 +1988,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                     <input type="text" disabled={user.role !== 'admin'} required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
                   </FullWidthField>
                   <div className="md:col-span-2">
-                    <FullWidthField label={t('description')}>
+                    <FullWidthField label={t('projects.descriptionLabel')}>
                       <textarea rows={2} disabled={user.role !== 'admin'} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} />
                     </FullWidthField>
                   </div>
@@ -2064,10 +2064,10 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                     </div>
                   </div>
                   <div className="flex gap-3 w-full sm:w-auto">
-                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                     {user.role === 'admin' && (
                       <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-                        {editingId ? t('update') : t('save')}
+                        {editingId ? t('common.update') : t('common.save')}
                       </button>
                     )}
                   </div>
@@ -2244,9 +2244,9 @@ const SubcontractorsView: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                   <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-                    {editingId ? t('update') : t('save')}
+                    {editingId ? t('common.update') : t('common.save')}
                   </button>
                 </div>
               </div>
@@ -2635,7 +2635,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         <button 
             onClick={() => setShowFilters(!showFilters)} 
             className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`}
-            title={t('filters')}
+            title={t('reports.filters')}
           >
             <Filter size={20} />
           </button>
@@ -2662,7 +2662,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
           className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"
           >
             <Plus size={16} className="mr-2 inline" /> 
-            <span className="hidden sm:inline">{t('newReport')}</span>
+            <span className="hidden sm:inline">{t('reports.new')}</span>
             <span className="sm:hidden">{t('addBtn')}</span>
           </button>
         </div>
@@ -3244,13 +3244,13 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <div>
                   {editingId && canEditReport(reports.find(r => r.id === editingId)!) && (
                     <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2">
-                      <Trash2 size={16} /> {t('delete')}
+                      <Trash2 size={16} /> {t('common.delete')}
                     </button>
                   )}
                 </div>
                 <div className="flex gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
-                  <button type="submit" className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">{editingId ? t('update') : t('save')}</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
+                  <button type="submit" className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">{editingId ? t('common.update') : t('common.save')}</button>
                 </div>
               </div>
             </form>
@@ -3331,12 +3331,12 @@ const CompaniesView: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm(t('confirmDeleteCompany'))) {
+    if (confirm(t('reports.confirmDeleteCompany'))) {
       try {
         await db.deleteCompany(id);
         loadCompanies();
       } catch (err: any) {
-        alert(t('deleteError') + (err.message || JSON.stringify(err)));
+        alert(t('reports.deleteError') + (err.message || JSON.stringify(err)));
       }
     }
   };
@@ -3387,7 +3387,7 @@ const CompaniesView: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900">{t('companiesManagement')}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t('projects.companiesManagement')}</h1>
         <button onClick={resetForm} className="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl shadow-lg hover:bg-purple-700 transition-all">
           <Plus size={16} className="mr-2 inline" /> {t('createCompanyBtn')}
         </button>
@@ -3401,7 +3401,7 @@ const CompaniesView: React.FC = () => {
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('companyName')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Premium</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('companyStatus')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('actions')}</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -3426,10 +3426,10 @@ const CompaniesView: React.FC = () => {
                     <button onClick={() => handleToggleStatus(c.id, c.status)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('deactivate') : t('activate')}>
                       {c.status === 'active' ? <><EyeOff size={16} /> Disattiva</> : <><Eye size={16} /> Attiva</>}
                     </button>
-                    <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('edit')}>
+                    <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('common.edit')}>
                       <Pencil size={16} /> Modifica
                     </button>
-                    <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('delete')}>
+                    <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
                       <Trash2 size={16} /> Elimina
                     </button>
                   </td>
@@ -3513,9 +3513,9 @@ const CompaniesView: React.FC = () => {
                 </>
               )}
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('cancel')}</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                 <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
-                  {isSubmitting ? '...' : (editingId ? t('update') : t('createCompanyBtn'))}
+                  {isSubmitting ? '...' : (editingId ? t('common.update') : t('createCompanyBtn'))}
                 </button>
               </div>
             </form>
