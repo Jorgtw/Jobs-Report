@@ -4,6 +4,8 @@ import { legacy as itLegacy } from './it/legacy';
 import { communications as itCommunications } from './it/communications';
 import { projects as itProjects } from './it/projects';
 import { reports as itReports } from './it/reports';
+import { dashboard as itDashboard } from './it/dashboard';
+import { landing as itLanding } from './it/landing';
 import { translations } from '../translations';
 
 export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
@@ -18,6 +20,8 @@ export const baseIT = {
   communications: itCommunications,
   projects: itProjects,
   reports: itReports,
+  dashboard: itDashboard,
+  landing: itLanding,
 };
 
 // --- TypeScript Magic for Dot Notation ---
@@ -27,6 +31,8 @@ export type TranslationKey =
   | `communications.${keyof typeof itCommunications & string}`
   | `projects.${keyof typeof itProjects & string}`
   | `reports.${keyof typeof itReports & string}` 
+  | `dashboard.${keyof typeof itDashboard & string}`
+  | `landing.${keyof typeof itLanding & string}`
   | string; 
 
 /**
@@ -35,11 +41,11 @@ export type TranslationKey =
  */
 export const allTranslations: Record<Language, any> = {
   it: baseIT,
-  en: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.en },
-  es: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.es },
-  pl: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.pl },
-  tr: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.tr },
-  da: { common: itCommon, auth: itAuth, communications: itCommunications, projects: itProjects, reports: itReports, legacy: translations.da },
+  en: { ...baseIT, legacy: translations.en },
+  es: { ...baseIT, legacy: translations.es },
+  pl: { ...baseIT, legacy: translations.pl },
+  tr: { ...baseIT, legacy: translations.tr },
+  da: { ...baseIT, legacy: translations.da },
 };
 
 /**
