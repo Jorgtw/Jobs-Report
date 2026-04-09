@@ -1,14 +1,11 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { utils, writeFile } from 'xlsx';
-import { translations, Language } from '../translations';
+import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
 
 
-const getT = (lang: Language) => (key: keyof typeof translations['it']) => {
-  const currentTranslations = translations[lang] || translations['it'];
-  return (currentTranslations as any)[key] || (translations['it'] as any)[key] || key;
-};
+const getT = (lang: Language) => (key: TranslationKey | string) => resolveKey(lang, key);
 
 export const exportToPDF = (exportRows: any[], lang: Language, userName: string) => {
   const t = getT(lang);

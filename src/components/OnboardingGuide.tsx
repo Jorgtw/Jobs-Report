@@ -1,23 +1,24 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { X, ChevronRight, Check } from 'lucide-react';
-import { translations, Language } from '../translations';
+import { Language } from '../translations';
+import { useTranslation } from '../App';
+import { TranslationKey } from '../i18n';
 
 interface OnboardingStep {
   target?: string; // CSS selector
-  titleKey: keyof typeof translations['it'];
-  bodyKey: keyof typeof translations['it'];
+  titleKey: TranslationKey | string;
+  bodyKey: TranslationKey | string;
   position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   requiresSidebar?: boolean;
 }
 
 interface OnboardingGuideProps {
-  lang: Language;
   userRole: string;
   onComplete: () => void;
   onStepChange?: (step: OnboardingStep) => void;
 }
 
-const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onComplete, onStepChange }) => {
+const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ userRole, onComplete, onStepChange }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -25,9 +26,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ lang, userRole, onCom
 
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
-  const t = (key: string) => {
-    return (translations[lang] as any)[key] || (translations['it'] as any)[key] || key;
-  };
+  const { t } = useTranslation();
 
   const steps: OnboardingStep[] = useMemo(() => {
     // ... same as before

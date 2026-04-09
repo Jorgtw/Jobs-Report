@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
-import { LanguageContext, localeMap } from '../App';
+import { useTranslation, localeMap } from '../App';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -118,7 +118,7 @@ const UserMultiSelect = ({
 };
 
 const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPremium }) => {
-  const { t, lang } = React.useContext(LanguageContext);
+  const { t, lang } = useTranslation();
   
   const formatDate = (date: number | Date | string, options: Intl.DateTimeFormatOptions = { 
     day: '2-digit', 
@@ -210,11 +210,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         </div>
         
         <h2 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
-          {t('premium_feature_title')}
+          {t('communications.premiumFeature')}
         </h2>
         
         <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium leading-relaxed">
-          {t('internal_communications_desc')}
+          {t('communications.internalCommunicationsDesc')}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mb-10">
@@ -236,7 +236,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           className="px-8 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2"
         >
           <Sparkles size={18} />
-          {t('upgrade_now')}
+          {t('communications.upgradeNow')}
         </button>
       </div>
     );
@@ -430,12 +430,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="w-10 h-10 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-950 mb-2">{t('premium_feature_title')}</h2>
+        <h2 className="text-2xl font-bold text-slate-955 mb-2">{t('communications.premiumFeature')}</h2>
         <p className="text-gray-500 text-center max-w-md mb-8">
-          {t('premium_feature_desc')}
+          {t('communications.premiumRequiredDesc')}
         </p>
         <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg transition-all">
-          {t('upgrade_now')}
+          {t('communications.upgradeNow')}
         </button>
       </div>
     );
@@ -448,10 +448,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-100 bg-gray-50/80">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-950">{t('internal_communications')}</h2>
+            <h2 className="text-xl font-bold text-slate-950">{t('communications.internalCommunications')}</h2>
             <button 
               onClick={() => setIsNewMessageModalOpen(true)}
               className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm"
+              title={t('communications.newCommunication')}
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -503,7 +504,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
                 <FileText className="w-6 h-6 text-gray-300" />
               </div>
-              <p className="text-sm text-gray-400">{t('no_internal_communications')}</p>
+              <p className="text-sm text-gray-400">{t('communications.noCommunicationsYet')}</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
@@ -708,7 +709,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
               <Inbox className="w-10 h-10 text-blue-200" />
             </div>
-            <h3 className="text-xl font-bold text-slate-950 mb-2">{t('internal_communications')}</h3>
+            <h3 className="text-xl font-bold text-slate-950 mb-2">{t('communications.internalCommunications')}</h3>
             <p className="text-gray-400 max-w-sm">
               {t('noThreadSelected')}
             </p>
@@ -721,7 +722,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-950">{t('new_communication')}</h2>
+              <h2 className="text-xl font-bold text-slate-950">{t('communications.newCommunication')}</h2>
               <button onClick={() => setIsNewMessageModalOpen(false)} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
@@ -729,7 +730,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('recipient')}</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('communications.recipient')}</label>
                 <div className="flex gap-2 mb-3">
                   {['all', 'user'].map((type) => (
                     <button
@@ -737,7 +738,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       onClick={() => setNewMsg(prev => ({ ...prev, targetType: type as any, targetIds: [] }))}
                       className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all ${newMsg.targetType === type ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-300'}`}
                     >
-                      {type === 'all' ? t('all') : t('user')}
+                      {type === 'all' ? t('communications.allUsers') : t('user')}
                     </button>
                   ))}
                 </div>
@@ -748,7 +749,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       users={workers}
                       selectedIds={newMsg.targetIds}
                       onChange={(ids) => setNewMsg(prev => ({ ...prev, targetIds: ids }))}
-                      placeholder={t('selectUsers' as any) || "Seleziona uno o più utenti..."}
+                      placeholder={t('communications.selectUsers')}
                       t={t}
                     />
                   </div>
@@ -787,7 +788,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('message')}</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('communications.message')}</label>
                 <textarea 
                   rows={4}
                   value={newMsg.content}

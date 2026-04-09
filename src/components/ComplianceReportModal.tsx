@@ -1,27 +1,23 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { X, Camera, Trash2, FileDown, CheckCircle2, PenLine } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
-import { translations } from '../translations';
+import { useTranslation } from '../App';
 import { WorkReport } from '../types';
 
 interface ComplianceReportModalProps {
   report: WorkReport;
   onClose: () => void;
   onGenerate: (photos: string[], signature: string) => void;
-  lang: string;
 }
 
-export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ report, onClose, onGenerate, lang }) => {
+export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ report, onClose, onGenerate }) => {
   const sigCanvas = useRef<SignatureCanvas>(null);
   const sigContainerRef = useRef<HTMLDivElement>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
 
-  const t = (key: keyof typeof translations['it']) => {
-    const current = (translations as any)[lang] || translations['it'];
-    return current[key] || translations['it'][key] || key;
-  };
+  const { t } = useTranslation();
 
   // Fix for react-signature-canvas: resize the internal canvas to match its CSS container
   useEffect(() => {

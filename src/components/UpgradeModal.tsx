@@ -1,17 +1,13 @@
 import React from 'react';
 import { X, Trophy, Heart, CreditCard, Landmark } from 'lucide-react';
-import { translations } from '../translations';
+import { useTranslation } from '../App';
 
 interface UpgradeModalProps {
   onClose: () => void;
-  lang: string;
 }
 
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, lang }) => {
-  const t = (key: keyof typeof translations['it']) => {
-    const current = (translations as any)[lang] || translations['it'];
-    return current[key] || translations['it'][key] || key;
-  };
+export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
+  const { t } = useTranslation();
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center sm:p-4">
@@ -26,9 +22,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, lang }) => 
             <Trophy size={40} />
           </div>
 
-          <h2 className="text-2xl font-black text-slate-900 mb-2">{t('complianceUpgradeTitle')}</h2>
+          <h2 className="text-2xl font-black text-slate-900 mb-2">{t('communications.upgradeTitle')}</h2>
           <p className="text-slate-500 mb-8 leading-relaxed">
-            {t('complianceUpgradeDesc')}
+            {t('communications.upgradeDesc')}
           </p>
 
           <div className="w-full space-y-4 mb-8">
@@ -58,7 +54,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, lang }) => 
             className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-blue-200 hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
           >
             <Heart size={20} fill="currentColor" />
-            {t('complianceUpgradeCTA')}
+            {t('communications.upgradeCTA')}
           </button>
           
           <p className="mt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">

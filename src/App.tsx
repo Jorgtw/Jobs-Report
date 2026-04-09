@@ -3693,7 +3693,6 @@ const App: React.FC = () => {
         </Routes>
         {showOnboarding && user && user.role === 'admin' && (
           <OnboardingGuide 
-            lang={lang} 
             userRole={user.role} 
             onComplete={() => {
               localStorage.setItem('onboarding_v1', 'completed');
