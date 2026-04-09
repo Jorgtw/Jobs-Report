@@ -48,4 +48,6 @@ export const common = {
   demoPasswordDisabled: "La modifica della password è disabilitata per gli account dimostrativi.",
   needHelpChat: "Hai bisogno di aiuto? Chatta con noi",
   pendingHoursSummary: "Ore in attesa di approvazione",
+  expenses: "Spese",
+  grandTotal: "Totale Generale",
 };

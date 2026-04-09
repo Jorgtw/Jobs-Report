@@ -31,40 +31,40 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ userRole, onComplete,
     // ... same as before
     const baseSteps: OnboardingStep[] = [
       { 
-        titleKey: 'onboarding_welcome_title', 
-        bodyKey: 'onboarding_welcome_body', 
+        titleKey: 'help.onboarding_welcome_title', 
+        bodyKey: 'help.onboarding_welcome_body', 
         position: 'center' 
       },
       { 
         target: '[data-onboarding="sidebar-clients"]', 
-        titleKey: 'onboarding_clients_title', 
-        bodyKey: 'onboarding_clients_body', 
+        titleKey: 'help.onboarding_clients_title', 
+        bodyKey: 'help.onboarding_clients_body', 
         position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
         target: '[data-onboarding="sidebar-personnel"]', 
-        titleKey: 'onboarding_personnel_title', 
-        bodyKey: 'onboarding_personnel_body', 
+        titleKey: 'help.onboarding_personnel_title', 
+        bodyKey: 'help.onboarding_personnel_body', 
         position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
         target: '[data-onboarding="sidebar-projects"]', 
-        titleKey: 'onboarding_projects_title', 
-        bodyKey: 'onboarding_projects_body', 
+        titleKey: 'help.onboarding_projects_title', 
+        bodyKey: 'help.onboarding_projects_body', 
         position: windowSize.width < 768 ? 'bottom' : 'right',
         requiresSidebar: true
       },
       { 
         target: '[data-onboarding="new-report-btn"]', 
-        titleKey: 'onboarding_reports_title', 
-        bodyKey: 'onboarding_reports_body', 
+        titleKey: 'help.onboarding_reports_title', 
+        bodyKey: 'help.onboarding_reports_body', 
         position: 'bottom' 
       },
       { 
-        titleKey: 'onboarding_finish_title', 
-        bodyKey: 'onboarding_finish_body', 
+        titleKey: 'help.onboarding_finish_title', 
+        bodyKey: 'help.onboarding_finish_body', 
         position: 'center' 
       }
     ];
@@ -278,16 +278,16 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ userRole, onComplete,
             onClick={handleSkip}
             className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors px-2"
           >
-            {t('onboarding_skip')}
+            {t('help.onboarding_skip')}
           </button>
           <button 
             onClick={handleNext}
             className="ml-auto px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2"
           >
             {stepIndex === steps.length - 1 ? (
-              <><Check size={18} /> {t('onboarding_finish')}</>
+              <><Check size={18} /> {t('help.onboarding_finish')}</>
             ) : (
-              <>{t('onboarding_next')} <ChevronRight size={18} /></>
+              <>{t('help.onboarding_next')} <ChevronRight size={18} /></>
             )}
           </button>
         </div>

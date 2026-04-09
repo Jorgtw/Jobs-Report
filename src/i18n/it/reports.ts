@@ -26,7 +26,6 @@ export const reports = {
   placeholderActivity: "Cosa hai fatto oggi?",
   expenseTypePlaceholder: "Es. Cena, Trasferta...",
   expenseNotesPlaceholder: "Note spesa...",
-  placeholderExpenseNotes: "Note spesa...",
   activityManagement: "Gestione Attività",
   totalHoursLabel: "Ore totali",
   teamTotal: "Totale Complessivo (Squadra)",
@@ -116,5 +115,15 @@ export const reports = {
   complianceErrorPDF: "Errore durante la generazione del PDF. Riprova.",
   confirmUpdateStatus: "Vuoi aggiornare lo stato di {count} record filtrati a {status}?",
   updateError: "Errore durante l'aggiornamento: ",
-  statusLabel: "Stato"
+  statusLabel: "Stato",
+  operator: "Operaio",
+  grandTotal: "Totale Generale",
+  hourlyCost: "Importo Costo",
+  hourlyRevenue: "Importo Vendita",
+  workerCol: "Operaio",
+  totalTeamHours: "Totale Ore Squadra",
+  clientSignature: "Firma del Cliente",
+  photoEvidence: "Foto Evidenza",
+  descriptionOfWork: "Descrizione Lavori",
+  workTeam: "Squadra di Lavoro"
 };

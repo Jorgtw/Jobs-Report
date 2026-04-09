@@ -55,8 +55,30 @@ export const help = {
   aiErrorPrefix: "Mi dispiace, si è verificato un errore: ",
   aiUserLabel: "Tu",
   aiBotLabel: "Assistente AI",
-  mobileWelcomeBtn: "Chatta con l'Assistente AI",
+  chatWithAI: "Chatta con l'Assistente AI",
   
+  // Onboarding Aliases (for migration)
+  onboarding_welcome_title: "Benvenuto su Jobs-Report! 👋",
+  onboarding_welcome_body: "Questa guida ti aiuterà a configurare il tuo account in pochi secondi. Cominciamo!",
+  onboarding_clients_title: "Archivio Clienti",
+  onboarding_clients_body: "Inizia da qui: inserisci i tuoi clienti per poterli associare ai futuri progetti.",
+  onboarding_personnel_title: "La tua Squadra",
+  onboarding_personnel_body: "Aggiungi i tuoi collaboratori e imposta i loro costi orari per un calcolo preciso della redditività.",
+  onboarding_projects_title: "Gestione Cantieri",
+  onboarding_projects_body: "Crea i tuoi progetti, imposta i prezzi di vendita e monitora i margini di profitto.",
+  onboarding_reports_title: "Rapportini di Lavoro",
+  onboarding_reports_body: "Qui troverai l'elenco di tutti i lavori inseriti. Puoi filtrarli, esportarli in PDF/Excel o generare Rapporti di Conformità.",
+  onboarding_finish_title: "Tutto Pronto!",
+  onboarding_finish_body: "Ora sei pronto a gestire i tuoi lavori come un professionista. Puoi riavviare questo tour in qualsiasi momento dalla sezione Aiuto.",
+  onboarding_skip: "Salta",
+  onboarding_next: "Avanti",
+  onboarding_finish: "Fine",
+
+  // AI Assistant Aliases
+  aiAssistantName: "Assistente Jobs Report",
+  aiAssistantSubtitle: "Manuale Parlante",
+  aiWelcomeMessage: "Ciao! Sono il manuale intelligente di Jobs Report. Chiedimi pure come funziona l'app!",
+
   // Aliases for refactoring consistency
   get helpTitle() { return this.title },
   get helpSubtitle() { return this.subtitle },

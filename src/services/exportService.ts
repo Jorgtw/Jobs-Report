@@ -4,7 +4,6 @@ import { utils, writeFile } from 'xlsx';
 import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
 
-
 const getT = (lang: Language) => (key: TranslationKey | string) => resolveKey(lang, key);
 
 export const exportToPDF = (exportRows: any[], lang: Language, userName: string) => {
@@ -14,12 +13,12 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
 
   doc.setFontSize(18);
   doc.setTextColor(30, 64, 175);
-  doc.text(t('workSummary'), 14, 20);
+  doc.text(t('common.workSummary'), 14, 20);
 
   doc.setFontSize(9);
   doc.setTextColor(100);
-  doc.text(`${t('operator')}: ${userName}`, 14, 28);
-  doc.text(`${t('generatedOn')}: ${now}`, 14, 33);
+  doc.text(`${t('reports.operator')}: ${userName}`, 14, 28);
+  doc.text(`${t('reports.generatedOn')}: ${now}`, 14, 33);
 
   const NumberFormat = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -54,7 +53,7 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
     '',
     '',
     '',
-    t('grandTotal').toUpperCase(),
+    t('reports.grandTotal').toUpperCase(),
     '',
     NumberFormat.format(totalHours),
     '',
@@ -68,18 +67,18 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
   autoTable(doc, {
     startY: 40,
     head: [[
-      t('date'),
-      t('clients'),
-      t('project'),
-      t('personnel'),
-      t('description'),
-      t('hours'),
-      t('hourlyCost'),
-      t('personnelCost'),
-      t('expenses'),
-      t('hourlyRevenue'),
-      t('totalRevenue'),
-      t('statusLabel')
+      t('reports.date'),
+      t('common.clients'),
+      t('common.projects'),
+      t('common.personnel'),
+      t('reports.description'),
+      t('common.hours'),
+      t('reports.hourlyCost'),
+      t('reports.personnelCost'),
+      t('common.expenses'),
+      t('reports.hourlyRevenue'),
+      t('reports.totalRevenue'),
+      t('reports.statusLabel')
     ]],
     body: tableData,
     theme: 'grid',
@@ -111,36 +110,36 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
       totalExpenses += r.expenses || 0;
 
       return {
-        [t('date')]: r.date,
-        [t('clients')]: r.clientName,
-        [t('project')]: r.projectName,
-        [t('personnel')]: r.workerName,
-        [t('subcontractorLabel')]: r.subcontractorName || '',
-        [t('description')]: r.description,
-        [t('hours')]: r.hours,
-        [t('hourlyCost')]: r.hourlyCost || 0,
-        [t('personnelCost')]: r.cost || 0,
-        [t('expenses')]: r.expenses || 0,
-        [t('hourlyRevenue')]: r.hourlyRevenue || 0,
-        [t('totalRevenue')]: r.revenue || 0,
-        [t('statusLabel')]: r.paid
+        [t('reports.date')]: r.date,
+        [t('common.clients')]: r.clientName,
+        [t('common.projects')]: r.projectName,
+        [t('common.personnel')]: r.workerName,
+        [t('reports.summarySubcontractorCompany')]: r.subcontractorName || '',
+        [t('reports.description')]: r.description,
+        [t('common.hours')]: r.hours,
+        [t('reports.hourlyCost')]: r.hourlyCost || 0,
+        [t('reports.personnelCost')]: r.cost || 0,
+        [t('common.expenses')]: r.expenses || 0,
+        [t('reports.hourlyRevenue')]: r.hourlyRevenue || 0,
+        [t('reports.totalRevenue')]: r.revenue || 0,
+        [t('reports.statusLabel')]: r.paid
       };
     });
 
     worksheetData.push({
-      [t('date')]: '',
-      [t('clients')]: '',
-      [t('project')]: '',
-      [t('personnel')]: t('grandTotal').toUpperCase(),
-      [t('subcontractorLabel')]: '',
-      [t('description')]: '',
-      [t('hours')]: totalHours,
-      [t('hourlyCost')]: '',
-      [t('personnelCost')]: totalCost,
-      [t('expenses')]: totalExpenses,
-      [t('hourlyRevenue')]: '',
-      [t('totalRevenue')]: totalRevenue,
-      [t('statusLabel')]: ''
+      [t('reports.date')]: '',
+      [t('common.clients')]: '',
+      [t('common.projects')]: '',
+      [t('common.personnel')]: t('reports.grandTotal').toUpperCase(),
+      [t('reports.summarySubcontractorCompany')]: '',
+      [t('reports.description')]: '',
+      [t('common.hours')]: totalHours,
+      [t('reports.hourlyCost')]: '',
+      [t('reports.personnelCost')]: totalCost,
+      [t('common.expenses')]: totalExpenses,
+      [t('reports.hourlyRevenue')]: '',
+      [t('reports.totalRevenue')]: totalRevenue,
+      [t('reports.statusLabel')]: ''
     });
 
     const worksheet = utils.json_to_sheet(worksheetData);
@@ -168,7 +167,7 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     worksheet['!cols'] = maxWidths.map((w: number) => ({ wch: w + 2 }));
 
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, t('workSummary'));
+    utils.book_append_sheet(workbook, worksheet, t('common.workSummary'));
 
     writeFile(workbook, `JobsReport_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
   } catch (err: any) {
@@ -177,9 +176,6 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
   }
 };
 
-// ============================================================
-// COMPLIANCE REPORT PDF
-// ============================================================
 export const generateCompliancePDF = async (
   report: any,
   photos: string[],
@@ -196,7 +192,6 @@ export const generateCompliancePDF = async (
   const dateStr = now.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
-  // Convert ISO date (yyyy-mm-dd) to European format (dd/mm/yyyy)
   const formatDateEU = (isoDate: string) => {
     if (!isoDate) return '---';
     const parts = isoDate.split('-');
@@ -205,7 +200,6 @@ export const generateCompliancePDF = async (
   };
   const reportDateEU = formatDateEU(report.date);
 
-  // ── HEADER BAR ──────────────────────────────────────────────────────────
   doc.setFillColor(30, 64, 175);
   doc.rect(0, 0, pageW, 28, 'F');
   doc.setTextColor(255, 255, 255);
@@ -217,7 +211,6 @@ export const generateCompliancePDF = async (
   doc.text(`${dateStr}  •  ${timeStr}`, margin, 19);
   doc.text(`#${(report.id || '').substring(0, 8).toUpperCase()}`, pageW - margin, 19, { align: 'right' });
 
-  // ── INTESTAZIONE AZIENDALE ───────────────────────────────────────────────
   let y = 34;
   const hasCompanyData = report.companyName || report.companyAddress || report.companyPhone || report.companyEmail;
   if (hasCompanyData) {
@@ -243,13 +236,11 @@ export const generateCompliancePDF = async (
     y += 6;
   }
 
-  // ── DIVIDER ──────────────────────────────────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.5);
   doc.line(margin, y, pageW - margin, y);
-  y += 6; // Compacted from 8
+  y += 6;
 
-  // ── DATI CANTIERE ────────────────────────────────────────────────────────
   const drawLabelValue = (label: string, value: string, x: number, yPos: number, maxW = 88) => {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
@@ -263,36 +254,34 @@ export const generateCompliancePDF = async (
     return yPos + 5 + lines.length * 5;
   };
 
-  drawLabelValue(t('date'), reportDateEU, margin, y);
-  drawLabelValue(t('clients'), report.clientName || '---', margin, y + 14); // Compacted from 18
-  drawLabelValue(t('project'), report.projectName || '---', margin + contentW / 2, y);
-  if (report.projectAddress) drawLabelValue(t('address'), report.projectAddress, margin + contentW / 2, y + 14); // Compacted from 18
-  y += 32; // Compacted from 40
+  drawLabelValue(t('reports.date'), reportDateEU, margin, y);
+  drawLabelValue(t('common.clients'), report.clientName || '---', margin, y + 14);
+  drawLabelValue(t('common.projects'), report.projectName || '---', margin + contentW / 2, y);
+  if (report.projectAddress) drawLabelValue(t('projects.address'), report.projectAddress, margin + contentW / 2, y + 14);
+  y += 32;
 
-  // ── DESCRIZIONE LAVORI ───────────────────────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
-  y += 6; // Compacted from 8
+  y += 6;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
-  doc.text(t('descriptionOfWork').toUpperCase(), margin, y);
-  y += 5; // Compacted from 6
+  doc.text(t('reports.descriptionOfWork').toUpperCase(), margin, y);
+  y += 5;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(51, 65, 85);
   const descLines = doc.splitTextToSize(report.description || '---', contentW);
   doc.text(descLines, margin, y);
-  y += descLines.length * 5 + 6; // Compacted from 8
+  y += descLines.length * 5 + 6;
 
-  // ── SQUADRA DI LAVORO — solo Nome + Ore ─────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
-  y += 6; // Compacted from 8
+  y += 6;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
-  doc.text(t('workTeam').toUpperCase(), margin, y);
+  doc.text(t('reports.workTeam').toUpperCase(), margin, y);
   y += 4;
 
   const mainHours = report.manualTotalHours !== undefined && report.manualTotalHours !== null
@@ -312,9 +301,9 @@ export const generateCompliancePDF = async (
 
   autoTable(doc, {
     startY: y,
-    head: [[t('workerCol'), t('hours')]],
+    head: [[t('reports.workerCol'), t('common.hours')]],
     body: teamRows,
-    foot: [[t('totalTeamHours').toUpperCase(), `${totalTeamHours.toFixed(2)} h`]],
+    foot: [[t('reports.totalTeamHours').toUpperCase(), `${totalTeamHours.toFixed(2)} h`]],
     theme: 'grid',
     headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 2 },
     bodyStyles: { fontSize: 9, cellPadding: 2, textColor: [30, 41, 59] },
@@ -326,20 +315,19 @@ export const generateCompliancePDF = async (
     }
   });
 
-  y = (doc as any).lastAutoTable.finalY + 8; // Compacted from 10
+  y = (doc as any).lastAutoTable.finalY + 8;
 
-  // ── FIRMA ────────────────────────────────────────────────────────────────
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
-  y += 6; // Compacted from 8
+  y += 6;
 
-  const sigW = contentW * 0.6; // Slightly narrower sig area
-  const sigH = 34; // Slightly shorter
+  const sigW = contentW * 0.6;
+  const sigH = 34;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 64, 175);
-  doc.text(t('clientSignature').toUpperCase(), margin, y);
+  doc.text(t('reports.clientSignature').toUpperCase(), margin, y);
   y += 4;
 
   doc.setDrawColor(203, 213, 225);
@@ -357,24 +345,21 @@ export const generateCompliancePDF = async (
   doc.setTextColor(100, 116, 139);
   doc.text(`${report.clientName || 'Cliente'}  —  ${reportDateEU}`, margin, y + 4);
 
-  // ── PAGE 2: PHOTO EVIDENCE (Grid 2+1 for 3 photos) ───────────────────────
   if (photos && photos.length > 0) {
     doc.addPage();
     
-    // Header page 2
     doc.setFillColor(30, 64, 175);
     doc.rect(0, 0, pageW, 20, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
-    doc.text(t('photoEvidence').toUpperCase(), margin, 13);
+    doc.text(t('reports.photoEvidence').toUpperCase(), margin, 13);
     
     const photoSpacing = 6;
     const photoW = (contentW - photoSpacing) / 2;
-    const photoH = 90; // Standard size for top 2
+    const photoH = 90;
     let currentY = 30;
 
-    // First row: 2 photos
     for (let i = 0; i < Math.min(2, photos.length); i++) {
         const xPos = margin + i * (photoW + photoSpacing);
         try {
@@ -382,23 +367,21 @@ export const generateCompliancePDF = async (
             doc.setFontSize(7);
             doc.setTextColor(148, 163, 184);
             doc.text(`Photo #${i + 1}`, xPos, currentY + photoH + 4);
-        } catch (_) { /* skip */ }
+        } catch (_) { }
     }
 
-    // Second row: 1 large centered photo (if 3 photos exist)
     if (photos.length >= 3) {
         currentY += photoH + 15;
-        const bottomPhotoW = contentW * 0.8; // Slightly larger for emphasis
+        const bottomPhotoW = contentW * 0.8;
         const bottomPhotoH = 100;
         const centerX = margin + (contentW - bottomPhotoW) / 2;
         try {
             doc.addImage(photos[2], 'JPEG', centerX, currentY, bottomPhotoW, bottomPhotoH);
             doc.text(`Photo #3`, centerX, currentY + bottomPhotoH + 4);
-        } catch (_) { /* skip */ }
+        } catch (_) { }
     }
   }
 
-  // ── FOOTER SU OGNI PAGINA ────────────────────────────────────────────────
   const totalPages = doc.internal.pages.length - 1;
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -411,33 +394,20 @@ export const generateCompliancePDF = async (
     doc.text(`${i} / ${totalPages}`, pageW - margin, footerY, { align: 'right' });
   }
 
-  // ── APRI NEL BROWSER + SCARICA ───────────────────────────────────────────
   const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
   window.open(doc.output('bloburl'), '_blank');
   doc.save(fileName);
 
-
-  // ── CARICAMENTO SU STORAGE + INVIO EMAIL ────────────────────────────────
   if (adminEmails.length > 0) {
     const emailsToNotify = adminEmails.filter(Boolean);
     if (emailsToNotify.length > 0) {
       try {
-        // 1. Genera Blob dal PDF
         const pdfBlob = doc.output('blob');
-        
-        // 2. Definisci il percorso: company_id/reports/filename
         const compId = report.companyId || (report as any).company_id;
         if (!compId) throw new Error("Missing companyId for storage upload");
-        
         const storagePath = `${compId}/reports/${fileName}`;
-
-        // 3. Carica su Supabase Storage
         await db.uploadFile('compliance-reports', storagePath, pdfBlob);
-
-        // 4. Ottieni Signed URL (valido 7 giorni)
         const signedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
-
-        // 5. Invia Email con il link
         await fetch('/api/sendComplianceEmail', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -450,7 +420,7 @@ export const generateCompliancePDF = async (
             date: report.date || '',
             totalHours: totalTeamHours.toFixed(2),
             userName: report.userName || '',
-            pdfUrl: signedUrl, // Passiamo l'URL invece del base64
+            pdfUrl: signedUrl,
           }),
         });
       } catch (e) {

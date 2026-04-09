@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Volume2, VolumeX, Square } from 'lucide-react';
-import { LanguageContext } from '../App';
+import { useTranslation } from '../App';
 
 interface Message {
   role: 'user' | 'model';
@@ -8,7 +8,7 @@ interface Message {
 }
 
 const AIChatAssistant: React.FC = () => {
-  const { t } = useContext(LanguageContext);
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -108,10 +108,10 @@ const AIChatAssistant: React.FC = () => {
           speak(data.text, data.lang);
         }
       } else if (data.error) {
-        setMessages([...newMessages, { role: 'model', parts: [{ text: t('aiErrorPrefix') + data.error }] }]);
+        setMessages([...newMessages, { role: 'model', parts: [{ text: t('help.aiErrorPrefix') + data.error }] }]);
       }
     } catch (error) {
-      setMessages([...newMessages, { role: 'model', parts: [{ text: t('aiErrorConnection') }] }]);
+      setMessages([...newMessages, { role: 'model', parts: [{ text: t('help.aiErrorConnection') }] }]);
     } finally {
       setIsLoading(false);
     }
@@ -127,8 +127,8 @@ const AIChatAssistant: React.FC = () => {
                 <Bot size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight">{t('aiAssistantName')}</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('aiAssistantSubtitle')}</p>
+                <h3 className="text-sm font-black tracking-tight">{t('help.aiAssistantName')}</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('help.aiAssistantSubtitle')}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -166,7 +166,7 @@ const AIChatAssistant: React.FC = () => {
                   <Sparkles size={24} />
                 </div>
                 <p className="text-xs font-bold text-slate-500 px-10">
-                  {t('aiWelcomeMessage')}
+                  {t('help.aiWelcomeMessage')}
                 </p>
               </div>
             )}
@@ -184,7 +184,7 @@ const AIChatAssistant: React.FC = () => {
                   <div className="flex items-center gap-2 mb-1 opacity-60">
                     {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
                     <span className="text-[10px] font-black uppercase tracking-tighter">
-                      {msg.role === 'user' ? t('aiUserLabel') : t('aiBotLabel')}
+                      {msg.role === 'user' ? t('help.aiUserLabel') : t('help.aiBotLabel')}
                     </span>
                   </div>
                   <div className="whitespace-pre-wrap leading-relaxed font-medium">
@@ -198,7 +198,7 @@ const AIChatAssistant: React.FC = () => {
               <div className="flex justify-start">
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 rounded-tl-none flex items-center gap-2">
                   <Loader2 size={16} className="animate-spin text-blue-500" />
-                  <span className="text-xs font-bold text-slate-400">{t('aiWriting')}</span>
+                  <span className="text-xs font-bold text-slate-400">{t('help.aiWriting')}</span>
                 </div>
               </div>
             )}
@@ -210,7 +210,7 @@ const AIChatAssistant: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={t('aiPlaceholder')}
+              placeholder={t('help.aiPlaceholder')}
               className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
             />
             <button 
