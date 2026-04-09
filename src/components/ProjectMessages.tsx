@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, User as UserIcon, MessageSquare, Clock, Filter, Search, ShieldAlert, Mail, Trash2 } from 'lucide-react';
+import { Send, MessageSquare, Mail, Trash2 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { useTranslation } from '../App';
 

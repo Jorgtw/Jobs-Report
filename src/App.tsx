@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
-import { translations, Language } from './translations';
+import { Language } from './translations';
 import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
@@ -58,19 +58,20 @@ import AIChatAssistant from './components/AIChatAssistant';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import ProjectMessages from './components/ProjectMessages';
 import CommunicationsHub from './components/CommunicationsHub';
+import { TranslationKey, resolveKey } from './i18n';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
   lang: Language;
   setLang: (l: Language) => void;
-  t: (key: keyof typeof translations['it']) => string;
+  t: (key: TranslationKey) => string;
 }>({
   lang: 'it',
   setLang: () => { },
   t: (key) => key as string,
 });
 
-const useTranslation = () => useContext(LanguageContext);
+export const useTranslation = () => useContext(LanguageContext);
 
 export const localeMap: Record<string, string> = {
   it: 'it-IT',
@@ -1774,7 +1775,7 @@ const ClientsView: React.FC = () => {
 
 // --- Projects View ---
 const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [personnel, setPersonnel] = useState<User[]>([]);
@@ -2071,7 +2072,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                 </div>
               </form>
             ) : (
-              <ProjectMessages projectId={editingId!} user={user} lang={lang} />
+              <ProjectMessages projectId={editingId!} user={user} />
             )}
           </div>
         </div>
@@ -3228,13 +3229,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         </div>
       )}
       {isUpgradeModalOpen && (
-        <UpgradeModal lang={lang} onClose={() => setIsUpgradeModalOpen(false)} />
+        <UpgradeModal onClose={() => setIsUpgradeModalOpen(false)} />
       )}
 
       {complianceReportToSign && (
         <ComplianceReportModal 
           report={complianceReportToSign} 
-          lang={lang} 
           onClose={() => setComplianceReportToSign(null)} 
           onGenerate={handleGenerateCompliance} 
         />
@@ -3629,9 +3629,8 @@ const App: React.FC = () => {
     window.location.hash = '/personnel';
   };
 
-  const t = (key: keyof typeof translations['it']): string => {
-    const currentTranslations = translations[lang] || translations['it'];
-    return (currentTranslations as any)[key] || (translations['it'] as any)[key] || key;
+  const t = (key: TranslationKey): string => {
+    return resolveKey(lang, key);
   };
 
   const contextValue = useMemo(() => ({ lang, setLang, t }), [lang]);

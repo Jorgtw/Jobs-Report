@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { X, ChevronRight, Check } from 'lucide-react';
-import { Language } from '../translations';
 import { useTranslation } from '../App';
 import { TranslationKey } from '../i18n';
 
