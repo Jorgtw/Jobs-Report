@@ -644,7 +644,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('archive', selectedThread.id)}
                     className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all"
                   >
-                    {t('communications.archive')}
+                    {t('communications.archiveAction')}
                   </button>
                 )}
 

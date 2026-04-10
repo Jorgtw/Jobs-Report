@@ -50,7 +50,7 @@ export const communications = {
   acknowledge: 'Conferma Ricezione',
   takeInCharge: 'Prendi in carico',
   close: 'Chiudi',
-  archive: 'Archivia',
+  archiveAction: 'Archivia',
   closed: 'Chiuso',
   archiveCommunication: 'Archivia',
   send: 'Invia',

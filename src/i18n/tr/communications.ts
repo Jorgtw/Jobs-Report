@@ -50,7 +50,7 @@ export const communications = {
   acknowledge: 'Alındığını Onayla',
   takeInCharge: 'Üstlen',
   close: 'Kapat',
-  archive: 'Arşivle',
+  archiveAction: 'Arşivle',
   closed: 'Kapalı',
   archiveCommunication: 'Arşivle',
   send: 'Gönder',

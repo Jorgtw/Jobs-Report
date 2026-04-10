@@ -50,7 +50,7 @@ export const communications = {
   acknowledge: 'Acknowledge Receipt',
   takeInCharge: 'Take in Charge',
   close: 'Close',
-  archive: 'Archive',
+  archiveAction: 'Archive',
   closed: 'Closed',
   archiveCommunication: 'Archive',
   send: 'Send',
