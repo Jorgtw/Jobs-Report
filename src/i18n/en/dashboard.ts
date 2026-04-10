@@ -44,5 +44,6 @@ export const dashboard = {
   try_demo: 'Try Demo',
   companyNamePlaceholder: "e.g. Acme Industries Ltd",
   tempPasswordPlaceholder: "Temporary password",
-  italy: "Italy",
+  italy: "",
+  premium: "Premium",
 } as const;

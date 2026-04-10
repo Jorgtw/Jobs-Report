@@ -3351,7 +3351,7 @@ const CompaniesView: React.FC = () => {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyName')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Premium</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.premium')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyStatus')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('common.actions')}</th>
               </tr>
@@ -3548,7 +3548,7 @@ const App: React.FC = () => {
     }
   }, [user?.companyId, user?.companyName, user?.isPremium]);
 
-  // Unread communications polling
+  // Unread communications Real-time subscription
   const [unreadCount, setUnreadCount] = useState(0);
   useEffect(() => {
     if (!user) return;
@@ -3558,13 +3558,44 @@ const App: React.FC = () => {
         setUnreadCount(count);
         (window as any).unreadCommunicationsCount = count;
       } catch (e) {
-        console.error("Unread polling error:", e);
+        console.error("Unread update error:", e);
       }
     };
+
     updateUnread();
-    const interval = setInterval(updateUnread, 30000); // 30s
-    return () => clearInterval(interval);
-  }, [user]);
+
+    const channel = supabase
+      .channel('global_unread_count')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'internal_communications',
+          filter: `company_id=eq.${user.companyId}`
+        },
+        () => {
+          updateUnread();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'communication_read_receipts',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          updateUnread();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, user?.companyId]);
 
   const handleLogin = (u: User) => {
     db.setCompanyId(u.companyId || (u as any).company_id);

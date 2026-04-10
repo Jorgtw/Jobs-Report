@@ -866,7 +866,8 @@ class DBService {
   }
 
   private async getRootId(id: string): Promise<string> {
-    const { data } = await supabase.from('internal_communications').select('id, parent_id').eq('id', id).single();
+    const compId = this.requireCompanyId();
+    const { data } = await supabase.from('internal_communications').select('id, parent_id').eq('id', id).eq('company_id', compId).single();
     return data?.parent_id || id;
   }
 
@@ -947,6 +948,7 @@ class DBService {
 
   async getThread(rootId: string): Promise<InternalCommunication[]> {
     const userId = this.requireUserId();
+    const compId = this.requireCompanyId();
     const { data, error } = await supabase
       .from('internal_communications')
       .select(`
@@ -954,6 +956,7 @@ class DBService {
         sender:workers!sender_id(name),
         assigned_worker:workers!assigned_to(name)
       `)
+      .eq('company_id', compId)
       .or(`id.eq.${rootId},parent_id.eq.${rootId}`)
       .order('created_at', { ascending: true });
 
@@ -1103,18 +1106,22 @@ class DBService {
   }
 
   async archiveComm(id: string) {
+    const compId = this.requireCompanyId();
     const { error } = await supabase
       .from('internal_communications')
       .update({ status: 'archived' })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('company_id', compId);
     if (error) throw error;
   }
 
   async deleteComm(id: string) {
+    const compId = this.requireCompanyId();
     const { error } = await supabase
       .from('internal_communications')
       .update({ status: 'deleted' })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('company_id', compId);
     if (error) throw error;
   }
 

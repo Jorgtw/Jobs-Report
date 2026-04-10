@@ -40,5 +40,6 @@ export const dashboard = {
   try_demo: 'Demoyu Dene',
   companyNamePlaceholder: "Örn. Edilizia Rossi srl",
   tempPasswordPlaceholder: "Geçici şifre",
-  italy: "İtalya",
+  italy: "",
+  premium: "Premium",
 };
