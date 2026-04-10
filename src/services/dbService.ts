@@ -1130,11 +1130,15 @@ class DBService {
     const userId = this.currentUserId;
     const compId = this.currentCompanyId;
     if (!userId || !compId) return 0;
-    const { data: receipts } = await supabase.from('communication_read_receipts').select('communication_id').eq('user_id', userId);
-    const readIds = receipts?.map(r => r.communication_id) || [];
-    let query = supabase.from('internal_communications').select('id', { count: 'exact', head: true }).eq('company_id', compId).not('status', 'in', '("archived","deleted")').or(`target_type.eq.all,target_id.eq.${userId}`);
-    if (readIds.length > 0) query = query.not('id', 'in', `(${readIds.join(',')})`);
-    const { count, error } = await query;
+    
+    const { count, error } = await supabase
+      .from('internal_communications')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', compId)
+      .is('parent_id', null)
+      .in('status', ['open', 'acknowledged'])
+      .or(`target_type.eq.all,target_id.eq.${userId}`);
+      
     return error ? 0 : (count || 0);
   }
 

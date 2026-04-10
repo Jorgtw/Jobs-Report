@@ -130,8 +130,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   // State
-  const [isDaFareOpen, setIsDaFareOpen] = useState(true);
-  const [isInviateOpen, setIsInviateOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'todo' | 'sent'>('todo');
   const [communications, setCommunications] = useState<InternalCommunication[]>([]);
   const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
@@ -478,136 +477,92 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           </div>
         </div>
 
-        {/* List Content with Accordion */}
-        <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-2">
+        {/* List Tabs */}
+        <div className="flex border-b border-gray-100 bg-white">
+          <button 
+            onClick={() => setActiveTab('todo')}
+            className={`flex-1 py-4 text-[12px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'todo' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Da Fare ({daFareComms.length})
+            {activeTab === 'todo' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
+          </button>
+          <button 
+            onClick={() => setActiveTab('sent')}
+            className={`flex-1 py-4 text-[12px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'sent' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Inviate ({inviateComms.length})
+            {activeTab === 'sent' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
+          </button>
+        </div>
+        
+        {/* List Content */}
+        <div className="flex-1 overflow-y-auto pb-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Caricamento...</p>
             </div>
           ) : (
-            <>
-              {/* ACCORDION: DA FARE */}
-              <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm transition-all duration-300">
-                <button 
-                  onClick={() => setIsDaFareOpen(!isDaFareOpen)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600">
-                      <Clock size={16} />
-                    </div>
-                    <span className="text-xs font-black text-slate-800 uppercase tracking-tight">Da Fare</span>
-                    {daFareComms.length > 0 && (
-                      <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] font-black rounded-full shadow-sm">
-                        {daFareComms.length}
+            <div className="divide-y divide-gray-50">
+              {(activeTab === 'todo' ? daFareComms : inviateComms).length === 0 ? (
+                <div className="p-12 text-center">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
+                    <CheckCircle2 className="w-8 h-8 text-slate-300" />
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{t('common.noData')}</p>
+                </div>
+              ) : (
+                (activeTab === 'todo' ? daFareComms : inviateComms).map((comm) => (
+                  <button
+                    key={comm.id}
+                    onClick={() => handleSelectThread(comm)}
+                    className={`w-full text-left p-6 transition-all group relative hover:bg-slate-50/50 ${selectedThread?.id === comm.id ? 'bg-blue-50/30' : 'bg-white'}`}
+                  >
+                    <div className="flex flex-col gap-1">
+                      {/* 1. Type */}
+                      <span className="text-[11px] font-medium text-[#888780] uppercase tracking-wider">
+                        {t(`communications.type_${comm.type}` as any)}
                       </span>
-                    )}
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isDaFareOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isDaFareOpen && (
-                  <div className="border-t border-slate-100 divide-y divide-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {daFareComms.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2 opacity-40" />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tutto completato!</p>
+                      
+                      {/* 2. Sender Name */}
+                      <div className="flex justify-between items-center">
+                        <h4 className={`text-[13px] font-medium tracking-tight ${!comm.isRead && activeTab === 'todo' ? 'text-blue-600 font-bold' : 'text-[#2c2c2a]'}`}>
+                          {activeTab === 'sent' 
+                            ? (comm.targetType === 'all' ? 'Tutto il Team' : (comm.targetId === currentUser.id ? 'Io stesso' : 'Destinatario'))
+                            : comm.senderName
+                          }
+                        </h4>
+                        <span className="text-[10px] font-medium text-slate-300">{formatDate(comm.createdAt)}</span>
                       </div>
-                    ) : (
-                      daFareComms.map((comm) => (
-                        <button
-                          key={comm.id}
-                          onClick={() => handleSelectThread(comm)}
-                          className={`w-full text-left p-4 hover:bg-slate-50 transition-all group relative ${selectedThread?.id === comm.id ? 'bg-blue-50/40' : ''}`}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-tighter">{t(`communications.type_${comm.type}` as any)}</span>
-                            <span className="text-[9px] font-bold text-slate-400">{formatDate(comm.createdAt)}</span>
-                          </div>
-                          <h4 className={`text-sm font-bold mb-1 line-clamp-1 ${!comm.isRead ? 'text-slate-900 group-hover:text-blue-600' : 'text-slate-500'}`}>
-                            {comm.senderName}
-                          </h4>
-                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
-                            {comm.content}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-tighter ${
-                              comm.status === 'open' ? 'bg-amber-100 text-amber-700' :
-                              comm.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
-                              comm.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
-                              comm.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
-                              'bg-slate-100 text-slate-600'
-                            }`}>
-                              {t(`communications.status_${comm.status}` as any)}
-                            </span>
-                            {comm.projectId && (
-                              <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-tighter flex items-center gap-1 border border-slate-200/50">
-                                <FileText size={10} /> {projects.find(p => p.id === comm.projectId)?.name || 'Progetto'}
-                              </span>
-                            )}
-                          </div>
-                          {!comm.isRead && <div className="absolute right-4 bottom-4 w-2 h-2 bg-blue-600 rounded-full shadow-lg shadow-blue-200 ring-4 ring-white" />}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* ACCORDION: INVIATE */}
-              <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm transition-all duration-300">
-                <button 
-                  onClick={() => setIsInviateOpen(!isInviateOpen)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                      <Outbox size={16} />
+                      
+                      {/* 3. Preview Text */}
+                      <p className="text-[12px] text-gray-400 line-clamp-1 mt-1 font-normal">
+                        {comm.content}
+                      </p>
+                      
+                      {/* 4. Status Badge */}
+                      <div className="flex items-center gap-2 mt-3">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${
+                          comm.status === 'open' ? 'bg-amber-50 text-amber-600' :
+                          comm.status === 'acknowledged' ? 'bg-blue-50 text-blue-600' :
+                          comm.status === 'in_progress' ? 'bg-purple-50 text-purple-600' :
+                          comm.status === 'closed' ? 'bg-emerald-50 text-emerald-600' :
+                          'bg-slate-50 text-slate-500'
+                        }`}>
+                          {t(`communications.status_${comm.status}` as any)}
+                        </span>
+                        {comm.projectId && (
+                          <span className="text-[9px] font-medium text-slate-400 flex items-center gap-1 opacity-60">
+                            • {projects.find(p => p.id === comm.projectId)?.name}
+                          </span>
+                        )}
+                        {!comm.isRead && activeTab === 'todo' && <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full" />}
+                      </div>
                     </div>
-                    <span className="text-xs font-black text-slate-800 uppercase tracking-tight">Inviate</span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isInviateOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isInviateOpen && (
-                  <div className="border-t border-slate-100 divide-y divide-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {inviateComms.length === 0 ? (
-                      <div className="p-8 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest italic opacity-40">Nessuna inviata</div>
-                    ) : (
-                      inviateComms.map((comm) => (
-                        <button
-                          key={comm.id}
-                          onClick={() => handleSelectThread(comm)}
-                          className={`w-full text-left p-4 hover:bg-slate-50 transition-all group ${selectedThread?.id === comm.id ? 'bg-blue-50/40' : ''}`}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t(`communications.type_${comm.type}` as any)}</span>
-                            <span className="text-[9px] font-bold text-slate-400">{formatDate(comm.createdAt)}</span>
-                          </div>
-                          <h4 className="text-sm font-bold mb-1 text-slate-700 line-clamp-1">
-                            {comm.targetType === 'all' ? 'Tutto il Team' : (comm.targetId === currentUser.id ? 'Io stesso' : 'Destinatario')}
-                          </h4>
-                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3 italic">
-                            {comm.content}
-                          </p>
-                          <div className="flex items-center gap-2">
-                             <div className="px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 rounded-lg text-[9px] font-bold">
-                                {t(`communications.status_${comm.status}` as any)}
-                             </div>
-                             {!comm.isRead ? (
-                               <span className="text-[9px] font-bold text-amber-500 italic">In attesa di risposta altrui</span>
-                             ) : (
-                               <span className="text-[9px] font-bold text-emerald-500 italic flex items-center gap-1"><Check size={8} strokeWidth={4} /> Letto</span>
-                             )}
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
+                  </button>
+                ))
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -617,21 +572,21 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         {selectedThread ? (
           <>
             {/* Workflow Banner */}
-            {selectedThread.needsAction && (
-              <div className="px-6 py-2.5 bg-red-600 text-white flex items-center justify-center gap-3 animate-in slide-in-from-top duration-500">
-                <Sparkles size={16} className="animate-pulse" />
-                <span className="text-xs font-black uppercase tracking-widest">In attesa della tua risposta</span>
-              </div>
-            )}
-            {!selectedThread.needsAction && selectedThread.status !== 'closed' && (
-               <div className="px-6 py-2.5 bg-blue-50 text-blue-700 flex items-center justify-center gap-3">
-                 <Clock size={16} />
-                 <span className="text-xs font-black uppercase tracking-widest">In attesa di risposta altrui</span>
-               </div>
-            )}
+            {/* Minimalist Status Bar */}
+            <div className="px-6 py-2 bg-[#fafaf8] border-b-[0.5px] border-[#e8e5de] flex items-center gap-3">
+              <div className={`w-2 h-2 rounded-full ${selectedThread.needsAction ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              <span className="text-[12px] font-medium text-slate-500 lowercase">
+                {selectedThread.needsAction ? 'in attesa della tua risposta' : 'in attesa di risposta altrui'}
+              </span>
+              {selectedThread.needsAction && (
+                <span className="px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded text-[10px] font-bold uppercase tracking-tight">
+                  Azione Richiesta
+                </span>
+              )}
+            </div>
 
             {/* Detail Header */}
-            <div className="p-5 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+            <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-4">
                 {isMobile && (
                   <button 
@@ -641,80 +596,65 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     <ChevronLeft size={24} />
                   </button>
                 )}
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 font-bold shrink-0">
-                  {selectedThread.senderName.charAt(0)}
-                </div>
                 <div>
                   <h3 className="text-base font-black text-slate-900 flex items-center gap-3 uppercase tracking-tight">
                     {selectedThread.senderName}
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter border ${
-                      selectedThread.status === 'open' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                      selectedThread.status === 'acknowledged' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                      selectedThread.status === 'in_progress' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                      selectedThread.status === 'closed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                      'bg-slate-50 text-slate-700 border-slate-200'
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                      selectedThread.status === 'open' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                      selectedThread.status === 'acknowledged' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                      selectedThread.status === 'in_progress' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                      selectedThread.status === 'closed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                      'bg-slate-50 text-slate-600 border-slate-100'
                     }`}>
                       {t(`communications.status_${selectedThread.status}` as any)}
                     </span>
                   </h3>
-                  <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {formatDate(selectedThread.createdAt)}</span>
-                    {selectedThread.assignedToName && <span className="flex items-center gap-1.5 text-blue-600"><UserCheck className="w-3 h-3" /> {selectedThread.assignedToName}</span>}
+                  <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    <span className="flex items-center gap-1.5">{formatDate(selectedThread.createdAt)}</span>
+                    {projects.find(p => p.id === selectedThread.projectId) && (
+                      <span className="flex items-center gap-1.5 px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-slate-500 capitalize">
+                        {projects.find(p => p.id === selectedThread.projectId)?.name}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Actions based on Status & Role & Ownership */}
-                {selectedThread.status === 'open' && selectedThread.senderId !== currentUser.id && (
-                  <button 
-                    onClick={() => handleStatusAction('ack', selectedThread.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-200"
-                  >
-                    <CheckCircle2 className="w-4 h-4" /> {t('communications.acknowledge')}
-                  </button>
-                )}
-                {(selectedThread.status === 'open' || selectedThread.status === 'acknowledged') && (currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
-                  <button 
-                    onClick={() => handleStatusAction('take', selectedThread.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-purple-200"
-                  >
-                    <UserCheck className="w-4 h-4" /> {t('communications.takeInCharge')}
-                  </button>
-                )}
-                
-                {/* CLOSE Action: ONLY SENDER */}
+                {/* Actions: Small & Minimalist */}
                 {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && selectedThread.senderId === currentUser.id && (
                   <button 
                     onClick={() => handleStatusAction('close', selectedThread.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-200"
+                    className="px-3.5 py-1.5 bg-white border border-[#185FA5] text-[#185FA5] text-[12px] font-bold rounded hover:bg-blue-50 transition-all"
                   >
-                    <Check className="w-4 h-4" /> {t('communications.closed')}
+                    Chiudi
                   </button>
                 )}
 
                 {selectedThread.status === 'closed' && (
                   <button 
                     onClick={() => handleStatusAction('archive', selectedThread.id)}
-                    className="p-2 border border-slate-200 hover:bg-slate-900 hover:text-white text-slate-400 rounded-xl transition-all"
-                    title={t('communications.archiveCommunication')}
+                    className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all"
                   >
-                    <Archive className="w-5 h-5" />
+                    Archivia
                   </button>
                 )}
+
                 <button 
                   onClick={exportPDF}
-                  className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-400 rounded-xl transition-all"
+                  className="w-[30px] h-[30px] flex items-center justify-center border border-slate-300 text-slate-400 rounded hover:bg-slate-50 transition-all bg-white"
                   title={t('communications.exportHistory')}
                 >
-                  <FileText className="w-5 h-5" />
+                  <FileText className="w-4 h-4" />
                 </button>
+
                 {currentUser.role === 'admin' && (
                   <button 
                     onClick={() => handleStatusAction('delete', selectedThread.id)}
-                    className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all shadow-sm"
+                    className="w-[30px] h-[30px] flex items-center justify-center text-slate-300 hover:text-red-400 transition-all"
+                    title={t('common.delete')}
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -737,7 +677,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                         </div>
                         <div className={`group relative`}>
                           {!isMe && <p className="text-[10px] font-black text-slate-400 mb-1.5 ml-2 uppercase tracking-widest">{msg.senderName}</p>}
-                          <div className={`px-5 py-4 rounded-3xl text-sm shadow-sm leading-relaxed ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-900 rounded-tl-none border border-slate-100 font-medium'}`}>
+                          <div className={`px-5 py-4 rounded-3xl text-sm leading-relaxed ${isMe ? 'bg-[#EBF3FC] text-[#1a3a5c] rounded-tr-none' : 'bg-[#f5f4f0] text-[#2c2c2a] rounded-tl-none font-medium'}`}>
                             {msg.content}
                           </div>
                           <div className={`flex items-center gap-3 mt-1.5 text-[9px] font-bold text-slate-300 uppercase tracking-widest ${isMe ? 'justify-end mr-3' : 'justify-start ml-3'}`}>
