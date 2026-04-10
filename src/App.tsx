@@ -252,6 +252,12 @@ const AppLayout: React.FC<{
         ))}
       </nav>
       <div className="px-3 pt-6 border-t border-slate-100">
+        <div className="px-4 py-2 mb-2 bg-slate-50 rounded-xl opacity-60">
+          <div className="flex items-center justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest">
+            <span>JobsReport Engine</span>
+            <span className="text-blue-500">Build 82a70b5+</span>
+          </div>
+        </div>
         <button onClick={onLogout} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
           <LogOut className="w-5 h-5" />
           <span className="font-medium">{t('common.logout')}</span>
@@ -356,10 +362,14 @@ const CompactDashboard: React.FC = () => {
     loadStats();
   }, []);
 
-  const SmallStat = ({ label, value, to, valueColor = "text-slate-900" }: { label: string, value: string | number, to: string, valueColor?: string }) => (
+  const SmallStat = ({ label, value, to, valueColor = "text-slate-900", isLoading }: { label: string, value: string | number, to: string, valueColor?: string, isLoading?: boolean }) => (
     <Link to={to} className="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors overflow-hidden">
       <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1 truncate">{label}</span>
-      <span className={`text-sm font-black tracking-tighter truncate ${valueColor}`}>{value}</span>
+      {isLoading ? (
+        <span className="inline-block w-10 h-3 bg-slate-100 animate-pulse rounded mt-0.5" />
+      ) : (
+        <span className={`text-sm font-black tracking-tighter truncate ${valueColor}`}>{value}</span>
+      )}
     </Link>
   );
 
@@ -374,16 +384,16 @@ const CompactDashboard: React.FC = () => {
       <div className="divide-y divide-slate-50">
         {/* Row 1: Counters */}
         <div className="grid grid-cols-3 gap-2 pb-2">
-          <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" />
-          <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" />
-          <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" />
+          <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" isLoading={loading} />
+          <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" isLoading={loading} />
+          <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" isLoading={loading} />
         </div>
         
         {/* Row 2: Economic Values */}
         <div className="grid grid-cols-3 gap-2 pt-2">
-          <SmallStat label={t('dashboard.estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" />
-          <SmallStat label={t('dashboard.toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" />
-          <SmallStat label={t('dashboard.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} />
+          <SmallStat label={t('dashboard.estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" isLoading={loading} />
+          <SmallStat label={t('dashboard.toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" isLoading={loading} />
+          <SmallStat label={t('dashboard.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} isLoading={loading} />
         </div>
       </div>
     </div>
