@@ -172,5 +172,6 @@ export interface InternalCommunication {
   updatedAt: string;
   createdAt: number;
   isRead: boolean;
+  needsAction?: boolean;
   replies?: InternalCommunication[];
 }

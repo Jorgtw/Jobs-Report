@@ -130,7 +130,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   // State
-  const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'archive'>('inbox');
+  const [isDaFareOpen, setIsDaFareOpen] = useState(true);
+  const [isInviateOpen, setIsInviateOpen] = useState(false);
   const [communications, setCommunications] = useState<InternalCommunication[]>([]);
   const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
@@ -200,7 +201,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeTab, currentUser.companyId, isPremium]);
+  }, [currentUser.companyId, isPremium]);
 
   if (!isPremium) {
     return (
@@ -251,7 +252,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const fetchMainData = async () => {
     setLoading(true);
     try {
-      const data = await db.getCommunications({ type: activeTab });
+      // Fetch "inbox" which includes everything relevant and active
+      const data = await db.getCommunications({ type: 'inbox' });
       setCommunications(data);
     } catch (err) {
       console.error('Error fetching communications:', err);
@@ -342,7 +344,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       switch (action) {
         case 'ack': await db.acknowledgeComm(commId); break;
         case 'take': await db.takeInCharge(commId); break;
-        case 'close': await db.closeComm(commId); break;
+        case 'close': await db.closeComm(commId, currentUser.id); break;
         case 'archive': await db.archiveComm(commId); break;
         case 'delete': await db.deleteComm(commId); break;
       }
@@ -419,10 +421,15 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     doc.save(`Comunicazione_${selectedThread.id.substring(0,8)}.pdf`);
   };
 
-  const filteredComms = communications.filter(c => 
+  const daFareComms = communications.filter(c => c.needsAction && (
     c.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.senderName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ));
+
+  const inviateComms = communications.filter(c => c.senderId === currentUser.id && (
+    c.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.senderName.toLowerCase().includes(searchTerm.toLowerCase())
+  ));
 
   if (!isPremium && currentUser.role !== 'admin') {
     return (
@@ -442,16 +449,16 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-120px)] bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-120px)] bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm selection:bg-blue-100">
       {/* LEFT SIDEBAR - 30% */}
-      <div className={`${isMobile && mobileView === 'detail' ? 'hidden' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex flex-col bg-gray-50/20`}>
+      <div className={`${isMobile && mobileView === 'detail' ? 'hidden' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex flex-col bg-[#f5f4f0]`}>
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-100 bg-gray-50/80">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-950">{t('communications.internalCommunications')}</h2>
+        <div className="p-5 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('communications.internalCommunications')}</h2>
             <button 
               onClick={() => setIsNewMessageModalOpen(true)}
-              className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm"
+              className="w-10 h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95"
               title={t('communications.newCommunication')}
             >
               <Plus className="w-5 h-5" />
@@ -459,90 +466,148 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           </div>
           
           {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text" 
               placeholder={t('common.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
+              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm font-medium"
             />
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex p-1 bg-gray-100 rounded-xl">
-            <button 
-              onClick={() => setActiveTab('inbox')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'inbox' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
-            >
-              <Inbox className="w-4 h-4" /> {t('communications.inbox')}
-            </button>
-            <button 
-              onClick={() => setActiveTab('sent')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'sent' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
-            >
-              <Outbox className="w-4 h-4" /> {t('communications.outbox')}
-            </button>
-            <button 
-              onClick={() => setActiveTab('archive')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'archive' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
-            >
-              <Archive className="w-4 h-4" /> {t('communications.archive')}
-            </button>
           </div>
         </div>
 
-        {/* List Content */}
-        <div className="flex-1 overflow-y-auto bg-white">
+        {/* List Content with Accordion */}
+        <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-2">
           {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          ) : filteredComms.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                <FileText className="w-6 h-6 text-gray-300" />
-              </div>
-              <p className="text-sm text-gray-400">{t('communications.noCommunicationsYet')}</p>
+            <div className="flex flex-col items-center justify-center h-48 gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Caricamento...</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
-              {filteredComms.map((comm) => (
-                <button
-                  key={comm.id}
-                  onClick={() => handleSelectThread(comm)}
-                  className={`w-full text-left p-4 hover:bg-white transition-colors border-l-4 ${selectedThread?.id === comm.id ? 'border-blue-600 bg-white shadow-inner' : 'border-transparent'} ${!comm.isRead ? 'bg-blue-50/10' : ''}`}
+            <>
+              {/* ACCORDION: DA FARE */}
+              <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm transition-all duration-300">
+                <button 
+                  onClick={() => setIsDaFareOpen(!isDaFareOpen)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
                 >
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{t(`communications.type_${comm.type}` as any)}</span>
-                    <span className="text-[10px] text-gray-400">{formatDate(comm.createdAt)}</span>
-                  </div>
-                  <h4 className={`text-sm font-semibold mb-1 line-clamp-1 ${!comm.isRead ? 'text-slate-950' : 'text-gray-500'}`}>
-                    {comm.senderName}
-                  </h4>
-                  <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">
-                    {comm.content}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                      comm.status === 'open' ? 'bg-yellow-100 text-yellow-700' :
-                      comm.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
-                      comm.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
-                      comm.status === 'closed' ? 'bg-green-100 text-green-700' :
-                      'bg-gray-100 text-slate-800'
-                    }`}>
-                      {t(`communications.status_${comm.status}` as any)}
-                    </span>
-                    {comm.projectId && (
-                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                        <FileText className="w-3 h-3" /> {projects.find(p => p.id === comm.projectId)?.name || 'Project'}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600">
+                      <Clock size={16} />
+                    </div>
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-tight">Da Fare</span>
+                    {daFareComms.length > 0 && (
+                      <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] font-black rounded-full shadow-sm">
+                        {daFareComms.length}
                       </span>
                     )}
                   </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isDaFareOpen ? 'rotate-180' : ''}`} />
                 </button>
-              ))}
-            </div>
+                
+                {isDaFareOpen && (
+                  <div className="border-t border-slate-100 divide-y divide-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {daFareComms.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2 opacity-40" />
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tutto completato!</p>
+                      </div>
+                    ) : (
+                      daFareComms.map((comm) => (
+                        <button
+                          key={comm.id}
+                          onClick={() => handleSelectThread(comm)}
+                          className={`w-full text-left p-4 hover:bg-slate-50 transition-all group relative ${selectedThread?.id === comm.id ? 'bg-blue-50/40' : ''}`}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-tighter">{t(`communications.type_${comm.type}` as any)}</span>
+                            <span className="text-[9px] font-bold text-slate-400">{formatDate(comm.createdAt)}</span>
+                          </div>
+                          <h4 className={`text-sm font-bold mb-1 line-clamp-1 ${!comm.isRead ? 'text-slate-900 group-hover:text-blue-600' : 'text-slate-500'}`}>
+                            {comm.senderName}
+                          </h4>
+                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                            {comm.content}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-tighter ${
+                              comm.status === 'open' ? 'bg-amber-100 text-amber-700' :
+                              comm.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
+                              comm.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
+                              comm.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
+                              'bg-slate-100 text-slate-600'
+                            }`}>
+                              {t(`communications.status_${comm.status}` as any)}
+                            </span>
+                            {comm.projectId && (
+                              <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-tighter flex items-center gap-1 border border-slate-200/50">
+                                <FileText size={10} /> {projects.find(p => p.id === comm.projectId)?.name || 'Progetto'}
+                              </span>
+                            )}
+                          </div>
+                          {!comm.isRead && <div className="absolute right-4 bottom-4 w-2 h-2 bg-blue-600 rounded-full shadow-lg shadow-blue-200 ring-4 ring-white" />}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ACCORDION: INVIATE */}
+              <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm transition-all duration-300">
+                <button 
+                  onClick={() => setIsInviateOpen(!isInviateOpen)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Outbox size={16} />
+                    </div>
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-tight">Inviate</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isInviateOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isInviateOpen && (
+                  <div className="border-t border-slate-100 divide-y divide-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {inviateComms.length === 0 ? (
+                      <div className="p-8 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest italic opacity-40">Nessuna inviata</div>
+                    ) : (
+                      inviateComms.map((comm) => (
+                        <button
+                          key={comm.id}
+                          onClick={() => handleSelectThread(comm)}
+                          className={`w-full text-left p-4 hover:bg-slate-50 transition-all group ${selectedThread?.id === comm.id ? 'bg-blue-50/40' : ''}`}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t(`communications.type_${comm.type}` as any)}</span>
+                            <span className="text-[9px] font-bold text-slate-400">{formatDate(comm.createdAt)}</span>
+                          </div>
+                          <h4 className="text-sm font-bold mb-1 text-slate-700 line-clamp-1">
+                            {comm.targetType === 'all' ? 'Tutto il Team' : (comm.targetId === currentUser.id ? 'Io stesso' : 'Destinatario')}
+                          </h4>
+                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3 italic">
+                            {comm.content}
+                          </p>
+                          <div className="flex items-center gap-2">
+                             <div className="px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 rounded-lg text-[9px] font-bold">
+                                {t(`communications.status_${comm.status}` as any)}
+                             </div>
+                             {!comm.isRead ? (
+                               <span className="text-[9px] font-bold text-amber-500 italic">In attesa di risposta altrui</span>
+                             ) : (
+                               <span className="text-[9px] font-bold text-emerald-500 italic flex items-center gap-1"><Check size={8} strokeWidth={4} /> Letto</span>
+                             )}
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -551,46 +616,60 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       <div className={`${isMobile && mobileView === 'list' ? 'hidden' : 'flex'} w-full md:w-2/3 flex flex-col bg-white`}>
         {selectedThread ? (
           <>
+            {/* Workflow Banner */}
+            {selectedThread.needsAction && (
+              <div className="px-6 py-2.5 bg-red-600 text-white flex items-center justify-center gap-3 animate-in slide-in-from-top duration-500">
+                <Sparkles size={16} className="animate-pulse" />
+                <span className="text-xs font-black uppercase tracking-widest">In attesa della tua risposta</span>
+              </div>
+            )}
+            {!selectedThread.needsAction && selectedThread.status !== 'closed' && (
+               <div className="px-6 py-2.5 bg-blue-50 text-blue-700 flex items-center justify-center gap-3">
+                 <Clock size={16} />
+                 <span className="text-xs font-black uppercase tracking-widest">In attesa di risposta altrui</span>
+               </div>
+            )}
+
             {/* Detail Header */}
-            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
-              <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-5 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+              <div className="flex items-center gap-4">
                 {isMobile && (
                   <button 
                     onClick={() => setMobileView('list')}
-                    className="p-2 -ml-2 hover:bg-gray-50 rounded-full text-blue-600 transition-colors"
+                    className="p-2 -ml-2 hover:bg-slate-50 rounded-full text-blue-600 transition-colors"
                   >
                     <ChevronLeft size={24} />
                   </button>
                 )}
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 font-bold shrink-0">
                   {selectedThread.senderName.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-950 flex items-center gap-2">
+                  <h3 className="text-base font-black text-slate-900 flex items-center gap-3 uppercase tracking-tight">
                     {selectedThread.senderName}
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-tighter ${
-                      selectedThread.status === 'open' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                      selectedThread.status === 'acknowledged' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                      selectedThread.status === 'in_progress' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                      selectedThread.status === 'closed' ? 'bg-green-50 text-green-700 border border-green-200' :
-                      'bg-gray-50 text-slate-700 border border-gray-200'
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter border ${
+                      selectedThread.status === 'open' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                      selectedThread.status === 'acknowledged' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      selectedThread.status === 'in_progress' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                      selectedThread.status === 'closed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                      'bg-slate-50 text-slate-700 border-slate-200'
                     }`}>
                       {t(`communications.status_${selectedThread.status}` as any)}
                     </span>
                   </h3>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDate(selectedThread.createdAt, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
-                    {selectedThread.assignedToName && <span className="flex items-center gap-1 text-blue-600 font-medium"><UserCheck className="w-3 h-3" /> {selectedThread.assignedToName}</span>}
+                  <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {formatDate(selectedThread.createdAt)}</span>
+                    {selectedThread.assignedToName && <span className="flex items-center gap-1.5 text-blue-600"><UserCheck className="w-3 h-3" /> {selectedThread.assignedToName}</span>}
                   </div>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Actions based on Status & Role */}
+                {/* Actions based on Status & Role & Ownership */}
                 {selectedThread.status === 'open' && selectedThread.senderId !== currentUser.id && (
                   <button 
                     onClick={() => handleStatusAction('ack', selectedThread.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-200"
                   >
                     <CheckCircle2 className="w-4 h-4" /> {t('communications.acknowledge')}
                   </button>
@@ -598,30 +677,34 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {(selectedThread.status === 'open' || selectedThread.status === 'acknowledged') && (currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
                   <button 
                     onClick={() => handleStatusAction('take', selectedThread.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-purple-200"
                   >
                     <UserCheck className="w-4 h-4" /> {t('communications.takeInCharge')}
                   </button>
                 )}
-                {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && (
+                
+                {/* CLOSE Action: ONLY SENDER */}
+                {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && selectedThread.senderId === currentUser.id && (
                   <button 
                     onClick={() => handleStatusAction('close', selectedThread.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-200"
                   >
                     <Check className="w-4 h-4" /> {t('communications.closed')}
                   </button>
                 )}
+
                 {selectedThread.status === 'closed' && (
                   <button 
                     onClick={() => handleStatusAction('archive', selectedThread.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
+                    className="p-2 border border-slate-200 hover:bg-slate-900 hover:text-white text-slate-400 rounded-xl transition-all"
+                    title={t('communications.archiveCommunication')}
                   >
-                    <Archive className="w-4 h-4" /> {t('communications.archiveCommunication')}
+                    <Archive className="w-5 h-5" />
                   </button>
                 )}
                 <button 
                   onClick={exportPDF}
-                  className="p-2 border border-gray-100 hover:bg-gray-50 text-gray-400 rounded-lg transition-colors"
+                  className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-400 rounded-xl transition-all"
                   title={t('communications.exportHistory')}
                 >
                   <FileText className="w-5 h-5" />
@@ -629,7 +712,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {currentUser.role === 'admin' && (
                   <button 
                     onClick={() => handleStatusAction('delete', selectedThread.id)}
-                    className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all shadow-sm"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -648,19 +731,23 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   const isMe = msg.senderId === currentUser.id;
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${isMe ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-slate-700'}`}>
+                      <div className={`max-w-[85%] flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-black border-2 ${isMe ? 'bg-blue-600 border-blue-100 text-white' : 'bg-white border-slate-100 text-slate-700'}`}>
                           {msg.senderName.charAt(0)}
                         </div>
                         <div className={`group relative`}>
-                          {!isMe && <p className="text-[10px] font-bold text-gray-400 mb-1 ml-2 uppercase tracking-widest">{msg.senderName}</p>}
-                          <div className={`px-4 py-3 rounded-2xl text-sm shadow-sm leading-relaxed ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-950 rounded-tl-none border border-gray-100'}`}>
+                          {!isMe && <p className="text-[10px] font-black text-slate-400 mb-1.5 ml-2 uppercase tracking-widest">{msg.senderName}</p>}
+                          <div className={`px-5 py-4 rounded-3xl text-sm shadow-sm leading-relaxed ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-900 rounded-tl-none border border-slate-100 font-medium'}`}>
                             {msg.content}
                           </div>
-                          <p className={`text-[9px] mt-1 text-gray-400 font-medium ${isMe ? 'text-right mr-2' : 'text-left ml-2'}`}>
-                            {formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}
-                            {isMe && msg.isRead && <span className="ml-2 text-blue-500">✓✓</span>}
-                          </p>
+                          <div className={`flex items-center gap-3 mt-1.5 text-[9px] font-bold text-slate-300 uppercase tracking-widest ${isMe ? 'justify-end mr-3' : 'justify-start ml-3'}`}>
+                             <span>{formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}</span>
+                             {isMe && msg.isRead && (
+                               <span className="text-blue-400 italic font-black flex items-center gap-1">
+                                 <Check size={8} strokeWidth={4} /> Letto il {formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}
+                               </span>
+                             )}
+                          </div>
                         </div>
                       </div>
                     </div>

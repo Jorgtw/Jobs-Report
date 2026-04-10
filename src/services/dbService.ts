@@ -865,6 +865,11 @@ class DBService {
     };
   }
 
+  private async getRootId(id: string): Promise<string> {
+    const { data } = await supabase.from('internal_communications').select('id, parent_id').eq('id', id).single();
+    return data?.parent_id || id;
+  }
+
   async getCommunications(filters: { 
     type?: 'inbox' | 'sent' | 'archive';
     projectId?: string;
@@ -920,9 +925,13 @@ class DBService {
 
     const mapped = (data || []).map((c: any) => {
       const isActuallyRead = !unreadMessageIds.has(c.id) && !unreadParentIds.has(c.id);
+      const needsAction = (c.status === 'open' || c.status === 'acknowledged') && 
+                          (c.target_type === 'all' || c.target_id === userId);
+      
       return {
         ...this.mapSupabaseComm(c, userId),
-        isRead: isActuallyRead
+        isRead: isActuallyRead,
+        needsAction
       };
     });
 
@@ -1044,6 +1053,7 @@ class DBService {
   }
 
   async acknowledgeComm(id: string) {
+    const rootId = await this.getRootId(id);
     const { error } = await supabase
       .from('internal_communications')
       .update({ 
@@ -1051,30 +1061,44 @@ class DBService {
         is_acknowledged: true,
         acknowledged_at: new Date().toISOString()
       })
-      .eq('id', id);
+      .eq('id', rootId);
     if (error) throw error;
   }
 
   async takeInCharge(id: string) {
     const userId = this.requireUserId();
+    const rootId = await this.getRootId(id);
     const { error } = await supabase
       .from('internal_communications')
       .update({ 
         status: 'in_progress',
         assigned_to: userId
       })
-      .eq('id', id);
+      .eq('id', rootId);
     if (error) throw error;
   }
 
-  async closeComm(id: string) {
+  async closeComm(id: string, userId: string) {
+    const rootId = await this.getRootId(id);
+    
+    // Security check: only the sender can close the communication
+    const { data: root } = await supabase
+      .from('internal_communications')
+      .select('sender_id')
+      .eq('id', rootId)
+      .single();
+
+    if (root?.sender_id !== userId) {
+      throw new Error("Only the original sender can close this communication.");
+    }
+
     const { error } = await supabase
       .from('internal_communications')
       .update({ 
         status: 'closed',
         closed_at: new Date().toISOString()
       })
-      .eq('id', id);
+      .eq('id', rootId);
     if (error) throw error;
   }
 
