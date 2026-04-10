@@ -383,7 +383,18 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         projects.find(p => p.id === selectedThread.projectId)?.name || t('common.none')
       ]],
       theme: 'grid',
-      headStyles: { fillColor: [63, 81, 181] }
+      headStyles: { 
+        fillColor: [255, 255, 255], 
+        textColor: [0, 0, 0], 
+        fontStyle: 'bold',
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200]
+      },
+      styles: {
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200],
+        textColor: [0, 0, 0]
+      }
     });
 
     // Content
