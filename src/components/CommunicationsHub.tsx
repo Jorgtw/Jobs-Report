@@ -491,14 +491,14 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             onClick={() => setActiveTab('todo')}
             className={`flex-1 py-4 text-[12px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'todo' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            Da Fare ({daFareComms.length})
+            {t('communications.todo')} ({daFareComms.length})
             {activeTab === 'todo' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
           <button 
             onClick={() => setActiveTab('sent')}
             className={`flex-1 py-4 text-[12px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'sent' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            Inviate ({inviateComms.length})
+            {t('communications.sent')} ({inviateComms.length})
             {activeTab === 'sent' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
         </div>
@@ -508,7 +508,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           {loading ? (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Caricamento...</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">{t('communications.loading')}</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
@@ -536,7 +536,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       <div className="flex justify-between items-center">
                         <h4 className={`text-[13px] font-medium tracking-tight ${!comm.isRead && activeTab === 'todo' ? 'text-blue-600 font-bold' : 'text-[#2c2c2a]'}`}>
                           {activeTab === 'sent' 
-                            ? (comm.targetType === 'all' ? 'Tutto il Team' : (comm.targetId === currentUser.id ? 'Io stesso' : 'Destinatario'))
+                            ? (comm.targetType === 'all' ? t('communications.allTeam') : (comm.targetId === currentUser.id ? t('communications.myself') : t('communications.recipientLabel')))
                             : comm.senderName
                           }
                         </h4>
@@ -584,11 +584,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             <div className="px-6 py-2 bg-[#fafaf8] border-b-[0.5px] border-[#e8e5de] flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full ${selectedThread.needsAction ? 'bg-emerald-500' : 'bg-slate-300'}`} />
               <span className="text-[12px] font-medium text-slate-500 lowercase">
-                {selectedThread.needsAction ? 'in attesa della tua risposta' : 'in attesa di risposta altrui'}
+                {selectedThread.needsAction ? t('communications.waitingYourReply') : t('communications.waitingOthersReply')}
               </span>
               {selectedThread.needsAction && (
                 <span className="px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded text-[10px] font-bold uppercase tracking-tight">
-                  Azione Richiesta
+                  {t('communications.actionRequired')}
                 </span>
               )}
             </div>
@@ -635,7 +635,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('close', selectedThread.id)}
                     className="px-3.5 py-1.5 bg-white border border-[#185FA5] text-[#185FA5] text-[12px] font-bold rounded hover:bg-blue-50 transition-all"
                   >
-                    Chiudi
+                    {t('communications.close')}
                   </button>
                 )}
 
@@ -644,7 +644,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('archive', selectedThread.id)}
                     className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all"
                   >
-                    Archivia
+                    {t('communications.archive')}
                   </button>
                 )}
 

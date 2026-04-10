@@ -15,6 +15,8 @@ export const communications = {
   placeholderSelectUsers: 'Seleziona uno o più utenti...',
   
   // Tipi e Tab
+  todo: 'Da Fare',
+  sent: 'Inviate',
   inbox: 'In Arrivo',
   outbox: 'In Uscita',
   archive: 'Archivio',
@@ -30,16 +32,25 @@ export const communications = {
   // Tabella e Dettagli
   sender: 'Mittente',
   type: 'Tipo',
+  allTeam: 'Tutto il Team',
+  myself: 'Io stesso',
+  recipientLabel: 'Destinatario',
+  waitingYourReply: 'in attesa della tua risposta',
+  waitingOthersReply: 'in attesa di risposta altrui',
+  actionRequired: 'Azione Richiesta',
   note: 'Nota',
   issue: 'Segnalazione',
   confirmation: 'Conferma',
   writeMessage: 'Scrivi un messaggio...',
   noThreadSelected: 'Seleziona una conversazione per visualizzare i dettagli',
   exportHistory: 'Esporta Cronologia PDF',
+  loading: 'Caricamento...',
   
   // Azioni
   acknowledge: 'Conferma Ricezione',
   takeInCharge: 'Prendi in carico',
+  close: 'Chiudi',
+  archive: 'Archivia',
   closed: 'Chiuso',
   archiveCommunication: 'Archivia',
   send: 'Invia',

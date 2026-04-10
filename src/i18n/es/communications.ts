@@ -1,0 +1,83 @@
+// src/i18n/es/communications.ts
+export const communications = {
+  // Menú y Dashboard
+  internalCommunications: 'Comunicaciones Internas',
+  internalCommunicationsDesc: 'Envía y recibe mensajes de la empresa en tiempo real',
+  newCommunication: 'Nueva Comunicación',
+  
+  // Formulario de Envío
+  sendTo: 'Enviar a',
+  recipient: 'Destinatario',
+  subject: 'Asunto',
+  message: 'Mensaje',
+  selectUsers: 'Seleccionar colaboradores',
+  allUsers: 'Todos los usuarios',
+  placeholderSelectUsers: 'Seleccione uno o más usuarios...',
+  
+  // Tipos y Pestañas
+  todo: 'Pendiente',
+  sent: 'Enviados',
+  inbox: 'Recibidos',
+  outbox: 'Enviados',
+  archive: 'Archivo',
+  thread: 'Conversación',
+  messagesTab: 'Mensajes',
+  internalCommunication: 'Comunicación Interna',
+  
+  // Tipos Específicos
+  type_note: 'Nota',
+  type_issue: 'Incidencia',
+  type_confirmation: 'Confirmación',
+  
+  // Tabla y Detalles
+  sender: 'Remitente',
+  type: 'Tipo',
+  allTeam: 'Todo el Equipo',
+  myself: 'Yo mismo',
+  recipientLabel: 'Destinatario',
+  waitingYourReply: 'esperando tu respuesta',
+  waitingOthersReply: 'esperando respuesta de otros',
+  actionRequired: 'Acción Requerida',
+  note: 'Nota',
+  issue: 'Incidencia',
+  confirmation: 'Confirmación',
+  writeMessage: 'Escriba un mensaje...',
+  noThreadSelected: 'Seleccione una conversación para ver los detalles',
+  exportHistory: 'Exportar Historial PDF',
+  loading: 'Cargando...',
+  
+  // Acciones
+  acknowledge: 'Confirmar Recepción',
+  takeInCharge: 'Hacerse cargo',
+  close: 'Cerrar',
+  archive: 'Archivar',
+  closed: 'Cerrado',
+  archiveCommunication: 'Archivar',
+  send: 'Enviar',
+  
+  // Estados y Feedback
+  noCommunicationsYet: 'No hay comunicaciones presentes',
+  no_workers_available: 'No hay colaboradores disponibles',
+  unreadMessages: 'Mensajes no leídos',
+  messageSentSuccess: '¡Comunicación enviada con éxito!',
+  
+  // Estados de Workflow
+  status_open: 'Abierto',
+  status_acknowledged: 'Recibido',
+  status_in_progress: 'En Curso',
+  status_closed: 'Cerrado',
+  status_archived: 'Archivado',
+  status_deleted: 'Eliminado',
+
+  // Paywall y Premium
+  premiumFeature: 'Funcionalidad Premium',
+  premiumRequiredDesc: 'Esta función solo está disponible para empresas con suscripción Premium.',
+  upgradeNow: 'Pasar a Premium',
+  unlockFullPotential: 'Desbloquea tutto il potencial de tu empresa',
+  lockFeatureTip: 'Las empresas Premium pueden comunicarse con todo el equipo con un clic.',
+  
+  // Específico del Modal de Mejora
+  upgradeTitle: 'Funcionalidad Premium',
+  upgradeDesc: 'Esta funcionalidad (Fotos + Firma + PDF Profesional) está reservada para cuentas Premium.',
+  upgradeCTA: 'Desbloquear con Donación'
+} as const;

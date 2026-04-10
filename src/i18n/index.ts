@@ -9,10 +9,15 @@ import { help as itHelp } from './it/help';
 import { presentation as itPresentation } from './it/presentation';
 
 import { presentation as enPresentation } from './en/presentation';
+import { communications as enCommunications } from './en/communications';
 import { presentation as esPresentation } from './es/presentation';
+import { communications as esCommunications } from './es/communications';
 import { presentation as plPresentation } from './pl/presentation';
+import { communications as plCommunications } from './pl/communications';
 import { presentation as trPresentation } from './tr/presentation';
+import { communications as trCommunications } from './tr/communications';
 import { presentation as daPresentation } from './da/presentation';
+import { communications as daCommunications } from './da/communications';
 
 export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
 
@@ -42,11 +47,11 @@ export type TranslationKey =
 
 export const allTranslations: Record<Language, any> = {
   it: baseIT,
-  en: { ...baseIT, presentation: enPresentation },
-  es: { ...baseIT, presentation: esPresentation },
-  pl: { ...baseIT, presentation: plPresentation },
-  tr: { ...baseIT, presentation: trPresentation },
-  da: { ...baseIT, presentation: daPresentation },
+  en: { ...baseIT, presentation: enPresentation, communications: enCommunications },
+  es: { ...baseIT, presentation: esPresentation, communications: esCommunications },
+  pl: { ...baseIT, presentation: plPresentation, communications: plCommunications },
+  tr: { ...baseIT, presentation: trPresentation, communications: trCommunications },
+  da: { ...baseIT, presentation: daPresentation, communications: daCommunications },
 };
 
 export const resolveKey = (lang: Language, key: TranslationKey | string): any => {
