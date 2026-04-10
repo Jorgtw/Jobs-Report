@@ -21,11 +21,11 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
     try {
       const user = await db.loginUser(username, password);
       if (!user) {
-        setError(t('invalidCredentials'));
+        setError(t('auth.invalidCredentials'));
         return;
       }
       if (user.status === 'inactive') {
-        setError(t('accountDisabled'));
+        setError(t('auth.accountDisabled'));
         return;
       }
       onLogin(user);
@@ -50,8 +50,8 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
   };
 
   const handleForgotPassword = () => {
-    const subject = encodeURIComponent(t('forgotPasswordEmailSubject'));
-    const body = encodeURIComponent(t('forgotPasswordEmailBody').replace('{username}', username || '...').replace('{email}', '...'));
+    const subject = encodeURIComponent(t('auth.forgotPasswordEmailSubject'));
+    const body = encodeURIComponent(t('auth.forgotPasswordEmailBody').replace('{username}', username || '...').replace('{email}', '...'));
     window.location.href = `mailto:jtw@live.it?subject=${subject}&body=${body}`;
   };
 
@@ -99,12 +99,12 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
               <img src={logoImg} alt="Logo" className="w-14 h-14 object-contain" style={{ borderRadius: '8px', mixBlendMode: 'multiply', overflow: 'hidden' }} />
             </div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Jobs<span className="text-blue-600">Report</span></h2>
-            <p className="text-slate-400 text-sm mt-2 font-medium">Gestione professionale rapportini</p>
+            <p className="text-slate-400 text-sm mt-2 font-medium">{t('auth.professionalManagement')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('username')}</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('auth.username')}</label>
               <input 
                 required 
                 value={username} 
@@ -116,9 +116,9 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('password')}</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('auth.password')}</label>
                 <button type="button" onClick={handleForgotPassword} className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors">
-                  {t('forgotPassword')}
+                  {t('auth.forgotPassword')}
                 </button>
               </div>
               <div className="relative">
@@ -151,7 +151,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
               disabled={loading}
               className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
             >
-              {loading ? 'Accesso in corso...' : t('loginBtn')}
+              {loading ? t('auth.loggingIn') : t('auth.loginBtn')}
               {!loading && <ChevronRight size={18} />}
             </button>
           </form>
@@ -162,18 +162,18 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
               onClick={handleDemoLogin} 
               className="w-full py-4 bg-amber-50 text-amber-700 rounded-2xl font-black text-sm hover:bg-amber-100 transition-all border border-amber-100 active:scale-[0.98] shadow-sm flex items-center justify-center gap-2"
             >
-              👤 {t('try_demo' as any) || 'Prova la Demo'}
+              👤 {t('dashboard.try_demo')}
             </button>
             <p className="text-center text-slate-400 text-xs font-medium">
-              {t('noAccount')} <Link to="/richiesta-registrazione" className="text-blue-600 font-bold hover:underline">{t('registerLink')}</Link>
+              {t('auth.noAccount')} <Link to="/richiesta-registrazione" className="text-blue-600 font-bold hover:underline">{t('auth.registerLink')}</Link>
             </p>
           </div>
         </div>
 
         <p className="mt-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-          © 2026 JobsReport · Tutti i diritti riservati
+          © 2026 JobsReport · {t('common.rightsReserved')}
           {' · '}
-          <Link to="/privacy" className="hover:text-blue-500 transition-colors">{t('privacy')}</Link>
+          <Link to="/privacy" className="hover:text-blue-500 transition-colors">{t('common.privacy')}</Link>
         </p>
       </div>
     </div>

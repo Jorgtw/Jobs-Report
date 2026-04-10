@@ -97,4 +97,10 @@ export const projects = {
   // --- MESSAGES & TABS ---
   messagesTab: 'Comunicazioni Progetto',
   nonBillable: 'Non Fatturabile',
+  confirmDeleteMessage: 'Sei sicuro di voler eliminare questo messaggio?',
+  projectMessagesTitle: 'Note e Comunicazioni Progetto',
+  messagesCount: 'messaggi totali',
+  noMessages: 'Nessun messaggio presente',
+  typeMessagePlaceholder: 'Scrivi una nota o un avviso...',
+  errorSendingMessage: 'Errore nell\'invio del messaggio',
 } as const;

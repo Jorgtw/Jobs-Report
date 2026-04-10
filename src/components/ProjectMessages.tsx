@@ -91,14 +91,14 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user }) =>
       setNewMessage('');
     } catch (err) {
       console.error('Error sending message:', err);
-      alert('Errore nell\'invio del messaggio');
+      alert(t('projects.errorSendingMessage'));
     } finally {
       setSending(false);
     }
   };
 
   const deleteMessage = async (messageId: string) => {
-    if (!window.confirm(t('confirmDeleteMessage') || 'Sei sicuro di voler eliminare questo messaggio?')) return;
+    if (!window.confirm(t('projects.confirmDeleteMessage'))) return;
     
     try {
       const { error } = await supabase
@@ -130,8 +130,8 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user }) =>
             <MessageSquare size={20} />
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">{t('projectMessagesTitle') || 'Note e Comunicazioni Progetto'}</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{messages.length} {t('messagesCount') || 'messaggi totali'}</p>
+            <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">{t('projects.projectMessagesTitle')}</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{messages.length} {t('projects.messagesCount')}</p>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user }) =>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-3 opacity-60">
             <Mail size={32} strokeWidth={1.5} />
-            <p className="text-xs font-bold uppercase tracking-widest">{t('noMessages') || 'Nessun messaggio presente'}</p>
+            <p className="text-xs font-bold uppercase tracking-widest">{t('projects.noMessages')}</p>
           </div>
         ) : (
           messages.map((msg) => (
@@ -192,7 +192,7 @@ const ProjectMessages: React.FC<ProjectMessagesProps> = ({ projectId, user }) =>
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={t('typeMessagePlaceholder') || 'Scrivi una nota o un avviso...'}
+            placeholder={t('projects.typeMessagePlaceholder')}
             className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all placeholder:text-slate-400"
           />
           <button

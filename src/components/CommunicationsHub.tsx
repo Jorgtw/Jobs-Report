@@ -97,7 +97,7 @@ const UserMultiSelect = ({
         <div className="absolute z-[110] w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in slide-in-from-top-2 duration-200">
           {users.length === 0 ? (
             <div className="p-4 text-center text-xs text-gray-400 font-medium">
-              {t('no_workers_available')}
+              {t('communications.no_workers_available')}
             </div>
           ) : (
             users.map(u => (
@@ -106,7 +106,7 @@ const UserMultiSelect = ({
                 onClick={() => toggleUser(u.id)}
                 className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all flex items-center justify-between group ${selectedIds.includes(u.id) ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 text-slate-700'}`}
               >
-                <span>{u.name} <span className="text-[10px] opacity-60 ml-1">({t(u.role as any)})</span></span>
+                <span>{u.name} <span className="text-[10px] opacity-60 ml-1">({t(`projects.role${u.role.charAt(0).toUpperCase()}${u.role.slice(1)}` as any)})</span></span>
                 {selectedIds.includes(u.id) && <Check size={14} strokeWidth={3} />}
               </button>
             ))
@@ -366,23 +366,23 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
     // Header
     doc.setFontSize(20);
-    doc.text(t('internal_communication'), 14, 22);
+    doc.text(t('communications.internalCommunication'), 14, 22);
     
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`${t('reference')}: ${selectedThread.id}`, 14, 30);
-    doc.text(`${t('status')}: ${t(selectedThread.status)}`, 14, 35);
-    doc.text(`${t('date')}: ${formatDate(selectedThread.createdAt, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 40);
+    doc.text(`${t('common.reference')}: ${selectedThread.id}`, 14, 30);
+    doc.text(`${t('common.status')}: ${t(`communications.status_${selectedThread.status}` as any)}`, 14, 35);
+    doc.text(`${t('common.date')}: ${formatDate(selectedThread.createdAt, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 40);
 
     // Metadata Table
     (doc as any).autoTable({
       startY: 45,
-      head: [[t('sender'), t('recipient'), t('type'), t('project')]],
+      head: [[t('common.sender'), t('common.recipient'), t('common.type'), t('common.project')]],
       body: [[
         selectedThread.senderName,
-        selectedThread.targetType === 'all' ? t('all') : (selectedThread.targetId || 'N/A'),
-        t(selectedThread.type as any),
-        projects.find(p => p.id === selectedThread.projectId)?.name || t('none')
+        selectedThread.targetType === 'all' ? t('common.all') : (selectedThread.targetId || 'N/A'),
+        t(`communications.type_${selectedThread.type}` as any),
+        projects.find(p => p.id === selectedThread.projectId)?.name || t('common.none')
       ]],
       theme: 'grid',
       headStyles: { fillColor: [63, 81, 181] }
@@ -391,7 +391,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     // Content
     doc.setFontSize(14);
     doc.setTextColor(0);
-    doc.text(t('thread'), 14, (doc as any).lastAutoTable.finalY + 15);
+    doc.text(t('communications.thread'), 14, (doc as any).lastAutoTable.finalY + 15);
 
     let startY = (doc as any).lastAutoTable.finalY + 20;
 
@@ -463,7 +463,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input 
               type="text" 
-              placeholder={t('search')}
+              placeholder={t('common.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
@@ -476,19 +476,19 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               onClick={() => setActiveTab('inbox')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'inbox' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
             >
-              <Inbox className="w-4 h-4" /> {t('inbox')}
+              <Inbox className="w-4 h-4" /> {t('communications.inbox')}
             </button>
             <button 
               onClick={() => setActiveTab('sent')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'sent' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
             >
-              <Outbox className="w-4 h-4" /> {t('outbox')}
+              <Outbox className="w-4 h-4" /> {t('communications.outbox')}
             </button>
             <button 
               onClick={() => setActiveTab('archive')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'archive' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}
             >
-              <Archive className="w-4 h-4" /> {t('archive')}
+              <Archive className="w-4 h-4" /> {t('communications.archive')}
             </button>
           </div>
         </div>
@@ -515,7 +515,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   className={`w-full text-left p-4 hover:bg-white transition-colors border-l-4 ${selectedThread?.id === comm.id ? 'border-blue-600 bg-white shadow-inner' : 'border-transparent'} ${!comm.isRead ? 'bg-blue-50/10' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{t(comm.type as any)}</span>
+                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{t(`communications.type_${comm.type}` as any)}</span>
                     <span className="text-[10px] text-gray-400">{formatDate(comm.createdAt)}</span>
                   </div>
                   <h4 className={`text-sm font-semibold mb-1 line-clamp-1 ${!comm.isRead ? 'text-slate-950' : 'text-gray-500'}`}>
@@ -532,7 +532,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       comm.status === 'closed' ? 'bg-green-100 text-green-700' :
                       'bg-gray-100 text-slate-800'
                     }`}>
-                      {t(comm.status as any)}
+                      {t(`communications.status_${comm.status}` as any)}
                     </span>
                     {comm.projectId && (
                       <span className="text-[10px] text-gray-400 flex items-center gap-1">
@@ -575,7 +575,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       selectedThread.status === 'closed' ? 'bg-green-50 text-green-700 border border-green-200' :
                       'bg-gray-50 text-slate-700 border border-gray-200'
                     }`}>
-                      {t(selectedThread.status as any)}
+                      {t(`communications.status_${selectedThread.status}` as any)}
                     </span>
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
@@ -592,7 +592,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('ack', selectedThread.id)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
                   >
-                    <CheckCircle2 className="w-4 h-4" /> {t('acknowledge')}
+                    <CheckCircle2 className="w-4 h-4" /> {t('communications.acknowledge')}
                   </button>
                 )}
                 {(selectedThread.status === 'open' || selectedThread.status === 'acknowledged') && (currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
@@ -600,7 +600,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('take', selectedThread.id)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
                   >
-                    <UserCheck className="w-4 h-4" /> {t('takeInCharge')}
+                    <UserCheck className="w-4 h-4" /> {t('communications.takeInCharge')}
                   </button>
                 )}
                 {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && (
@@ -608,7 +608,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('close', selectedThread.id)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
                   >
-                    <Check className="w-4 h-4" /> {t('closed')}
+                    <Check className="w-4 h-4" /> {t('communications.closed')}
                   </button>
                 )}
                 {selectedThread.status === 'closed' && (
@@ -616,13 +616,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     onClick={() => handleStatusAction('archive', selectedThread.id)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm"
                   >
-                    <Archive className="w-4 h-4" /> {t('archiveCommunication')}
+                    <Archive className="w-4 h-4" /> {t('communications.archiveCommunication')}
                   </button>
                 )}
                 <button 
                   onClick={exportPDF}
                   className="p-2 border border-gray-100 hover:bg-gray-50 text-gray-400 rounded-lg transition-colors"
-                  title={t('exportHistory')}
+                  title={t('communications.exportHistory')}
                 >
                   <FileText className="w-5 h-5" />
                 </button>
@@ -678,7 +678,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     rows={1}
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
-                    placeholder={t('writeMessage')}
+                    placeholder={t('communications.writeMessage')}
                     className="flex-1 px-4 py-2 bg-transparent outline-none text-sm resize-none text-slate-950"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -711,7 +711,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             </div>
             <h3 className="text-xl font-bold text-slate-950 mb-2">{t('communications.internalCommunications')}</h3>
             <p className="text-gray-400 max-w-sm">
-              {t('noThreadSelected')}
+              {t('communications.noThreadSelected')}
             </p>
           </div>
         )}
@@ -738,7 +738,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       onClick={() => setNewMsg(prev => ({ ...prev, targetType: type as any, targetIds: [] }))}
                       className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all ${newMsg.targetType === type ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-300'}`}
                     >
-                      {type === 'all' ? t('communications.allUsers') : t('user')}
+                      {type === 'all' ? t('communications.allUsers') : t('common.user')}
                     </button>
                   ))}
                 </div>
@@ -756,13 +756,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 )}
 
                 <div className="pt-2 border-t border-gray-50 mt-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('project')} ({t('optional') || 'Opzionale'})</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('common.project')} ({t('common.optional')})</label>
                   <select 
                     className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     value={newMsg.projectId}
                     onChange={(e) => setNewMsg(prev => ({ ...prev, projectId: e.target.value }))}
                   >
-                    <option value="">{t('selectProject')}</option>
+                    <option value="">{t('projects.selectProject')}</option>
                     {projects.map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
@@ -772,7 +772,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
               <div className="flex gap-4">
                 <div className="flex-1">
-                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('type')}</label>
+                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('common.type')}</label>
                    <div className="flex gap-2">
                      {['note', 'issue', 'confirmation'].map((tType) => (
                        <button
@@ -780,7 +780,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                          onClick={() => setNewMsg(prev => ({ ...prev, type: tType as any }))}
                          className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${newMsg.type === tType ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-sm' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-400'}`}
                        >
-                         {t(tType as any)}
+                         {t(`communications.type_${tType}` as any)}
                        </button>
                      ))}
                    </div>
@@ -794,7 +794,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   value={newMsg.content}
                   onChange={(e) => setNewMsg(prev => ({ ...prev, content: e.target.value }))}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-950 placeholder:text-gray-400"
-                  placeholder={t('writeMessage')}
+                  placeholder={t('communications.writeMessage')}
                 />
               </div>
 
@@ -804,7 +804,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold shadow-xl shadow-blue-100 transition-all flex items-center justify-center gap-2"
               >
                 {sending ? <Clock className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                {t('send')}
+                {t('communications.send')}
               </button>
             </div>
           </div>

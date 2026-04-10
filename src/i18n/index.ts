@@ -1,6 +1,5 @@
 import { common as itCommon } from './it/common';
 import { auth as itAuth } from './it/auth';
-import { legacy as itLegacy } from './it/legacy';
 import { communications as itCommunications } from './it/communications';
 import { projects as itProjects } from './it/projects';
 import { reports as itReports } from './it/reports';
@@ -15,14 +14,11 @@ import { presentation as plPresentation } from './pl/presentation';
 import { presentation as trPresentation } from './tr/presentation';
 import { presentation as daPresentation } from './da/presentation';
 
-import { translations } from '../translations';
-
 export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
 
 export const baseIT = {
   common: itCommon,
   auth: itAuth,
-  legacy: itLegacy,
   communications: itCommunications,
   projects: itProjects,
   reports: itReports,
@@ -46,11 +42,11 @@ export type TranslationKey =
 
 export const allTranslations: Record<Language, any> = {
   it: baseIT,
-  en: { ...baseIT, presentation: enPresentation, legacy: translations.en },
-  es: { ...baseIT, presentation: esPresentation, legacy: translations.es },
-  pl: { ...baseIT, presentation: plPresentation, legacy: translations.pl },
-  tr: { ...baseIT, presentation: trPresentation, legacy: translations.tr },
-  da: { ...baseIT, presentation: daPresentation, legacy: translations.da },
+  en: { ...baseIT, presentation: enPresentation },
+  es: { ...baseIT, presentation: esPresentation },
+  pl: { ...baseIT, presentation: plPresentation },
+  tr: { ...baseIT, presentation: trPresentation },
+  da: { ...baseIT, presentation: daPresentation },
 };
 
 export const resolveKey = (lang: Language, key: TranslationKey | string): any => {
@@ -63,10 +59,8 @@ export const resolveKey = (lang: Language, key: TranslationKey | string): any =>
       value = value?.[part];
     }
     if (typeof value === 'string') return value;
-    if (Array.isArray(value)) return value as any; // Allow arrays for groups
+    if (Array.isArray(value)) return value as any; 
   }
-
-  const legacyValue = dict.legacy?.[key as any] || allTranslations['it'].legacy?.[key as any];
   
-  return (typeof legacyValue === 'string' || Array.isArray(legacyValue)) ? legacyValue : key;
+  return key;
 };

@@ -147,7 +147,7 @@ const PrivacyView: React.FC = () => {
               to="/"
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors"
             >
-              ← {t('backToApp')}
+              ← {t('landing.backToLogin')}
             </Link>
           </div>
         </div>

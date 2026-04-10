@@ -301,7 +301,7 @@ const AppLayout: React.FC<{
                     {user.companyName}
                   </p>
                   <p className="text-[10px] text-slate-400 capitalize bg-slate-50 px-1.5 py-0.5 rounded mt-0.5 border border-slate-100 font-medium">
-                    {t(user.role as any)}
+                    {t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` as any)}
                   </p>
                 </div>
               </div>
@@ -1057,7 +1057,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">{user.name}</h1>
-            <p className="text-sm font-bold text-blue-600 uppercase tracking-widest mt-1">{t(user.role as any)}</p>
+            <p className="text-sm font-bold text-blue-600 uppercase tracking-widest mt-1">{t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` as any)}</p>
             <p className="text-xs text-slate-400 font-medium mt-1">@{user.username}</p>
           </div>
         </div>
@@ -2763,7 +2763,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                       'bg-amber-50 text-amber-600 border-amber-100'
                     }`}>
-                      {t(r.invoiceStatus === 'Pending' ? 'common.statusPending' : r.invoiceStatus === 'Fatturato' ? 'common.statusInvoiced' : 'common.statusPaid' as any)}
+                      {r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'))}
                     </div>
                   )}
                 </div>
@@ -3410,45 +3410,45 @@ const CompaniesView: React.FC = () => {
                 <FullWidthField label={t('dashboard.companyName')}>
                   <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder="Es. Edilizia Rossi srl" />
                 </FullWidthField>
-                <FullWidthField label="Nome Amministratore Ditta">
+                <FullWidthField label={t('dashboard.adminName')}>
                   <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
                 </FullWidthField>
-                <FullWidthField label="Username Amministratore">
+                <FullWidthField label={t('dashboard.adminUsername')}>
                   <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
                 </FullWidthField>
-                <FullWidthField label="Password Amministratore">
+                <FullWidthField label={t('dashboard.adminPassword')}>
                   <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
                 </FullWidthField>
               </div>
               {editingId && (
                 <>
                   <div className="pt-2 border-t">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">📋 Dati Societari (intestazione PDF)</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">📋 {t('dashboard.corporateData')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FullWidthField label="Indirizzo">
+                      <FullWidthField label={t('dashboard.address')}>
                         <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} placeholder="Via Roma 1" />
                       </FullWidthField>
-                      <FullWidthField label="Città">
+                      <FullWidthField label={t('dashboard.city')}>
                         <input type="text" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClasses} placeholder="Milano" />
                       </FullWidthField>
-                      <FullWidthField label="Paese">
+                      <FullWidthField label={t('dashboard.country')}>
                         <input type="text" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClasses} placeholder="Italia" />
                       </FullWidthField>
-                      <FullWidthField label="Telefono">
+                      <FullWidthField label={t('dashboard.phone')}>
                         <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} placeholder="+39 02 1234567" />
                       </FullWidthField>
-                      <FullWidthField label="Email Aziendale">
+                      <FullWidthField label={t('dashboard.companyEmail')}>
                         <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} placeholder="info@azienda.it" />
                       </FullWidthField>
-                      <FullWidthField label="P.IVA / CVR">
+                      <FullWidthField label={t('dashboard.vatNumber')}>
                         <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder="IT01234567890" />
                       </FullWidthField>
                     </div>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
                     <div>
-                      <p className="text-sm font-bold text-amber-800">Piano Premium</p>
-                      <p className="text-xs text-amber-600">Abilita le funzionalità Premium (Compliance Report, Foto, Firma)</p>
+                      <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
+                      <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
                     </div>
                     <button
                       type="button"
@@ -3467,7 +3467,7 @@ const CompaniesView: React.FC = () => {
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                 <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
-                  {isSubmitting ? '...' : (editingId ? t('common.update') : t('createCompanyBtn'))}
+                  {isSubmitting ? '...' : (editingId ? t('common.update') : t('dashboard.createCompanyBtn'))}
                 </button>
               </div>
             </form>
@@ -3645,10 +3645,10 @@ const App: React.FC = () => {
                     <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
                       <div className="flex items-center gap-2">
                         <ShieldAlert size={16} />
-                        <span>{(t as any)('impersonating') || 'Impersonando'}: <span className="underline">{user.name}</span> ({user.username})</span>
+                        <span>{t('auth.impersonating')}: <span className="underline">{user.name}</span> ({user.username})</span>
                       </div>
                       <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
-                        <LogOut size={14} /> {(t as any)('backToAdmin') || 'Torna ad Admin'}
+                        <LogOut size={14} /> {t('auth.backToAdmin')}
                       </button>
                     </div>
                   )}
