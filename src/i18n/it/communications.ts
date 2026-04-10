@@ -79,5 +79,14 @@ export const communications = {
   // Upgrade Modal Specific (Legacy mapping)
   upgradeTitle: 'Funzionalità Premium',
   upgradeDesc: 'Questa funzionalità (Foto + Firma + PDF Professionale) è riservata agli account Premium.',
-  upgradeCTA: 'Sblocca con Donazione'
+  upgradeCTA: 'Sblocca con Donazione',
+  read_at: 'Letto il',
+  thread_closed_msg: 'Questa conversazione è stata chiusa. Archivia per completare il ciclo.',
+  thread_archived_msg: 'Conversazione archiviata.',
+  feature_ticket_title: 'Ticket & Thread',
+  feature_ticket_desc: 'Gestisci conversazioni strutturate per ogni richiesta',
+  feature_teamsync_title: 'Team Sync',
+  feature_teamsync_desc: 'Invia avvisi a tutto il team o a singoli progetti',
+  feature_pdf_title: 'Export PDF',
+  feature_pdf_desc: 'Scarica i verbali delle conversazioni in formato PDF'
 } as const;

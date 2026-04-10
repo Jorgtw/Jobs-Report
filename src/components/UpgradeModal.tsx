@@ -33,7 +33,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
                 <Landmark size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bonifico Bancario</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.bankTransfer')}</p>
                 <p className="text-sm font-bold text-slate-700">IBAN: IT00 X000 0000 0000 0000 0000 000</p>
               </div>
             </div>
@@ -43,7 +43,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
                 <CreditCard size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PayPal / Carta</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.paypalCard')}</p>
                 <p className="text-sm font-bold text-slate-700">jorgtw@gmail.com</p>
               </div>
             </div>

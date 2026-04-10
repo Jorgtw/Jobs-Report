@@ -1,0 +1,17 @@
+export const help = {
+  title: "Yardım Merkezi",
+  subtitle: "Uygulamayı kullanmak için kılavuzlar ve talimatlar",
+  workerTab: "Operatör Kılavuzu",
+  adminTab: "Yönetici Kılavuzu",
+  newReportTitle: "İş Raporu Oluşturma",
+  newReportBody: "Yeni bir rapor oluşturmak için 'Raporlar' bölümüne gidin ve '+' işaretine tıklayın. Tarihi, projeyi seçin ve çalışılan saatleri girin.",
+  onboardingTitle: "Jobs-Report'a Hoş Geldiniz! 👋",
+  onboardingBody: "Bu kılavuz, hesabınızı saniyeler içinde kurmanıza yardımcı olacaktır. Başlayalım!",
+  next: "İleri",
+  skip: "Atla",
+  finish: "Bitir",
+  restart: "Eğitimi Yeniden Başlat",
+  aiName: "Jobs Report Asistanı",
+  aiSubtitle: "Konuşan Kılavuz",
+  aiWelcome: "Merhaba! Ben Jobs Report akıllı kılavuzuyum. Bana uygulamanın nasıl çalıştığını sorabilirsiniz!",
+};

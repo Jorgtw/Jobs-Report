@@ -1,0 +1,17 @@
+export const help = {
+  title: "Hjælpecenter",
+  subtitle: "Vejledninger og instruktioner til brug af appen",
+  workerTab: "Operatørvejledning",
+  adminTab: "Administratorvejledning",
+  newReportTitle: "Oprettelse af arbejdsrapport",
+  newReportBody: "For at oprette en ny rapport skal du gå til sektionen 'Rapporter' og klikke på '+'. Vælg dato, projekt og indtast arbejdede timer.",
+  onboardingTitle: "Velkommen til Jobs-Report! 👋",
+  onboardingBody: "Denne vejledning hjælper dig med at opsætte din konto på få sekunder. Lad os komme i gang!",
+  next: "Næste",
+  skip: "Spring over",
+  finish: "Afslut",
+  restart: "Genstart vejledning",
+  aiName: "Jobs Report Assistent",
+  aiSubtitle: "Talende vejledning",
+  aiWelcome: "Hej! Jeg er Jobs Reports intelligente vejledning. Spørg mig om, hvordan appen fungerer!",
+};

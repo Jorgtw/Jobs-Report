@@ -30,7 +30,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
       }
       onLogin(user);
     } catch (err: any) {
-      setError(err?.message || 'Errore di connessione');
+      setError(err?.message || t('auth.connectionError'));
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
       const user = await db.loginUser('Admin.demo', 'demo123');
       if (user) onLogin(user);
     } catch (err) {
-      setError('Demo login failed');
+      setError(t('auth.demoLoginFailed'));
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
                 value={username} 
                 onChange={e => setUsername(e.target.value)} 
                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"
-                placeholder="Inserisci il tuo username"
+                placeholder={t('auth.usernamePlaceholder')}
               />
             </div>
 

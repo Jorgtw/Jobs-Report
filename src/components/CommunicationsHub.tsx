@@ -216,9 +216,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mb-10">
           {[
-            { icon: MessageSquare, title: 'Ticket & Thread', desc: 'Gestisci conversazioni strutturate per ogni richiesta' },
-            { icon: Users, title: 'Team Sync', desc: 'Invia avvisi a tutto il team o a singoli progetti' },
-            { icon: FileText, title: 'Export PDF', desc: 'Scarica i verbali delle conversazioni in formato PDF' }
+            { icon: MessageSquare, title: t('communications.feature_ticket_title'), desc: t('communications.feature_ticket_desc') },
+            { icon: Users, title: t('communications.feature_teamsync_title'), desc: t('communications.feature_teamsync_desc') },
+            { icon: FileText, title: t('communications.feature_pdf_title'), desc: t('communications.feature_pdf_desc') }
           ].map((feat, idx) => (
             <div key={idx} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <feat.icon className="w-6 h-6 text-blue-500 mx-auto mb-2" />
@@ -692,7 +692,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                              <span>{formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}</span>
                              {isMe && msg.isRead && (
                                <span className="text-blue-400 italic font-black flex items-center gap-1">
-                                 <Check size={8} strokeWidth={4} /> Letto il {formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}
+                                 <Check size={8} strokeWidth={4} /> {t('communications.read_at')} {formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}
                                </span>
                              )}
                           </div>
@@ -734,7 +734,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             ) : (
               <div className="p-6 bg-gray-50 text-center border-t border-gray-100">
                  <p className="text-sm font-medium text-gray-400 italic">
-                   {selectedThread.status === 'closed' ? "Questa conversazione è stata chiusa. Archivia per completare il ciclo." : "Conversazione archiviata."}
+                   {selectedThread.status === 'closed' ? t('communications.thread_closed_msg') : t('communications.thread_archived_msg')}
                  </p>
               </div>
             )}

@@ -1,0 +1,17 @@
+export const help = {
+  title: "Centro de Ayuda",
+  subtitle: "Guías e instrucciones para usar la app",
+  workerTab: "Guía del Operario",
+  adminTab: "Guía del Administrador",
+  newReportTitle: "Creación de Parte de Trabajo",
+  newReportBody: "Para crear un nuevo parte, ve a la sección 'Partes' y haz clic en '+'. Selecciona la fecha, el proyecto e introduce las horas trabajadas.",
+  onboardingTitle: "¡Bienvenido a Jobs-Report! 👋",
+  onboardingBody: "Esta guía te ayudará a configurar tu cuenta en pocos segundos. ¡Empecemos!",
+  next: "Siguiente",
+  skip: "Saltar",
+  finish: "Finalizar",
+  restart: "Reiniciar Tutorial",
+  aiName: "Asistente Jobs Report",
+  aiSubtitle: "Manual Parlante",
+  aiWelcome: "¡Hola! Soy el manual inteligente de Jobs Report. ¡Pregúntame cómo funciona la app!",
+};

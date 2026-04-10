@@ -79,5 +79,14 @@ export const communications = {
   // Specyficzne dla Modal ulepszenia
   upgradeTitle: 'Funkcja Premium',
   upgradeDesc: 'Ta funkcja (Zdjęcia + Podpis + Profesjonalny PDF) jest zarezerwowana dla kont Premium.',
-  upgradeCTA: 'Odblokuj Formularzem'
+  upgradeCTA: 'Odblokuj Formularzem',
+  read_at: 'Przeczytano o',
+  thread_closed_msg: 'Ta rozmowa została zamknięta. Zarchiwizuj, aby zakończyć cykl.',
+  thread_archived_msg: 'Rozmowa zarchiwizowana.',
+  feature_ticket_title: 'Ticket & Thread',
+  feature_ticket_desc: 'Zarządzaj ustrukturyzowanymi rozmowami dla każdego zgłoszenia',
+  feature_teamsync_title: 'Team Sync',
+  feature_teamsync_desc: 'Wysyłaj powiadomienia do całego zespołu lub konkretnych projektów',
+  feature_pdf_title: 'Eksportuj PDF',
+  feature_pdf_desc: 'Pobierz logi rozmów w formacie PDF'
 } as const;

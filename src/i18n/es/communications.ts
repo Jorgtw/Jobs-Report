@@ -79,5 +79,14 @@ export const communications = {
   // Específico del Modal de Mejora
   upgradeTitle: 'Funcionalidad Premium',
   upgradeDesc: 'Esta funcionalidad (Fotos + Firma + PDF Profesional) está reservada para cuentas Premium.',
-  upgradeCTA: 'Desbloquear con Donación'
+  upgradeCTA: 'Desbloquear con Donación',
+  read_at: 'Leído el',
+  thread_closed_msg: 'Esta conversación ha sido cerrada. Archiva para completar el ciclo.',
+  thread_archived_msg: 'Conversación archivada.',
+  feature_ticket_title: 'Ticket & Thread',
+  feature_ticket_desc: 'Gestione conversaciones estructuradas para cada solicitud',
+  feature_teamsync_title: 'Team Sync',
+  feature_teamsync_desc: 'Envíe alertas a todo el equipo o a proyectos específicos',
+  feature_pdf_title: 'Export PDF',
+  feature_pdf_desc: 'Descargue los registros de las conversaciones en formato PDF'
 } as const;

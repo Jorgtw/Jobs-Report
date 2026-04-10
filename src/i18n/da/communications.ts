@@ -79,5 +79,14 @@ export const communications = {
   // Specifikt for opgraderingsmodal
   upgradeTitle: 'Premium-funktion',
   upgradeDesc: 'Denne funktion (Foto + Underskrift + Professionel PDF) er reserveret til Premium-konti.',
-  upgradeCTA: 'Lås op med donation'
+  upgradeCTA: 'Lås op med donation',
+  read_at: 'Læst kl.',
+  thread_closed_msg: 'Denne samtale er lukket. Arkiver for at fuldføre cyklussen.',
+  thread_archived_msg: 'Samtale arkiveret.',
+  feature_ticket_title: 'Ticket & Thread',
+  feature_ticket_desc: 'Håndter strukturerede samtaler for hver anmodning',
+  feature_teamsync_title: 'Team Sync',
+  feature_teamsync_desc: 'Send advarsler til hele teamet eller specifikke projekter',
+  feature_pdf_title: 'Eksporter PDF',
+  feature_pdf_desc: 'Download samtale-logs i PDF-format'
 } as const;

@@ -79,5 +79,14 @@ export const communications = {
   // Upgrade Modal Specific (Legacy mapping)
   upgradeTitle: 'Premium Feature',
   upgradeDesc: 'This feature (Photos + Signature + Professional PDF) is reserved for Premium accounts.',
-  upgradeCTA: 'Unlock with Donation'
+  upgradeCTA: 'Unlock with Donation',
+  read_at: 'Read at',
+  thread_closed_msg: 'This conversation has been closed. Archive to complete the cycle.',
+  thread_archived_msg: 'Conversation archived.',
+  feature_ticket_title: 'Ticket & Thread',
+  feature_ticket_desc: 'Manage structured conversations for every request',
+  feature_teamsync_title: 'Team Sync',
+  feature_teamsync_desc: 'Send alerts to the whole team or specific projects',
+  feature_pdf_title: 'Export PDF',
+  feature_pdf_desc: 'Download conversation logs in PDF format'
 } as const;

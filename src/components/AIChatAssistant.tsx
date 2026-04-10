@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Volume2, VolumeX, Square } from 'lucide-react';
-import { useTranslation } from '../App';
+import { useTranslation, localeMap } from '../App';
 
 interface Message {
   role: 'user' | 'model';
@@ -55,15 +55,7 @@ const AIChatAssistant: React.FC = () => {
     const cleanText = stripMarkdown(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    if (lang) {
-      utterance.lang = lang;
-    } else {
-      const firstWords = cleanText.toLowerCase().slice(0, 50);
-      if (firstWords.includes('how') || firstWords.includes('setup') || firstWords.includes('you')) utterance.lang = 'en-US';
-      else if (firstWords.includes('como') || firstWords.includes('proyecto')) utterance.lang = 'es-ES';
-      else if (firstWords.includes('hvor') || firstWords.includes('hvordan')) utterance.lang = 'da-DK';
-      else utterance.lang = 'it-IT'; 
-    }
+    utterance.lang = (lang && localeMap[lang]) ? localeMap[lang] : 'it-IT';
     
     utterance.rate = 1.0;
     utterance.pitch = 1.0;

@@ -4,6 +4,7 @@ export const dashboard = {
   estimatedExpenses: "Spese Previste",
   toInvoice: "Da Fatturare",
   worksInProgress: "Lavori in Corso",
+  margin: "Margine",
   
   // SuperAdmin Dashboard
   weeklyOverview: 'Panoramica Settimanale',
@@ -41,4 +42,7 @@ export const dashboard = {
   premiumPlan: 'Piano Premium',
   premiumPlanDesc: 'Abilita le funzionalità Premium (Compliance Report, Foto, Firma)',
   try_demo: 'Prova la Demo',
+  companyNamePlaceholder: "Es. Edilizia Rossi srl",
+  tempPasswordPlaceholder: "Password temporanea",
+  italy: "Italia",
 } as const;

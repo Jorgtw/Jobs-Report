@@ -1,0 +1,21 @@
+export const landing = {
+  title: "Jobs-Report",
+  subtitle: "Profesjonalny system zarządzania webowego dla budownictwa i usług. Pełna identyfikowalność godzin, kosztów, przychodów i marż budowy.",
+  heroCTA: "Odkryj potencjał",
+  backToLogin: "Dostęp do programu",
+  featReportsTitle: "Inteligentne raporty pracy",
+  featReportsDesc: "Szybkie wprowadzanie po stronie budowy z zarządzaniem zespołem i dodatkowymi wydatkami.",
+  featProjTitle: "Kontrola marży",
+  featProjDesc: "Weryfikacja w czasie rzeczywistym, czy każdy projekt generuje zysk.",
+  featTeamTitle: "Zespoły hybrydowe",
+  featTeamDesc: "Zarządzaj pracownikami wewnętrznymi i firmami podwykonawczymi w jednym zespole.",
+  featExportTitle: "Raporty gotowe do użycia",
+  featExportDesc: "Generuj PDF i Excel do fakturowania jednym kliknięciem.",
+  introTitle: "Co robi program?",
+  introDesc: "Jobs-Report to system zarządzania webowego dla firm pracujących na budowach lub projektach z personelem własnym i podwykonawczym.",
+  whyTitle: "Realne korzyści i wyróżniki",
+  diff1Title: "🏗️ Zespoły mieszane",
+  diff1Desc: "Pozwala na uwzględnienie w jednym raporcie pracowników wewnętrznych i podwykonawców.",
+  finalCTA: "Zacznij teraz - Poproś o dostęp",
+  finalLogin: "Masz już konto? Zaloguj się teraz"
+};

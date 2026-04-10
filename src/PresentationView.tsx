@@ -97,7 +97,7 @@ const PresentationView: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <div className="text-right">
               <div className="text-[13px] font-semibold">Thomas Demo</div>
-              <div className="text-[11px] text-[#9ca3af]">Admin</div>
+              <div className="text-[11px] text-[#9ca3af]">{t('common.roleAdmin')}</div>
             </div>
             <div className="w-[34px] h-[34px] bg-[#eff6ff] rounded-full flex items-center justify-center text-[15px]">👤</div>
           </div>

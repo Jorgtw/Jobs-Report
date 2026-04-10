@@ -1,0 +1,48 @@
+// src/i18n/en/dashboard.ts
+export const dashboard = {
+  // Statistics (Brief)
+  estimatedExpenses: "Estimated Expenses",
+  toInvoice: "To Invoice",
+  worksInProgress: "Works in Progress",
+  margin: "Margin",
+  
+  // SuperAdmin Dashboard
+  weeklyOverview: 'Weekly Overview',
+  last7DaysData: 'Last 7 days data',
+  newCompanies: 'New Companies',
+  activeCompanies: 'Active Companies',
+  newPremiums: 'New Premiums',
+  totalReports: 'Total Reports',
+  mostActiveWeekly: 'Most Active Weekly',
+  pendingRequestsReminder: 'Pending Requests',
+  pendingRequestsDesc: 'There are new registration requests waiting for approval.',
+  quickSupport: 'Quick Support',
+  quickSupportDesc: 'Contact the technical team for immediate assistance on the platform.',
+  
+  // SaaS / Companies Management
+  companiesManagement: 'Companies Management',
+  createCompanyBtn: 'Create New Company',
+  editCompany: 'Edit Company',
+  companyName: 'Company Name',
+  companyStatus: 'Company Status',
+  demoFieldsLocked: 'In this demo version some data cannot be modified.',
+  impersonateUser: 'Simulate User Access',
+  adminAdminName: 'Admin Name',
+  adminAdminUsername: 'Admin Username',
+  adminName: 'Company Admin Name',
+  adminUsername: 'Admin Username',
+  adminPassword: 'Admin Password',
+  corporateData: 'Corporate Data (PDF Header)',
+  address: 'Address',
+  city: 'City',
+  country: 'Country',
+  phone: 'Phone',
+  companyEmail: 'Company Email',
+  vatNumber: 'VAT / Tax ID',
+  premiumPlan: 'Premium Plan',
+  premiumPlanDesc: 'Enable Premium features (Compliance Report, Photos, Signature)',
+  try_demo: 'Try Demo',
+  companyNamePlaceholder: "e.g. Acme Industries Ltd",
+  tempPasswordPlaceholder: "Temporary password",
+  italy: "Italy",
+} as const;

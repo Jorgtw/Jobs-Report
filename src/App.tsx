@@ -113,7 +113,7 @@ const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
 
   if (isSuperAdmin) {
     return [
-      { name: t('projects.companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' },
+      { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' },
       { name: t('auth.profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
     ];
   }
@@ -318,7 +318,7 @@ const AppLayout: React.FC<{
 
 // --- Compact Dashboard component ---
 const CompactDashboard: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [stats, setStats] = useState({
     activeProjects: 0,
     pendingReports: 0,
@@ -363,7 +363,7 @@ const CompactDashboard: React.FC = () => {
     </Link>
   );
 
-  const formatNum = (val: number) => val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatNum = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
@@ -376,7 +376,7 @@ const CompactDashboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 pb-2">
           <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" />
           <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" />
-          <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString('it-IT', { maximumFractionDigits: 1 })} to="/reports" />
+          <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" />
         </div>
         
         {/* Row 2: Economic Values */}
@@ -392,7 +392,7 @@ const CompactDashboard: React.FC = () => {
 
 // --- Pending Hours Card for Workers ---
 const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [hours, setHours] = useState<number | null>(null);
 
   useEffect(() => {
@@ -424,7 +424,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
         </div>
       </div>
       <div className="text-3xl font-black text-amber-600">
-        {hours.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         <span className="text-sm font-bold ml-1 text-slate-400">h</span>
       </div>
     </div>
@@ -605,14 +605,14 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
     }));
   }, [filteredData]);
 
-  const formatCurrency = (val: number) => val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatCurrency = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const handleDeleteOperation = async (exportType: 'pdf' | 'excel' | 'none') => {
     setIsDeleting(true);
     try {
       if (exportType === 'pdf') {
         const rows = filteredData.map(s => ({
-          date: new Date(s.date).toLocaleDateString(lang === 'da' ? 'da-DK' : lang === 'tr' ? 'tr-TR' : 'it-IT'),
+          date: new Date(s.date).toLocaleDateString(localeMap[lang]),
           projectName: s.projectName,
           clientName: s.clientName,
           workerName: s.userName,
@@ -624,7 +624,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         exportToPDF(rows, lang, user.name);
       } else if (exportType === 'excel') {
         const rows = filteredData.map(s => ({
-          date: new Date(s.date).toLocaleDateString(lang === 'da' ? 'da-DK' : lang === 'tr' ? 'tr-TR' : 'it-IT'),
+          date: new Date(s.date).toLocaleDateString(localeMap[lang]),
           projectName: s.projectName,
           clientName: s.clientName,
           workerName: s.userName,
@@ -655,7 +655,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
           <button
             onClick={() => {
               const rows = filteredData.map(s => ({
-                date: new Date(s.date).toLocaleDateString(lang === 'da' ? 'da-DK' : lang === 'tr' ? 'tr-TR' : 'it-IT'),
+                date: new Date(s.date).toLocaleDateString(localeMap[lang]),
                 projectName: s.projectName,
                 clientName: s.clientName,
                 workerName: s.userName,
@@ -673,7 +673,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
           <button
             onClick={() => {
               const rows = filteredData.map(s => ({
-                date: new Date(s.date).toLocaleDateString(lang === 'da' ? 'da-DK' : lang === 'tr' ? 'tr-TR' : 'it-IT'),
+                date: new Date(s.date).toLocaleDateString(localeMap[lang]),
                 projectName: s.projectName,
                 clientName: s.clientName,
                 workerName: s.userName,
@@ -754,7 +754,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
           {user.role === 'admin' && (
             <div className="flex-shrink-0 w-full sm:w-auto sm:ml-auto">
               <select
-                title="Aggiorna stato dei risultati filtrati"
+                title={t('common.updateStatusTitle')}
                 onChange={async (e) => {
                   const val = e.target.value;
                   if (!val) return;
@@ -844,7 +844,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       <div className="bg-white rounded-2xl border border-slate-200 flex flex-wrap lg:flex-nowrap justify-between items-center p-4 gap-6 shadow-sm">
         <div className="flex flex-col flex-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('reports.summaryHoursWorked')}</span>
-          <span className="text-sm font-medium text-slate-600">{totals.hours.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h</span>
+          <span className="text-sm font-medium text-slate-600">{totals.hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
@@ -904,7 +904,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
                   <span className="font-bold text-slate-400 uppercase tracking-tight">{t('reports.totalHoursLabel')}</span>
-                  <span className="font-black text-slate-700">{p.hours.toLocaleString('it-IT', { minimumFractionDigits: 1 })}h</span>
+                  <span className="font-black text-slate-700">{p.hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 1 })}h</span>
                 </div>
                 <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
                   <span className="font-bold text-slate-400 uppercase tracking-tight">{t('reports.summaryTotalCost')}</span>
@@ -945,7 +945,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                   </td>
                   <td className="px-3 py-1.5 font-bold text-slate-900 truncate max-w-[150px]" title={p.name}>{p.name}</td>
                   <td className="px-3 py-1.5 text-slate-500 font-medium truncate max-w-[120px]" title={p.clientName}>{p.clientName}</td>
-                  <td className="px-3 py-1.5 font-black text-slate-700 text-right whitespace-nowrap">{p.hours.toLocaleString('it-IT', { minimumFractionDigits: 1 })} h</td>
+                  <td className="px-3 py-1.5 font-black text-slate-700 text-right whitespace-nowrap">{p.hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 1 })} h</td>
                   <td className="px-3 py-1.5 font-black text-slate-900 text-right whitespace-nowrap">{formatCurrency(p.totalCost)}</td>
                   <td className="px-3 py-1.5 font-black text-indigo-600 text-right whitespace-nowrap">{formatCurrency(p.revenue)}</td>
                   <td className="px-3 py-1.5 font-black text-right whitespace-nowrap">
@@ -1015,7 +1015,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
       setMessage({ text: t('auth.passwordChanged'), type: 'success' });
       setPassForm({ newPass: '', confirmPass: '' });
     } catch (err) {
-      setMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
+      setMessage({ text: t('common.updateError'), type: 'error' });
     }
   };
 
@@ -1044,7 +1044,7 @@ const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ u
       if (onUpdate) onUpdate(updatedUser);
       setProfileMessage({ text: t('auth.profileUpdated'), type: 'success' });
     } catch (err) {
-      setProfileMessage({ text: 'Errore durante l\'aggiornamento', type: 'error' });
+      setProfileMessage({ text: t('common.updateError'), type: 'error' });
     }
   };
 
@@ -3109,7 +3109,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <div className="flex items-center gap-3">
                       {formData.expenses.length > 0 && (
                         <span className="text-sm font-black text-amber-700">
-                          Tot: {formData.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {t('common.totalShort')} {formData.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0).toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       )}
                       <button
@@ -3376,13 +3376,13 @@ const CompaniesView: React.FC = () => {
                   </td>
                   <td className="px-5 py-4 text-right flex justify-end gap-2">
                     <button onClick={() => handleToggleStatus(c.id, c.status)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('common.deactivate') : t('common.activate')}>
-                      {c.status === 'active' ? <><EyeOff size={16} /> Disattiva</> : <><Eye size={16} /> Attiva</>}
+                      {c.status === 'active' ? <><EyeOff size={16} /> {t('common.deactivate')}</> : <><Eye size={16} /> {t('common.activate')}</>}
                     </button>
                     <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('common.edit')}>
-                      <Pencil size={16} /> Modifica
+                      <Pencil size={16} /> {t('common.edit')}
                     </button>
                     <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
-                      <Trash2 size={16} /> Elimina
+                      <Trash2 size={16} /> {t('common.delete')}
                     </button>
                   </td>
                 </tr>
@@ -3408,16 +3408,16 @@ const CompaniesView: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FullWidthField label={t('dashboard.companyName')}>
-                  <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder="Es. Edilizia Rossi srl" />
+                  <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder={t('dashboard.companyNamePlaceholder')} />
                 </FullWidthField>
                 <FullWidthField label={t('dashboard.adminName')}>
-                  <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder="Mario Rossi" />
+                  <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderName')} />
                 </FullWidthField>
                 <FullWidthField label={t('dashboard.adminUsername')}>
-                  <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder="mario.rossi" />
+                  <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder={t('auth.usernamePlaceholder')} />
                 </FullWidthField>
                 <FullWidthField label={t('dashboard.adminPassword')}>
-                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder="Password temporanea" />
+                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder={t('dashboard.tempPasswordPlaceholder')} />
                 </FullWidthField>
               </div>
               {editingId && (
@@ -3426,22 +3426,22 @@ const CompaniesView: React.FC = () => {
                     <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">📋 {t('dashboard.corporateData')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FullWidthField label={t('dashboard.address')}>
-                        <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} placeholder="Via Roma 1" />
+                        <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderAddress')} />
                       </FullWidthField>
                       <FullWidthField label={t('dashboard.city')}>
-                        <input type="text" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClasses} placeholder="Milano" />
+                        <input type="text" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderCity')} />
                       </FullWidthField>
                       <FullWidthField label={t('dashboard.country')}>
-                        <input type="text" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClasses} placeholder="Italia" />
+                        <input type="text" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClasses} placeholder={t('dashboard.italy')} />
                       </FullWidthField>
                       <FullWidthField label={t('dashboard.phone')}>
-                        <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} placeholder="+39 02 1234567" />
+                        <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} placeholder={t('auth.phonePlaceholder')} />
                       </FullWidthField>
                       <FullWidthField label={t('dashboard.companyEmail')}>
-                        <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} placeholder="info@azienda.it" />
+                        <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderEmail')} />
                       </FullWidthField>
                       <FullWidthField label={t('dashboard.vatNumber')}>
-                        <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder="IT01234567890" />
+                        <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderVat')} />
                       </FullWidthField>
                     </div>
                   </div>

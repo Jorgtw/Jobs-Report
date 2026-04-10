@@ -79,5 +79,14 @@ export const communications = {
   // Yükseltme Modalı Özel
   upgradeTitle: 'Premium Özellik',
   upgradeDesc: 'Bu özellik (Fotoğraf + İmza + Profesyonel PDF) Premium hesaplar için ayrılmıştır.',
-  upgradeCTA: 'Bağış ile Kilidi Aç'
+  upgradeCTA: 'Bağış ile Kilidi Aç',
+  read_at: 'Okundu',
+  thread_closed_msg: 'Bu konuşma kapatıldı. Döngüyü tamamlamak için arşivleyin.',
+  thread_archived_msg: 'Konuşma arşivlendi.',
+  feature_ticket_title: 'Ticket & Thread',
+  feature_ticket_desc: 'Her talep için yapılandırılmış konuşmaları yönetin',
+  feature_teamsync_title: 'Ekip Senkronizasyonu',
+  feature_teamsync_desc: 'Tüm ekibe veya belirli projelere uyarı gönderin',
+  feature_pdf_title: 'PDF Dışa Aktar',
+  feature_pdf_desc: 'Konuşma günlüklerini PDF formatında indirin'
 } as const;
