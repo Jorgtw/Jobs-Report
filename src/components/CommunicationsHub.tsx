@@ -161,6 +161,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [projects, setProjects] = useState<Project[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedThreadRef = useRef<InternalCommunication | null>(null);
+
+  useEffect(() => {
+    selectedThreadRef.current = selectedThread;
+  }, [selectedThread]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -185,14 +190,17 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           table: 'internal_communications',
           filter: `company_id=eq.${currentUser.companyId}`
         },
-        () => {
-          fetchMainData();
-          if (selectedThread) {
-            fetchThread(selectedThread.id);
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          fetchMainData(true);
+          if (selectedThreadRef.current) {
+            fetchThread(selectedThreadRef.current.id, true);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Supabase subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -245,8 +253,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   }, [threadMessages]);
 
-  const fetchMainData = async () => {
-    setLoading(true);
+  const fetchMainData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       // Fetch "inbox" which includes everything relevant and active
       const data = await db.getCommunications({ type: 'inbox' });
@@ -268,8 +276,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   };
 
-  const fetchThread = async (rootId: string) => {
-    setThreadLoading(true);
+  const fetchThread = async (rootId: string, silent = false) => {
+    if (!silent) setThreadLoading(true);
     try {
       const messages = await db.getThread(rootId);
       setThreadMessages(messages);
