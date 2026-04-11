@@ -27,7 +27,7 @@ export default async function handler(req: any, res: any) {
       }]);
       
       if (dbError) {
-        console.warn(`[REGISTRAZIONE] Impossibile salvare su tabella registration_requests (potrebbe non esistere): ${dbError.message}`);
+        console.warn(`[REGISTRAZIONE] DB warning (registration_requests potrebbe non esistere): ${dbError.message}`);
       } else {
         console.log(`[REGISTRAZIONE] Salvataggio su database confermato.`);
       }
@@ -39,20 +39,35 @@ export default async function handler(req: any, res: any) {
   }
 
   // 2. INVIO EMAIL (NON BLOCCANTE)
-  const textBody = `Salve,\n\nVorrei registrare la mia azienda su JobsReport.\n\nNome azienda: ${companyName || '...'}\nReferente: ${contactName || '...'}\nEmail: ${email || '...'}\nTelefono: ${phone || '...'}\nNote: ${notes || '...'}\n\nGrazie`;
-  
+  // NOTA: Con Resend in piano free, puoi inviare SOLO all'email dell'account Resend
+  // oppure a domini verificati. Usa ADMIN_EMAIL nelle env vars di Vercel.
+  const adminEmail = process.env.ADMIN_EMAIL || 'jorgtw@gmail.com';
+
+  const textBody = [
+    'Nuova richiesta di registrazione su JobsReport.',
+    '',
+    `Nome azienda:  ${companyName || 'N/D'}`,
+    `Referente:     ${contactName || 'N/D'}`,
+    `Email:         ${email || 'N/D'}`,
+    `Telefono:      ${phone || 'N/D'}`,
+    `Note:          ${notes || 'N/D'}`,
+    '',
+    '---',
+    'Messaggio automatico da JobsReport'
+  ].join('\n');
+
   let emailSent = false;
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY || 'PLACEHOLDER'}`,
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY || ''}`,
       },
       body: JSON.stringify({
         from: 'JobsReport <onboarding@resend.dev>',
-        to: ['jtw@live.it'], 
-        subject: '[JobsReport] Richiesta nuova registrazione',
+        to: [adminEmail],
+        subject: `[JobsReport] Nuova registrazione: ${companyName || 'N/D'}`,
         text: textBody,
       }),
     });
@@ -60,18 +75,18 @@ export default async function handler(req: any, res: any) {
     const responseText = await response.text();
     if (response.ok) {
       emailSent = true;
-      console.log(`[REGISTRAZIONE] Email di notifica inviata correttamente.`);
+      console.log(`[REGISTRAZIONE] Email inviata a ${adminEmail} con successo.`);
     } else {
-      console.error(`[REGISTRAZIONE] Errore invio Email (Resend): ${response.status} - ${responseText}`);
+      console.error(`[REGISTRAZIONE] Resend error ${response.status}: ${responseText}`);
     }
   } catch (emailError: any) {
-    console.error(`[REGISTRAZIONE] Network Exception durante email: ${emailError.message}`);
+    console.error(`[REGISTRAZIONE] Network exception email: ${emailError.message}`);
   }
 
-  // 3. RITORNA SEMPRE SUCCESSO 
+  // 3. RISPONDE SEMPRE CON SUCCESSO (la registrazione è salvata, email è opzionale)
   return res.status(200).json({ 
     success: true, 
     message: 'Richiesta ricevuta ed elaborata',
-    email_status: emailSent ? 'sent' : 'failed'
+    email_sent: emailSent
   });
 }

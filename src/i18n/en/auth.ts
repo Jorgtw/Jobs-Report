@@ -54,4 +54,8 @@ export const auth = {
   placeholderAddress: "e.g. 123 Main St",
   placeholderCity: "e.g. London",
   placeholderVat: "e.g. GB123456789",
+  termsAcceptPrefix: "I have read and accept the",
+  termsLink: "Terms of Service",
+  termsAcceptMiddle: "and the",
+  privacyLink: "Privacy Policy",
 };

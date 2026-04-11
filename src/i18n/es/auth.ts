@@ -54,4 +54,8 @@ export const auth = {
   placeholderAddress: "Ej. Via Roma 1",
   placeholderCity: "Ej. Madrid",
   placeholderVat: "Ej. ES01234567890",
+  termsAcceptPrefix: "He leído y acepto los",
+  termsLink: "Términos de Servicio",
+  termsAcceptMiddle: "y la",
+  privacyLink: "Política de Privacidad",
 };

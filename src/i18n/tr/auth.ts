@@ -54,4 +54,8 @@ export const auth = {
   placeholderAddress: "Örn. İstiklal Cad. No: 1",
   placeholderCity: "Örn. İstanbul",
   placeholderVat: "Örn. TR0123456789",
+  termsAcceptPrefix: "Okudum ve kabul ediyorum:",
+  termsLink: "Hizmet Koşulları",
+  termsAcceptMiddle: "ve",
+  privacyLink: "Gizlilik Politikası",
 };

@@ -54,4 +54,8 @@ export const auth = {
   placeholderAddress: "np. ul. Piękna 1",
   placeholderCity: "np. Warszawa",
   placeholderVat: "np. PL0123456789",
+  termsAcceptPrefix: "Przeczytałem i akceptuję",
+  termsLink: "Warunki Usługi",
+  termsAcceptMiddle: "i",
+  privacyLink: "Politykę Prywatności",
 };

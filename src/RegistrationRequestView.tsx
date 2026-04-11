@@ -123,7 +123,10 @@ export const RegistrationRequestView: React.FC = () => {
                     </svg>
                   </div>
                   <span className="text-xs font-medium text-slate-500 leading-tight">
-                    Ho letto e accetto i <Link to="/terms" target="_blank" className="text-blue-600 font-bold hover:underline">Termini di Servizio</Link> e la <Link to="/privacy" target="_blank" className="text-blue-600 font-bold hover:underline">Privacy Policy</Link>.*
+                    {t('auth.termsAcceptPrefix')}{' '}
+                    <Link to="/terms" target="_blank" className="text-blue-600 font-bold hover:underline">{t('auth.termsLink')}</Link>
+                    {' '}{t('auth.termsAcceptMiddle')}{' '}
+                    <Link to="/privacy" target="_blank" className="text-blue-600 font-bold hover:underline">{t('auth.privacyLink')}</Link>.*
                   </span>
                 </label>
               </div>

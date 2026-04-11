@@ -54,4 +54,8 @@ export const auth = {
   placeholderAddress: "f.eks. Østerbrogade 1",
   placeholderCity: "f.eks. København",
   placeholderVat: "f.eks. DK0123456789",
+  termsAcceptPrefix: "Jeg har læst og accepterer",
+  termsLink: "Servicevilkår",
+  termsAcceptMiddle: "og",
+  privacyLink: "Privatlivspolitik",
 };
