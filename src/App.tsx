@@ -71,6 +71,22 @@ export const LanguageContext = createContext<{
 
 export const useTranslation = () => useContext(LanguageContext);
 
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
+
+  useEffect(() => {
+    localStorage.setItem('ws_lang', lang);
+  }, [lang]);
+
+  const t = React.useCallback((key: TranslationKey): string => {
+    return resolveKey(lang, key);
+  }, [lang]);
+
+  const contextValue = React.useMemo(() => ({ lang, setLang, t }), [lang, t]);
+
+  return <LanguageContext.Provider value={contextValue}>{children}</LanguageContext.Provider>;
+};
+
 export const localeMap: Record<string, string> = {
   it: 'it-IT',
   en: 'en-US',
@@ -220,7 +236,7 @@ const AppLayout: React.FC<{
   const navLinks = getNavLinks(t, isSuperAdmin);
   const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.some(r => r.toLowerCase() === user.role.toLowerCase()));
 
-  const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
+  const renderSidebarContent = (onItemClick?: () => void) => (
     <div className="flex flex-col h-full py-6">
       <div className="px-6 mb-8 flex items-center gap-2">
         <Link to="/home" onClick={onItemClick} className="flex items-center gap-2">
@@ -275,12 +291,12 @@ const AppLayout: React.FC<{
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden md:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen"><SidebarContent /></aside>
+      <aside className="hidden md:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen">{renderSidebarContent()}</aside>
       {isMobileMenuOpen && !document.querySelector('.onboarding-active') && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
       <div className={`fixed inset-y-0 left-0 w-full sm:w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <SidebarContent onItemClick={() => setIsMobileMenuOpen(false)} />
+        {renderSidebarContent(() => setIsMobileMenuOpen(false))}
       </div>
       <div className="flex-1 flex flex-col min-w-0">
         <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 relative">
@@ -317,7 +333,6 @@ const AppLayout: React.FC<{
         </header>
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
-      <AIChatAssistant />
     </div>
   );
 };
@@ -325,6 +340,7 @@ const AppLayout: React.FC<{
 // --- Compact Dashboard component ---
 const CompactDashboard: React.FC = () => {
   const { t, lang } = useTranslation();
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     activeProjects: 0,
     pendingReports: 0,
@@ -358,6 +374,7 @@ const CompactDashboard: React.FC = () => {
         pendingToInvoice,
         pendingMargin
       });
+      setLoading(false);
     };
     loadStats();
   }, []);
@@ -3505,7 +3522,8 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : null;
   });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
+  const { t } = useTranslation();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -3521,8 +3539,6 @@ const App: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  useEffect(() => { localStorage.setItem('ws_lang', lang); }, [lang]);
 
   useEffect(() => {
     if (user && user.id) {
@@ -3651,16 +3667,9 @@ const App: React.FC = () => {
     window.location.hash = '/personnel';
   };
 
-  const t = (key: TranslationKey): string => {
-    return resolveKey(lang, key);
-  };
-
-  const contextValue = useMemo(() => ({ lang, setLang, t }), [lang]);
-
   return (
-    <LanguageContext.Provider value={contextValue}>
-      <HashRouter>
-        <Routes>
+    <HashRouter>
+      <Routes>
           {/* Public & Entrance Route */}
           <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
           <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
@@ -3712,29 +3721,27 @@ const App: React.FC = () => {
             } 
           />
         </Routes>
-        {showOnboarding && user && user.role === 'admin' && (
-          <OnboardingGuide 
-            userRole={user.role} 
-            onComplete={() => {
-              localStorage.setItem('onboarding_v1', 'completed');
-              setShowOnboarding(false);
-              setIsMobileMenuOpen(false);
-            }}
-            onStepChange={(step) => {
-              if (step.requiresSidebar) {
-                setIsMobileMenuOpen(true);
-              } else {
-                // If the next step is not in the sidebar, we might want to close it?
-                // But only if it's on mobile. Let's be smart.
-                if (window.innerWidth < 1024) {
-                  setIsMobileMenuOpen(false);
-                }
+      {showOnboarding && user && user.role === 'admin' && (
+        <OnboardingGuide 
+          userRole={user.role} 
+          onComplete={() => {
+            localStorage.setItem('onboarding_v1', 'completed');
+            setShowOnboarding(false);
+            setIsMobileMenuOpen(false);
+          }}
+          onStepChange={(step) => {
+            if (step.requiresSidebar) {
+              setIsMobileMenuOpen(true);
+            } else {
+              if (window.innerWidth < 1024) {
+                setIsMobileMenuOpen(false);
               }
-            }}
-          />
-        )}
-      </HashRouter>
-    </LanguageContext.Provider>
+            }
+          }}
+        />
+      )}
+      <AIChatAssistant />
+    </HashRouter>
   );
 };
 

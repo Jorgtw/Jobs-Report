@@ -133,7 +133,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
   const [loading, setLoading] = useState(true);
   const [threadLoading, setThreadLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
@@ -256,14 +255,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   const fetchMainData = async (silent = false) => {
     if (!silent) setLoading(true);
-    setHasError(false);
     try {
       // Fetch "inbox" which includes everything relevant and active
       const data = await db.getCommunications({ type: 'inbox' });
       setCommunications(data);
     } catch (err) {
       console.error('Error fetching communications:', err);
-      setHasError(true);
     } finally {
       if (!silent) setLoading(false);
     }
