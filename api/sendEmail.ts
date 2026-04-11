@@ -41,7 +41,7 @@ export default async function handler(req: any, res: any) {
   // 2. INVIO EMAIL (NON BLOCCANTE)
   // NOTA: Con Resend in piano free, puoi inviare SOLO all'email dell'account Resend
   // oppure a domini verificati. Usa ADMIN_EMAIL nelle env vars di Vercel.
-  const adminEmail = process.env.ADMIN_EMAIL || 'jorgtw@gmail.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'jobsreportadmin@gmail.com';
 
   const textBody = [
     'Nuova richiesta di registrazione su JobsReport.',
