@@ -54,8 +54,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
               <Heart fill="currentColor" size={24} />
             </div>
             <p className="text-sm font-bold text-slate-700">Per attivare il piano Premium contatta:</p>
-            <a href="mailto:jtw@live.it" className="text-lg font-black text-blue-600 hover:text-blue-700 transition-colors">
-              jtw@live.it
+            <a href="mailto:jobsreportadmin@gmail.com" className="text-lg font-black text-blue-600 hover:text-blue-700 transition-colors">
+              jobsreportadmin@gmail.com
             </a>
             <div className="mt-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-xs font-bold text-amber-700">Nota: Il sistema di pagamento automatico sarà disponibile a breve.</p>
