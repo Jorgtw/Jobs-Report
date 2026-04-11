@@ -25,11 +25,16 @@ const AIChatAssistant: React.FC = () => {
     }
   }, [messages, isOpen]);
 
-  // Listen for custom event to open the chat from other components
+  // Listen for custom event to open/close the chat from other components
   useEffect(() => {
     const handleOpenChat = () => setIsOpen(true);
+    const handleCloseChat = () => setIsOpen(false);
     window.addEventListener('open-ai-chat', handleOpenChat);
-    return () => window.removeEventListener('open-ai-chat', handleOpenChat);
+    window.addEventListener('close-ai-chat', handleCloseChat);
+    return () => {
+      window.removeEventListener('open-ai-chat', handleOpenChat);
+      window.removeEventListener('close-ai-chat', handleCloseChat);
+    };
   }, []);
 
   // Handle Speech Cleanup

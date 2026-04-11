@@ -1216,6 +1216,13 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
   const { t } = useTranslation();
   const isAdmin = user?.role === 'admin';
 
+  useEffect(() => {
+    // When leaving the help view, explicitly close the global AI Chat to avoid floating windows overlapping
+    return () => {
+      window.dispatchEvent(new CustomEvent('close-ai-chat'));
+    };
+  }, []);
+
   return (
     <div className="space-y-8 pb-10 px-4 sm:px-0">
       <div className="text-center max-w-2xl mx-auto pt-4">
