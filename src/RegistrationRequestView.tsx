@@ -22,16 +22,28 @@ export const RegistrationRequestView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
+      const resText = await res.text();
+      let data: any = {};
       
-      const data = await res.json();
+      if (resText) {
+        try {
+          data = JSON.parse(resText);
+        } catch (e) {
+          data = { error: { message: resText } };
+        }
+      } else {
+        data = { error: { message: 'Risposta vuota dal server' } };
+      }
       
       if (res.ok && data.success) {
         setStatus('success');
       } else {
         setStatus('error');
-        setErrorMessage(data.error?.message || t('auth.registrationErrorConfig'));
+        const internalErrMsgs = typeof data.error === 'string' ? data.error : data.error?.message;
+        setErrorMessage(internalErrMsgs || t('auth.registrationErrorConfig'));
       }
     } catch (err: any) {
+      console.error(err);
       setStatus('error');
       setErrorMessage(err.message || t('auth.registrationErrorConnection'));
     }

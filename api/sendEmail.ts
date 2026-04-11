@@ -28,19 +28,29 @@ Grazie`;
       },
       body: JSON.stringify({
         from: 'JobsReport <onboarding@resend.dev>', // Modificare se si attiva un proprio dominio verificato in Resend
-        to: ['jorgtw@gmail.com'],
+        to: ['jtw@live.it'], // UPDATED to jtw@live.it as per recent request not to use jorgtw
         subject: '[JobsReport] Richiesta nuova registrazione',
         text: textBody,
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data = {};
+    if (responseText) {
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        data = { message: responseText };
+      }
+    }
+
     if (response.ok) {
       return res.status(200).json({ success: true, data });
     } else {
-      return res.status(400).json({ success: false, error: data });
+      return res.status(400).json({ success: false, error: data, status: response.status });
     }
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    console.error("sendEmail Error:", error);
+    return res.status(500).json({ success: false, error: { message: error.message || 'Internal Server Error' } });
   }
 }
