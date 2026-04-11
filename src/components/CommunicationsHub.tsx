@@ -10,10 +10,6 @@ import {
   CheckCircle2, 
   X,
   Check,
-  Lock,
-  MessageSquare,
-  Users,
-  Sparkles,
   ChevronLeft,
   ChevronDown
 } from 'lucide-react';
@@ -27,6 +23,7 @@ import 'jspdf-autotable';
 interface CommunicationsHubProps {
   currentUser: AppUser;
   isPremium?: boolean;
+  onUpgradeRequest?: () => void;
 }
 
 const UserMultiSelect = ({ 
@@ -114,7 +111,7 @@ const UserMultiSelect = ({
   );
 };
 
-const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPremium }) => {
+const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPremium, onUpgradeRequest }) => {
   const { t, lang } = useTranslation();
   
   const formatDate = (date: number | Date | string, options: Intl.DateTimeFormatOptions = { 
@@ -207,45 +204,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     };
   }, [currentUser.companyId, isPremium]);
 
-  if (!isPremium) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] p-8 text-center bg-white rounded-3xl border border-slate-100 shadow-sm animate-in fade-in zoom-in duration-500">
-        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-6 shadow-sm">
-          <Lock size={36} />
-        </div>
-        
-        <h2 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
-          {t('communications.premiumFeature')}
-        </h2>
-        
-        <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium leading-relaxed">
-          {t('communications.internalCommunicationsDesc')}
-        </p>
+  useEffect(() => {
+    if (!isPremium) {
+      if (onUpgradeRequest) onUpgradeRequest();
+    }
+  }, [isPremium]);
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mb-10">
-          {[
-            { icon: MessageSquare, title: t('communications.feature_ticket_title'), desc: t('communications.feature_ticket_desc') },
-            { icon: Users, title: t('communications.feature_teamsync_title'), desc: t('communications.feature_teamsync_desc') },
-            { icon: FileText, title: t('communications.feature_pdf_title'), desc: t('communications.feature_pdf_desc') }
-          ].map((feat, idx) => (
-            <div key={idx} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <feat.icon className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-              <h3 className="text-[10px] font-black uppercase text-slate-900 mb-1">{feat.title}</h3>
-              <p className="text-[10px] text-slate-500 font-medium leading-tight">{feat.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <button 
-          onClick={() => window.location.hash = '/profile'}
-          className="px-8 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2"
-        >
-          <Sparkles size={18} />
-          {t('communications.upgradeNow')}
-        </button>
-      </div>
-    );
-  }
+  if (!isPremium) return null;
 
   useEffect(() => {
     if (selectedThread) {

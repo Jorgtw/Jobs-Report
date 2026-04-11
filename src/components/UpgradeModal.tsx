@@ -1,13 +1,37 @@
 import React from 'react';
-import { X, Trophy, Heart } from 'lucide-react';
+import { X, Trophy, Heart, MessageSquare, FileCheck } from 'lucide-react';
 import { useTranslation } from '../App';
 
 interface UpgradeModalProps {
   onClose: () => void;
+  feature?: 'communications' | 'compliance' | 'generic';
 }
 
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
+export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = 'generic' }) => {
   const { t } = useTranslation();
+
+  const featureConfig = {
+    communications: {
+      icon: <MessageSquare size={32} />,
+      iconBg: 'bg-blue-100 text-blue-600',
+      title: t('communications.premiumFeature'),
+      desc: t('communications.internalCommunicationsDesc'),
+    },
+    compliance: {
+      icon: <FileCheck size={32} />,
+      iconBg: 'bg-emerald-100 text-emerald-600',
+      title: t('communications.upgradeTitle'),
+      desc: t('communications.upgradeDesc'),
+    },
+    generic: {
+      icon: <Trophy size={32} />,
+      iconBg: 'bg-amber-100 text-amber-600',
+      title: t('communications.upgradeTitle'),
+      desc: t('communications.upgradeDesc'),
+    },
+  };
+
+  const cfg = featureConfig[feature];
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center sm:p-4">
@@ -18,14 +42,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 mb-6 shadow-inner ring-4 ring-amber-50">
-            <Trophy size={40} />
+          <div className={`w-20 h-20 ${cfg.iconBg} rounded-2xl flex items-center justify-center mb-6 shadow-inner ring-4 ring-white`}>
+            {cfg.icon}
           </div>
 
-          <h2 className="text-2xl font-black text-slate-900 mb-2">{t('communications.upgradeTitle')}</h2>
-          <p className="text-slate-500 mb-8 leading-relaxed">
-            {t('communications.upgradeDesc')}
-          </p>
+          <h2 className="text-2xl font-black text-slate-900 mb-2">{cfg.title}</h2>
+          <p className="text-slate-500 mb-8 leading-relaxed">{cfg.desc}</p>
 
           <div className="w-full bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center gap-2 mb-8 text-center">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">

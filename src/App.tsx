@@ -2365,6 +2365,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
   const [complianceReportToSign, setComplianceReportToSign] = useState<WorkReport | null>(null);
 
   useEffect(() => {
@@ -2610,6 +2611,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
   const handleComplianceClick = (r: WorkReport) => {
     if (!user.isPremium) {
+      setUpgradeFeature('compliance');
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -3357,7 +3359,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         </div>
       )}
       {isUpgradeModalOpen && (
-        <UpgradeModal onClose={() => setIsUpgradeModalOpen(false)} />
+        <UpgradeModal feature={upgradeFeature} onClose={() => { setIsUpgradeModalOpen(false); setUpgradeFeature('generic'); }} />
       )}
 
       {complianceReportToSign && (
@@ -3646,6 +3648,7 @@ const App: React.FC = () => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isCommsUpgradeOpen, setIsCommsUpgradeOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
@@ -3829,7 +3832,7 @@ const App: React.FC = () => {
                     <Route path="/work-summary" element={(user.role === 'admin' || user.role === 'supervisor') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
                     <Route path="/projects" element={<ProjectsView user={user} />} />
-                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} />} />
+                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
                     <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
@@ -3862,9 +3865,11 @@ const App: React.FC = () => {
         />
       )}
       <AIChatAssistant />
+      {isCommsUpgradeOpen && (
+        <UpgradeModal feature="communications" onClose={() => setIsCommsUpgradeOpen(false)} />
+      )}
     </HashRouter>
   );
 };
 
 export default App;   // ✔ QUI È IL POSTO GIUSTO
-
