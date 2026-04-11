@@ -47,6 +47,7 @@ import logoImg from './assets/logo.png';
 import PresentationView from './PresentationView';
 import LoginView from './LoginView';
 import PrivacyView from './PrivacyView';
+import TermsView from './TermsView';
 import { RegistrationRequestView } from './RegistrationRequestView';
 import { UpgradeModal } from './components/UpgradeModal';
 import { ComplianceReportModal } from './components/ComplianceReportModal';
@@ -3794,6 +3795,7 @@ const App: React.FC = () => {
           <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
           <Route path="/presentation" element={<PresentationView />} />
           <Route path="/privacy" element={<PrivacyView />} />
+          <Route path="/terms" element={<TermsView />} />
 
           {/* Protected Routes Wrapper */}
           <Route 

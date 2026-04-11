@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trophy, Heart, CreditCard, Landmark } from 'lucide-react';
+import { X, Trophy, Heart } from 'lucide-react';
 import { useTranslation } from '../App';
 
 interface UpgradeModalProps {
@@ -27,35 +27,18 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
             {t('communications.upgradeDesc')}
           </p>
 
-          <div className="w-full space-y-4 mb-8">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4 text-left">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                <Landmark size={20} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.bankTransfer')}</p>
-                <p className="text-sm font-bold text-slate-700">IBAN: IT00 X000 0000 0000 0000 0000 000</p>
-              </div>
+          <div className="w-full bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center gap-2 mb-8 text-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">
+              <Heart fill="currentColor" size={24} />
             </div>
-
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4 text-left">
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
-                <CreditCard size={20} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.paypalCard')}</p>
-                <p className="text-sm font-bold text-slate-700">jorgtw@gmail.com</p>
-              </div>
+            <p className="text-sm font-bold text-slate-700">Per attivare il piano Premium contatta:</p>
+            <a href="mailto:jtw@live.it" className="text-lg font-black text-blue-600 hover:text-blue-700 transition-colors">
+              jtw@live.it
+            </a>
+            <div className="mt-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs font-bold text-amber-700">Nota: Il sistema di pagamento automatico sarà disponibile a breve.</p>
             </div>
           </div>
-
-          <button 
-            onClick={() => window.open('https://paypal.me/jorgtw', '_blank')}
-            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-blue-200 hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-          >
-            <Heart size={20} fill="currentColor" />
-            {t('communications.upgradeCTA')}
-          </button>
           
           <p className="mt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
             JobsReport Premium Edition

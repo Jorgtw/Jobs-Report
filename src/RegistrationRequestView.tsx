@@ -9,6 +9,7 @@ export const RegistrationRequestView: React.FC = () => {
   const [form, setForm] = useState({ companyName: '', contactName: '', email: '', phone: '', notes: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,13 +89,33 @@ export const RegistrationRequestView: React.FC = () => {
                 <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium resize-none shadow-inner" placeholder={t('auth.registrationNotesPlaceholder')} />
               </div>
               
+              <div className="pt-2 pb-2">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center mt-0.5">
+                    <input 
+                      type="checkbox" 
+                      required
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-lg checked:bg-blue-600 checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
+                    />
+                    <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 leading-tight">
+                    Ho letto e accetto i <Link to="/terms" target="_blank" className="text-blue-600 font-bold hover:underline">Termini di Servizio</Link> e la <Link to="/privacy" target="_blank" className="text-blue-600 font-bold hover:underline">Privacy Policy</Link>.*
+                  </span>
+                </label>
+              </div>
+
               {status === 'error' && (
                 <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[11px] font-bold text-center">
                   {errorMessage}
                 </div>
               )}
 
-              <button disabled={status === 'loading'} type="submit" className="w-full py-4 bg-[#2563eb] text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70">
+              <button disabled={status === 'loading' || !acceptedTerms} type="submit" className="w-full py-4 bg-[#2563eb] text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:grayscale-[50%] disabled:cursor-not-allowed">
                 {status === 'loading' ? t('auth.sending') : t('auth.sendRequest')} {status !== 'loading' && <ChevronRight size={18} />}
               </button>
             </form>
