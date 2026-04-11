@@ -1229,21 +1229,59 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
   useEffect(() => {
     if (!isGuideOpen) return;
     
-    // Fallback language could be determined via the context if available, but
-    // relying on /MANUALE.html logic which already handles localization or generic instructions.
-    fetch('/MANUALE.html')
-      .then(res => res.text())
-      .then(html => {
-        // Brutally remove all target="_blank" from the HTML to absolutely prevent Chromium/Windows
-        // from spawning new PWA windows when a user clicks links inside the appended manual.
-        const safeHtml = html.replace(/target="_blank"/g, "");
-        setManualHtml(safeHtml);
-      })
-      .catch(err => {
-        console.error("Failed to load manual:", err);
-        setManualHtml('<div class="p-8 text-center text-red-500 font-bold">Impossibile caricare il manuale. Riprova più tardi.</div>');
-      });
+    // Function to load arbitrary manual file
+    const loadManual = (url: string) => {
+      fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const safeHtml = html.replace(/target="_blank"/g, "");
+          setManualHtml(safeHtml);
+        })
+        .catch(err => {
+          console.error("Failed to load manual:", err);
+          setManualHtml('<div class="p-8 text-center text-red-500 font-bold">Impossibile caricare il manuale. Riprova più tardi.</div>');
+        });
+    };
+
+    loadManual('/MANUALE.html');
+    
+    // We attach it to window so our internal click handler can switch languages if requested
+    (window as any)._loadManual = loadManual;
+    
+    return () => {
+      delete (window as any)._loadManual;
+    };
   }, [isGuideOpen]);
+
+  const handleManualClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a');
+    if (!link) return;
+    
+    const href = link.getAttribute('href');
+    if (!href) return;
+    
+    // External absolute links
+    if (href.startsWith('http')) return; 
+
+    // Prevent default React Router hash change
+    e.preventDefault(); 
+
+    if (href.startsWith('#')) {
+      const elementId = href.substring(1);
+      const modalNode = e.currentTarget;
+      const element = modalNode.querySelector(`#${elementId}`) || document.getElementById(elementId);
+      if (element) {
+         element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // It's a file link, like MANUALE_es.html or /MANUALE_es.html
+      const loadFn = (window as any)._loadManual;
+      if (loadFn) {
+        loadFn(href.startsWith('/') ? href : `/${href}`);
+      }
+    }
+  };
 
   return (
     <div className="space-y-8 pb-10 px-4 sm:px-0">
@@ -1343,6 +1381,7 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
           </div>
           <div 
             className="w-full flex-1 overflow-y-auto bg-white"
+            onClick={handleManualClick}
             dangerouslySetInnerHTML={{ __html: manualHtml }}
           />
         </div>
