@@ -25,6 +25,13 @@ export const RegistrationRequestView: React.FC = () => {
       const resText = await res.text();
       let data: any = {};
       
+      if (!resText && window.location.hostname === 'localhost' && res.status === 404) {
+        // Simuliamo successo fittizio solo in locale se l'API non è accesa (npm run dev puro)
+        console.warn("[DEV MODE] Endpoint /api/sendEmail non trovato in locale. Simulo successo.");
+        setStatus('success');
+        return;
+      }
+      
       if (resText) {
         try {
           data = JSON.parse(resText);
@@ -32,7 +39,7 @@ export const RegistrationRequestView: React.FC = () => {
           data = { error: { message: resText } };
         }
       } else {
-        data = { error: { message: 'Risposta vuota dal server' } };
+        data = { error: { message: 'Risposta vuota dal server (API non raggiungibile o offline)' } };
       }
       
       if (res.ok && data.success) {
