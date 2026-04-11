@@ -1283,6 +1283,36 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
     }
   };
 
+  useEffect(() => {
+    if (!isGuideOpen || !manualHtml) return;
+    
+    // dangerouslySetInnerHTML blocks script execution by design.
+    // We must manually find and re-append <script> tags to force the browser to execute them,
+    // which revives the setLang() function and the mobile TOC navigation.
+    const container = document.getElementById('manual-inner-container');
+    if (!container) return;
+    
+    const addedScripts: HTMLScriptElement[] = [];
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(script => {
+      const newScript = document.createElement('script');
+      newScript.textContent = script.textContent;
+      document.body.appendChild(newScript);
+      addedScripts.push(newScript);
+      
+      script.parentNode?.removeChild(script);
+    });
+
+    // Cleanup function to avoid polluting the DOM upon closing
+    return () => {
+      addedScripts.forEach(s => {
+        if (s.parentNode) {
+          s.parentNode.removeChild(s);
+        }
+      });
+    };
+  }, [manualHtml, isGuideOpen]);
+
   return (
     <div className="space-y-8 pb-10 px-4 sm:px-0">
       <div className="text-center max-w-2xl mx-auto pt-4">
@@ -1380,6 +1410,7 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
             </button>
           </div>
           <div 
+            id="manual-inner-container"
             className="w-full flex-1 overflow-y-auto bg-white"
             onClick={handleManualClick}
             dangerouslySetInnerHTML={{ __html: manualHtml }}
