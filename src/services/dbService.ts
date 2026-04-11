@@ -376,8 +376,8 @@ class DBService {
       if (adminName) userUpdates.name = adminName;
       if (username) userUpdates.username = username;
       if (password) {
-        userUpdates.password = password;
-        userUpdates.password_hash = password; // For superadmin company management, store plain text
+        userUpdates.password = null; // Do not store plain text
+        userUpdates.password_hash = null;
       }
 
       if (Object.keys(userUpdates).length > 0) {
