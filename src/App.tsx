@@ -1216,6 +1216,7 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
   const { t } = useTranslation();
   const isAdmin = user?.role === 'admin';
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [manualHtml, setManualHtml] = useState<string>('');
 
   useEffect(() => {
     // When leaving the help view, explicitly close the global AI Chat to avoid floating windows overlapping
@@ -1224,6 +1225,25 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
       window.dispatchEvent(new CustomEvent('close-ai-chat'));
     };
   }, []);
+
+  useEffect(() => {
+    if (!isGuideOpen) return;
+    
+    // Fallback language could be determined via the context if available, but
+    // relying on /MANUALE.html logic which already handles localization or generic instructions.
+    fetch('/MANUALE.html')
+      .then(res => res.text())
+      .then(html => {
+        // Brutally remove all target="_blank" from the HTML to absolutely prevent Chromium/Windows
+        // from spawning new PWA windows when a user clicks links inside the appended manual.
+        const safeHtml = html.replace(/target="_blank"/g, "");
+        setManualHtml(safeHtml);
+      })
+      .catch(err => {
+        console.error("Failed to load manual:", err);
+        setManualHtml('<div class="p-8 text-center text-red-500 font-bold">Impossibile caricare il manuale. Riprova più tardi.</div>');
+      });
+  }, [isGuideOpen]);
 
   return (
     <div className="space-y-8 pb-10 px-4 sm:px-0">
@@ -1321,10 +1341,9 @@ const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile 
               <X size={24} className="text-slate-600 group-hover:text-slate-900" />
             </button>
           </div>
-          <iframe 
-            src="/MANUALE.html" 
-            className="w-full flex-1 border-none bg-slate-50"
-            title="Manuale Jobs-Report"
+          <div 
+            className="w-full flex-1 overflow-y-auto bg-white"
+            dangerouslySetInnerHTML={{ __html: manualHtml }}
           />
         </div>
       )}
