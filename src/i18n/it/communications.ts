@@ -88,5 +88,9 @@ export const communications = {
   feature_teamsync_title: 'Team Sync',
   feature_teamsync_desc: 'Invia avvisi a tutto il team o a singoli progetti',
   feature_pdf_title: 'Export PDF',
-  feature_pdf_desc: 'Scarica i verbali delle conversazioni in formato PDF'
+  feature_pdf_desc: 'Scarica i verbali delle conversazioni in formato PDF',
+  tab_inbox: 'INBOX',
+  tab_working: 'LAVORAZIONE',
+  tab_waiting: 'IN ATTESA',
+  tab_completed: 'COMPLETATO'
 } as const;

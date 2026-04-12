@@ -29,14 +29,9 @@ import {
   Filter,
   Mail,
   HelpCircle,
-  Smartphone,
-  PlusCircle,
-  BookOpen,
   CheckCircle2,
   Sparkles,
   Lock,
-  BarChart3,
-  ShieldCheck,
   Settings,
 } from 'lucide-react';
 import { db } from './services/dbService';
@@ -58,6 +53,14 @@ import AIChatAssistant from './components/AIChatAssistant';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import ProjectMessages from './components/ProjectMessages';
 import CommunicationsHub from './components/CommunicationsHub';
+import HelpView from './pages/HelpView';
+import { useClients } from './hooks/useClients';
+import { useProjects } from './hooks/useProjects';
+import { useReports } from './hooks/useReports';
+import { useSummary } from './hooks/useSummary';
+import { useUsers } from './hooks/useUsers';
+import { useSubcontractors } from './hooks/useSubcontractors';
+import ProfileView from './pages/ProfileView';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -195,7 +198,10 @@ const usePWAInstall = () => {
 
 const InstallButton: React.FC<{ variant?: 'sidebar' | 'login' }> = ({ variant = 'login' }) => {
   const { isInstallable, install } = usePWAInstall();
+  
   const { t } = useTranslation();
+
+
 
   if (!isInstallable) return null;
 
@@ -530,40 +536,27 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
 };
 
 // --- Work Summary View ---
+import { useQueryClient } from '@tanstack/react-query';
 const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
+  const queryClient = useQueryClient();
+  const { data: clients = [] } = useClients();
   const { lang, t } = useTranslation();
-  const [summary, setSummary] = useState<any[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [subcontractors, setSubcontractors] = useState<any[]>([]);
+  
+    const { data: rawSummary = [] } = useSummary();
+  const { data: projects = [] } = useProjects();
+  const { data: users = [] } = useUsers();
+  const { data: subcontractors = [] } = useSubcontractors();
+
+  const summary = React.useMemo(() => {
+    if (user.role === 'supervisor') {
+      const assignedProjectIds = projects.filter((proj: any) => canUserAccessProject(proj, user.id)).map((proj: any) => proj.id);
+      return rawSummary.filter((item: any) => assignedProjectIds.includes(item.projectId));
+    }
+    return rawSummary;
+  }, [rawSummary, projects, user.role, user.id]);
+
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const loadData = async () => {
-    const [s, c, p, w, sub] = await Promise.all([
-      db.getSummary(),
-      db.getClients(),
-      db.getProjects(),
-      db.getUsers(),
-      db.getSubcontractors(),
-    ]);
-    if (user.role === 'supervisor') {
-      const assignedProjectIds = p.filter((proj: any) => canUserAccessProject(proj, user.id)).map((proj: any) => proj.id);
-      const filteredS = s.filter((item: any) => assignedProjectIds.includes(item.projectId));
-      setSummary(filteredS);
-    } else {
-      setSummary(s);
-    }
-    setClients(c);
-    setProjects(p);
-    setUsers(w);
-    setSubcontractors(sub);
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const [filters, setFilters] = useState({
     clientId: '',
@@ -667,7 +660,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
       const idsToDelete = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
       await db.deleteReports(idsToDelete);
       setIsArchiveModalOpen(false);
-      loadData();
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
     } catch (err: any) {
       alert(t('reports.deleteError') + err.message);
     } finally {
@@ -794,8 +787,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                   try {
                     const ids = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
                     await db.bulkUpdateInvoiceStatus(ids, val);
-                    const newData = await db.getSummary();
-                    setSummary(user.role === 'supervisor' ? newData.filter(item => projects.filter(proj => canUserAccessProject(proj, user.id)).map(proj => proj.id).includes(item.projectId)) : newData);
+                    queryClient.invalidateQueries({ queryKey: ['summary'] });
                   } catch (err: any) {
                     alert(t('reports.updateError') + err.message);
                   }
@@ -994,434 +986,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
 };
 
 // --- Profile View ---
-const ProfileView: React.FC<{ user: User, onUpdate?: (u: User) => void }> = ({ user, onUpdate }) => {
-  const { t } = useTranslation();
-  const isDemoAccount = user.username?.toLowerCase().includes('demo') || false;
-  const [passForm, setPassForm] = useState({ newPass: '', confirmPass: '' });
-  const [profileForm, setProfileForm] = useState({
-    email: user.email || '',
-    phone: user.phone || '',
-    address: user.address || ''
-  });
-  const [message, setMessage] = useState({ text: '', type: '' });
-  const [profileMessage, setProfileMessage] = useState({ text: '', type: '' });
-  const [monthlyHours, setMonthlyHours] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (user.role === 'operator' || user.role === 'supervisor') {
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-
-      db.getReports(user.id, user.role).then(reports => {
-        const filtered = reports.filter(r => {
-          const rDate = new Date(r.date);
-          return rDate >= startOfMonth;
-        });
-
-        const total = filtered.reduce((sum: number, r: any) => {
-          let h = 0;
-          if (r.userId === user.id) h += (r.totalHours || 0);
-          const aw = r.additionalWorkers?.find((w: any) => w.userId === user.id);
-          if (aw) h += (aw.totalHours || 0);
-          return sum + h;
-        }, 0);
-
-        setMonthlyHours(total);
-      }).catch(console.error);
-    }
-  }, [user.id, user.role]);
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passForm.newPass !== passForm.confirmPass) {
-      setMessage({ text: t('auth.passwordMismatch'), type: 'error' });
-      return;
-    }
-    try {
-      await db.updateUser(user.id, { password: passForm.newPass });
-      setMessage({ text: t('auth.passwordChanged'), type: 'success' });
-      setPassForm({ newPass: '', confirmPass: '' });
-    } catch (err) {
-      setMessage({ text: t('common.updateError'), type: 'error' });
-    }
-  };
-
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      // Preventive email validation
-      if (profileForm.email) {
-        const { data: existingUser } = await supabase
-          .from('workers')
-          .select('id, name')
-          .eq('email', profileForm.email)
-          .maybeSingle();
-
-        if (existingUser && existingUser.id !== user.id) {
-          setProfileMessage({ 
-            text: t('auth.emailAlreadyInUse'), 
-            type: 'error' 
-          });
-          return;
-        }
-      }
-
-      await db.updateUser(user.id, profileForm);
-      const updatedUser = { ...user, ...profileForm };
-      if (onUpdate) onUpdate(updatedUser);
-      setProfileMessage({ text: t('auth.profileUpdated'), type: 'success' });
-    } catch (err) {
-      setProfileMessage({ text: t('common.updateError'), type: 'error' });
-    }
-  };
-
-  return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-50">
-          <div className="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
-            <UserIcon size={40} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{user.name}</h1>
-            <p className="text-sm font-bold text-blue-600 uppercase tracking-widest mt-1">{t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` as any)}</p>
-            <p className="text-xs text-slate-400 font-medium mt-1">@{user.username}</p>
-          </div>
-        </div>
-
-        {monthlyHours !== null && (
-          <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('common.monthlySummary')}</h3>
-                <p className="text-sm text-slate-500 mt-1">{t('common.currentMonth')}</p>
-              </div>
-              <div className="text-right">
-                <span className="text-3xl font-black text-blue-600">{monthlyHours.toFixed(2)}</span>
-                <span className="text-lg font-bold text-blue-600 ml-1">h</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Contact Information Form */}
-        <form onSubmit={handleProfileUpdate} className="space-y-4 mb-10 pb-10 border-b border-slate-50">
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <UserIcon size={16} className="text-blue-500" /> {t('common.personnel')}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('auth.email')}</label>
-              <input
-                type="email"
-                value={profileForm.email}
-                onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
-                className={`${inputClasses} w-full`}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('projects.personPhone')}</label>
-              <input
-                type="tel"
-                value={profileForm.phone}
-                onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
-                className={`${inputClasses} w-full`}
-              />
-            </div>
-            <div className="sm:col-span-2 flex flex-col gap-1.5">
-              <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('projects.personAddress')}</label>
-              <input
-                type="text"
-                value={profileForm.address}
-                onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
-                className={`${inputClasses} w-full`}
-              />
-            </div>
-          </div>
-          {profileMessage.text && (
-            <p className={`text-xs font-bold p-3 rounded-xl transition-all ${profileMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
-              {profileMessage.text}
-            </p>
-          )}
-          <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-black transition-all mt-2">
-            {t('common.save')}
-          </button>
-        </form>
-
-        {/* Password Change Form */}
-        <form onSubmit={handlePasswordChange} className="space-y-4">
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <ShieldAlert size={16} className="text-blue-500" /> {t('auth.changePassword')}
-          </h3>
-          {isDemoAccount ? (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium">
-              {t('common.demoPasswordDisabled')}
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('auth.newPassword')}</label>
-                  <input
-                    type="password"
-                    required
-                    value={passForm.newPass}
-                    onChange={e => setPassForm({ ...passForm, newPass: e.target.value })}
-                    className={`${inputClasses} w-full`}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('auth.confirmPassword')}</label>
-                  <input
-                    type="password"
-                    required
-                    value={passForm.confirmPass}
-                    onChange={e => setPassForm({ ...passForm, confirmPass: e.target.value })}
-                    className={`${inputClasses} w-full`}
-                  />
-                </div>
-              </div>
-              {message.text && (
-                <p className={`text-xs font-bold p-3 rounded-xl transition-all ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
-                  {message.text}
-                </p>
-              )}
-              <button type="submit" className="w-full sm:w-auto px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all mt-2">
-                {t('common.update')}
-              </button>
-            </>
-          )}
-        </form>
-      </div>
-    </div>
-  );
-};
-
 // --- Help View ---
-const ArticleCard: React.FC<{ title: string; children: React.ReactNode; icon: React.ReactNode }> = ({ title, children, icon }) => (
-  <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all">
-    <div className="flex items-start gap-4">
-      <div className="p-3 rounded-2xl bg-slate-50 shrink-0">
-        {icon}
-      </div>
-      <div>
-        <h3 className="text-sm font-bold text-slate-900 mb-1">{title}</h3>
-        <p className="text-xs text-slate-500 leading-relaxed">{children}</p>
-      </div>
-    </div>
-  </div>
-);
-
-const HelpView: React.FC<{ user: User, isMobile: boolean }> = ({ user, isMobile }) => {
-  const { t } = useTranslation();
-  const isAdmin = user?.role === 'admin';
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const [manualHtml, setManualHtml] = useState<string>('');
-
-  useEffect(() => {
-    // When leaving the help view, explicitly close the global AI Chat to avoid floating windows overlapping
-    return () => {
-      setIsGuideOpen(false);
-      window.dispatchEvent(new CustomEvent('close-ai-chat'));
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isGuideOpen) return;
-    
-    // Function to load arbitrary manual file
-    const loadManual = (url: string) => {
-      fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          const safeHtml = html.replace(/target="_blank"/g, "");
-          setManualHtml(safeHtml);
-        })
-        .catch(err => {
-          console.error("Failed to load manual:", err);
-          setManualHtml('<div class="p-8 text-center text-red-500 font-bold">Impossibile caricare il manuale. Riprova più tardi.</div>');
-        });
-    };
-
-    loadManual('/MANUALE.html');
-    
-    // We attach it to window so our internal click handler can switch languages if requested
-    (window as any)._loadManual = loadManual;
-    
-    return () => {
-      delete (window as any)._loadManual;
-    };
-  }, [isGuideOpen]);
-
-  const handleManualClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    const link = target.closest('a');
-    if (!link) return;
-    
-    const href = link.getAttribute('href');
-    if (!href) return;
-    
-    // External absolute links
-    if (href.startsWith('http')) return; 
-
-    // Prevent default React Router hash change
-    e.preventDefault(); 
-
-    if (href.startsWith('#')) {
-      const elementId = href.substring(1);
-      const modalNode = e.currentTarget;
-      const element = modalNode.querySelector(`#${elementId}`) || document.getElementById(elementId);
-      if (element) {
-         element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      // It's a file link, like MANUALE_es.html or /MANUALE_es.html
-      const loadFn = (window as any)._loadManual;
-      if (loadFn) {
-        loadFn(href.startsWith('/') ? href : `/${href}`);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (!isGuideOpen || !manualHtml) return;
-    
-    // dangerouslySetInnerHTML blocks script execution by design.
-    // We must manually find and re-append <script> tags to force the browser to execute them,
-    // which revives the setLang() function and the mobile TOC navigation.
-    const container = document.getElementById('manual-inner-container');
-    if (!container) return;
-    
-    const addedScripts: HTMLScriptElement[] = [];
-    const scripts = container.querySelectorAll('script');
-    scripts.forEach(script => {
-      const newScript = document.createElement('script');
-      newScript.textContent = script.textContent;
-      document.body.appendChild(newScript);
-      addedScripts.push(newScript);
-      
-      script.parentNode?.removeChild(script);
-    });
-
-    // Cleanup function to avoid polluting the DOM upon closing
-    return () => {
-      addedScripts.forEach(s => {
-        if (s.parentNode) {
-          s.parentNode.removeChild(s);
-        }
-      });
-    };
-  }, [manualHtml, isGuideOpen]);
-
-  return (
-    <div className="space-y-8 pb-10 px-4 sm:px-0">
-      <div className="text-center max-w-2xl mx-auto pt-4">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{t('help.title')}</h1>
-        <p className="text-slate-500 font-medium">{t('help.subtitle')}</p>
-        
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl shadow-blue-200/50 flex flex-col justify-between group overflow-hidden relative text-left">
-            <div className="relative z-10">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BookOpen size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">{t('help.guideTitle')}</h3>
-              <p className="text-blue-100 text-sm leading-relaxed max-w-md">{t('help.guideBody')}</p>
-            </div>
-            <button 
-              onClick={() => setIsGuideOpen(true)}
-              className="mt-8 px-6 py-3 bg-white text-blue-600 font-bold rounded-2xl w-fit shadow-lg hover:shadow-xl transition-all active:scale-95 z-10"
-            >
-              {t('help.guideBtn')}
-            </button>
-            <HelpCircle className="absolute -right-8 -bottom-8 text-white/10 w-48 h-48 -rotate-12 group-hover:rotate-0 transition-transform duration-700" />
-          </div>
-
-          <ArticleCard 
-            icon={<Smartphone className="text-blue-500" />} 
-            title={t('help.pwaTitle')} 
-          >
-            {t('help.pwaBody')}
-          </ArticleCard>
-        </div>
-
-        {/* Roles based content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 text-left">
-          {!isAdmin ? (
-            <>
-              <ArticleCard icon={<PlusCircle className="text-emerald-500" />} title={t('help.newReportTitle')}>{t('help.newReportBody')}</ArticleCard>
-              <ArticleCard icon={<Users className="text-amber-500" />} title={t('help.additionalWorkersTitle')}>{t('help.additionalWorkersBody')}</ArticleCard>
-            </>
-          ) : (
-            <>
-              <ArticleCard icon={<BarChart3 className="text-indigo-500" />} title={t('help.adminSummaryTitle')}>{t('help.adminSummaryBody')}</ArticleCard>
-              <ArticleCard icon={<ShieldCheck className="text-blue-500" />} title={t('help.adminPersonnelTitle')}>{t('help.adminPersonnelBody')}</ArticleCard>
-              <ArticleCard icon={<Building2 className="text-rose-500" />} title={t('help.adminInternalTitle')}>{t('help.adminInternalBody')}</ArticleCard>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 text-center max-w-2xl mx-auto">
-        <div className="w-16 h-16 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-4">
-          <HelpCircle className="text-blue-500" size={32} />
-        </div>
-        <h3 className="font-black text-slate-900 text-xl tracking-tight">{t('help.contactHeader')}</h3>
-        <p className="text-slate-500 text-sm mt-3 leading-relaxed font-medium">
-          {t('help.supportContact')}
-        </p>
-        
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button 
-            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat'))}
-            className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2 group"
-          >
-            <Sparkles size={18} className="text-blue-400 group-hover:scale-110 transition-transform" />
-            {t('help.chatWithAI')}
-          </button>
-          
-          {!isMobile && (
-            <button 
-              onClick={() => {
-                localStorage.removeItem('onboarding_v1');
-                window.location.hash = '/home';
-                window.location.reload();
-              }}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-            >
-              <Smartphone size={18} />
-              {t('help.restart')}
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Modale Manuale (Single Window Experience) overlay */}
-      {isGuideOpen && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in slide-in-from-bottom-4">
-          <div className="h-16 border-b border-slate-200 flex items-center justify-between px-6 shrink-0 bg-slate-50">
-            <h2 className="font-bold text-slate-800">{t('help.guideTitle')}</h2>
-            <button 
-              onClick={() => setIsGuideOpen(false)}
-              className="p-2 hover:bg-slate-200 rounded-xl transition-colors flex items-center gap-2 group"
-            >
-              <span className="text-sm font-bold text-slate-500 group-hover:text-slate-800">Chiudi</span>
-              <X size={24} className="text-slate-600 group-hover:text-slate-900" />
-            </button>
-          </div>
-          <div 
-            id="manual-inner-container"
-            className="w-full flex-1 overflow-y-auto bg-white"
-            onClick={handleManualClick}
-            dangerouslySetInnerHTML={{ __html: manualHtml }}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-
 // --- Personnel View ---
 const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpersonate }) => {
   const { t } = useTranslation();
@@ -1692,9 +1257,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   </FullWidthField>
                 </div>
               </div>
-
-
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
                 <div className="flex items-center gap-3">
                   <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">{t('projects.personStatus')}:</label>
                   <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -1723,15 +1286,20 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
 };
 
 // --- Clients View ---
-const ClientsView: React.FC = () => {
-  const { t } = useTranslation();
-  const [clients, setClients] = useState<Client[]>([]);
+
+interface ClientsViewProps {
+  t: (key: string) => string;
+}
+
+const ClientsView: React.FC<ClientsViewProps> = ({ t }) => {
+  const {
+    data: clients = [],
+    createClient,
+    updateClient,
+    deleteClient
+  } = useClients();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    db.getClients().then(setClients);
-  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -1759,21 +1327,19 @@ const ClientsView: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleLocalDelete = (id: string) => {
     if (confirm(t('common.confirmDelete'))) {
-      await db.deleteClient(id);
-      setClients(await db.getClients());
+      deleteClient.mutate(id);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLocalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      await db.updateClient(editingId, formData);
+      await updateClient.mutateAsync({ id: editingId, data: formData });
     } else {
-      await db.addClient(formData);
+      await createClient.mutateAsync(formData);
     }
-    setClients(await db.getClients());
     setIsModalOpen(false);
   };
 
@@ -1792,7 +1358,7 @@ const ClientsView: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  return (
+    return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900">{t('projects.clientsTitle')}</h1>
@@ -1811,7 +1377,7 @@ const ClientsView: React.FC = () => {
             </div>
             <div className="flex gap-2 shrink-0 ml-4 items-center">
               <button onClick={() => handleEdit(c)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"><Pencil size={18} /></button>
-              <button onClick={() => handleDelete(c.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>
+              <button onClick={() => handleLocalDelete(c.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -1825,7 +1391,7 @@ const ClientsView: React.FC = () => {
               <h2 className="text-xl font-bold text-slate-900">{editingId ? t('projects.clientEdit') : t('projects.clientNew')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleLocalSubmit} className="space-y-4">
               <div className="flex flex-col gap-y-4 max-w-lg mx-auto">
                 <FullWidthField label={t('projects.clientName')}>
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
@@ -1875,9 +1441,9 @@ const ClientsView: React.FC = () => {
 
 // --- Projects View ---
 const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
-  const { t } = useTranslation();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
+  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects();
+  const { data: clients = [] } = useClients();
+    const { t } = useTranslation();
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -1885,9 +1451,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
 
   useEffect(() => {
     const load = async () => {
-      const [p, c, u] = await Promise.all([db.getProjects(), db.getClients(), db.getUsers()]);
-      setProjects(p);
-      setClients(c.filter((cl: Client) => cl.status === 'active'));
+      const [u] = await Promise.all([db.getUsers()]);
       setPersonnel(u.filter((usr: User) => usr.status === 'active'));
     };
     load();
@@ -1934,8 +1498,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
 
   const handleDelete = async (id: string) => {
     if (confirm(t('common.confirmDelete'))) {
-      await db.deleteProject(id);
-      setProjects(await db.getProjects());
+      await deleteProject.mutateAsync(id);
     }
   };
 
@@ -1943,11 +1506,10 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
     e.preventDefault();
     try {
       if (editingId) {
-        await db.updateProject(editingId, formData);
+        await updateProject.mutateAsync({ id: editingId, data: formData });
       } else {
-        await db.addProject(formData);
+        await createProject.mutateAsync(formData);
       }
-      setProjects(await db.getProjects());
       setIsModalOpen(false);
     } catch (error: any) {
       console.error('Error saving project:', error);
@@ -2358,32 +1920,22 @@ const SubcontractorsView: React.FC = () => {
 
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const { lang, t } = useTranslation();
-  const [reports, setReports] = useState<WorkReport[]>([]);
+  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user.id, user.role as any);
+    const { data: projects = [] } = useProjects();
+  const { data: clients = [] } = useClients();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+
   const [personnel, setPersonnel] = useState<User[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
   const [complianceReportToSign, setComplianceReportToSign] = useState<WorkReport | null>(null);
 
   useEffect(() => {
-    db.getClients().then(setClients);
-  }, []);
+    }, []);
 
   useEffect(() => {
-    const load = async () => {
-      const [r, p, u] = await Promise.all([
-        db.getReports(user.id, user.role),
-        db.getProjects(),
-        db.getUsers(),
-      ]);
-      setReports(r);
-      setProjects(p); // Keep all projects for permission checks
-      setPersonnel(u.filter((usr: User) => usr.status === 'active'));
-    };
-    load();
+    db.getUsers().then(u => setPersonnel(u.filter((usr: User) => usr.status === 'active')));
   }, []);
 
   const canEditReport = (r: WorkReport) => {
@@ -2399,9 +1951,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     // Operators only edit what they created
     return r.userId === user.id;
   };
-
-
-  const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     projectId: '',
     userId: '',
@@ -2549,8 +2099,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     e.preventDefault();
     const payload = { ...formData, notes: '', teamTotalHours: globalTotalHours };
     try {
-      if (editingId) await db.updateReport(editingId, payload as any); else await db.addReport(payload as any);
-      setReports(await db.getReports(user.id, user.role));
+      if (editingId) await updateReport.mutateAsync({ id: editingId, data: payload as any }); else await createReport.mutateAsync(payload as any);
       setIsModalOpen(false);
     } catch (err: any) {
       console.error(err);
@@ -2580,8 +2129,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
   const handleDelete = async (id: string) => {
     if (confirm(t('common.confirmDelete'))) {
-      await db.deleteReport(id);
-      setReports(await db.getReports(user.id, user.role));
+      await deleteReport.mutateAsync(id);
       if (editingId === id) {
         setIsModalOpen(false);
         setEditingId(null);
@@ -3377,9 +2925,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
 // --- Auth View ---
 // AuthView removed in favor of LandingView
-
-
-// --- Companies Management View (SuperAdmin Only) ---
+  // --- Companies Management View (SuperAdmin Only) ---
 const CompaniesView: React.FC = () => {
   const { t } = useTranslation();
   const [companies, setCompanies] = useState<any[]>([]);
@@ -3626,9 +3172,7 @@ const CompaniesView: React.FC = () => {
     </div>
   );
 };
-
-
-// --- Main App Component ---
+  // --- Main App Component ---
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('ws_auth');
@@ -3645,8 +3189,9 @@ const App: React.FC = () => {
   });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { t } = useTranslation();
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isCommsUpgradeOpen, setIsCommsUpgradeOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -3830,14 +3375,14 @@ const App: React.FC = () => {
                     <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} isMobile={isMobile} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={(user.role === 'admin' || user.role === 'supervisor') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/clients" element={user.role === 'admin' ? <ClientsView /> : <Navigate to="/" />} />
+                    <Route path="/clients" element={user.role === "admin" ? <ClientsView t={t} /> : <Navigate to="/" />} />
                     <Route path="/projects" element={<ProjectsView user={user} />} />
                     <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
                     <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
-                    <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} />} />
-                    <Route path="/help" element={<HelpView user={user} isMobile={isMobile} />} />
+                    <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
+                    <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                 </AppLayout>

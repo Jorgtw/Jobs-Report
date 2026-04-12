@@ -69,15 +69,16 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
   };
 
   const handleGenerate = async () => {
+    console.log('[DEBUG-MODAL] Inizio handleGenerate');
     if (!hasSigned || sigCanvas.current?.isEmpty()) {
       alert('⚠️ ' + t('reports.complianceSignatureRequired'));
       return;
     }
 
     setIsGenerating(true);
-    const signatureBase64 = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || '';
-
     try {
+      const signatureBase64 = sigCanvas.current?.getCanvas().toDataURL('image/png') || '';
+
       await onGenerate(photos, signatureBase64);
       onClose();
     } catch (err) {

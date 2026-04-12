@@ -8,10 +8,10 @@ import {
   FileText, 
   Clock, 
   CheckCircle2, 
-  X,
   Check,
   ChevronLeft,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -310,6 +310,10 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   const handleStatusAction = async (action: 'ack' | 'take' | 'close' | 'archive' | 'delete', commId: string) => {
+    if (action === 'delete') {
+      const confirmed = window.confirm(t('common.confirmDelete' as any) || 'Sicuro di voler eliminare questa comunicazione? L\'azione è irreversibile.');
+      if (!confirmed) return;
+    }
     try {
       switch (action) {
         case 'ack': await db.acknowledgeComm(commId); break;
@@ -485,30 +489,30 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         <div className="flex border-b border-gray-100 bg-white">
           <button 
             onClick={() => setActiveTab('inbox')}
-            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'inbox' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'inbox' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            INBOX ({inboxComms.length})
+            {t('communications.tab_inbox' as any)} ({inboxComms.length})
             {activeTab === 'inbox' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
           <button 
             onClick={() => setActiveTab('working')}
-            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'working' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'working' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            LAV. ({workingComms.length})
+            {isMobile ? 'LAV.' : t('communications.tab_working' as any)} ({workingComms.length})
             {activeTab === 'working' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
           <button 
             onClick={() => setActiveTab('waiting')}
-            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'waiting' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'waiting' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            ATTESA ({waitingComms.length})
+            {isMobile ? 'ATT.' : t('communications.tab_waiting' as any)} ({waitingComms.length})
             {activeTab === 'waiting' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
           <button 
             onClick={() => setActiveTab('completed')}
-            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'completed' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'completed' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            COMPL. ({completedComms.length})
+            {isMobile ? 'FINE' : t('communications.tab_completed' as any)} ({completedComms.length})
             {activeTab === 'completed' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
         </div>
@@ -597,15 +601,10 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             {/* Workflow Banner */}
             {/* Minimalist Status Bar */}
             <div className="px-6 py-2 bg-[#fafaf8] border-b-[0.5px] border-[#e8e5de] flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${selectedThread.needsAction ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-              <span className="text-[12px] font-medium text-slate-500 lowercase">
+              <div className={`w-1.5 h-1.5 rounded-full ${selectedThread.needsAction ? 'bg-orange-500' : 'bg-slate-300'}`} />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 {selectedThread.needsAction ? t('communications.waitingYourReply') : t('communications.waitingOthersReply')}
               </span>
-              {selectedThread.needsAction && (
-                <span className="px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded text-[10px] font-bold uppercase tracking-tight">
-                  {t('communications.actionRequired')}
-                </span>
-              )}
             </div>
 
             {/* Detail Header */}
@@ -674,10 +673,10 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {currentUser.role === 'admin' && (
                   <button 
                     onClick={() => handleStatusAction('delete', selectedThread.id)}
-                    className="w-[30px] h-[30px] flex items-center justify-center text-slate-300 hover:text-red-400 transition-all"
+                    className="w-[30px] h-[30px] flex items-center justify-center text-slate-300 hover:text-red-500 transition-all"
                     title={t('common.delete')}
                   >
-                    <X className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
