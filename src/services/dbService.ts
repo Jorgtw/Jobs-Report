@@ -852,6 +852,7 @@ class DBService {
       type: c.type as CommType,
       targetType: c.target_type as CommTargetType,
       targetId: c.target_id,
+      targetName: c.target?.name,
       projectId: c.project_id,
       parentId: c.parent_id,
       status: c.status as CommStatus,
@@ -886,6 +887,7 @@ class DBService {
       .select(`
         *,
         sender:workers!sender_id(name),
+        target:workers!target_id(name),
         assigned_worker:workers!assigned_to(name),
         receipts:communication_read_receipts(user_id)
       `)
@@ -950,6 +952,7 @@ class DBService {
       .select(`
         *,
         sender:workers!sender_id(name),
+        target:workers!target_id(name),
         assigned_worker:workers!assigned_to(name)
       `)
       .eq('company_id', compId)

@@ -402,8 +402,20 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     );
   };
 
-  const getFilteredComms = (statuses: string[]) => {
-    return filteredCommunications.filter(c => statuses.includes(c.status));
+  const getFilteredComms = (sectionId: string) => {
+    switch (sectionId) {
+      case 'inbox':
+        return filteredCommunications.filter(c => c.status === 'open' && c.senderId !== currentUser.id);
+      case 'working':
+        return filteredCommunications.filter(c => 
+          (c.status === 'acknowledged' || c.status === 'in_progress') || 
+          (c.status === 'open' && c.senderId === currentUser.id)
+        );
+      case 'completed':
+        return filteredCommunications.filter(c => c.status === 'closed' || c.status === 'archived');
+      default:
+        return [];
+    }
   };
 
   if (!isPremium && currentUser.role !== 'admin') {
@@ -453,11 +465,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
         <div className="flex-1 overflow-y-auto bg-white">
           {[
-            { id: 'inbox', label: t('communications.tab_inbox'), statuses: ['open'], color: 'bg-red-500' },
-            { id: 'working', label: t('communications.tab_working'), statuses: ['acknowledged', 'in_progress'], color: 'bg-slate-400' },
-            { id: 'completed', label: t('communications.tab_completed'), statuses: ['closed', 'archived'], color: 'bg-slate-400' }
+            { id: 'inbox', label: t('communications.tab_inbox'), color: 'bg-red-500' },
+            { id: 'working', label: t('communications.tab_working'), color: 'bg-slate-400' },
+            { id: 'completed', label: t('communications.tab_completed'), color: 'bg-slate-400' }
           ].map((section) => {
-            const comms = getFilteredComms(section.statuses);
+            const comms = getFilteredComms(section.id);
             const isExpanded = expandedSections.includes(section.id);
             
             return (
@@ -566,7 +578,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       <span className="text-slate-700 font-[500]">
                         {selectedThread.targetType === 'all' 
                           ? t('communications.allUsers') 
-                          : (workers.find(w => w.id === selectedThread.targetId)?.name || '-')}
+                          : (selectedThread.targetName || '-')}
                       </span>
                     </div>
                   </div>

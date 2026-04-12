@@ -158,6 +158,7 @@ export interface InternalCommunication {
   senderName: string;
   targetType: CommTargetType;
   targetId?: string;
+  targetName?: string;
   projectId?: string;
   parentId?: string;
   content: string;
