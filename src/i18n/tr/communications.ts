@@ -88,5 +88,9 @@ export const communications = {
   feature_teamsync_title: 'Ekip Senkronizasyonu',
   feature_teamsync_desc: 'Tüm ekibe veya belirli projelere uyarı gönderin',
   feature_pdf_title: 'PDF Dışa Aktar',
-  feature_pdf_desc: 'Konuşma günlüklerini PDF formatında indirin'
+  feature_pdf_desc: 'Konuşma günlüklerini PDF formatında indirin',
+  tab_inbox: 'GELEN',
+  tab_working: 'SÜREÇTE',
+  tab_waiting: 'BEKLEYEN',
+  tab_completed: 'TAMAM'
 } as const;

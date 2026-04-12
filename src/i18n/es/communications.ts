@@ -88,5 +88,9 @@ export const communications = {
   feature_teamsync_title: 'Team Sync',
   feature_teamsync_desc: 'Envíe alertas a todo el equipo o a proyectos específicos',
   feature_pdf_title: 'Export PDF',
-  feature_pdf_desc: 'Descargue los registros de las conversaciones en formato PDF'
+  feature_pdf_desc: 'Descargue los registros de las conversaciones en formato PDF',
+  tab_inbox: 'RECIBIDOS',
+  tab_working: 'PROCESO',
+  tab_waiting: 'ESPERA',
+  tab_completed: 'HECHO'
 } as const;
