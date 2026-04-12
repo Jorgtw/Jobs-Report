@@ -149,6 +149,11 @@ class DBService {
     return data.map(s => this.mapSupabaseSubcontractor(s));
   }
 
+  private async getWorkerById(id: string): Promise<AppUser | null> {
+    const { data } = await supabase.from('workers').select('*').eq('id', id).single();
+    return data ? this.mapSupabaseUser(data) : null;
+  }
+
   async addSubcontractor(sub: any) {
     const sbObj = {
       ...this.mapAppSubcontractorToSupabase(sub),
@@ -1015,7 +1020,7 @@ class DBService {
     let payloads = [];
     if (data.targetType === 'user' && data.targetIds && data.targetIds.length > 0) {
       payloads = data.targetIds.map(tid => {
-        const target = allWorkers.find(w => w.id === tid);
+        const target = allWorkers.find((w: AppUser) => w.id === tid);
         return {
           company_id: compId,
           sender_id: userId,
@@ -1034,7 +1039,7 @@ class DBService {
     } else {
       let targetName = null;
       if (data.targetType === 'user' && data.targetId) {
-        targetName = allWorkers.find(w => w.id === data.targetId)?.name;
+        targetName = allWorkers.find((w: AppUser) => w.id === data.targetId)?.name;
       }
 
       payloads = [{
