@@ -21,32 +21,30 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const { message, history } = await req.json();
+    const body = await req.json();
+    const { message, history, intent, data } = body;
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel(
       { 
         model: "gemini-flash-latest",
-        systemInstruction: `Sei un collega esperto dell'app "Jobs Report". Il tuo compito è aiutare i tuoi colleghi a capire come usare l'applicazione in modo semplice e naturale.
+        systemInstruction: intent === 'translate' 
+          ? `Sei un traduttore professionale. Traduci il testo fornito in ${data?.targetLanguage || 'italiano'}. 
+             RISPONDI ESCLUSIVAMENTE COL TESTO TRADOTTO. NO saluti, NO introduzioni, NO markdown. 
+             Mantieni il formato JSON: { "lang": "...", "text": "..." }.`
+          : `Sei un collega esperto dell'app "Jobs Report". Il tuo compito è aiutare i tuoi colleghi a capire come usare l'applicazione in modo semplice e naturale.
 
 REGOLE DI RISPOSTA (FONDAMENTALI):
 1. FORMATO: Rispondi SEMPRE in formato JSON con questo schema: { "lang": "...", "text": "..." }.
-2. LINGUA: Nel campo "lang", inserisci il codice BCP-47 della lingua che stai usando (es. "it-IT", "en-US", "es-ES", "da-DK", "pl-PL", "tr-TR"). 
-3. NO MARKDOWN: Il testo nel campo "text" deve essere TESTO SEMPLICE. NON usare MAI asterischi (*), cancelletti (#), trattini (-), elenchi puntati o grassetti. Le tue risposte devono sembrare messaggi naturali su una chat, non un documento formattato.
-4. TONO: Sii amichevole e diretto, come un collega che ti dà un suggerimento veloce. Evita di essere troppo formale.
-5. PRIVACY: Non hai accesso ai dati personali in tempo reale. Se chiedono informazioni sulle loro ore, spiega gentilmente come trovarle nella dashboard o scorrere la lista rapportini.
+2. LINGUA: Nel campo "lang", inserisci il codice BCP-47 della lingua che stai usando. 
+3. NO MARKDOWN: Il testo nel campo "text" deve essere TESTO SEMPLICE. NON usare MAI asterischi, cancelletti o grassetti.
+4. TONO: Sii amichevole e diretto.
+5. TRADUZIONE: Se ricevi un comando "Traduci in [Lingua]:", passa automaticamente alla modalità traduzione pura.
 
-CONOSCENZA DEL MANUALE APP (USA QUESTE INFORMAZIONI PER AIUTARE):
-- LOGIN: Si entra con username e password. Se qualcuno dimentica la password, deve cliccare su "Password Dimenticata?" per inviare un'email all'assistenza.
-- RUOLI: L'Operaio vede le sue ore "In attesa" e crea rapportini. L'Admin vede KPI finanziari (Margine, Da Fatturare, Progetti) e gestisce l'intera ditta. Il SuperAdmin gestisce le aziende.
-- RAPPORTINI: Si creano col tasto "+". Serve il Progetto, la Data e gli Orari. Il sistema calcola le ore togliendo 1 ora di pausa. Se serve, si può cliccare sul totale ore per inserire una cifra a mano (Override manuale).
-- TEAM E SPESE: Si possono aggiungere colleghi (Team) e rimborsi (Spese) in ogni rapportino.
-- MODIFICA E COPIA: Si può usare la funzione "Duplica" per far prima se si lavora nello stesso posto. Gli operai possono modificare i loro rapportini solo finché sono aperti.
-- PREMIUM: Include i "Compliance Report" (Firme/Foto) e le "Comunicazioni Interne". I file cloud scadono dopo 14 giorni.
-- EXPORT: Gli operai scaricano PDF/Excel delle proprie ore; gli Admin scaricano i dati completi.
-- COMUNICAZIONI: Sistema a ticket/thread. In Arrivo mostra ricevuti e inviati con risposte. Puoi cambiare stato e scaricare PDF.
-- FUNZIONE TRADUTTORE: Se l'utente usa il comando "Traduci in [Lingua]: [Testo]", la tua risposta nel campo "text" deve contenere UNICAMENTE il testo tradotto. Non aggiungere commenti, non dire "Ecco la traduzione", non salutare. Solo il testo puro tradotto.
-`,
+CONOSCENZA APP:
+- RAPPORTINI: Calcolo ore automatico (-1h pausa). Override manuale cliccando sul totale.
+- PREMIUM: Include Compliance Report (Firme/Foto) e Comunicazioni Interne.
+- RUOLI: Admin vede KPI finanziari e ditta; Operaio vede i propri lavori.`,
         generationConfig: {
           responseMimeType: "application/json",
         }
@@ -54,20 +52,24 @@ CONOSCENZA DEL MANUALE APP (USA QUESTE INFORMAZIONI PER AIUTARE):
       { apiVersion: "v1beta" }
     );
 
+    // Backward compatibility for string-based translation requests
+    let finalMessage = message;
+    if (!intent && message?.toLowerCase().startsWith('traduci')) {
+      // Logic for legacy calls
+    }
+
     const chat = model.startChat({
       history: history || [],
     });
 
-    const result = await chat.sendMessage(message);
+    const result = await chat.sendMessage(intent === 'translate' ? data.content : message);
     const response = await result.response;
     const rawContent = response.text();
     
-    // Parse the JSON output from Gemini
     let content;
     try {
       content = JSON.parse(rawContent);
     } catch (e) {
-      // Fallback in case of invalid JSON
       content = { text: rawContent, lang: "it-IT" };
     }
 
@@ -77,16 +79,7 @@ CONOSCENZA DEL MANUALE APP (USA QUESTE INFORMAZIONI PER AIUTARE):
     });
   } catch (error: any) {
     console.error("AI Assistant Error:", error);
-    const maskedKey = apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : "NOT_FOUND";
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      debug: {
-        model: "gemini-2.0-flash-lite",
-        apiVersion: "v1beta",
-        apiKeyMasked: maskedKey,
-        fullError: error
-      }
-    }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

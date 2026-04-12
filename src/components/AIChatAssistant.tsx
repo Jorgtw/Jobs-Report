@@ -80,7 +80,21 @@ const AIChatAssistant: React.FC = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    const text = input.trim();
+    if (!text || isLoading) return;
+
+    let intent: string | undefined = undefined;
+    let payloadData: any = undefined;
+
+    // Detect translation intent
+    const translateMatch = text.match(/Traduci (?:in|al|na|til|şu dile çevir) (.*?): (.*)/i);
+    if (translateMatch) {
+      intent = 'translate';
+      payloadData = {
+        targetLanguage: translateMatch[1].trim(),
+        content: translateMatch[2].trim()
+      };
+    }
 
     const userMessage: Message = { role: 'user', parts: [{ text: input }] };
     const newMessages = [...messages, userMessage];
@@ -93,8 +107,10 @@ const AIChatAssistant: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: input,
+          message: text,
           history: messages,
+          intent,
+          data: payloadData
         }),
       });
 

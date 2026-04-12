@@ -127,7 +127,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   // State
   const [expandedSections, setExpandedSections] = useState<string[]>(['inbox']);
-  const [communications, setCommunications] = useState<InternalCommunication[]>([]);
+  const [commsBySection, setCommsBySection] = useState<Record<string, InternalCommunication[]>>({
+    inbox: [],
+    working: [],
+    completed: []
+  });
   const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
   const [threadLoading, setThreadLoading] = useState(false);
@@ -226,10 +230,14 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   }, [threadMessages]);
 
-  const fetchMainData = async () => {
+  const fetchMainData = async (forceSection?: string) => {
     try {
-      const data = await db.getCommunications({ type: 'inbox' });
-      setCommunications(data);
+      const sectionsToFetch = forceSection ? [forceSection] : expandedSections;
+      
+      for (const section of sectionsToFetch) {
+        const data = await db.getCommunications({ type: section as any });
+        setCommsBySection(prev => ({ ...prev, [section]: data }));
+      }
     } catch (err) {
       console.error('Error fetching communications:', err);
     }
@@ -317,7 +325,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         type: selectedThread.type,
         targetType: 'user',
         targetIds: forwardRecipientIds,
-        projectId: selectedThread.projectId
+        projectId: selectedThread.projectId,
+        parentForwardId: selectedThread.id,
+        metadata: { forwarded_from: selectedThread.senderName }
       });
 
       setIsForwardPanelOpen(false);
@@ -427,32 +437,25 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     doc.save(`Comunicazione_${selectedThread.id.substring(0,8)}.pdf`);
   };
 
-  const matchSearch = (c: InternalCommunication) => 
-    c.content.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.senderName.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const filteredCommunications = communications.filter(matchSearch);
-
-  const toggleSection = (id: string) => {
-    setExpandedSections(prev => 
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    );
+  const toggleSection = async (id: string) => {
+    const isExpanding = !expandedSections.includes(id);
+    if (isExpanding) {
+      setExpandedSections(prev => [...prev, id]);
+      await fetchMainData(id);
+    } else {
+      setExpandedSections(prev => prev.filter(s => s !== id));
+    }
   };
 
   const getFilteredComms = (sectionId: string) => {
-    switch (sectionId) {
-      case 'inbox':
-        return filteredCommunications.filter(c => c.status === 'open' && c.senderId !== currentUser.id);
-      case 'working':
-        return filteredCommunications.filter(c => 
-          (c.status === 'acknowledged' || c.status === 'in_progress') || 
-          (c.status === 'open' && c.senderId === currentUser.id)
-        );
-      case 'completed':
-        return filteredCommunications.filter(c => c.status === 'closed' || c.status === 'archived');
-      default:
-        return [];
-    }
+    const sectionData = commsBySection[sectionId] || [];
+    if (!searchTerm) return sectionData;
+    const term = searchTerm.toLowerCase();
+    return sectionData.filter(c => 
+      c.content.toLowerCase().includes(term) || 
+      c.senderName.toLowerCase().includes(term)
+    );
   };
 
   if (!isPremium && currentUser.role !== 'admin') {

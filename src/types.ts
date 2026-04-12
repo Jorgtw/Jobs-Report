@@ -161,6 +161,8 @@ export interface InternalCommunication {
   targetName?: string;
   projectId?: string;
   parentId?: string;
+  parentForwardId?: string;
+  metadata?: any;
   content: string;
   type: CommType;
   status: CommStatus;

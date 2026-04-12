@@ -847,13 +847,16 @@ class DBService {
       id: c.id,
       companyId: c.company_id,
       senderId: c.sender_id,
-      senderName: c.sender?.name || 'Utente',
+      senderName: c.sender_name_snap || c.sender?.name || 'Utente',
       content: c.content,
       type: c.type as CommType,
       targetType: c.target_type as CommTargetType,
       targetId: c.target_id,
+      targetName: c.target_name_snap,
       projectId: c.project_id,
       parentId: c.parent_id,
+      parentForwardId: c.parent_forward_id,
+      metadata: c.metadata,
       status: c.status as CommStatus,
       isAcknowledged: c.is_acknowledged || false,
       acknowledgedAt: c.acknowledged_at,
@@ -875,66 +878,42 @@ class DBService {
   }
 
   async getCommunications(filters: { 
-    type?: 'inbox' | 'sent' | 'archive';
+    type?: 'inbox' | 'working' | 'completed';
     projectId?: string;
   } = {}): Promise<InternalCommunication[]> {
     const compId = this.requireCompanyId();
     const userId = this.requireUserId();
     
-    let query = supabase
-      .from('internal_communications')
-      .select(`
-        *,
-        sender:workers!sender_id(name),
-        assigned_worker:workers!assigned_to(name),
-        receipts:communication_read_receipts(user_id)
-      `)
-      .eq('company_id', compId)
-      .is('parent_id', null); // Solo messaggi root per la lista
+    // V2: Use RPC for server-side filtering
+    const { data, error } = await supabase.rpc('get_filtered_communications', {
+      p_user_id: userId,
+      p_company_id: compId,
+      p_section: filters.type || 'inbox'
+    });
 
-    if (filters.projectId) {
-      query = query.eq('project_id', filters.projectId);
-    }
-
-    if (filters.type === 'inbox') {
-      // In Arrivo: Target è l'utente/all OPPURE l'utente è il mittente (per vedere risposte)
-      query = query.or(`target_type.eq.all,target_id.eq.${userId},sender_id.eq.${userId}`)
-                   .neq('status', 'deleted');
-    } else if (filters.type === 'sent') {
-      query = query.eq('sender_id', userId)
-                   .not('status', 'in', '("archived","deleted")');
-    } else if (filters.type === 'archive') {
-      query = query.eq('status', 'archived');
-    }
-
-    // Get read receipts
-    const { data: receipts } = await supabase.from('communication_read_receipts').select('communication_id').eq('user_id', userId);
-    const readIds = receipts?.map(r => r.communication_id) || [];
-
-    const { data, error } = await query.order('last_activity_at', { ascending: false });
     if (error) {
-      console.error('Error fetching communications:', error);
-      return [];
+      console.error('Error fetching communications via RPC:', error);
+      throw error;
     }
 
-    const { data: unreadData } = await supabase
-      .from('internal_communications')
-      .select('id, parent_id')
-      .eq('company_id', compId)
-      .or(`target_type.eq.all,target_id.eq.${userId}`)
-      .not('id', 'in', `(${readIds.join(',') || '00000000-0000-0000-0000-000000000000'})`);
+    // Get read receipts for these communications
+    const commIds = (data || []).map((c: any) => c.id);
+    const { data: receipts } = await supabase
+      .from('communication_read_receipts')
+      .select('communication_id')
+      .eq('user_id', userId)
+      .in('communication_id', commIds);
     
-    const unreadMessageIds = new Set(unreadData?.map(m => m.id) || []);
-    const unreadParentIds = new Set(unreadData?.filter(m => m.parent_id).map(m => m.parent_id) || []);
+    const readIds = new Set(receipts?.map(r => r.communication_id) || []);
 
     const mapped = (data || []).map((c: any) => {
-      const isActuallyRead = !unreadMessageIds.has(c.id) && !unreadParentIds.has(c.id);
+      const isRead = readIds.has(c.id);
       const needsAction = (c.status === 'open' || c.status === 'acknowledged') && 
-                          (c.target_type === 'all' || c.target_id === userId || !isActuallyRead);
+                          (c.target_type === 'all' || c.target_id === userId || !isRead);
       
       return {
         ...this.mapSupabaseComm(c, userId),
-        isRead: isActuallyRead,
+        isRead,
         needsAction
       };
     });
@@ -996,21 +975,32 @@ class DBService {
     targetId?: string;
     projectId?: string;
     parentId?: string;
+    parentForwardId?: string;
+    metadata?: any;
   }) {
     const compId = this.requireCompanyId();
     const userId = this.requireUserId();
+
+    // V2: Solve snapshots before insertion
+    const [sender, allWorkers] = await Promise.all([
+      this.getWorkerById(userId),
+      this.getUsers()
+    ]);
+    const senderName = sender?.name || 'Utente';
 
     if (data.parentId) {
       const payload = {
         company_id: compId,
         sender_id: userId,
+        sender_name_snap: senderName,
         content: data.content,
         type: data.type || 'note',
         target_type: data.targetType,
         target_id: data.targetId,
         project_id: data.projectId,
         parent_id: data.parentId,
-        status: 'open'
+        status: 'open',
+        metadata: data.metadata || {}
       };
       const { error } = await supabase.from('internal_communications').insert([payload]);
       if (error) throw error;
@@ -1024,26 +1014,42 @@ class DBService {
 
     let payloads = [];
     if (data.targetType === 'user' && data.targetIds && data.targetIds.length > 0) {
-      payloads = data.targetIds.map(tid => ({
-        company_id: compId,
-        sender_id: userId,
-        content: data.content,
-        type: data.type || 'note',
-        target_type: 'user',
-        target_id: tid,
-        project_id: data.projectId || null,
-        status: 'open'
-      }));
+      payloads = data.targetIds.map(tid => {
+        const target = allWorkers.find(w => w.id === tid);
+        return {
+          company_id: compId,
+          sender_id: userId,
+          sender_name_snap: senderName,
+          target_name_snap: target?.name,
+          content: data.content,
+          type: data.type || 'note',
+          target_type: 'user',
+          target_id: tid,
+          project_id: data.projectId || null,
+          parent_forward_id: data.parentForwardId || null,
+          status: 'open',
+          metadata: data.metadata || {}
+        };
+      });
     } else {
+      let targetName = null;
+      if (data.targetType === 'user' && data.targetId) {
+        targetName = allWorkers.find(w => w.id === data.targetId)?.name;
+      }
+
       payloads = [{
         company_id: compId,
         sender_id: userId,
+        sender_name_snap: senderName,
+        target_name_snap: targetName,
         content: data.content,
         type: data.type || 'note',
         target_type: data.targetType,
-        target_id: data.targetType === 'project' ? data.projectId : null,
+        target_id: data.targetId || null,
         project_id: data.projectId || null,
-        status: 'open'
+        parent_forward_id: data.parentForwardId || null,
+        status: 'open',
+        metadata: data.metadata || {}
       }];
     }
 
