@@ -48,7 +48,7 @@ export const communications = {
   
   // Handlinger
   acknowledge: 'Bekræft modtagelse',
-  takeInCharge: 'Tag ansvaret',
+  takeInCharge: 'I gang',
   close: 'Luk',
   archiveAction: 'Arkiver',
   closed: 'Lukket',

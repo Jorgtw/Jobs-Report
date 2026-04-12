@@ -48,7 +48,7 @@ export const communications = {
   
   // Actions
   acknowledge: 'Acknowledge Receipt',
-  takeInCharge: 'Take in Charge',
+  takeInCharge: 'Working',
   close: 'Close',
   archiveAction: 'Archive',
   closed: 'Closed',

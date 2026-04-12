@@ -48,7 +48,7 @@ export const communications = {
   
   // Acciones
   acknowledge: 'Confirmar Recepción',
-  takeInCharge: 'Hacerse cargo',
+  takeInCharge: 'En curso',
   close: 'Cerrar',
   archiveAction: 'Archivar',
   closed: 'Cerrado',

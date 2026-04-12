@@ -576,7 +576,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               <div className="flex items-center gap-2">
                 {selectedThread.status === 'open' && 
                   selectedThread.senderId !== currentUser.id && 
-                  (selectedThread.targetType === 'all' || selectedThread.targetId === currentUser.id) && (
+                  (selectedThread.targetType === 'all' || (!selectedThread.targetType && !selectedThread.targetId) || selectedThread.targetId === currentUser.id) && (
                   <button 
                     onClick={() => handleStatusAction('take', selectedThread.id)}
                     className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all uppercase tracking-tighter"

@@ -48,7 +48,7 @@ export const communications = {
   
   // Aksiyonlar
   acknowledge: 'Alındığını Onayla',
-  takeInCharge: 'Üstlen',
+  takeInCharge: 'İşlemde',
   close: 'Kapat',
   archiveAction: 'Arşivle',
   closed: 'Kapalı',
