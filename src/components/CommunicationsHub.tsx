@@ -581,6 +581,14 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                           : (workers.find(w => w.id === selectedThread.targetId)?.name || (selectedThread.targetId === currentUser.id ? currentUser.name : '-'))}
                       </span>
                     </div>
+                    {selectedThread.projectId && (
+                      <div className="text-[12px] flex gap-1.5">
+                        <span className="text-gray-400 uppercase font-bold tracking-tighter">{t('common.project')}:</span>
+                        <span className="text-slate-700 font-[500]">
+                          {projects.find(p => p.id === selectedThread.projectId)?.name || '-'}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </h3>
               </div>
