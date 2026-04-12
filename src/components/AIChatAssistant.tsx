@@ -201,9 +201,17 @@ const AIChatAssistant: React.FC = () => {
             )}
           </div>
 
-          <div className="p-4 bg-white border-t border-slate-100 flex gap-2">
-            <input 
-              type="text" 
+          <div className="p-4 bg-white border-t border-slate-100">
+            <button 
+              onClick={() => setInput(`${t('help.aiTranslatePrefix')} ${t('help.aiLangName')}: `)}
+              className="text-[10px] font-bold text-blue-600 hover:text-blue-700 mb-2 flex items-center gap-1 transition-colors"
+            >
+              <Sparkles size={10} />
+              {t('help.aiQuickTranslate')}
+            </button>
+            <div className="flex gap-2">
+              <input 
+                type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -217,6 +225,7 @@ const AIChatAssistant: React.FC = () => {
             >
               <Send size={18} />
             </button>
+            </div>
           </div>
         </div>
       )}

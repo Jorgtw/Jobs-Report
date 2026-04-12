@@ -78,6 +78,9 @@ export const help = {
   aiAssistantName: "Assistente Jobs Report",
   aiAssistantSubtitle: "Manuale Parlante",
   aiWelcomeMessage: "Ciao! Sono il manuale intelligente di Jobs Report. Chiedimi pure come funziona l'app!",
+  aiQuickTranslate: "Traduci un testo →",
+  aiTranslatePrefix: "Traduci in",
+  aiLangName: "italiano",
 
   // Aliases for refactoring consistency
   get helpTitle() { return this.title },

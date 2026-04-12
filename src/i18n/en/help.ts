@@ -77,5 +77,8 @@ export const help = {
   // AI Assistant Aliases
   aiAssistantName: "Jobs Report Assistant",
   aiAssistantSubtitle: "Speaking Manual",
-  aiWelcomeMessage: "Hi! I'm the intelligent Jobs Report manual. Ask me how the app works!",
+  aiWelcomeMessage: "Hello! I am the intelligent manual for Jobs Report. Ask me how the app works!",
+  aiQuickTranslate: "Translate a text →",
+  aiTranslatePrefix: "Translate into",
+  aiLangName: "English",
 } as const;

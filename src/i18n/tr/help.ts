@@ -13,5 +13,8 @@ export const help = {
   restart: "Eğitimi Yeniden Başlat",
   aiName: "Jobs Report Asistanı",
   aiSubtitle: "Konuşan Kılavuz",
-  aiWelcome: "Merhaba! Ben Jobs Report akıllı kılavuzuyum. Bana uygulamanın nasıl çalıştığını sorabilirsiniz!",
+  aiWelcomeMessage: "Merhaba! Ben Jobs Report'un akıllı kılavuzuyum. Uygulamanın nasıl çalıştığını bana sorabilirsiniz!",
+  aiQuickTranslate: "Bir metni çevir →",
+  aiTranslatePrefix: "Şu dile çevir",
+  aiLangName: "Türkçe",
 };

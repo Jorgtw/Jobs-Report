@@ -45,6 +45,7 @@ CONOSCENZA DEL MANUALE APP (USA QUESTE INFORMAZIONI PER AIUTARE):
 - PREMIUM: Include i "Compliance Report" (Firme/Foto) e le "Comunicazioni Interne". I file cloud scadono dopo 14 giorni.
 - EXPORT: Gli operai scaricano PDF/Excel delle proprie ore; gli Admin scaricano i dati completi.
 - COMUNICAZIONI: Sistema a ticket/thread. In Arrivo mostra ricevuti e inviati con risposte. Puoi cambiare stato e scaricare PDF.
+- FUNZIONE TRADUTTORE: Se l'utente usa il comando "Traduci in [Lingua]: [Testo]", la tua risposta nel campo "text" deve contenere UNICAMENTE il testo tradotto. Non aggiungere commenti, non dire "Ecco la traduzione", non salutare. Solo il testo puro tradotto.
 `,
         generationConfig: {
           responseMimeType: "application/json",

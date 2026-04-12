@@ -13,5 +13,8 @@ export const help = {
   restart: "Reiniciar Tutorial",
   aiName: "Asistente Jobs Report",
   aiSubtitle: "Manual Parlante",
-  aiWelcome: "¡Hola! Soy el manual inteligente de Jobs Report. ¡Pregúntame cómo funciona la app!",
+  aiWelcomeMessage: "¡Hola! Soy el manual inteligente de Jobs Report. ¡Pregúntame cómo funciona la aplicación!",
+  aiQuickTranslate: "Traducir un texto →",
+  aiTranslatePrefix: "Traducir al",
+  aiLangName: "español",
 };
