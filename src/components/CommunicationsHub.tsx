@@ -124,7 +124,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   // State
-  const [activeTab, setActiveTab] = useState<'todo' | 'sent'>('todo');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'working' | 'waiting' | 'completed'>('inbox');
   const [communications, setCommunications] = useState<InternalCommunication[]>([]);
   const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
@@ -300,6 +300,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       });
       setIsNewMessageModalOpen(false);
       setNewMsg({ content: '', type: 'note', targetType: 'all', targetIds: [], projectId: '' });
+      setActiveTab('sent');
       fetchMainData();
     } catch (err) {
       console.error('Error creating communication:', err);
@@ -401,15 +402,37 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     doc.save(`Comunicazione_${selectedThread.id.substring(0,8)}.pdf`);
   };
 
-  const daFareComms = communications.filter(c => c.needsAction && (
-    c.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.senderName.toLowerCase().includes(searchTerm.toLowerCase())
-  ));
+  const matchSearch = (c: InternalCommunication) => 
+    c.content.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    c.senderName.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const inviateComms = communications.filter(c => c.senderId === currentUser.id && (
-    c.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.senderName.toLowerCase().includes(searchTerm.toLowerCase())
-  ));
+  const filteredComms = communications.filter(matchSearch);
+
+  const inboxComms = filteredComms.filter(c => 
+    ['open', 'acknowledged'].includes(c.status) && (c.needsAction === true || c.isRead === false)
+  );
+
+  const workingComms = filteredComms.filter(c => 
+    c.status === 'in_progress'
+  );
+
+  const waitingComms = filteredComms.filter(c => 
+    ['open', 'acknowledged'].includes(c.status) && c.needsAction === false && c.isRead === true
+  );
+
+  const completedComms = filteredComms.filter(c => 
+    ['closed', 'archived'].includes(c.status)
+  );
+
+  const getActiveComms = () => {
+    switch (activeTab) {
+      case 'inbox': return inboxComms;
+      case 'working': return workingComms;
+      case 'waiting': return waitingComms;
+      case 'completed': return completedComms;
+      default: return [];
+    }
+  };
 
   if (!isPremium && currentUser.role !== 'admin') {
     return (
@@ -461,18 +484,32 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         {/* List Tabs */}
         <div className="flex border-b border-gray-100 bg-white">
           <button 
-            onClick={() => setActiveTab('todo')}
-            className={`flex-1 py-4 text-[12px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'todo' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+            onClick={() => setActiveTab('inbox')}
+            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'inbox' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            {t('communications.todo')} ({daFareComms.length})
-            {activeTab === 'todo' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
+            INBOX ({inboxComms.length})
+            {activeTab === 'inbox' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
           <button 
-            onClick={() => setActiveTab('sent')}
-            className={`flex-1 py-4 text-[12px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'sent' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+            onClick={() => setActiveTab('working')}
+            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'working' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            {t('communications.sent')} ({inviateComms.length})
-            {activeTab === 'sent' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
+            LAV. ({workingComms.length})
+            {activeTab === 'working' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
+          </button>
+          <button 
+            onClick={() => setActiveTab('waiting')}
+            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'waiting' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            ATTESA ({waitingComms.length})
+            {activeTab === 'waiting' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
+          </button>
+          <button 
+            onClick={() => setActiveTab('completed')}
+            className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'completed' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            COMPL. ({completedComms.length})
+            {activeTab === 'completed' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
           </button>
         </div>
         
@@ -485,7 +522,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
-              {(activeTab === 'todo' ? daFareComms : inviateComms).length === 0 ? (
+              {getActiveComms().length === 0 ? (
                 <div className="p-12 text-center">
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
                     <CheckCircle2 className="w-8 h-8 text-slate-300" />
@@ -493,7 +530,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{t('common.noData')}</p>
                 </div>
               ) : (
-                (activeTab === 'todo' ? daFareComms : inviateComms).map((comm) => (
+                getActiveComms().map((comm) => (
                   <button
                     key={comm.id}
                     onClick={() => handleSelectThread(comm)}
@@ -507,8 +544,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       
                       {/* 2. Sender Name */}
                       <div className="flex justify-between items-center">
-                        <h4 className={`text-[13px] font-medium tracking-tight ${!comm.isRead && activeTab === 'todo' ? 'text-blue-600 font-bold' : 'text-[#2c2c2a]'}`}>
-                          {activeTab === 'sent' 
+                        <h4 className={`text-[13px] font-medium tracking-tight ${!comm.isRead ? 'text-blue-600 font-bold' : 'text-[#2c2c2a]'}`}>
+                          {comm.senderId === currentUser.id 
                             ? (comm.targetType === 'all' ? t('communications.allTeam') : (comm.targetId === currentUser.id ? t('communications.myself') : t('communications.recipientLabel')))
                             : comm.senderName
                           }
@@ -532,12 +569,17 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                         }`}>
                           {t(`communications.status_${comm.status}` as any)}
                         </span>
+                        {comm.status === 'in_progress' && comm.assignedToName && (
+                          <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded flex items-center gap-1 border border-purple-100">
+                            👤 {comm.assignedToName}
+                          </span>
+                        )}
                         {comm.projectId && (
                           <span className="text-[9px] font-medium text-slate-400 flex items-center gap-1 opacity-60">
                             • {projects.find(p => p.id === comm.projectId)?.name}
                           </span>
                         )}
-                        {!comm.isRead && activeTab === 'todo' && <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full" />}
+                        {!comm.isRead && <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full" />}
                       </div>
                     </div>
                   </button>

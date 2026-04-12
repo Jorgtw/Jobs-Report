@@ -8,6 +8,11 @@ class DBService {
 
   constructor() { }
 
+  private async getAuthToken(): Promise<string> {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ?? '';
+  }
+
   public setCompanyId(id: string | null) {
     this.currentCompanyId = id;
   }
@@ -533,8 +538,7 @@ class DBService {
   }
 
   async addUser(user: any) {
-    const auth = localStorage.getItem('sb-gqetgbqlxljhhcaggoke-auth-token');
-    const token = auth ? JSON.parse(auth).access_token : '';
+    const token = await this.getAuthToken();
     
     // Sync with Supabase Auth via Admin API
     const response = await fetch('/api/admin-auth-update', {
@@ -572,8 +576,7 @@ class DBService {
 
     if (isSensitiveUpdate) {
       // Sync with Supabase Auth via Admin API
-      const auth = localStorage.getItem('sb-gqetgbqlxljhhcaggoke-auth-token');
-      const token = auth ? JSON.parse(auth).access_token : '';
+      const token = await this.getAuthToken();
       
       const response = await fetch('/api/admin-auth-update', {
         method: 'POST',
@@ -896,7 +899,7 @@ class DBService {
     if (filters.type === 'inbox') {
       // In Arrivo: Target è l'utente/all OPPURE l'utente è il mittente (per vedere risposte)
       query = query.or(`target_type.eq.all,target_id.eq.${userId},sender_id.eq.${userId}`)
-                   .not('status', 'in', '("archived","deleted")');
+                   .neq('status', 'deleted');
     } else if (filters.type === 'sent') {
       query = query.eq('sender_id', userId)
                    .not('status', 'in', '("archived","deleted")');
@@ -927,7 +930,7 @@ class DBService {
     const mapped = (data || []).map((c: any) => {
       const isActuallyRead = !unreadMessageIds.has(c.id) && !unreadParentIds.has(c.id);
       const needsAction = (c.status === 'open' || c.status === 'acknowledged') && 
-                          (c.target_type === 'all' || c.target_id === userId);
+                          (c.target_type === 'all' || c.target_id === userId || !isActuallyRead);
       
       return {
         ...this.mapSupabaseComm(c, userId),
@@ -935,13 +938,6 @@ class DBService {
         needsAction
       };
     });
-
-    if (filters.type === 'inbox') {
-      return mapped.filter(c => 
-        (c.targetId === userId || c.targetType === 'all') || 
-        (c.senderId === userId && !c.isRead)
-      );
-    }
 
     return mapped;
   }
