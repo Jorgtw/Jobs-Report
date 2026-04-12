@@ -93,5 +93,8 @@ export const communications = {
   tab_working: 'PROCESO',
   tab_waiting: 'ESPERA',
   tab_completed: 'HECHO',
-  workingTooltip: 'Mover esta comunicación a en curso'
+  workingTooltip: 'Mover esta comunicación a en curso',
+  forward: 'Reenviar',
+  forwardAction: 'Enviar reenvío',
+  additionalMessage: 'Mensaje adicional (opcional)'
 } as const;

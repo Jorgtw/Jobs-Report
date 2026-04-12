@@ -93,5 +93,8 @@ export const communications = {
   tab_working: 'LAVORAZIONE',
   tab_waiting: 'IN ATTESA',
   tab_completed: 'COMPLETATO',
-  workingTooltip: 'Sposta questa comunicazione in lavorazione'
+  workingTooltip: 'Sposta questa comunicazione in lavorazione',
+  forward: 'Inoltra',
+  forwardAction: 'Invia inoltro',
+  additionalMessage: 'Messaggio aggiuntivo (opzionale)'
 } as const;

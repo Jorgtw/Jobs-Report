@@ -137,6 +137,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [sending, setSending] = useState(false);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Forward States
+  const [isForwardPanelOpen, setIsForwardPanelOpen] = useState(false);
+  const [forwardRecipientIds, setForwardRecipientIds] = useState<string[]>([]);
+  const [forwardNote, setForwardNote] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -215,6 +220,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   useEffect(() => {
     if (selectedThread) {
       scrollToBottom();
+      setIsForwardPanelOpen(false);
+      setForwardRecipientIds([]);
+      setForwardNote('');
     }
   }, [threadMessages]);
 
@@ -291,6 +299,33 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       fetchMainData();
     } catch (err) {
       console.error('Error creating communication:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleForward = async () => {
+    if (!selectedThread || forwardRecipientIds.length === 0) return;
+    setSending(true);
+    try {
+      const originalContent = selectedThread.content;
+      const refText = `[${t('communications.forward')} da ${currentUser.name}]: `;
+      const fullContent = (forwardNote.trim() ? `${forwardNote.trim()}\n\n---\n` : '') + refText + originalContent;
+
+      await db.sendCommunication({
+        content: fullContent,
+        type: selectedThread.type,
+        targetType: 'user',
+        targetIds: forwardRecipientIds,
+        projectId: selectedThread.projectId
+      });
+
+      setIsForwardPanelOpen(false);
+      setForwardRecipientIds([]);
+      setForwardNote('');
+      fetchMainData();
+    } catch (err) {
+      console.error('Error forwarding:', err);
     } finally {
       setSending(false);
     }
@@ -626,6 +661,15 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   </button>
                 )}
 
+                {['open', 'in_progress'].includes(selectedThread.status) && (
+                  <button 
+                    onClick={() => setIsForwardPanelOpen(!isForwardPanelOpen)}
+                    className={`px-3.5 py-1.5 border text-[12px] font-bold rounded transition-all uppercase tracking-tighter ${isForwardPanelOpen ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50'}`}
+                  >
+                    {t('communications.forward')}
+                  </button>
+                )}
+
                 <button 
                   onClick={exportPDF}
                   className="w-[30px] h-[30px] flex items-center justify-center border border-slate-300 text-slate-400 rounded hover:bg-slate-50 transition-all bg-white"
@@ -645,6 +689,49 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 )}
               </div>
             </div>
+
+            {isForwardPanelOpen && (
+              <div className="mx-6 mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('communications.recipient')}</label>
+                    <UserMultiSelect 
+                      users={workers.filter(u => u.id !== currentUser.id)}
+                      selectedIds={forwardRecipientIds}
+                      onChange={setForwardRecipientIds}
+                      placeholder={t('communications.selectUsers')}
+                      t={t}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('communications.additionalMessage')}</label>
+                    <textarea 
+                      value={forwardNote}
+                      onChange={(e) => setForwardNote(e.target.value)}
+                      className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      rows={2}
+                      placeholder="..."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button 
+                      onClick={() => setIsForwardPanelOpen(false)}
+                      className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                    <button 
+                      disabled={forwardRecipientIds.length === 0 || sending}
+                      onClick={handleForward}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {sending ? <Clock className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {t('communications.forwardAction')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
               {threadLoading ? (

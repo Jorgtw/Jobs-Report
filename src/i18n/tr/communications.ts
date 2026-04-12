@@ -93,5 +93,8 @@ export const communications = {
   tab_working: 'SÜREÇTE',
   tab_waiting: 'BEKLEYEN',
   tab_completed: 'TAMAM',
-  workingTooltip: 'Bu iletiyi işlem aşamasına taşı'
+  workingTooltip: 'Bu iletiyi işlem aşamasına taşı',
+  forward: 'İlet',
+  forwardAction: 'İletiyi gönder',
+  additionalMessage: 'Ek mesaj (isteğe bağlı)'
 } as const;

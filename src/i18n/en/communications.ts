@@ -93,5 +93,8 @@ export const communications = {
   tab_working: 'WORKING',
   tab_waiting: 'WAITING',
   tab_completed: 'COMPLETED',
-  workingTooltip: 'Move this communication to working state'
+  workingTooltip: 'Move this communication to working state',
+  forward: 'Forward',
+  forwardAction: 'Send forward',
+  additionalMessage: 'Additional message (optional)'
 } as const;

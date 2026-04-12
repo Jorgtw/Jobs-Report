@@ -93,5 +93,8 @@ export const communications = {
   tab_working: 'I GANG',
   tab_waiting: 'VENTER',
   tab_completed: 'FÆRDIG',
-  workingTooltip: 'Flyt denne kommunikation til i gang'
+  workingTooltip: 'Flyt denne kommunikation til i gang',
+  forward: 'Videresend',
+  forwardAction: 'Send videresend',
+  additionalMessage: 'Ekstra besked (valgfrit)'
 } as const;
