@@ -300,7 +300,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       });
       setIsNewMessageModalOpen(false);
       setNewMsg({ content: '', type: 'note', targetType: 'all', targetIds: [], projectId: '' });
-      setActiveTab('sent');
+      setActiveTab('waiting');
       fetchMainData();
     } catch (err) {
       console.error('Error creating communication:', err);
