@@ -341,7 +341,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       head: [[t('common.sender'), t('common.recipient'), t('common.type'), t('common.project')]],
       body: [[
         selectedThread.senderName,
-        selectedThread.targetType === 'all' ? t('common.all') : (selectedThread.targetId || 'N/A'),
+        selectedThread.targetType === 'all' 
+          ? t('communications.allUsers') 
+          : (workers.find(w => w.id === selectedThread.targetId)?.name || (selectedThread.targetId === currentUser.id ? currentUser.name : '-')),
         t(`communications.type_${selectedThread.type}` as any),
         projects.find(p => p.id === selectedThread.projectId)?.name || t('common.none')
       ]],

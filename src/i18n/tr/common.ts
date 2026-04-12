@@ -56,6 +56,7 @@ export const common = {
   sender: "Gönderen",
   recipient: "Alıcı",
   type: "Tür",
+  project: "Proje",
   optional: "İsteğe bağlı",
   thread: "Konuşma",
   none: "Yok",

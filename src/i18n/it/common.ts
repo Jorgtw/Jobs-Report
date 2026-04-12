@@ -56,6 +56,7 @@ export const common = {
   sender: "Mittente",
   recipient: "Destinatario",
   type: "Tipo",
+  project: "Progetto",
   optional: "Opzionale",
   thread: "Conversazione",
   none: "Nessuno",
