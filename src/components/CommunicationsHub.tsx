@@ -10,6 +10,7 @@ import {
   CheckCircle2, 
   Check,
   ChevronLeft,
+  ChevronRight,
   ChevronDown,
   Trash2,
   X
@@ -125,11 +126,10 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   // State
-  const [activeTab, setActiveTab] = useState<'inbox' | 'working' | 'waiting' | 'completed'>('inbox');
+  const [expandedSections, setExpandedSections] = useState<string[]>(['inbox']);
   const [communications, setCommunications] = useState<InternalCommunication[]>([]);
   const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
-  const [loading, setLoading] = useState(true);
   const [threadLoading, setThreadLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
@@ -171,7 +171,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   useEffect(() => {
     if (!isPremium) {
-      setLoading(false);
       return;
     }
     fetchMainData();
@@ -190,7 +189,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         },
         (payload) => {
           console.log('Real-time update received:', payload);
-          fetchMainData(true);
+          fetchMainData();
           if (selectedThreadRef.current) {
             fetchThread(selectedThreadRef.current.id, true);
           }
@@ -219,16 +218,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   }, [threadMessages]);
 
-  const fetchMainData = async (silent = false) => {
-    if (!silent) setLoading(true);
+  const fetchMainData = async () => {
     try {
-      // Fetch "inbox" which includes everything relevant and active
       const data = await db.getCommunications({ type: 'inbox' });
       setCommunications(data);
     } catch (err) {
       console.error('Error fetching communications:', err);
-    } finally {
-      if (!silent) setLoading(false);
     }
   };
 
@@ -247,7 +242,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     try {
       const messages = await db.getThread(rootId);
       setThreadMessages(messages);
-      // Mark root as read
       await db.markAsRead(rootId);
     } catch (err) {
       console.error('Error fetching thread:', err);
@@ -256,17 +250,10 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   };
 
-  const handleSelectThread = (comm: InternalCommunication) => {
-    setSelectedThread(comm);
-    fetchThread(comm.id);
-    if (isMobile) setMobileView('detail');
-  };
-
   const handleSendReply = async () => {
     if (!replyText.trim() || !selectedThread) return;
     setSending(true);
     try {
-      // Logic for reply: target is the original sender if we are the target, or vice versa
       const targetId = selectedThread.senderId === currentUser.id 
         ? selectedThread.targetId 
         : selectedThread.senderId;
@@ -301,7 +288,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       });
       setIsNewMessageModalOpen(false);
       setNewMsg({ content: '', type: 'note', targetType: 'all', targetIds: [], projectId: '' });
-      setActiveTab('waiting');
       fetchMainData();
     } catch (err) {
       console.error('Error creating communication:', err);
@@ -310,7 +296,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   };
 
-  const handleStatusAction = async (action: 'ack' | 'take' | 'close' | 'archive' | 'delete', commId: string) => {
+  const handleStatusAction = async (action: 'ack' | 'take' | 'close' | 'archive' | 'delete' | 'read', commId: string) => {
     if (action === 'delete') {
       const confirmed = window.confirm(t('common.confirmDelete' as any) || 'Sicuro di voler eliminare questa comunicazione? L\'azione è irreversibile.');
       if (!confirmed) return;
@@ -322,12 +308,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         case 'close': await db.closeComm(commId, currentUser.id); break;
         case 'archive': await db.archiveComm(commId); break;
         case 'delete': await db.deleteComm(commId); break;
+        case 'read': await db.markAsRead(commId); break;
       }
       fetchMainData();
       if (selectedThread?.id === commId) {
         const updated = await db.getThread(commId);
         setThreadMessages(updated);
-        // Refresh root status
         const root = updated.find(m => m.id === commId);
         if (root) setSelectedThread(root);
       }
@@ -341,7 +327,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Header
     doc.setFontSize(20);
     doc.text(t('communications.internalCommunication'), 14, 22);
     
@@ -351,7 +336,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     doc.text(`${t('common.status')}: ${t(`communications.status_${selectedThread.status}` as any)}`, 14, 35);
     doc.text(`${t('common.date')}: ${formatDate(selectedThread.createdAt, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 40);
 
-    // Metadata Table
     (doc as any).autoTable({
       startY: 45,
       head: [[t('common.sender'), t('common.recipient'), t('common.type'), t('common.project')]],
@@ -376,7 +360,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       }
     });
 
-    // Content
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.text(t('communications.thread'), 14, (doc as any).lastAutoTable.finalY + 15);
@@ -411,32 +394,16 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     c.content.toLowerCase().includes(searchTerm.toLowerCase()) || 
     c.senderName.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const filteredComms = communications.filter(matchSearch);
+  const filteredCommunications = communications.filter(matchSearch);
 
-  const inboxComms = filteredComms.filter(c => 
-    ['open', 'acknowledged'].includes(c.status) && (c.needsAction === true || c.isRead === false)
-  );
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
 
-  const workingComms = filteredComms.filter(c => 
-    c.status === 'in_progress'
-  );
-
-  const waitingComms = filteredComms.filter(c => 
-    ['open', 'acknowledged'].includes(c.status) && c.needsAction === false && c.isRead === true
-  );
-
-  const completedComms = filteredComms.filter(c => 
-    ['closed', 'archived'].includes(c.status)
-  );
-
-  const getActiveComms = () => {
-    switch (activeTab) {
-      case 'inbox': return inboxComms;
-      case 'working': return workingComms;
-      case 'waiting': return waitingComms;
-      case 'completed': return completedComms;
-      default: return [];
-    }
+  const getFilteredComms = (statuses: string[]) => {
+    return filteredCommunications.filter(c => statuses.includes(c.status));
   };
 
   if (!isPremium && currentUser.role !== 'admin') {
@@ -458,9 +425,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-120px)] bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm selection:bg-blue-100">
-      {/* LEFT SIDEBAR - 30% */}
+      {/* LEFT SIDEBAR */}
       <div className={`${isMobile && mobileView === 'detail' ? 'hidden' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex flex-col bg-[#f5f4f0]`}>
-        {/* Sidebar Header */}
         <div className="p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('communications.internalCommunications')}</h2>
@@ -473,7 +439,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             </button>
           </div>
           
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
@@ -486,129 +451,89 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           </div>
         </div>
 
-        {/* List Tabs */}
-        <div className="flex border-b border-gray-100 bg-white">
-          <button 
-            onClick={() => setActiveTab('inbox')}
-            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'inbox' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {t('communications.tab_inbox' as any)} ({inboxComms.length})
-            {activeTab === 'inbox' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('working')}
-            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'working' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {isMobile ? 'LAV.' : t('communications.tab_working' as any)} ({workingComms.length})
-            {activeTab === 'working' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('waiting')}
-            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'waiting' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {isMobile ? 'ATT.' : t('communications.tab_waiting' as any)} ({waitingComms.length})
-            {activeTab === 'waiting' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('completed')}
-            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'completed' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {isMobile ? 'FINE' : t('communications.tab_completed' as any)} ({completedComms.length})
-            {activeTab === 'completed' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />}
-          </button>
-        </div>
-        
-        {/* List Content */}
-        <div className="flex-1 overflow-y-auto pb-6">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center h-48 gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">{t('communications.loading')}</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {getActiveComms().length === 0 ? (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
-                    <CheckCircle2 className="w-8 h-8 text-slate-300" />
-                  </div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{t('common.noData')}</p>
-                </div>
-              ) : (
-                getActiveComms().map((comm) => (
-                  <button
-                    key={comm.id}
-                    onClick={() => handleSelectThread(comm)}
-                    className={`w-full text-left p-6 transition-all group relative hover:bg-slate-50/50 ${selectedThread?.id === comm.id ? 'bg-blue-50/30' : 'bg-white'}`}
-                  >
-                    <div className="flex flex-col gap-1">
-                      {/* 1. Type */}
-                      <span className="text-[11px] font-medium text-[#888780] uppercase tracking-wider">
-                        {t(`communications.type_${comm.type}` as any)}
+        <div className="flex-1 overflow-y-auto bg-white">
+          {[
+            { id: 'inbox', label: t('communications.tab_inbox'), statuses: ['open'], color: 'bg-red-500' },
+            { id: 'working', label: t('communications.tab_working'), statuses: ['acknowledged', 'in_progress'], color: 'bg-slate-400' },
+            { id: 'completed', label: t('communications.tab_completed'), statuses: ['closed', 'archived'], color: 'bg-slate-400' }
+          ].map((section) => {
+            const comms = getFilteredComms(section.statuses);
+            const isExpanded = expandedSections.includes(section.id);
+            
+            return (
+              <div key={section.id} className="border-b border-gray-50 overflow-hidden">
+                <button 
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <ChevronRight size={16} className={`text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-900">{section.label}</span>
+                    {comms.length > 0 && (
+                      <span className={`${section.color} text-white text-[10px] font-black px-2 py-0.5 rounded-full`}>
+                        {comms.length}
                       </span>
-                      
-                      {/* 2. Sender Name */}
-                      <div className="flex justify-between items-center">
-                        <h4 className={`text-[13px] font-medium tracking-tight ${!comm.isRead ? 'text-blue-600 font-bold' : 'text-[#2c2c2a]'}`}>
-                          {comm.senderId === currentUser.id 
-                            ? (comm.targetType === 'all' ? t('communications.allTeam') : (comm.targetId === currentUser.id ? t('communications.myself') : t('communications.recipientLabel')))
-                            : comm.senderName
-                          }
-                        </h4>
-                        <span className="text-[10px] font-medium text-slate-300">{formatDate(comm.createdAt)}</span>
-                      </div>
-                      
-                      {/* 3. Preview Text */}
-                      <p className="text-[12px] text-gray-400 line-clamp-1 mt-1 font-normal">
-                        {comm.content}
-                      </p>
-                      
-                      {/* 4. Status Badge */}
-                      <div className="flex items-center gap-2 mt-3">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${
-                          comm.status === 'open' ? 'bg-amber-50 text-amber-600' :
-                          comm.status === 'acknowledged' ? 'bg-blue-50 text-blue-600' :
-                          comm.status === 'in_progress' ? 'bg-purple-50 text-purple-600' :
-                          comm.status === 'closed' ? 'bg-emerald-50 text-emerald-600' :
-                          'bg-slate-50 text-slate-500'
-                        }`}>
-                          {t(`communications.status_${comm.status}` as any)}
-                        </span>
-                        {comm.status === 'in_progress' && comm.assignedToName && (
-                          <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded flex items-center gap-1 border border-purple-100">
-                            👤 {comm.assignedToName}
-                          </span>
-                        )}
-                        {comm.projectId && (
-                          <span className="text-[9px] font-medium text-slate-400 flex items-center gap-1 opacity-60">
-                            • {projects.find(p => p.id === comm.projectId)?.name}
-                          </span>
-                        )}
-                        {!comm.isRead && <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full" />}
-                      </div>
+                    )}
+                  </div>
+                </button>
+
+                <div 
+                  className="transition-all duration-200 ease-in-out"
+                  style={{ 
+                    maxHeight: isExpanded ? '2000px' : '0',
+                    opacity: isExpanded ? 1 : 0,
+                    visibility: isExpanded ? 'visible' : 'hidden'
+                  }}
+                >
+                  {comms.length > 0 ? (
+                    <div className="pb-2">
+                      {comms.map((comm) => (
+                        <div 
+                          key={comm.id}
+                          onClick={() => {
+                            setSelectedThread(comm);
+                            fetchThread(comm.id);
+                            if (isMobile) setMobileView('detail');
+                            if (!comm.isRead) handleStatusAction('read', comm.id);
+                          }}
+                          className={`px-5 py-4 cursor-pointer transition-all border-l-4 ${
+                            selectedThread?.id === comm.id 
+                              ? 'bg-blue-50 border-blue-600' 
+                              : 'border-transparent hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{comm.type}</span>
+                            <span className="text-[10px] text-slate-400">{formatDate(comm.createdAt)}</span>
+                          </div>
+                          <h4 className={`text-sm leading-snug ${!comm.isRead ? 'font-bold text-slate-950' : 'text-slate-600'}`}>
+                            {comm.content.length > 60 ? comm.content.substring(0, 60) + '...' : comm.content}
+                          </h4>
+                          {comm.needsAction && comm.status !== 'closed' && (
+                            <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+                              <Clock size={10} />
+                              {t('communications.status_open')}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </button>
-                ))
-              )}
-            </div>
-          )}
+                  ) : (
+                    <div className="px-10 py-6 text-xs text-slate-400 italic">
+                      {t('common.noData')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* RIGHT DETAIL VIEW - 70% */}
+      {/* RIGHT DETAIL VIEW */}
       <div className={`${isMobile && mobileView === 'list' ? 'hidden' : 'flex'} w-full md:w-2/3 flex flex-col bg-white`}>
         {selectedThread ? (
           <>
-            {/* Workflow Banner */}
-            {/* Minimalist Status Bar */}
-            <div className="px-6 py-2 bg-[#fafaf8] border-b-[0.5px] border-[#e8e5de] flex items-center gap-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${selectedThread.needsAction ? 'bg-orange-500' : 'bg-slate-300'}`} />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                {selectedThread.needsAction ? t('communications.waitingYourReply') : t('communications.waitingOthersReply')}
-              </span>
-            </div>
-
-            {/* Detail Header */}
             <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-4">
                 {isMobile && (
@@ -619,36 +544,40 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     <ChevronLeft size={24} />
                   </button>
                 )}
-                <div>
-                  <h3 className="text-base font-black text-slate-900 flex items-center gap-3 uppercase tracking-tight">
-                    {selectedThread.senderName}
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
-                      selectedThread.status === 'open' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                      selectedThread.status === 'acknowledged' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                      selectedThread.status === 'in_progress' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                      selectedThread.status === 'closed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                      'bg-slate-50 text-slate-600 border-slate-100'
-                    }`}>
-                      {t(`communications.status_${selectedThread.status}` as any)}
-                    </span>
-                  </h3>
-                  <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                    <span className="flex items-center gap-1.5">{formatDate(selectedThread.createdAt)}</span>
-                    {projects.find(p => p.id === selectedThread.projectId) && (
-                      <span className="flex items-center gap-1.5 px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-slate-500 capitalize">
-                        {projects.find(p => p.id === selectedThread.projectId)?.name}
-                      </span>
+                <h3 className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    {selectedThread.senderName && (
+                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold ring-4 ring-blue-50">
+                        {selectedThread.senderName.charAt(0)}
+                      </div>
                     )}
+                    <span className="text-sm font-bold text-slate-950">
+                      {selectedThread.type.toUpperCase()}
+                    </span>
                   </div>
-                </div>
+
+                  <div className="flex flex-col gap-1 pl-10">
+                    <div className="text-[12px] flex gap-1.5">
+                      <span className="text-gray-400 uppercase font-bold tracking-tighter">{t('communications.sender')}:</span>
+                      <span className="text-slate-700 font-[500]">{selectedThread.senderName}</span>
+                    </div>
+                    <div className="text-[12px] flex gap-1.5">
+                      <span className="text-gray-400 uppercase font-bold tracking-tighter">{t('communications.recipient')}:</span>
+                      <span className="text-slate-700 font-[500]">
+                        {selectedThread.targetType === 'all' 
+                          ? t('communications.allUsers') 
+                          : (workers.find(w => w.id === selectedThread.targetId)?.name || '-')}
+                      </span>
+                    </div>
+                  </div>
+                </h3>
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Actions: Small & Minimalist */}
                 {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && selectedThread.senderId === currentUser.id && (
                   <button 
                     onClick={() => handleStatusAction('close', selectedThread.id)}
-                    className="px-3.5 py-1.5 bg-white border border-[#185FA5] text-[#185FA5] text-[12px] font-bold rounded hover:bg-blue-50 transition-all"
+                    className="px-3.5 py-1.5 bg-white border border-[#185FA5] text-[#185FA5] text-[12px] font-bold rounded hover:bg-blue-50 transition-all uppercase tracking-tighter"
                   >
                     {t('communications.close')}
                   </button>
@@ -657,7 +586,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {selectedThread.status === 'closed' && (
                   <button 
                     onClick={() => handleStatusAction('archive', selectedThread.id)}
-                    className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all"
+                    className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all uppercase tracking-tighter"
                   >
                     {t('communications.archiveAction')}
                   </button>
@@ -683,7 +612,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               </div>
             </div>
 
-            {/* Conversation Thread */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
               {threadLoading ? (
                 <div className="flex items-center justify-center h-full">
@@ -705,11 +633,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                           </div>
                           <div className={`flex items-center gap-3 mt-1.5 text-[9px] font-bold text-slate-300 uppercase tracking-widest ${isMe ? 'justify-end mr-3' : 'justify-start ml-3'}`}>
                              <span>{formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}</span>
-                             {isMe && msg.isRead && (
-                               <span className="text-blue-400 italic font-black flex items-center gap-1">
-                                 <Check size={8} strokeWidth={4} /> {t('communications.read_at')} {formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}
-                               </span>
-                             )}
                           </div>
                         </div>
                       </div>
@@ -720,7 +643,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom Bar / Reply */}
             {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) ? (
               <div className="p-4 bg-white border-t border-gray-100 sticky bottom-0">
                 <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100">
