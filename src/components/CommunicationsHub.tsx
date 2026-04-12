@@ -11,7 +11,8 @@ import {
   Check,
   ChevronLeft,
   ChevronDown,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
