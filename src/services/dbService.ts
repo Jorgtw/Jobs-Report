@@ -1,4 +1,4 @@
-import { Role, ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, AppUser } from '../types';
+import { Role, ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, User } from '../types';
 import { supabase } from './supabase';
 
 class DBService {
@@ -149,7 +149,7 @@ class DBService {
     return data.map(s => this.mapSupabaseSubcontractor(s));
   }
 
-  private async getWorkerById(id: string): Promise<AppUser | null> {
+  private async getWorkerById(id: string): Promise<User | null> {
     const { data } = await supabase.from('workers').select('*').eq('id', id).single();
     return data ? this.mapSupabaseWorker(data) : null;
   }
@@ -1020,7 +1020,7 @@ class DBService {
     let payloads = [];
     if (data.targetType === 'user' && data.targetIds && data.targetIds.length > 0) {
       payloads = data.targetIds.map(tid => {
-        const target = allWorkers.find((w: AppUser) => w.id === tid);
+        const target = allWorkers.find((w: User) => w.id === tid);
         return {
           company_id: compId,
           sender_id: userId,
@@ -1039,7 +1039,7 @@ class DBService {
     } else {
       let targetName = null;
       if (data.targetType === 'user' && data.targetId) {
-        targetName = allWorkers.find((w: AppUser) => w.id === data.targetId)?.name;
+        targetName = allWorkers.find((w: User) => w.id === data.targetId)?.name;
       }
 
       payloads = [{
