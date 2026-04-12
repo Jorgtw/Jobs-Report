@@ -230,7 +230,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const fetchSupportData = async () => {
     try {
       const [w, p] = await Promise.all([db.getUsers(), db.getProjects()]);
-      setWorkers(w.filter(u => u.id !== currentUser.id));
+      setWorkers(w);
       setProjects(p);
     } catch (err) {
       console.error('Error fetching support data:', err);
@@ -578,7 +578,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                       <span className="text-slate-700 font-[500]">
                         {selectedThread.targetType === 'all' 
                           ? t('communications.allUsers') 
-                          : (selectedThread.targetName || '-')}
+                          : (workers.find(w => w.id === selectedThread.targetId)?.name || (selectedThread.targetId === currentUser.id ? currentUser.name : '-'))}
                       </span>
                     </div>
                   </div>
@@ -742,7 +742,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 {newMsg.targetType === 'user' && (
                   <div className="mb-3">
                     <UserMultiSelect 
-                      users={workers}
+                      users={workers.filter(u => u.id !== currentUser.id)}
                       selectedIds={newMsg.targetIds}
                       onChange={(ids) => setNewMsg(prev => ({ ...prev, targetIds: ids }))}
                       placeholder={t('communications.selectUsers')}
