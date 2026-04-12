@@ -580,6 +580,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                   <button 
                     onClick={() => handleStatusAction('take', selectedThread.id)}
                     className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all uppercase tracking-tighter"
+                    title={t('communications.workingTooltip')}
                   >
                     {t('communications.takeInCharge')}
                   </button>

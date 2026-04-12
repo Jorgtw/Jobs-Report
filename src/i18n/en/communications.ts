@@ -92,5 +92,6 @@ export const communications = {
   tab_inbox: 'INBOX',
   tab_working: 'WORKING',
   tab_waiting: 'WAITING',
-  tab_completed: 'COMPLETED'
+  tab_completed: 'COMPLETED',
+  workingTooltip: 'Move this communication to working state'
 } as const;

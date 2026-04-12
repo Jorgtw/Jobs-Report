@@ -92,5 +92,6 @@ export const communications = {
   tab_inbox: 'INDBAKKE',
   tab_working: 'I GANG',
   tab_waiting: 'VENTER',
-  tab_completed: 'FÆRDIG'
+  tab_completed: 'FÆRDIG',
+  workingTooltip: 'Flyt denne kommunikation til i gang'
 } as const;

@@ -92,5 +92,6 @@ export const communications = {
   tab_inbox: 'RECIBIDOS',
   tab_working: 'PROCESO',
   tab_waiting: 'ESPERA',
-  tab_completed: 'HECHO'
+  tab_completed: 'HECHO',
+  workingTooltip: 'Mover esta comunicación a en curso'
 } as const;

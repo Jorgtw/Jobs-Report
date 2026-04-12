@@ -92,5 +92,6 @@ export const communications = {
   tab_inbox: 'GELEN',
   tab_working: 'SÜREÇTE',
   tab_waiting: 'BEKLEYEN',
-  tab_completed: 'TAMAM'
+  tab_completed: 'TAMAM',
+  workingTooltip: 'Bu iletiyi işlem aşamasına taşı'
 } as const;
