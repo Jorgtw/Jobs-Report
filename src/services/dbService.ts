@@ -1,4 +1,4 @@
-import { Role, ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus } from '../types';
+import { Role, ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, AppUser } from '../types';
 import { supabase } from './supabase';
 
 class DBService {
@@ -151,7 +151,7 @@ class DBService {
 
   private async getWorkerById(id: string): Promise<AppUser | null> {
     const { data } = await supabase.from('workers').select('*').eq('id', id).single();
-    return data ? this.mapSupabaseUser(data) : null;
+    return data ? this.mapSupabaseWorker(data) : null;
   }
 
   async addSubcontractor(sub: any) {
