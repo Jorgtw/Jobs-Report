@@ -22,6 +22,9 @@ import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
+import { usePushNotifications } from '../hooks/usePushNotifications';
+import { Bell, BellOff, BellRing } from 'lucide-react';
+
 interface CommunicationsHubProps {
   currentUser: AppUser;
   isPremium?: boolean;
@@ -141,6 +144,15 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [sending, setSending] = useState(false);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
   const [isMobile, setIsMobile] = useState(false);
+  const [showPushBanner, setShowPushBanner] = useState(true);
+
+  // Push Notifications Hook
+  const { 
+    permission, 
+    isSubscribed, 
+    requestPermission, 
+    isSupported 
+  } = usePushNotifications(currentUser);
   
   // Forward States
   const [isForwardPanelOpen, setIsForwardPanelOpen] = useState(false);
@@ -491,6 +503,39 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             </button>
           </div>
           
+          {/* PUSH NOTIFICATIONS BANNER (SOFT PROMPT) */}
+          {isPremium && isSupported && permission === 'default' && showPushBanner && !isSubscribed && (
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-4 rounded-2xl shadow-lg shadow-blue-200 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex gap-3 mb-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-md">
+                   <BellRing className="w-5 h-5 animate-bounce" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white leading-tight">
+                    {t('communications.push_banner_title')}
+                  </h4>
+                  <p className="text-[11px] text-blue-50/80 mt-1 leading-snug">
+                    {t('communications.push_banner_desc')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => requestPermission()}
+                  className="flex-1 py-2 bg-white text-blue-700 text-xs font-black rounded-lg hover:bg-blue-50 transition-colors uppercase tracking-wider"
+                >
+                  {t('communications.push_activate')}
+                </button>
+                <button 
+                  onClick={() => setShowPushBanner(false)}
+                  className="px-3 py-2 bg-white/10 text-white/80 text-xs font-bold rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  {t('communications.push_dismiss')}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 

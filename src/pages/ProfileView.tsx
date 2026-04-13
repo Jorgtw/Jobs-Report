@@ -3,6 +3,7 @@ import { User as UserIcon, Lock, CheckCircle2 } from 'lucide-react';
 import { User } from '../types';
 import { db } from '../services/dbService';
 import { supabase } from '../services/supabase';
+import NotificationSettings from '../components/NotificationSettings';
 
 interface ProfileViewProps {
   user: User;
@@ -173,6 +174,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
           </button>
         </form>
       </div>
+
+      {user.isPremium && (
+        <NotificationSettings user={user} t={t} />
+      )}
 
       <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
         <div className="flex items-center gap-3 mb-6">

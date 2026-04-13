@@ -96,5 +96,19 @@ export const communications = {
   workingTooltip: 'Move this communication to working state',
   forward: 'Forward',
   forwardAction: 'Send forward',
-  additionalMessage: 'Additional message (optional)'
+  additionalMessage: 'Additional message (optional)',
+  push_banner_title: 'Enable push notifications',
+  push_banner_desc: 'Receive real-time updates even when the app is closed.',
+  push_activate: 'Enable now',
+  push_dismiss: 'Not now',
+  push_enabled: 'Notifications enabled!',
+  push_settings_title: 'Notification Settings',
+  push_notifications: 'Push Notifications',
+  push_status_active: 'Notifications Active',
+  push_status_blocked: 'Unauthorized',
+  push_status_disabled: 'Disabled by user',
+  push_deactivate: 'Deactivate Notifications',
+  push_reset_hint: 'Unblock notifications in browser settings',
+  push_sound: 'Notification Sound',
+  push_sound_desc: 'Play a sound alert when received'
 } as const;

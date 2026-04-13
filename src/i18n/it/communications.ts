@@ -96,5 +96,19 @@ export const communications = {
   workingTooltip: 'Sposta questa comunicazione in lavorazione',
   forward: 'Inoltra',
   forwardAction: 'Invia inoltro',
-  additionalMessage: 'Messaggio aggiuntivo (opzionale)'
+  additionalMessage: 'Messaggio aggiuntivo (opzionale)',
+  push_banner_title: 'Attiva le notifiche push',
+  push_banner_desc: 'Ricevi aggiornamenti in tempo reale anche quando l\'app è chiusa.',
+  push_activate: 'Attiva ora',
+  push_dismiss: 'Non ora',
+  push_enabled: 'Notifiche attivate!',
+  push_settings_title: 'Impostazioni Notifiche',
+  push_notifications: 'Notifiche Push',
+  push_status_active: 'Notifiche Attive',
+  push_status_blocked: 'Non Autorizzate',
+  push_status_disabled: 'Disattivate dall\'utente',
+  push_deactivate: 'Disattiva Notifiche',
+  push_reset_hint: 'Sblocca le notifiche dalle impostazioni del browser',
+  push_sound: 'Suono Notifiche',
+  push_sound_desc: 'Riproduci un avviso sonoro alla ricezione'
 } as const;
