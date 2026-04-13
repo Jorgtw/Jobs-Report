@@ -23,7 +23,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import { Bell, BellOff, BellRing } from 'lucide-react';
+import { BellRing } from 'lucide-react';
 
 interface CommunicationsHubProps {
   currentUser: AppUser;
