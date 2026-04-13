@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
-import { useTranslation } from './App';
+import { useTranslation } from './contexts/LanguageContext';
 import logoImg from './assets/logo.png';
 
 export const RegistrationRequestView: React.FC = () => {

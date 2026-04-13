@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from './App';
+import { useTranslation } from './contexts/LanguageContext';
 
 const privacyContent: Record<string, {
   title: string;

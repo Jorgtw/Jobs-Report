@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { X, ChevronRight, Check } from 'lucide-react';
-import { useTranslation } from '../App';
+import { useTranslation } from '../contexts/LanguageContext';
 import { TranslationKey } from '../i18n';
 
 interface OnboardingStep {

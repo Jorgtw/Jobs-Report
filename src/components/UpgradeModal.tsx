@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Trophy, Heart, MessageSquare, FileCheck } from 'lucide-react';
-import { useTranslation } from '../App';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface UpgradeModalProps {
   onClose: () => void;

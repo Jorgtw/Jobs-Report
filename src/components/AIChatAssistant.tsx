@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Volume2, VolumeX, Square } from 'lucide-react';
-import { useTranslation, localeMap } from '../App';
+import { useTranslation, localeMap } from '../contexts/LanguageContext';
 
 interface Message {
   role: 'user' | 'model';

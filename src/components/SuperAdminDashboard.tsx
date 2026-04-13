@@ -7,7 +7,7 @@ import {
   TrendingUp,
   Clock
 } from 'lucide-react';
-import { useTranslation } from '../App';
+import { useTranslation } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 
 interface MiniCardProps {

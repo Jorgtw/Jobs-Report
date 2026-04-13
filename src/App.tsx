@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from './services/supabase';
 import {
@@ -36,7 +36,8 @@ import {
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
-import { Language, TranslationKey, resolveKey } from './i18n';
+import { Language } from './i18n';
+import { useTranslation, localeMap } from './contexts/LanguageContext';
 import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
 import { useSubcontractors } from './hooks/useSubcontractors';
@@ -48,28 +49,6 @@ import { useUsers } from './hooks/useUsers';
 import ProfileView from './pages/ProfileView';
 import Tooltip from './components/common/Tooltip';
 import { generateCompliancePDF } from './services/exportService';
-
-// --- i18n Context ---
-export const LanguageContext = createContext<{
-  lang: Language;
-  setLang: (l: Language) => void;
-  t: (key: TranslationKey) => string;
-}>({
-  lang: 'it',
-  setLang: () => { },
-  t: (key) => key as string,
-});
-
-export const useTranslation = () => useContext(LanguageContext);
-
-export const localeMap: Record<string, string> = {
-  it: 'it-IT',
-  en: 'en-US',
-  es: 'es-ES',
-  pl: 'pl-PL',
-  tr: 'tr-TR',
-  da: 'da-DK'
-};
 
 // --- Local Components ---
 import PresentationView from './PresentationView';
@@ -85,24 +64,6 @@ import SuperAdminDashboard from './components/SuperAdminDashboard';
 import ProjectMessages from './components/ProjectMessages';
 import CommunicationsHub from './components/CommunicationsHub';
 import HelpView from './pages/HelpView';
-
-
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
-
-  useEffect(() => {
-    localStorage.setItem('ws_lang', lang);
-  }, [lang]);
-
-  const t = React.useCallback((key: TranslationKey): string => {
-    return resolveKey(lang, key);
-  }, [lang]);
-
-  const contextValue = React.useMemo(() => ({ lang, setLang, t }), [lang, t]);
-
-  return <LanguageContext.Provider value={contextValue}>{children}</LanguageContext.Provider>;
-};
-
 
 export const canUserAccessProject = (project: Partial<Project>, userId: string) => {
   if (!project.assignedWorkerIds || project.assignedWorkerIds.length === 0) return true;

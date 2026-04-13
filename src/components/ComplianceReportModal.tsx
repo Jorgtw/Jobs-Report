@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { X, Camera, Trash2, FileDown, CheckCircle2, PenLine } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
-import { useTranslation } from '../App';
+import { useTranslation } from '../contexts/LanguageContext';
 import { WorkReport } from '../types';
 
 interface ComplianceReportModalProps {

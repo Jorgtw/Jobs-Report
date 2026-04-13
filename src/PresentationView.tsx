@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useTranslation, LanguageContext } from './App';
+import { useTranslation, LanguageContext } from './contexts/LanguageContext';
 
 const PresentationView: React.FC = () => {
   const { lang, setLang, t } = useTranslation() as any;

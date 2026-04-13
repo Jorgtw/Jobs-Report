@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
-import { useTranslation, localeMap } from '../App';
+import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';

@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Globe, ChevronRight } from 'lucide-react';
 import { db } from './services/dbService';
-import { LanguageContext } from './App';
+import { LanguageContext } from './contexts/LanguageContext';
 import logoImg from './assets/logo.png';
 
 export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
