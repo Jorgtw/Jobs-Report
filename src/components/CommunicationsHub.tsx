@@ -13,7 +13,9 @@ import {
   ChevronRight,
   ChevronDown,
   Trash2,
-  X
+  X,
+  Bell,
+  BellOff
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -493,14 +495,25 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       <div className={`${isMobile && mobileView === 'detail' ? 'hidden' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex flex-col bg-[#f5f4f0]`}>
         <div className="p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('communications.internalCommunications')}</h2>
-            <button 
-              onClick={() => setIsNewMessageModalOpen(true)}
-              className="w-10 h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95"
-              title={t('communications.newCommunication')}
-            >
-              <Plus className="w-5 h-5" />
-            </button>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('common.internalCommMenu')}</h2>
+            <div className="flex items-center gap-2">
+              {isSupported && (
+                <button 
+                  onClick={() => isSubscribed ? null : requestPermission()}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${isSubscribed ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-slate-400 border border-slate-200'}`}
+                  title={isSubscribed ? t('communications.push_status_active') : t('communications.push_activate')}
+                >
+                  {isSubscribed ? <Bell size={18} /> : <BellOff size={18} />}
+                </button>
+              )}
+              <button 
+                onClick={() => setIsNewMessageModalOpen(true)}
+                className="w-10 h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95"
+                title={t('communications.newCommunication')}
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           
           {/* PUSH NOTIFICATIONS BANNER (SOFT PROMPT) */}

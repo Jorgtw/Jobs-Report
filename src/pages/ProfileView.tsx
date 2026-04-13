@@ -175,9 +175,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
         </form>
       </div>
 
-      {user.isPremium && (
-        <NotificationSettings user={user} t={t} />
-      )}
+      <NotificationSettings user={user} t={t} />
 
       <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
         <div className="flex items-center gap-3 mb-6">

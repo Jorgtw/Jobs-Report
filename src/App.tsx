@@ -460,13 +460,208 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
       <div className="text-3xl font-black text-amber-600">
         {hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         <span className="text-sm font-bold ml-1 text-slate-400">h</span>
+              link.path === '/communications' && unreadCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
+                  {unreadCount}
+                </span>
+              )
+            )}
+          </Link>
+        ))}
+      </nav>
+      <div className="px-3 pt-6 border-t border-slate-100">
+        <div className="px-4 py-2 mb-2 bg-slate-50 rounded-xl opacity-60">
+          <div className="flex items-center justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest">
+            <span>JobsReport Engine</span>
+            <span className="text-blue-500">Build 82a70b5+</span>
+          </div>
+        </div>
+        <button onClick={onLogout} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">{t('common.logout')}</span>
+        </button>
+        <InstallButton variant="sidebar" />
+        <Link
+          to="/privacy"
+          className="flex items-center justify-center mt-2 py-2 text-[10px] font-bold text-slate-300 hover:text-slate-500 uppercase tracking-widest transition-colors"
+        >
+          {t('common.privacy')}
+        </Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      <aside className="hidden md:block w-64 bg-white border-r border-slate-200 sticky top-0 h-screen">{renderSidebarContent()}</aside>
+      {isMobileMenuOpen && !document.querySelector('.onboarding-active') && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm shadow-xl z-[65]" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+      <div className={`fixed inset-y-0 left-0 w-full sm:w-72 bg-white shadow-2xl transform transition-transform duration-300 z-[70] lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {renderSidebarContent(() => setIsMobileMenuOpen(false))}
+      </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 relative">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
+            
+            {/* Mobile Company Name (Left Aligned) */}
+            <span className="lg:hidden text-sm font-bold text-slate-900 uppercase tracking-tight truncate max-w-[50vw]">
+              {user.companyName}
+            </span>
+
+            <h2 className="text-sm font-semibold text-slate-500 hidden lg:block uppercase tracking-wider">
+              {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('common.welcome') : '')}
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
+                <div className="flex flex-col items-end mt-1">
+                  <p className="text-[10px] font-extrabold text-blue-600 leading-none uppercase tracking-tight">
+                    {user.companyName}
+                  </p>
+                  <p className="text-[10px] text-slate-400 capitalize bg-slate-50 px-1.5 py-0.5 rounded mt-0.5 border border-slate-100 font-medium">
+                    {t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` as any)}
+                  </p>
+                </div>
+              </div>
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
+      </div>
+    </div>
+  );
+};
+
+// --- Compact Dashboard component ---
+const CompactDashboard: React.FC = () => {
+  const { t, lang } = useTranslation();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activeProjects: 0,
+    pendingReports: 0,
+    pendingHours: 0,
+    pendingExpenses: 0,
+    pendingToInvoice: 0,
+    pendingMargin: 0
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const [summary, allProjects] = await Promise.all([
+        db.getSummary(),
+        db.getProjects()
+      ]);
+
+      const activeProjectsCount = allProjects.filter(p => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
+      const pendingData = summary.filter(s => (s.invoiceStatus || 'Pending') === 'Pending');
+      
+      const pendingReports = new Set(pendingData.map(s => s.id.split('_')[0])).size;
+      const pendingHours = pendingData.reduce((acc, s) => acc + (s.totalHours || 0), 0);
+      const pendingExpenses = pendingData.reduce((acc, s) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
+      const pendingToInvoice = pendingData.reduce((acc, s) => acc + (s.revenue || 0), 0);
+      const pendingMargin = pendingToInvoice - pendingExpenses;
+
+      setStats({
+        activeProjects: activeProjectsCount,
+        pendingReports,
+        pendingHours,
+        pendingExpenses,
+        pendingToInvoice,
+        pendingMargin
+      });
+      setLoading(false);
+    };
+    loadStats();
+  }, []);
+
+  const SmallStat = ({ label, value, to, valueColor = "text-slate-900", isLoading }: { label: string, value: string | number, to: string, valueColor?: string, isLoading?: boolean }) => (
+    <Link to={to} className="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors overflow-hidden">
+      <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1 truncate">{label}</span>
+      {isLoading ? (
+        <span className="inline-block w-10 h-3 bg-slate-100 animate-pulse rounded mt-0.5" />
+      ) : (
+        <span className={`text-sm font-black tracking-tighter truncate ${valueColor}`}>{value}</span>
+      )}
+    </Link>
+  );
+
+  const formatNum = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return (
+    <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+      <div className="flex items-center gap-2 mb-3 ml-0.5">
+        <h2 className="text-[9px] font-black text-slate-900 uppercase tracking-[0.2em]">{t('dashboard.worksInProgress')}</h2>
+      </div>
+      
+      <div className="divide-y divide-slate-50">
+        {/* Row 1: Counters */}
+        <div className="grid grid-cols-3 gap-2 pb-2">
+          <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" isLoading={loading} />
+          <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" isLoading={loading} />
+          <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" isLoading={loading} />
+        </div>
+        
+        {/* Row 2: Economic Values */}
+        <div className="grid grid-cols-3 gap-2 pt-2">
+          <SmallStat label={t('dashboard.estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" isLoading={loading} />
+          <SmallStat label={t('dashboard.toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" isLoading={loading} />
+          <SmallStat label={t('dashboard.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} isLoading={loading} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Pending Hours Card for Workers ---
+const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
+  const { t, lang } = useTranslation();
+  const [hours, setHours] = useState<number | null>(null);
+
+  useEffect(() => {
+    db.getReports(user.id, user.role).then(reports => {
+      // Filtriamo solo i rapportini in stato "Pending" (non ancora pagati)
+      const filtered = reports.filter(r => (r.invoiceStatus || 'Pending') === 'Pending');
+      const total = filtered.reduce((sum: number, r: any) => {
+        let h = 0;
+        if (r.userId === user.id) h += (r.totalHours || 0);
+        const aw = r.additionalWorkers?.find((w: any) => w.userId === user.id);
+        if (aw) h += (aw.totalHours || 0);
+        return sum + h;
+      }, 0);
+      setHours(total);
+    }).catch(console.error);
+  }, [user.id, user.role]);
+
+  if (hours === null) return null;
+
+  return (
+    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-6 flex items-center justify-between group hover:shadow-md transition-all">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+          <Clock size={24} />
+        </div>
+        <div>
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('common.pendingHoursSummary')}</h3>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('reports.pendingStatusSubtitle')}</p>
+        </div>
+      </div>
+      <div className="text-3xl font-black text-amber-600">
+        {hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <span className="text-sm font-bold ml-1 text-slate-400">h</span>
       </div>
     </div>
   );
 };
 
 // --- Home View (Launcher) ---
-const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean }> = ({ user, isSuperAdmin, isMobile }) => {
+const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean, unreadCount: number }> = ({ user, isSuperAdmin, isMobile, unreadCount }) => {
   const { t } = useTranslation();
   const navLinks = getNavLinks(t, isSuperAdmin);
   const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.some(r => r.toLowerCase() === user.role.toLowerCase()));
@@ -513,6 +708,11 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean 
               <link.icon size={16} />
             </div>
             <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
+            {link.path === '/communications' && unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
+                {unreadCount}
+              </span>
+            )}
             {(link as any).premiumOnly && !user.isPremium ? (
               <Lock size={12} className="ml-auto text-slate-300" />
             ) : (
@@ -2135,1250 +2335,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         setEditingId(null);
       }
     }
-  };
-
-  const handleDuplicate = (r: WorkReport) => {
-    setEditingId(null);
-    setFormData({
-      projectId: r.projectId,
-      userId: r.userId,
-      date: new Date().toISOString().split('T')[0],
-      startTime: r.startTime,
-      endTime: r.endTime,
-      breakHours: r.breakHours,
-      manualTotalHours: r.manualTotalHours,
-      overtimeHours: r.overtimeHours || 0,
-      description: r.description,
-      expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
-      additionalWorkers: [...(r.additionalWorkers || [])],
-      activityType: r.activityType || 'work',
-      invoiceStatus: 'Pending'
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleComplianceClick = (r: WorkReport) => {
-    if (!user.isPremium) {
-      setUpgradeFeature('compliance');
-      setIsUpgradeModalOpen(true);
-      return;
-    }
-    setComplianceReportToSign(r);
-  };
-
-  const handleGenerateCompliance = async (photos: string[], signature: string) => {
-    if (!complianceReportToSign) return;
-    const project = projects.find(p => p.id === complianceReportToSign.projectId);
-    const client = clients.find(c => c.id === project?.clientId);
-
-    // Resolve additional worker names from personnel list
-    const resolvedAdditionalWorkers = (complianceReportToSign.additionalWorkers || []).map(aw => ({
-      ...aw,
-      personName: aw.personName || personnel.find(u => u.id === aw.userId)?.name || '---',
-    }));
-
-    // Fetch company details and admin emails
-    const companyDetails = await db.getCompanyDetails(user.companyId || '');
-    const adminEmails = await db.getCompanyAdminEmails(user.companyId || '');
-
-    const reportData = {
-      ...complianceReportToSign,
-      additionalWorkers: resolvedAdditionalWorkers,
-      clientName: client?.name || '---',
-      projectName: project?.name || '---',
-      projectAddress: project?.address || '',
-      userName: personnel.find(u => u.id === complianceReportToSign.userId)?.name || user.name,
-      companyName: companyDetails?.name || '',
-      companyAddress: companyDetails?.address || '',
-      companyCity: companyDetails?.city || '',
-      companyPhone: companyDetails?.phone || '',
-      companyEmail: companyDetails?.email || '',
-      companyVat: companyDetails?.vatNumber || '',
-    };
-    await generateCompliancePDF(reportData, photos, signature, lang, adminEmails);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900">{t('reports.title')}</h1>
-        <div className="flex flex-wrap gap-2 justify-end">
-          {user.role !== 'admin' && (
-            <div className="flex gap-2 w-full sm:w-auto">
-              <button 
-                onClick={() => {
-                  const personalRows = filteredReports.map(r => {
-                    const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
-                    const [y, m, d] = (r.date || '').split('-');
-                    return {
-                      date: y && m && d ? `${d}/${m}/${y.substring(2)}` : r.date,
-                      projectName: projects.find(p => p.id === r.projectId)?.name || '---',
-                      clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
-                      workerName: user.name,
-                      description: r.description || '',
-                      hours: pours,
-                      hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
-                      paid: r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : (r.invoiceStatus === 'Pagato' ? t('common.statusPaid') : (r.invoiceStatus || t('common.statusPending'))))
-                    };
-                  });
-                  exportToPDF(personalRows, lang, user.name);
-                }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-indigo-700 transition-all uppercase tracking-tight"
-                title={t('reports.personalExportPDF')}
-              >
-                <FileDown size={14} className="mr-1.5" /> {t('reports.personalExportPDF')}
-              </button>
-              <button 
-                onClick={() => {
-                  const personalRows = filteredReports.map(r => {
-                    const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
-                    return {
-                      date: new Date(r.date).toLocaleDateString('en-GB'),
-                      projectName: projects.find(p => p.id === r.projectId)?.name || '---',
-                      clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
-                      workerName: user.name,
-                      description: r.description || '',
-                      hours: pours,
-                      hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
-                      paid: r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : (r.invoiceStatus === 'Pagato' ? t('common.statusPaid') : (r.invoiceStatus || t('common.statusPending'))))
-                    };
-                  });
-                  exportToExcel(personalRows, lang);
-                }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-emerald-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-emerald-700 transition-all uppercase tracking-tight"
-                title={t('reports.personalExportExcel')}
-              >
-                <FileSpreadsheet size={14} className="mr-1.5" /> {t('reports.personalExportExcel')}
-              </button>
-            </div>
-          )}
-          <button 
-            onClick={() => { setEditingId(null); setFormData({ ...formData, projectId: '', userId: user.id, date: new Date().toISOString().split('T')[0], expenses: [], additionalWorkers: [], activityType: 'work' }); setIsModalOpen(true); }}
-            className="px-4 py-2 bg-blue-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-blue-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
-          >
-            <Plus size={16} /> {t('reports.new')}
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
-          <button 
-            onClick={() => setFilters({ ...filters, dateRange: 'today' })}
-            className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'today' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
-          >{t('common.today')}</button>
-          <button 
-            onClick={() => setFilters({ ...filters, dateRange: 'week' })}
-            className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'week' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
-          >{t('common.thisWeek')}</button>
-          <button 
-            onClick={() => setFilters({ ...filters, dateRange: 'month' })}
-            className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'month' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
-          >{t('common.thisMonth')}</button>
-          <button 
-            onClick={() => setFilters({ ...filters, dateRange: 'custom' })}
-            className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
-          >{t('common.customRange')}</button>
-        </div>
-        <button 
-            onClick={() => setShowFilters(!showFilters)} 
-            className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`}
-            title={t('reports.filters')}
-          >
-            <Filter size={20} />
-          </button>
-          <button onClick={() => {
-            setEditingId(null);
-            setFormData({
-              projectId: '',
-              userId: user.id,
-              date: new Date().toISOString().split('T')[0],
-              startTime: '08:00',
-              endTime: '17:00',
-              breakHours: 1,
-              manualTotalHours: undefined,
-              overtimeHours: 0,
-              description: '',
-              expenses: [],
-              additionalWorkers: [],
-              activityType: 'work',
-              invoiceStatus: 'Pending'
-            });
-            setIsModalOpen(true);
-          }} 
-          data-onboarding="new-report-btn"
-          className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"
-          >
-            <Plus size={16} className="mr-2 inline" /> 
-            <span className="hidden sm:inline">{t('reports.new')}</span>
-            <span className="sm:hidden">{t('common.addBtn')}</span>
-          </button>
-        </div>
-
-      {showFilters && (
-        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <Search size={12} /> {t('reports.filters')}
-            </h3>
-            <button
-              onClick={() => setFilters({ projectId: '', userId: '', search: '', dateRange: 'all', dateFrom: '', dateTo: '' })}
-              className="text-[9px] items-center font-extrabold px-2 py-0.5 bg-slate-50 text-slate-400 rounded-md hover:bg-slate-100 transition-colors uppercase"
-            >
-              {t('reports.clearFilters')}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-            <div className="flex flex-col gap-0.5">
-              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.headerProject')}</label>
-              <select
-                value={filters.projectId}
-                onChange={e => setFilters({ ...filters, projectId: e.target.value })}
-                className={filterInputClasses}
-              >
-                <option value="">{t('reports.allProjects')}</option>
-                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
-
-            {user.role !== 'operator' && (
-              <div className="flex flex-col gap-0.5">
-                <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.worker')}</label>
-                <select
-                  value={filters.userId}
-                  onChange={e => setFilters({ ...filters, userId: e.target.value })}
-                  className={filterInputClasses}
-                >
-                  <option value="">{t('reports.allWorkers')}</option>
-                  {personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                </select>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-0.5">
-              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.filterByRange')}</label>
-              <select
-                value={filters.dateRange}
-                onChange={e => setFilters({ ...filters, dateRange: e.target.value as any })}
-                className={filterInputClasses}
-              >
-                <option value="all">{t('common.statusAll')}</option>
-                <option value="today">{t('common.today')}</option>
-                <option value="week">{t('common.thisWeek')}</option>
-                <option value="month">{t('common.thisMonth')}</option>
-                <option value="custom">{t('common.customRange')}</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-0.5">
-              <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.filters')}</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={filters.search}
-                  onChange={e => setFilters({ ...filters, search: e.target.value })}
-                  placeholder={t('common.search')}
-                  className={filterInputClasses + " pl-7"}
-                />
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              </div>
-            </div>
-
-            {filters.dateRange === 'custom' && (
-              <div className="col-span-2 lg:col-span-4 grid grid-cols-2 gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex flex-col gap-0.5">
-                  <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.dateFrom')}</label>
-                  <input
-                    type="date"
-                    value={filters.dateFrom}
-                    onChange={e => setFilters({ ...filters, dateFrom: e.target.value })}
-                    className={filterInputClasses}
-                  />
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.dateTo')}</label>
-                  <input
-                    type="date"
-                    value={filters.dateTo}
-                    onChange={e => setFilters({ ...filters, dateTo: e.target.value })}
-                    className={filterInputClasses}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        {/* Mobile View: Card Layout */}
-        <div className="sm:hidden divide-y divide-slate-100">
-          {[...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
-            const proj = projects.find(p => p.id === r.projectId);
-            const dateObj = new Date(r.date);
-            const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
-            const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
-            const personalHours = (r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0)).toFixed(2);
-
-            return (
-              <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-blue-600 capitalize flex items-center gap-2">
-                      {formattedDate}
-                      {r.activityType && r.activityType !== 'work' && (
-                        <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-black uppercase">
-                          {t(`reports.activity${r.activityType.charAt(0).toUpperCase() + r.activityType.slice(1)}` as any)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
-                    {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-0.5" title={r.description}>{r.description}</div>}
-                  </div>
-                  <div className="flex gap-1.5">
-                    <button onClick={() => handleComplianceClick(r)} className="p-2 text-indigo-600 bg-indigo-50 active:bg-indigo-100 rounded-lg transition-colors border border-indigo-100" title={t('reports.complianceReport')}><CheckCircle2 size={16} /></button>
-                    <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors border border-emerald-100" title={t('common.duplicate')}><Copy size={16} /></button>
-                    {canEditReport(r) && (
-                      <>
-                        <button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 active:bg-blue-100 rounded-lg transition-colors border border-blue-100" title={t('common.edit')}><Pencil size={16} /></button>
-                        <button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 active:bg-red-100 rounded-lg transition-colors border border-red-100" title={t('common.delete')}><Trash2 size={16} /></button>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-xs">
-                  <div className="flex items-center gap-1.5 text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                    <Users size={12} /> <span className="font-bold">{totalWorkersCount}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
-                    <Clock size={12} /> <span className="font-bold">{personalHours}h</span>
-                  </div>
-                  {r.invoiceStatus && (
-                    <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${
-                      r.invoiceStatus === 'Pagato' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                      r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                      'bg-amber-50 text-amber-600 border-amber-100'
-                    }`}>
-                      {r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-            {reports.length === 0 && (
-            <div className="p-8 text-center text-slate-500 text-sm">{t('common.noData')}</div>
-          )}
-        </div>
-
-        {/* Desktop View: Compact Table */}
-        <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-left border-collapse table-fixed">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest">
-                <th className="px-3 py-2 font-black w-32">{t('reports.headerDate')}</th>
-                <th className="px-3 py-2 font-black">{t('reports.headerProject')}</th>
-                <th className="px-3 py-2 font-black hidden lg:table-cell">{t('reports.description')}</th>
-                <th className="px-3 py-2 font-black text-center w-24">{t('reports.people')}</th>
-                <th className="px-3 py-2 font-black text-center w-24">{t('reports.personalHours')}</th>
-                <th className="px-3 py-2 font-black text-right w-36">{t('common.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {[...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
-                const proj = projects.find(p => p.id === r.projectId);
-                const dateObj = new Date(r.date);
-                const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
-                const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
-                const personalHours = (r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0)).toFixed(2);
-
-                return (
-                  <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
-                    <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate max-w-[150px]" title={proj?.name}>{proj?.name || '---'}</td>
-                    <td className="px-3 py-1.5 text-xs text-slate-600 truncate max-w-[150px] hidden lg:table-cell" title={r.description}>{r.description || '---'}</td>
-                    <td className="px-3 py-1.5 text-center">
-                      <span className="inline-flex items-center justify-center bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
-                        {totalWorkersCount}
-                      </span>
-                    </td>
-                    <td className="px-3 py-1.5 text-center">
-                      <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100">
-                        {personalHours}h
-                      </span>
-                    </td>
-                    <td className="px-3 py-1.5 text-right whitespace-nowrap">
-                      <div className="flex gap-1.5 justify-end">
-                        <button onClick={() => handleComplianceClick(r)} className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title={t('reports.complianceReport')}><CheckCircle2 size={14} /></button>
-                        <button onClick={() => window.location.hash = '#activities'} className="text-slate-400 hover:text-indigo-600 transition-colors" title={t('reports.activityManagement')}><Settings size={14} /></button>
-                        <button onClick={() => handleDuplicate(r)} className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('common.duplicate')}><Copy size={14} /></button>
-                        {canEditReport(r) && (
-                          <>
-                            <button onClick={() => handleEdit(r)} className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('common.edit')}><Pencil size={14} /></button>
-                            <button onClick={() => handleDelete(r.id)} className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('common.delete')}><Trash2 size={14} /></button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {reports.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-slate-500 text-xs">{t('common.noData')}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div className={modalClasses}>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-bold text-slate-900">
-                {projects.find(p => p.id === formData.projectId)?.isInternal 
-                  ? (editingId ? t('reports.edit') : t('reports.newInternal'))
-                  : (editingId ? t('reports.edit') : t('reports.new'))}
-              </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                <FullWidthField label={t('reports.activityType')} className="md:col-span-2">
-                  <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const wasInternal = formData.activityType === 'internal' || formData.activityType === 'sickness' || formData.activityType === 'holiday';
-                        if (wasInternal) {
-                          setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined });
-                        }
-                      }} 
-                      className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
-                    >
-                      {t('reports.activityWork')}
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const intProj = projects.find(p => p.isInternal);
-                        setFormData({ 
-                          ...formData, 
-                          activityType: 'internal', 
-                          projectId: intProj?.id || '',
-                          startTime: '',
-                          endTime: '',
-                          breakHours: 0,
-                          manualTotalHours: 0
-                        });
-                      }} 
-                      className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType !== 'work' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}
-                    >
-                      {t('reports.activityInternal')} / {t('reports.activityAbsence')}
-                    </button>
-                  </div>
-                </FullWidthField>
-
-                <FullWidthField label={t('reports.headerProject')}>
-                  {(() => {
-                    const isInternalMode = formData.activityType !== 'work';
-                    
-                    return (
-                      <select 
-                        required 
-                        value={formData.projectId} 
-                        onChange={e => {
-                          const newProjectId = e.target.value;
-                          const proj = projects.find(p => p.id === newProjectId);
-                          setFormData({
-                            ...formData,
-                            projectId: newProjectId,
-                            description: (formData.description === '' && proj?.description) ? proj.description : formData.description
-                          });
-                        }} className={inputClasses}>
-                        <option value="">{t('common.select')}</option>
-                        {projects
-                          .filter(p => {
-                            // Always include if it's the current project of the report being edited
-                            if (editingId && p.id === reports.find(r => r.id === editingId)?.projectId) return true;
-                            // Only show active projects for new reports
-                            if (!editingId && p.status !== 'active') return false;
-
-                            if (isInternalMode) return p.isInternal;
-                            if (p.isInternal) return false;
-                            if (user.role === 'admin') return true;
-                            return canUserAccessProject(p, user.id);
-                          })
-                          .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
-                    );
-                  })()}
-                </FullWidthField>
-
-                {user.role === 'admin' && (
-                  <FullWidthField label={t('reports.worker')}>
-                    <select
-                      required
-                      value={formData.userId}
-                      onChange={e => setFormData({ ...formData, userId: e.target.value })}
-                      className={inputClasses}
-                    >
-                      <option value="">{t('common.select')}</option>
-                      {personnel.map(u => (
-                        <option key={u.id} value={u.id}>{u.name}</option>
-                      ))}
-                    </select>
-                  </FullWidthField>
-                )}
-                {formData.activityType !== 'work' && (
-                  <FullWidthField label={t('reports.activityType')}>
-                    <select 
-                      value={formData.activityType} 
-                      onChange={e => {
-                        const newType = e.target.value as any;
-                        const updates: any = { activityType: newType };
-                        if (['sickness', 'holiday', 'internal'].includes(newType)) {
-                          updates.manualTotalHours = 0;
-                          updates.startTime = '';
-                          updates.endTime = '';
-                          updates.breakHours = 0;
-                        }
-                        setFormData({ ...formData, ...updates });
-                      }} 
-                      className={inputClasses}
-                    >
-                      <option value="internal">{t('reports.activityInternal')}</option>
-                      <option value="sickness">{t('reports.activitySickness')}</option>
-                      <option value="holiday">{t('reports.activityHoliday')}</option>
-                    </select>
-                  </FullWidthField>
-                )}
-                <FullWidthField label={t('reports.headerDate')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
-                <div className="md:col-span-2"><FullWidthField label={t('reports.description')}><textarea required rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
-
-                {user.role === 'admin' && (
-                  <div className="md:col-span-2 bg-blue-50 border border-blue-100 p-4 rounded-xl">
-                    <FullWidthField label={t('reports.adminStatusLabel')}>
-                      <select
-                        value={formData.invoiceStatus}
-                        onChange={e => setFormData({ ...formData, invoiceStatus: e.target.value })}
-                        className={inputClasses}
-                      >
-                        <option value="Pending">{t('common.statusPending')}</option>
-                        <option value="Fatturato">{t('common.statusInvoiced')}</option>
-                        <option value="Pagato">{t('common.statusPaid')}</option>
-                      </select>
-                    </FullWidthField>
-                  </div>
-                )}
-
-                <div className="md:col-span-2 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  {user.role !== 'operator' && (
-                    <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
-                      <h3 className="text-sm font-bold text-slate-800 uppercase flex items-center gap-2">
-                        <Users size={16} className="text-blue-500" /> {t('reports.teamLabel')}
-                      </h3>
-                      <button type="button" onClick={addWorker} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1">
-                        <Plus size={14} /> {t('reports.addWorker')}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Intestazioni (visibili solo su schermi non troppo piccoli, o allineate) */}
-                  <div className="hidden sm:grid grid-cols-12 gap-2 px-2 mb-1 pr-10 sm:pr-0">
-                    <div className="col-span-3"></div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('reports.headerStart')}</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('reports.headerEnd')}</div>
-                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('reports.headerBreak')}</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">{t('reports.headerExtra')}</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center sm:border-l sm:border-transparent sm:pl-2 pr-8">{t('reports.headerTotal')}</div>
-                  </div>
-
-                  {/* Righe Collaboratori */}
-                  {user.role !== 'operator' && formData.additionalWorkers.map((aw, idx) => (
-                    <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                      <div className="col-span-12 sm:col-span-3">
-                        <select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}>
-                          <option value="">{t('reports.worker')}...</option>
-                          {availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                        </select>
-                      </div>
-
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label>
-                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
-                      </div>
-                      
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label>
-                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
-                      </div>
-                      
-                      <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label>
-                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
-                      </div>
-                      
-                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label>
-                        <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
-                      </div>
-                      
-                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''}
-                          onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
-                          placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)}
-                          className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px]"
-                        />
-                      </div>
-                      <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-2 sm:top-1/2 sm:-translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
-                    </div>
-                  ))}
-
-                  {/* Riga Autore Principale */}
-                  <div className="bg-white p-2 rounded-xl border border-blue-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                    <div className="col-span-12 sm:col-span-3">
-                      <div className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">
-                        {personnel.find(u => u.id === formData.userId)?.name || t('reports.mainWorker')}
-                      </div>
-                    </div>
-                    
-                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label>
-                      <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
-                    </div>
-                    
-                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label>
-                      <input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
-                    </div>
-                    
-                    <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label>
-                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
-                    </div>
-                    
-                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                      <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label>
-                      <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
-                    </div>
-                    
-                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
-                      <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''}
-                        onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
-                        placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)}
-                        className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Box Totale Complessivo */}
-                <div className="md:col-span-2 bg-slate-100 border border-slate-200 text-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-xl shadow-sm"><Clock className="w-5 h-5 text-blue-600" /></div>
-                    <div><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('reports.teamTotalLabel')}</p><p className="text-xs text-slate-500">{t('reports.teamTotalSubLabel')}</p></div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-3xl font-black text-slate-800">{globalTotalHours.toFixed(2)}</span>
-                    <span className="text-lg font-bold text-slate-800 ml-1">h</span>
-                  </div>
-                </div>
-
-                {/* Sezione Spese Extra */}
-                <div className="md:col-span-2 space-y-3 bg-amber-50 p-4 rounded-2xl border border-amber-100">
-                  <div className="flex justify-between items-center border-b border-amber-200 pb-3 mb-4">
-                    <h3 className="text-sm font-bold text-amber-800 uppercase flex items-center gap-2">
-                      <FileText size={16} className="text-amber-500" /> {t('reports.extraExpensesLabel')}
-                    </h3>
-                    <div className="flex items-center gap-3">
-                      {formData.expenses.length > 0 && (
-                        <span className="text-sm font-black text-amber-700">
-                          {t('common.totalShort')} {formData.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0).toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setFormData({
-                          ...formData,
-                          expenses: [...formData.expenses, { type: '', amount: 0, notes: '' } as any]
-                        })}
-                        className="text-xs font-bold text-amber-700 bg-white border border-amber-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1"
-                      >
-                        <Plus size={14} /> {t('reports.addExpense')}
-                      </button>
-                    </div>
-                  </div>
-
-                  {formData.expenses.length === 0 && (
-                    <p className="text-xs text-amber-600 text-center py-2 opacity-60">{t('common.noData')}</p>
-                  )}
-
-                  {formData.expenses.map((exp: any, idx: number) => (
-                    <div key={idx} className="bg-white p-2 rounded-xl border border-amber-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                      <div className="col-span-12 sm:col-span-4 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.placeholderExpenseType')}</label>
-                        <input
-                          type="text"
-                          placeholder={t('reports.placeholderExpenseType')}
-                          value={exp.type || ''}
-                          onChange={e => {
-                            const updated = [...formData.expenses] as any[];
-                            updated[idx] = { ...updated[idx], type: e.target.value };
-                            setFormData({ ...formData, expenses: updated });
-                          }}
-                          className={`${inputClasses} w-full`}
-                        />
-                      </div>
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.amount')}</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          value={exp.amount || ''}
-                          onChange={e => {
-                            const updated = [...formData.expenses] as any[];
-                            updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
-                            setFormData({ ...formData, expenses: updated });
-                          }}
-                          className={`${inputClasses} w-full text-right`}
-                        />
-                      </div>
-                      <div className="col-span-8 sm:col-span-6 flex flex-col gap-0.5 pr-2">
-                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.placeholderExpenseNotes')}</label>
-                        <input
-                          type="text"
-                          placeholder={t('reports.placeholderExpenseNotes')}
-                          value={exp.notes || ''}
-                          onChange={e => {
-                            const updated = [...formData.expenses] as any[];
-                            updated[idx] = { ...updated[idx], notes: e.target.value };
-                            setFormData({ ...formData, expenses: updated });
-                          }}
-                          className={`${inputClasses} w-full`}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = [...formData.expenses];
-                          updated.splice(idx, 1);
-                          setFormData({ ...formData, expenses: updated });
-                        }}
-                        className="absolute right-2 top-2 sm:top-1/2 sm:-translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-
-              <div className="flex justify-between items-center pt-6 border-t mt-8">
-                <div>
-                  {editingId && canEditReport(reports.find(r => r.id === editingId)!) && (
-                    <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2">
-                      <Trash2 size={16} /> {t('common.delete')}
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
-                  <button type="submit" className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">{editingId ? t('common.update') : t('common.save')}</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {isUpgradeModalOpen && (
-        <UpgradeModal feature={upgradeFeature} onClose={() => { setIsUpgradeModalOpen(false); setUpgradeFeature('generic'); }} />
-      )}
-
-      {complianceReportToSign && (
-        <ComplianceReportModal 
-          report={complianceReportToSign} 
-          onClose={() => setComplianceReportToSign(null)} 
-          onGenerate={handleGenerateCompliance} 
-        />
-      )}
-    </div>
-  );
-};
-
-// Obsolete login-related components removed
-
-// --- Auth View ---
-// AuthView removed in favor of LandingView
-  // --- Companies Management View (SuperAdmin Only) ---
-const CompaniesView: React.FC = () => {
-  const { t } = useTranslation();
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadCompanies();
-  }, []);
-
-  const loadCompanies = async () => {
-    const data = await db.getAllCompanies();
-    setCompanies(data);
-  };
-
-  const [formData, setFormData] = useState({
-    companyName: '',
-    adminId: '',
-    adminName: '',
-    username: '',
-    password: '',
-    isPremium: false,
-    // Company details
-    address: '',
-    city: '',
-    country: '',
-    phone: '',
-    email: '',
-    vatNumber: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleEdit = (c: any) => {
-    setEditingId(c.id);
-    setFormData({
-      companyName: c.name,
-      adminId: c.adminId || '',
-      adminName: c.adminName || '',
-      username: c.username || '',
-      password: c.password || '',
-      isPremium: !!c.is_premium,
-      address: c.address || '',
-      city: c.city || '',
-      country: c.country || '',
-      phone: c.phone || '',
-      email: c.email || '',
-      vatNumber: c.vatNumber || '',
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm(t('reports.confirmDeleteCompany'))) {
-      try {
-        await db.deleteCompany(id);
-        loadCompanies();
-      } catch (err: any) {
-        alert(t('reports.deleteError') + (err.message || JSON.stringify(err)));
-      }
-    }
-  };
-
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    await db.toggleCompanyStatus(id, currentStatus);
-    loadCompanies();
-  };
-
-  const handleTogglePremium = async (id: string, currentPremium: boolean) => {
-    await db.togglePremiumStatus(id, currentPremium);
-    loadCompanies();
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      if (editingId) {
-        await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password);
-        await db.setPremiumStatus(editingId, formData.isPremium);
-        await db.updateCompanyDetails(editingId, {
-          address: formData.address,
-          city: formData.city,
-          country: formData.country,
-          phone: formData.phone,
-          email: formData.email,
-          vatNumber: formData.vatNumber,
-        });
-      } else {
-        await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
-      }
-      setIsModalOpen(false);
-      loadCompanies();
-    } catch (err: any) {
-      alert(t('common.genericError') + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const resetForm = () => {
-    setEditingId(null);
-    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '' });
-    setIsModalOpen(true);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900">{t('projects.companiesManagement')}</h1>
-        <button onClick={resetForm} className="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl shadow-lg hover:bg-purple-700 transition-all">
-          <Plus size={16} className="mr-2 inline" /> {t('dashboard.createCompanyBtn')}
-        </button>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyName')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.premium')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyStatus')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('common.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {companies.map(c => (
-                <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
-                  <td className="px-5 py-4">
-                    <button 
-                      onClick={() => handleTogglePremium(c.id, !!c.is_premium)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${c.is_premium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 shadow-sm hover:scale-105' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-                    >
-                      <Building2 size={12} />
-                      {c.is_premium ? 'PREMIUM' : 'BASE'}
-                    </button>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${c.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                      {c.status === 'active' ? t('common.statusActive') : t('common.statusInactive')}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-right flex justify-end gap-2">
-                    <button onClick={() => handleToggleStatus(c.id, c.status)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('common.deactivate') : t('common.activate')}>
-                      {c.status === 'active' ? <><EyeOff size={16} /> {t('common.deactivate')}</> : <><Eye size={16} /> {t('common.activate')}</>}
-                    </button>
-                    <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('common.edit')}>
-                      <Pencil size={16} /> {t('common.edit')}
-                    </button>
-                    <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
-                      <Trash2 size={16} /> {t('common.delete')}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {companies.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-5 py-8 text-center text-slate-500 italic">{t('common.noData')}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div className={modalClasses}>
-            <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h2 className="text-xl font-bold text-slate-900">{editingId ? t('dashboard.editCompany') : t('dashboard.createCompanyBtn')}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FullWidthField label={t('dashboard.companyName')}>
-                  <input type="text" required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className={inputClasses} placeholder={t('dashboard.companyNamePlaceholder')} />
-                </FullWidthField>
-                <FullWidthField label={t('dashboard.adminName')}>
-                  <input type="text" required value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderName')} />
-                </FullWidthField>
-                <FullWidthField label={t('dashboard.adminUsername')}>
-                  <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder={t('auth.usernamePlaceholder')} />
-                </FullWidthField>
-                <FullWidthField label={t('dashboard.adminPassword')}>
-                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder={t('dashboard.tempPasswordPlaceholder')} />
-                </FullWidthField>
-              </div>
-              {editingId && (
-                <>
-                  <div className="pt-2 border-t">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">📋 {t('dashboard.corporateData')}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FullWidthField label={t('dashboard.address')}>
-                        <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderAddress')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.city')}>
-                        <input type="text" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderCity')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.country')}>
-                        <input type="text" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClasses} placeholder={t('dashboard.italy')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.phone')}>
-                        <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} placeholder={t('auth.phonePlaceholder')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.companyEmail')}>
-                        <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderEmail')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.vatNumber')}>
-                        <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderVat')} />
-                      </FullWidthField>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <div>
-                      <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
-                      <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
-                        formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
-                      }`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
-                        formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                      }`} />
-                    </button>
-                  </div>
-                </>
-              )}
-              <div className="flex justify-end gap-3 pt-6 border-t mt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
-                <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
-                  {isSubmitting ? '...' : (editingId ? t('common.update') : t('dashboard.createCompanyBtn'))}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-  // --- Main App Component ---
-const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('ws_auth');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      db.setCompanyId(parsed.companyId || parsed.company_id);
-      return parsed;
-    }
-    return null;
-  });
-  const [adminUser, setAdminUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('ws_auth_admin');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const { t } = useTranslation();
-  
-  
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isCommsUpgradeOpen, setIsCommsUpgradeOpen] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) setShowOnboarding(false);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    if (user && user.id) {
-      db.setUserId(user.id);
-      if ((user.role as any) === 'superadmin') {
-        setIsSuperAdmin(true);
-        db.setIsSuperAdmin(true);
-      } else {
-        db.checkIsSuperAdmin(user.id).then(isSA => {
-          setIsSuperAdmin(isSA);
-          db.setIsSuperAdmin(isSA);
-        }).catch(console.error);
-      }
-    } else {
-      setIsSuperAdmin(false);
-      db.setIsSuperAdmin(false);
-      db.setUserId(null);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (user && user.companyId) {
-      db.getCompanyDetails(user.companyId).then(comp => {
-        if (comp) {
-          const updatedUser = { ...user, companyName: comp.name, isPremium: comp.isPremium };
-          // Only update if something changed to avoid loops
-          if (user.companyName !== comp.name || user.isPremium !== comp.isPremium) {
-            setUser(updatedUser);
-            localStorage.setItem('ws_auth', JSON.stringify(updatedUser));
-          }
-        }
-      }).catch(console.error);
-    }
-  }, [user?.companyId, user?.companyName, user?.isPremium]);
-
-  // Unread communications Real-time subscription
-  const [unreadCount, setUnreadCount] = useState(0);
-  useEffect(() => {
-    if (!user) return;
-    const updateUnread = async () => {
-      try {
-        const count = await db.getUnreadCount();
-        setUnreadCount(count);
-        (window as any).unreadCommunicationsCount = count;
-      } catch (e) {
-        console.error("Unread update error:", e);
-      }
-    };
-
-    updateUnread();
-
-    const channel = supabase
-      .channel('global_unread_count')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'internal_communications',
-          filter: `company_id=eq.${user.companyId}`
-        },
-        () => {
-          updateUnread();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'communication_read_receipts',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          updateUnread();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, user?.companyId]);
-
-  const handleLogin = (u: User) => {
-    db.setCompanyId(u.companyId || (u as any).company_id);
-    db.setUserId(u.id);
-    localStorage.setItem('ws_auth', JSON.stringify(u));
-    window.location.hash = '/home'; // Go to Welcome Page (HomeView) after login
-    setUser(u);
-    setIsMobileMenuOpen(false); // Ensure menu is closed after login
-  };
-  const handleLogout = () => {
-    db.setCompanyId(null);
-    setUser(null);
-    setAdminUser(null);
-    localStorage.removeItem('ws_auth'); supabase.auth.signOut();
-    localStorage.removeItem('ws_auth_admin');
-    setIsSuperAdmin(false);
-    setIsMobileMenuOpen(false); // Reset menu state on logout
-  };
-
-  const handleImpersonate = (targetUser: User) => {
-    if (!user) return;
-    // Save current user as admin context if not already impersonating
-    if (!adminUser) {
-      setAdminUser(user);
-      localStorage.setItem('ws_auth_admin', JSON.stringify(user));
-    }
-    // Switch to target user
-    db.setCompanyId(targetUser.companyId || (targetUser as any).company_id);
-    db.setUserId(targetUser.id);
-    localStorage.setItem('ws_auth', JSON.stringify(targetUser));
-    setUser(targetUser);
-    window.location.hash = '/';
-  };
-
-  const handleBackToAdmin = () => {
-    if (!adminUser) return;
-    db.setCompanyId(adminUser.companyId || (adminUser as any).company_id);
-    db.setUserId(adminUser.id);
-    localStorage.setItem('ws_auth', JSON.stringify(adminUser));
-    setUser(adminUser);
-    setAdminUser(null);
-    localStorage.removeItem('ws_auth_admin');
-    window.location.hash = '/personnel';
-  };
-
-  return (
-    <HashRouter>
-      <Routes>
-          {/* Public & Entrance Route */}
-          <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
-          <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
-          <Route path="/presentation" element={<PresentationView />} />
-          <Route path="/privacy" element={<PrivacyView />} />
-          <Route path="/terms" element={<TermsView />} />
-
-          {/* Protected Routes Wrapper */}
-          <Route 
-            path="/*" 
-            element={
-              !user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <AppLayout 
-                  user={user} 
-                  isSuperAdmin={isSuperAdmin} 
-                  onLogout={handleLogout}
-                  isMobileMenuOpen={isMobileMenuOpen}
-                  setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  unreadCount={unreadCount}
-                >
-                  {adminUser && (
-                    <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
-                      <div className="flex items-center gap-2">
-                        <ShieldAlert size={16} />
-                        <span>{t('auth.impersonating')}: <span className="underline">{user.name}</span> ({user.username})</span>
-                      </div>
-                      <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
-                        <LogOut size={14} /> {t('auth.backToAdmin')}
-                      </button>
-                    </div>
-                  )}
-                  <Routes>
-                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} isMobile={isMobile} />} />
-                    <Route path="/reports" element={<ReportsView user={user} />} />
-                    <Route path="/work-summary" element={(user.role === 'admin' || user.role === 'supervisor') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/clients" element={user.role === "admin" ? <ClientsView t={t} /> : <Navigate to="/" />} />
-                    <Route path="/projects" element={<ProjectsView user={user} />} />
-                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
-                    <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
                     <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
