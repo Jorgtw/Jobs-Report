@@ -11,8 +11,21 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
+let app;
+let messaging: any = null;
+
+try {
+    if (firebaseConfig.apiKey) {
+        app = initializeApp(firebaseConfig);
+        messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
+    } else {
+        console.warn('Firebase API Key is missing. Push notifications will be disabled.');
+    }
+} catch (error) {
+    console.error('Failed to initialize Firebase:', error);
+}
+
+export { messaging };
 
 export const requestForToken = async () => {
   if (!messaging) return null;
