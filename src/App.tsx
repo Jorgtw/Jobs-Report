@@ -39,28 +39,15 @@ import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, Add
 import { Language, TranslationKey, resolveKey } from './i18n';
 import { exportToPDF, exportToExcel } from './services/exportService';
 import logoImg from './assets/logo.png';
-import PresentationView from './PresentationView';
-import LoginView from './LoginView';
-import PrivacyView from './PrivacyView';
-import TermsView from './TermsView';
-import { RegistrationRequestView } from './RegistrationRequestView';
-import { UpgradeModal } from './components/UpgradeModal';
-import { ComplianceReportModal } from './components/ComplianceReportModal';
-import Tooltip from './components/common/Tooltip';
-import OnboardingGuide from './components/OnboardingGuide';
-import { generateCompliancePDF } from './services/exportService';
-import AIChatAssistant from './components/AIChatAssistant';
-import SuperAdminDashboard from './components/SuperAdminDashboard';
-import ProjectMessages from './components/ProjectMessages';
-import CommunicationsHub from './components/CommunicationsHub';
-import HelpView from './pages/HelpView';
+import { useSubcontractors } from './hooks/useSubcontractors';
 import { useClients } from './hooks/useClients';
 import { useProjects } from './hooks/useProjects';
 import { useReports } from './hooks/useReports';
 import { useSummary } from './hooks/useSummary';
 import { useUsers } from './hooks/useUsers';
-import { useSubcontractors } from './hooks/useSubcontractors';
 import ProfileView from './pages/ProfileView';
+import Tooltip from './components/common/Tooltip';
+import { generateCompliancePDF } from './services/exportService';
 
 // --- i18n Context ---
 export const LanguageContext = createContext<{
@@ -74,6 +61,31 @@ export const LanguageContext = createContext<{
 });
 
 export const useTranslation = () => useContext(LanguageContext);
+
+export const localeMap: Record<string, string> = {
+  it: 'it-IT',
+  en: 'en-US',
+  es: 'es-ES',
+  pl: 'pl-PL',
+  tr: 'tr-TR',
+  da: 'da-DK'
+};
+
+// --- Local Components ---
+import PresentationView from './PresentationView';
+import LoginView from './LoginView';
+import PrivacyView from './PrivacyView';
+import TermsView from './TermsView';
+import { RegistrationRequestView } from './RegistrationRequestView';
+import { UpgradeModal } from './components/UpgradeModal';
+import { ComplianceReportModal } from './components/ComplianceReportModal';
+import OnboardingGuide from './components/OnboardingGuide';
+import AIChatAssistant from './components/AIChatAssistant';
+import SuperAdminDashboard from './components/SuperAdminDashboard';
+import ProjectMessages from './components/ProjectMessages';
+import CommunicationsHub from './components/CommunicationsHub';
+import HelpView from './pages/HelpView';
+
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('ws_lang') as Language) || 'it');
@@ -91,14 +103,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return <LanguageContext.Provider value={contextValue}>{children}</LanguageContext.Provider>;
 };
 
-export const localeMap: Record<string, string> = {
-  it: 'it-IT',
-  en: 'en-US',
-  es: 'es-ES',
-  pl: 'pl-PL',
-  tr: 'tr-TR',
-  da: 'da-DK'
-};
 
 export const canUserAccessProject = (project: Partial<Project>, userId: string) => {
   if (!project.assignedWorkerIds || project.assignedWorkerIds.length === 0) return true;
