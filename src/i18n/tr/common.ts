@@ -41,7 +41,7 @@ export const common = {
   monthlySummary: "Aylık Özet",
   currentMonth: "Mevcut Ay",
   all: "Hepsi",
-  internalCommMenu: "İç İletişim",
+  internalCommMenu: "İletişim",
   installApp: "Uygulamayı Yükle",
   privacy: "Gizlilik",
   hours: "Saat",

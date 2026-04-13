@@ -41,7 +41,7 @@ export const common = {
   monthlySummary: "Resumen Mensual",
   currentMonth: "Mes Actual",
   all: "Todos",
-  internalCommMenu: "Comunicaciones Internas",
+  internalCommMenu: "Comunicaciones",
   installApp: "Instalar App",
   privacy: "Privacidad",
   hours: "Horas",
