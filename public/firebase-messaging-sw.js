@@ -5,12 +5,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 // Inizializza l'app Firebase nel Service Worker
 // IMPORTANTE: Inserisci qui le tue chiavi reali dalla Firebase Console
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyCv39E1Yf3yUTsukTYIr9ZzJN6im-L2e4k",
+    authDomain: "jobs-report-push.firebaseapp.com",
+    projectId: "jobs-report-push",
+    storageBucket: "jobs-report-push.firebasestorage.app",
+    messagingSenderId: "1044002168011",
+    appId: "1:1044002168011:web:92bb217ab84f7786d70f4e"
 };
 
 if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
