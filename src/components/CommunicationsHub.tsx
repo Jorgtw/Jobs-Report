@@ -25,7 +25,6 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import { BellRing } from 'lucide-react';
 
 interface CommunicationsHubProps {
   currentUser: AppUser;
@@ -149,7 +148,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   // Push Notifications Hook
   const {
-    permission,
     isSubscribed,
     requestPermission,
     unsubscribeUser,
