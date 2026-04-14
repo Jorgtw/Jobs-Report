@@ -14,6 +14,26 @@ export const usePushNotifications = (user: User | null) => {
     if (user && permission === 'granted') {
       checkSubscriptionAndRefresh();
     }
+
+    const handleStatusChange = () => {
+      // Sincronizziamo sia il permesso browser che lo stato DB
+      const currentPermission = Notification.permission;
+      setPermission(prev => {
+        if (prev !== currentPermission) return currentPermission;
+        return prev;
+      });
+      
+      if (user && currentPermission === 'granted') {
+        checkSubscriptionAndRefresh();
+      } else {
+        setIsSubscribed(false);
+      }
+    };
+
+    window.addEventListener('push-subscription-change', handleStatusChange);
+    return () => {
+      window.removeEventListener('push-subscription-change', handleStatusChange);
+    };
   }, [user, permission]);
 
   const checkSubscriptionAndRefresh = async () => {
@@ -86,7 +106,11 @@ export const usePushNotifications = (user: User | null) => {
             updated_at: new Date().toISOString()
           }, { onConflict: 'worker_id, fcm_token' });
 
-        if (!error) setIsSubscribed(true);
+        if (!error) {
+          // Notifichiamo il cambiamento a tutte le altre istanze dell'hook
+          window.dispatchEvent(new CustomEvent('push-subscription-change'));
+          setIsSubscribed(true);
+        }
       } else {
         console.warn("[PUSH] Impossibile ottenere il token. Verifica config Firebase.");
       }
@@ -105,7 +129,11 @@ export const usePushNotifications = (user: User | null) => {
         .update({ is_active: false })
         .eq('worker_id', user.id);
 
-      if (!error) setIsSubscribed(false);
+      if (!error) {
+        // Notifichiamo il cambiamento a tutte le altre istanze dell'hook
+        window.dispatchEvent(new CustomEvent('push-subscription-change'));
+        setIsSubscribed(false);
+      }
     } catch (error) {
       console.error("Errore durante la disiscrizione:", error);
     } finally {
