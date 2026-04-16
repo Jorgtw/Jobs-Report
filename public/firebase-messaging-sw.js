@@ -1,6 +1,6 @@
 // Scripts necessari per Firebase Messaging in background
-importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js');
 
 // Inizializza l'app Firebase nel Service Worker
 // IMPORTANTE: Inserisci qui le tue chiavi reali dalla Firebase Console
@@ -13,21 +13,25 @@ const firebaseConfig = {
     appId: "1:1044002168011:web:92bb217ab84f7786d70f4e"
 };
 
-if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-    firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
+try {
+    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
 
-    // Gestione dei messaggi in background
-    messaging.onBackgroundMessage((payload) => {
-        console.log('[firebase-messaging-sw.js] Ricevuto messaggio in background: ', payload);
-        const notificationTitle = payload.notification.title;
-        const notificationOptions = {
-            body: payload.notification.body,
-            icon: payload.notification.icon || '/icon-192x192.png',
-            data: payload.data
-        };
-        self.registration.showNotification(notificationTitle, notificationOptions);
-    });
+        // Gestione dei messaggi in background
+        messaging.onBackgroundMessage((payload) => {
+            console.log('[firebase-messaging-sw.js] Ricevuto messaggio in background: ', payload);
+            const notificationTitle = payload.notification.title;
+            const notificationOptions = {
+                body: payload.notification.body,
+                icon: payload.notification.icon || '/icon-192.png',
+                data: payload.data
+            };
+            self.registration.showNotification(notificationTitle, notificationOptions);
+        });
+    }
+} catch (e) {
+    console.error('[SW] Errore inizializzazione Firebase:', e);
 }
 
 // Gestione click sulla notifica
