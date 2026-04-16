@@ -187,6 +187,20 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     selectedThreadRef.current = selectedThread;
   }, [selectedThread]);
 
+  const soundEnabledRef = useRef(true);
+  useEffect(() => {
+    const saved = localStorage.getItem('push_notifications_sound');
+    soundEnabledRef.current = saved !== null ? JSON.parse(saved) : true;
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'push_notifications_sound') {
+        soundEnabledRef.current = e.newValue !== null ? JSON.parse(e.newValue) : true;
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -211,6 +225,17 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         },
         (payload) => {
           console.log('Real-time update received:', payload);
+          
+          // Riproduci suono se abilitato e se è un nuovo messaggio non inviato da me
+          if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id && soundEnabledRef.current) {
+            try {
+              const audio = new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_06d8a39a02.mp3');
+              audio.play().catch(e => console.warn('[SOUND] Browser blocked autoplay:', e));
+            } catch (err) {
+              console.error('[SOUND] Error playing notification sound:', err);
+            }
+          }
+
           fetchMainData();
           if (selectedThreadRef.current) {
             fetchThread(selectedThreadRef.current.id, true);

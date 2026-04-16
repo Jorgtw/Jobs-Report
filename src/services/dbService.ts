@@ -965,7 +965,7 @@ class DBService {
       if (toMark.length > 0) {
         await supabase
           .from('communication_read_receipts')
-          .insert(toMark.map(m => ({ communication_id: m.id, user_id: userId })));
+          .upsert(toMark.map(m => ({ communication_id: m.id, user_id: userId })), { onConflict: 'communication_id, user_id' });
       }
     }
 
