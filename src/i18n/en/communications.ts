@@ -90,6 +90,7 @@ export const communications = {
   feature_pdf_title: 'Export PDF',
   feature_pdf_desc: 'Download conversation logs in PDF format',
   tab_inbox: 'INBOX',
+  tab_sent: 'SENT',
   tab_working: 'WORKING',
   tab_waiting: 'WAITING',
   tab_completed: 'COMPLETED',
