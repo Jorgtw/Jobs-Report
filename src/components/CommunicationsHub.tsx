@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Send, 
   Inbox, 
@@ -15,7 +15,8 @@ import {
   Trash2,
   X,
   Bell,
-  BellOff
+  BellOff,
+  Volume2
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -188,6 +189,37 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   }, [selectedThread]);
 
   const soundEnabledRef = useRef(true);
+  
+  // 1. Stable Audio object with proper configuration
+  const notificationAudio = useMemo(() => {
+    const audio = new Audio('https://raw.githubusercontent.com/shashitp/notification-sounds/master/notification-sound.mp3');
+    audio.preload = 'auto';
+    return audio;
+  }, []);
+
+  // 2. Browser Autoplay Handling (User Interaction Unlock)
+  useEffect(() => {
+    const unlockAudio = () => {
+      notificationAudio.play().then(() => {
+        notificationAudio.pause();
+        notificationAudio.currentTime = 0;
+        console.log('[SOUND] Audio engine unlocked naturally by user interaction');
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('touchstart', unlockAudio);
+      }).catch(e => {
+         // Silently wait for the next real interaction if this one was blocked
+      });
+    };
+    
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio); // Critical for Mobile (iOS Safari)
+    
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, [notificationAudio]);
+
   useEffect(() => {
     const saved = localStorage.getItem('push_notifications_sound');
     soundEnabledRef.current = saved !== null ? JSON.parse(saved) : true;
@@ -226,14 +258,19 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         (payload) => {
           console.log('Real-time update received:', payload);
           
-          // Riproduci suono se abilitato e se è un nuovo messaggio non inviato da me
+          // 3. Playback Logic for Foreground Notifications
           if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id && soundEnabledRef.current) {
-            try {
-              const audio = new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_06d8a39a02.mp3');
-              audio.play().catch(e => console.warn('[SOUND] Browser blocked autoplay:', e));
-            } catch (err) {
-              console.error('[SOUND] Error playing notification sound:', err);
-            }
+            console.log('[SOUND] Attempting notification playback...');
+            notificationAudio.currentTime = 0;
+            notificationAudio.play()
+              .then(() => console.log('[SOUND] Notification played successfully'))
+              .catch(e => {
+                if (e.name === 'NotAllowedError') {
+                  console.warn('[SOUND] Playback blocked by browser policy (Autoplay). Interaction required.', e);
+                } else {
+                  console.error('[SOUND] Playback failed for unexpected reason:', e);
+                }
+              });
           }
 
           fetchMainData();
@@ -538,6 +575,22 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 <Plus className="w-5 h-5" />
               </button>
             </div>
+          </div>
+          
+          <div className="px-1">
+            <button 
+              onClick={() => {
+                  console.log('[SOUND] Manual test triggered');
+                  notificationAudio.currentTime = 0;
+                  notificationAudio.play()
+                    .then(() => console.log('[SOUND] Manual test success'))
+                    .catch(e => console.error('[SOUND] Manual test block:', e));
+              }}
+              className="w-full py-2 bg-blue-50 text-[10px] font-black uppercase tracking-widest text-blue-600 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
+            >
+              <Volume2 size={14} />
+              Verifica Audio (Test Suono)
+            </button>
           </div>
           
 

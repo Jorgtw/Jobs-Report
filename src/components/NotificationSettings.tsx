@@ -35,12 +35,23 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user, t }) 
               <p className="text-[10px] text-slate-400 font-medium">{t('communications.push_sound_desc' as any)}</p>
             </div>
           </div>
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`w-12 h-6 rounded-full p-1 transition-all duration-200 ${soundEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
-          >
-            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${soundEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => {
+                const audio = new Audio('https://raw.githubusercontent.com/shashitp/notification-sounds/master/notification-sound.mp3');
+                audio.play().catch(e => console.error('[SOUND] Test failed:', e));
+              }}
+              className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-600 rounded-lg hover:bg-slate-100 transition-all uppercase tracking-wider"
+            >
+              Test Suono
+            </button>
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`w-12 h-6 rounded-full p-1 transition-all duration-200 ${soundEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+            >
+              <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${soundEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
