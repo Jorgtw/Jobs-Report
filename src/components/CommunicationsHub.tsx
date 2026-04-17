@@ -135,8 +135,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [expandedSections, setExpandedSections] = useState<string[]>(['inbox']);
   const [commsBySection, setCommsBySection] = useState<Record<string, InternalCommunication[]>>({
     inbox: [],
-    working: [],
-    completed: []
+    outbox: []
   });
   const [selectedThread, setSelectedThread] = useState<InternalCommunication | null>(null);
   const [threadMessages, setThreadMessages] = useState<InternalCommunication[]>([]);
@@ -282,12 +281,15 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
   const fetchMainData = async (forceSection?: string) => {
     try {
-      const sectionsToFetch = forceSection ? [forceSection] : expandedSections;
+      const [inbox, outbox] = await Promise.all([
+        db.getInbox(),
+        db.getOutbox()
+      ]);
       
-      for (const section of sectionsToFetch) {
-        const data = await db.getCommunications({ type: section as any });
-        setCommsBySection(prev => ({ ...prev, [section]: data }));
-      }
+      setCommsBySection({
+        inbox,
+        outbox
+      });
     } catch (err) {
       console.error('Error fetching communications:', err);
     }
@@ -552,20 +554,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             </div>
           </div>
           
-          <div className="px-1">
-            <button 
-              onClick={() => {
-                  console.log('[SOUND] Manual test triggered');
-                  playNotification()
-                    .then(() => console.log('[SOUND] Manual test success'))
-                    .catch(e => console.error('[SOUND] Manual test block:', e));
-              }}
-              className="w-full py-2 bg-blue-50 text-[10px] font-black uppercase tracking-widest text-blue-600 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
-            >
-              <Volume2 size={14} />
-              Verifica Audio (Test Suono)
-            </button>
-          </div>
+          
+
           
 
           <div className="relative">
@@ -582,9 +572,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
 
         <div className="flex-1 overflow-y-auto bg-white">
           {[
-            { id: 'inbox', label: t('communications.tab_inbox'), color: 'bg-red-500' },
-            { id: 'working', label: t('communications.tab_working'), color: 'bg-slate-400' },
-            { id: 'completed', label: t('communications.tab_completed'), color: 'bg-slate-400' }
+            { id: 'inbox', label: t('communications.tab_inbox'), color: 'bg-blue-600' },
+            { id: 'outbox', label: t('common.sent' as any) || 'Inviati', color: 'bg-slate-400' }
           ].map((section) => {
             const comms = getFilteredComms(section.id);
             const isExpanded = expandedSections.includes(section.id);
@@ -638,12 +627,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                           <h4 className={`text-sm leading-snug ${!comm.isRead ? 'font-bold text-slate-950' : 'text-slate-600'}`}>
                             {comm.content.length > 60 ? comm.content.substring(0, 60) + '...' : comm.content}
                           </h4>
-                          {comm.needsAction && comm.status !== 'closed' && (
-                            <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-                              <Clock size={10} />
-                              {t('communications.status_open')}
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -711,36 +694,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
               </div>
               
               <div className="flex items-center gap-2">
-                {selectedThread.status === 'open' && 
-                  selectedThread.senderId !== currentUser.id && 
-                  (selectedThread.targetType === 'all' || (!selectedThread.targetType && !selectedThread.targetId) || selectedThread.targetId === currentUser.id) && (
-                  <button 
-                    onClick={() => handleStatusAction('take', selectedThread.id)}
-                    className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all uppercase tracking-tighter"
-                    title={t('communications.workingTooltip')}
-                  >
-                    {t('communications.takeInCharge')}
-                  </button>
-                )}
-
-                {['open', 'acknowledged', 'in_progress'].includes(selectedThread.status) && selectedThread.senderId === currentUser.id && (
-                  <button 
-                    onClick={() => handleStatusAction('close', selectedThread.id)}
-                    className="px-3.5 py-1.5 bg-white border border-[#185FA5] text-[#185FA5] text-[12px] font-bold rounded hover:bg-blue-50 transition-all uppercase tracking-tighter"
-                  >
-                    {t('communications.close')}
-                  </button>
-                )}
-
-                {selectedThread.status === 'closed' && (
-                  <button 
-                    onClick={() => handleStatusAction('archive', selectedThread.id)}
-                    className="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-500 text-[12px] font-bold rounded hover:bg-slate-50 transition-all uppercase tracking-tighter"
-                  >
-                    {t('communications.archiveAction')}
-                  </button>
-                )}
-
                 {['open', 'in_progress'].includes(selectedThread.status) && (
                   <button 
                     onClick={() => setIsForwardPanelOpen(!isForwardPanelOpen)}

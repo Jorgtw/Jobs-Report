@@ -926,6 +926,62 @@ class DBService {
     return mapped;
   }
 
+  async getInbox(): Promise<InternalCommunication[]> {
+    const compId = this.requireCompanyId();
+    const userId = this.requireUserId();
+
+    const { data, error } = await supabase
+      .from('internal_communications')
+      .select(`
+        *,
+        sender:workers!sender_id(name),
+        assigned_worker:workers!assigned_to(name)
+      `)
+      .eq('company_id', compId)
+      .or(`target_id.eq.${userId},target_type.eq.all`)
+      .neq('sender_id', userId)
+      .is('parent_id', null)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Get read receipts
+    const commIds = (data || []).map((c: any) => c.id);
+    const { data: receipts } = await supabase
+      .from('communication_read_receipts')
+      .select('communication_id')
+      .eq('user_id', userId)
+      .in('communication_id', commIds);
+    
+    const readIds = new Set(receipts?.map(r => r.communication_id) || []);
+
+    return (data || []).map(c => ({
+      ...this.mapSupabaseComm(c, userId),
+      isRead: readIds.has(c.id)
+    }));
+  }
+
+  async getOutbox(): Promise<InternalCommunication[]> {
+    const compId = this.requireCompanyId();
+    const userId = this.requireUserId();
+
+    const { data, error } = await supabase
+      .from('internal_communications')
+      .select(`
+        *,
+        sender:workers!sender_id(name),
+        assigned_worker:workers!assigned_to(name)
+      `)
+      .eq('company_id', compId)
+      .eq('sender_id', userId)
+      .is('parent_id', null)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(c => this.mapSupabaseComm(c, userId));
+  }
+
   async getThread(rootId: string): Promise<InternalCommunication[]> {
     const userId = this.requireUserId();
     const compId = this.requireCompanyId();

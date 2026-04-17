@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { User } from '../types';
-import { audioService } from '../services/audioService';
 
 interface NotificationSettingsProps {
   user: User;
@@ -24,12 +23,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user, t }) 
 
   if (!isSupported) return null;
 
-  const handleTestSound = () => {
-    audioService.play().catch(err => {
-      console.error('[SOUND] Test playback failed:', err);
-    });
-  };
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
@@ -44,12 +37,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user, t }) 
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={handleTestSound}
-              className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-600 rounded-lg hover:bg-slate-100 transition-all uppercase tracking-wider"
-            >
-              Test Suono
-            </button>
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
               className={`w-12 h-6 rounded-full p-1 transition-all duration-200 ${soundEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
