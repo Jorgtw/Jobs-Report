@@ -88,7 +88,13 @@ export const usePushNotifications = (user: User | null) => {
     if (!user) return;
 
     try {
-      // Ottenimento token reale da Firebase
+      // 1. Registrazione Service Worker (fondamentale per getToken)
+      if ('serviceWorker' in navigator) {
+        await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log("[PUSH] Service Worker registrato con successo");
+      }
+
+      // 2. Ottenimento token reale da Firebase
       const token = await requestForToken();
 
       if (token) {
