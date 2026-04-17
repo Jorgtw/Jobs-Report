@@ -60,8 +60,6 @@ export const communications = {
   no_workers_available: 'Nessun collaboratore disponibile',
   unreadMessages: 'Messaggi non letti',
   messageSentSuccess: 'Comunicazione inviata con successo!',
-  allTeam: 'Tutto il Team',
-  myself: 'Io stesso',
   
   // Stati di Workflow
   status_open: 'Aperto',
