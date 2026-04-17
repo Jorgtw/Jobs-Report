@@ -33,5 +33,7 @@ export const help = {
   adminPersonnelTitle: "Personelehåndtering",
   adminPersonnelBody: "Tilføj eller deaktiver medarbejdere, og administrer underleverandører hurtigt og nemt.",
   adminInternalTitle: "Interne Rapporter",
-  adminInternalBody: "Afsæt timer til 'Uso Interno' (Intern brug) for fravær, ferie eller kontorarbejde uden at fakturere en klient."
+  adminInternalBody: "Afsæt timer til 'Uso Interno' (Intern brug) for fravær, ferie eller kontorarbejde uden at fakturere en klient.",
+  commTitle: "Intern Kommunikation",
+  commBody: "Besked-systemet er opdelt in to sektioner: 'INDBAKKE' for beskeder modtaget fra andre og 'SENDT' for beskeder, du selv har sendt. Klik på en besked for at åbne den fulde samtale og svare i realtid. Du kan sende beskeder til enkelte brugere eller til hele teamet.",
 };

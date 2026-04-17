@@ -19,6 +19,8 @@ export const help = {
   adminPersonnelBody: "You can create new users in the 'Personnel' section. Remember to enter the correct email to be able to send them access instructions with a single click.",
   adminInternalTitle: "Internal Activities (Sickness/Holidays)",
   adminInternalBody: "To manage absences, use the new 'New Internal Activity' button in the Projects section. This will create a special project that doesn't generate revenue but correctly tracks personnel costs.",
+  commTitle: "Internal Communications",
+  commBody: "The messaging system is divided into two sections: 'INBOX' for messages received from others and 'SENT' for messages you have sent. Click on a message to open the full conversation and reply in real time. You can send messages to individual users or to the entire team.",
   
   // Support Contact
   supportContact: "Please check the User Guide first — you will find the answer to most questions. For technical problems, contact your account administrator.",

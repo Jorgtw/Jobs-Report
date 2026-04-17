@@ -19,6 +19,8 @@ export const help = {
   adminPersonnelBody: "Puoi creare nuovi utenti nella sezione 'Personale'. Ricordati di inserire l'email corretta per poter inviare loro le istruzioni di accesso con un solo clic.",
   adminInternalTitle: "Attività Interne (Malattia/Ferie)",
   adminInternalBody: "Per gestire le assenze, usa il nuovo tasto 'Nuova Attività Interna' nella sezione Progetti. Questo creerà un progetto speciale che non genera fatturato ma traccia correttamente i costi del personale.",
+  commTitle: "Comunicazioni Interne",
+  commBody: "Il sistema di messaggistica è diviso in due sezioni: 'INBOX' per i messaggi ricevuti e 'INVIATI' per quelli che hai inviato tu. Clicca su un messaggio per aprire la conversazione completa e rispondere in tempo reale. Puoi inviare messaggi a singoli utenti o a tutto il team.",
   
   // Support Contact
   supportContact: "Consulta prima la Guida all'Uso — trovi la risposta alla maggior parte delle domande. Per problemi tecnici contatta l'amministratore del tuo account.",
@@ -100,4 +102,6 @@ export const help = {
   get helpAdminPersonnelBody() { return this.adminPersonnelBody },
   get helpAdminInternalTitle() { return this.adminInternalTitle },
   get helpAdminInternalBody() { return this.adminInternalBody },
+  get helpCommTitle() { return this.commTitle },
+  get helpCommBody() { return this.commBody },
 } as const;

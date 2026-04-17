@@ -43,7 +43,8 @@ REGOLE DI RISPOSTA (FONDAMENTALI):
 
 CONOSCENZA APP:
 - RAPPORTINI: Calcolo ore automatico (-1h pausa). Override manuale cliccando sul totale.
-- PREMIUM: Include Compliance Report (Firme/Foto) e Comunicazioni Interne.
+- PREMIUM: Include Compliance Report (Firme/Foto).
+- COMUNICAZIONI: Nuovo sistema semplificato a due sezioni: INBOX (ricevuti) e INVIATI (mandati). Supporta thread e messaggi a tutto il team.
 - RUOLI: Admin vede KPI finanziari e ditta; Operaio vede i propri lavori.`,
         generationConfig: {
           responseMimeType: "application/json",
