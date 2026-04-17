@@ -3149,6 +3149,7 @@ const App: React.FC = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       db.setCompanyId(parsed.companyId || parsed.company_id);
+      db.setUserId(parsed.id);
       return parsed;
     }
     return null;

@@ -30,7 +30,7 @@ class AudioService {
    * Manual conversion of Base64 to ArrayBuffer to bypass CSP fetch restrictions.
    */
   private base64ToArrayBuffer(base64: string): ArrayBuffer {
-    const base64Content = base64.includes(',') ? base64.split(',')[1] : base64;
+    const base64Content = (base64.includes(',') ? base64.split(',')[1] : base64).trim().replace(/\s/g, '');
     const binaryString = window.atob(base64Content);
     const len = binaryString.length;
     const bytes = new Uint8Array(len);
