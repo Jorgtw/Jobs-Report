@@ -493,7 +493,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     const isExpanding = !expandedSections.includes(id);
     if (isExpanding) {
       setExpandedSections(prev => [...prev, id]);
-      await fetchMainData(id);
+      await fetchMainData();
     } else {
       setExpandedSections(prev => prev.filter(s => s !== id));
     }
