@@ -206,7 +206,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         console.log('[SOUND] Audio engine unlocked naturally by user interaction');
         window.removeEventListener('click', unlockAudio);
         window.removeEventListener('touchstart', unlockAudio);
-      }).catch(e => {
+      }).catch(_e => {
          // Silently wait for the next real interaction if this one was blocked
       });
     };
