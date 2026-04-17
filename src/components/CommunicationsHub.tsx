@@ -232,8 +232,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         (payload) => {
           console.log('Real-time update received:', payload);
           
-          // 3. Playback Logic for Foreground Notifications
-          if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id && soundEnabledRef.current) {
+          // 3. Playback Logic for Foreground Notifications - Only if I am the recipient or it's for everyone
+          const isForMe = payload.new.target_id === currentUser.id || payload.new.target_type === 'all';
+          if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id && isForMe && soundEnabledRef.current) {
             console.log('[SOUND] Attempting notification playback...');
             playNotification()
               .then(() => console.log('[SOUND] Notification played successfully'))
