@@ -15,8 +15,7 @@ import {
   Trash2,
   X,
   Bell,
-  BellOff,
-  Volume2
+  BellOff
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -279,7 +278,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   }, [threadMessages]);
 
-  const fetchMainData = async (forceSection?: string) => {
+  const fetchMainData = async () => {
     try {
       const [inbox, outbox] = await Promise.all([
         db.getInbox(),
