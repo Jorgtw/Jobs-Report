@@ -3,7 +3,8 @@
  * Uses Web Audio API for high-precision, background-capable playback.
  */
 
-const CHIME_BASE64 = 'data:audio/mpeg;base64,SUQzBAAAAAABAFRYWFhYAAAASU0UAAAAUE9SVEFCTEUtU09VTkRTIE5PVElGSUNBVElPTiBNUDMgQ0hJTUUKAFRFTkMAbm90aWZpY2F0aW9uc291bmRzLmNvbQBUSVQyAAAAGU5vdGlmaWNhdGlvbiBTb3VuZCAtIENoaW1lAFRBTEIAAAAQTm90aWZpY2F0aW9uIFNvdW5kAFRQRTEAAAAPUmVsYXhpbmcgQ2hpbWVzAP/70MQAAAAAAAAAAAAAAAAAAAAAABYaW5nAAAADwAAACIAAEWJAAMICQ0OExYXGhseHyEjJykrLi8xMzY5Oz9BQ0ZJS05QUVJWWVxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxcXmBhY2Zpa25vcXN2eYAAAAADAAAAAE9reSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/++9DECRAAAAnwAAAAAAAFlVSAAAAAnwAAAAAAAFmWRXNhbXBsZSAyMAAAM8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8AA//vQxEgUAADPPAAAAAAAZZ8AAAAAAM88AAAAAAFZ5/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8AA//vQxFgeAADPPAAAAAAAZZ4AAAAAAM88AAAAAAFZ5/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8AADEAAAABAAAAAgAAAAEAAAADAAAAAQAAAAQAAAABAAAABQAAAAEAAAAGAAAAAQAAAB/+9DETwCAAAZ54AAAAAAJZ4AAAAAAM88AAAAAAFZ54AA//70MRuLAAADPPAAAAAAFlngAAAAAAzzzAAAAAAAWeePz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8';
+// Chime audio base64 (MP3 format)
+const CHIME_BASE64 = 'SUQzBAAAAAABAFRYWFhYAAAASU0UAAAAUE9SVEFCTEUtU09VTkRTIE5PVElGSUNBVElPTiBNUDMgQ0hJTUUKAFRFTkMAbm90aWZpY2F0aW9uc291bmRzLmNvbQBUSVQyAAAAGU5vdGlmaWNhdGlvbiBTb3VuZCAtIENoaW1lAFRBTEIAAAAQTm90aWZpY2F0aW9uIFNvdW5kAFRQRTEAAAAPUmVsYXhpbmcgQ2hpbWVzAP/70MQAAAAAAAAAAAAAAAAAAAAAABYaW5nAAAADwAAACIAAEWJAAMICQ0OExYXGhseHyEjJykrLi8xMzY5Oz9BQ0ZJS05QUVJWWVxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxeYGFjZmlrbm9xcnZ5e36AgYOGiYyOkJGTVllcXmBhY2Zpa25vcXN2eXxcXmBhY2Zpa25vcXN2eYAAAAADAAAAAE9reSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/++9DECRAAAAnwAAAAAAAFlVSAAAAAnwAAAAAAAFmWRXNhbXBsZSAyMAAAM8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8AA//vQxEgUAADPPAAAAAAAZZ8AAAAAAM88AAAAAAFZ5/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8AA//vQxFgeAADPPAAAAAAAZZ4AAAAAAM88AAAAAAFZ5/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8AADEAAAABAAAAAgAAAAEAAAADAAAAAQAAAAQAAAABAAAABQAAAAEAAAAGAAAAAQAAAB/+9DETwCAAAZ54AAAAAAJZ4AAAAAAM88AAAAAAFZ54AA//70MRuLAAADPPAAAAAAFlngAAAAAAzzzAAAAAAAWeePz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8';
 
 class AudioService {
   private context: AudioContext | null = null;
@@ -15,13 +16,26 @@ class AudioService {
     // Attempt to unlock on first interaction
     if (typeof window !== 'undefined') {
       const unlock = () => {
-        this.init();
+        this.init().catch(console.error);
         window.removeEventListener('click', unlock);
         window.removeEventListener('touchstart', unlock);
       };
       window.addEventListener('click', unlock);
       window.addEventListener('touchstart', unlock);
     }
+  }
+
+  /**
+   * Manual conversion of Base64 to ArrayBuffer to bypass CSP fetch restrictions.
+   */
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
   }
 
   async init() {
@@ -31,13 +45,13 @@ class AudioService {
     try {
       this.context = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Robust decoding using fetch + arrayBuffer
-      const response = await fetch(CHIME_BASE64);
-      const arrayBuffer = await response.arrayBuffer();
+      // Bypass fetch and CSP by decoding manually in memory
+      const arrayBuffer = this.base64ToArrayBuffer(CHIME_BASE64);
 
+      // Web Audio API decoding
       this.buffer = await this.context.decodeAudioData(arrayBuffer);
       this.isInitialized = true;
-      console.log('[AUDIO] Audio Service initialized successfully');
+      console.log('[AUDIO] Audio Service initialized successfully via memory decode');
     } catch (e) {
       console.error('[AUDIO] Failed to initialize AudioContext', e);
     } finally {
