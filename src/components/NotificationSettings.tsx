@@ -24,11 +24,14 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user, t }) 
     audio.preload = 'auto';
     
     // Transparent fallback if local file fails or is missing
-    audio.addEventListener('error', () => {
+    const handleError = () => {
+      if (audio.src.startsWith('data:')) return;
       console.log('[SOUND] Local file not found, using embedded fallback');
       audio.src = CHIME_BASE64;
       audio.load();
-    });
+    };
+
+    audio.addEventListener('error', handleError, { once: true });
     
     return audio;
   }, []);
