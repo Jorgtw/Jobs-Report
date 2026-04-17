@@ -940,6 +940,7 @@ class DBService {
       .eq('company_id', compId)
       .or(`target_id.eq.${userId},target_type.eq.all`)
       .neq('sender_id', userId)
+      .not('status', 'in', '("archived","deleted")')
       .is('parent_id', null)
       .order('created_at', { ascending: false });
 
@@ -974,6 +975,7 @@ class DBService {
       `)
       .eq('company_id', compId)
       .eq('sender_id', userId)
+      .not('status', 'in', '("archived","deleted")')
       .is('parent_id', null)
       .order('created_at', { ascending: false });
 

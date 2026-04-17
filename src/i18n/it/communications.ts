@@ -90,6 +90,7 @@ export const communications = {
   feature_pdf_title: 'Export PDF',
   feature_pdf_desc: 'Scarica i verbali delle conversazioni in formato PDF',
   tab_inbox: 'INBOX',
+  tab_sent: 'INVIATI',
   tab_working: 'LAVORAZIONE',
   tab_waiting: 'IN ATTESA',
   tab_completed: 'COMPLETATO',

@@ -572,7 +572,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         <div className="flex-1 overflow-y-auto bg-white">
           {[
             { id: 'inbox', label: t('communications.tab_inbox'), color: 'bg-blue-600' },
-            { id: 'outbox', label: t('common.sent' as any) || 'Inviati', color: 'bg-slate-400' }
+            { id: 'outbox', label: t('communications.tab_sent'), color: 'bg-slate-400' }
           ].map((section) => {
             const comms = getFilteredComms(section.id);
             const isExpanded = expandedSections.includes(section.id);
