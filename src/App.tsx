@@ -1026,6 +1026,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
     }
     
     try {
+      setSendingId(u.id);
       // Get a secure recovery link from the admin API
       const recoveryLink = await db.generateRecoveryLink(u.id);
       
@@ -1048,6 +1049,8 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
     } catch (err: any) {
       console.error('Failed to send instructions:', err);
       alert(t('auth.registrationErrorConnection'));
+    } finally {
+      setSendingId(null);
     }
   };
 
@@ -1136,8 +1139,17 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
                 {u.email && (
-                  <button onClick={() => handleSendInstructions(u)} className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title={t('auth.sendInstructions')}>
-                    <Mail size={18} />
+                  <button 
+                    disabled={sendingId === u.id}
+                    onClick={() => handleSendInstructions(u)} 
+                    className={`p-2.5 rounded-xl transition-all ${sendingId === u.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`} 
+                    title={t('auth.sendInstructions')}
+                  >
+                    {sendingId === u.id ? (
+                      <div className="w-[18px] h-[18px] border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                    ) : (
+                      <Mail size={18} />
+                    )}
                   </button>
                 )}
                 {onImpersonate && (
