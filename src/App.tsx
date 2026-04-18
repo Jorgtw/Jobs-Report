@@ -3192,27 +3192,13 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // EMERGENCY HASH CHECK: Supabase recovery redirects put tokens in the hash.
-    // If we see access_token and we're not already on a known route, force /profile.
-    const hash = window.location.hash;
-    if (hash.includes('access_token=') || hash.includes('type=recovery')) {
-      if (!hash.startsWith('#/profile')) {
-        console.log('Recovery link detected, forcing navigation to profile');
-        const cleanHash = hash.startsWith('#/') ? hash.substring(2) : (hash.startsWith('#') ? hash.substring(1) : hash);
-        window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + cleanHash);
-        return;
-      }
-    }
-
+    // Initial Auth Initialization
     const initAuth = async () => {
-      // 1. Check for current session (important for recovery links)
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (session?.user && !user) {
         try {
           const userData = await db.getUserByAuthId(session.user.id);
           if (userData) {
-            // Manual login setup
             db.setCompanyId(userData.companyId || (userData as any).company_id);
             db.setUserId(userData.id);
             localStorage.setItem('ws_auth', JSON.stringify(userData));
@@ -3223,9 +3209,8 @@ const App: React.FC = () => {
         }
       }
 
-      // 2. Listen for future changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery'))) {
           if (session?.user && !user) {
             const userData = await db.getUserByAuthId(session.user.id);
             if (userData) {
@@ -3235,7 +3220,7 @@ const App: React.FC = () => {
               setUser(userData);
               window.location.hash = '#/profile';
             }
-          } else if (event === 'PASSWORD_RECOVERY') {
+          } else {
             window.location.hash = '#/profile';
           }
         }
@@ -3246,6 +3231,19 @@ const App: React.FC = () => {
 
     initAuth();
   }, [user]);
+
+  // Recovery link detector (runs immediately on mount)
+  useEffect(() => {
+    const handleRecoveryLink = () => {
+      const h = window.location.hash;
+      if ((h.includes('access_token=') || h.includes('type=recovery')) && !h.startsWith('#/profile')) {
+        console.log('Detected recovery hash, redirecting...');
+        const params = h.includes('?') ? h.substring(h.indexOf('?')) : (h.startsWith('#/') ? h.substring(2) : h.substring(1));
+        window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + params);
+      }
+    };
+    handleRecoveryLink();
+  }, []);
 
   useEffect(() => {
     if (user && user.id) {
