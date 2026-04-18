@@ -3221,8 +3221,8 @@ const App: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       console.log('AUTH: Initial session:', session ? 'PRESENT' : 'NONE');
       
-      if (session?.user && !user) {
-        console.log('AUTH: Found session but no user state, fetching user data...');
+      if (session?.user && (isRecoveryFlow || !user)) {
+        console.log('AUTH: Processing session, isRecovery:', isRecoveryFlow, 'hasUser:', !!user);
         try {
           const userData = await db.getUserByAuthId(session.user.id);
           console.log('AUTH: DB lookup result:', userData ? 'FOUND' : 'NOT FOUND');
