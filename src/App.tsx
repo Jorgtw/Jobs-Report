@@ -3198,6 +3198,7 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
@@ -3244,6 +3245,7 @@ const App: React.FC = () => {
         }
       });
 
+      setInitializing(false);
       return () => subscription.unsubscribe();
     };
 
@@ -3389,6 +3391,20 @@ const App: React.FC = () => {
     localStorage.removeItem('ws_auth_admin');
     window.location.hash = '/personnel';
   };
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="space-y-1">
+            <p className="text-slate-900 font-extrabold text-lg tracking-tight">Jobs<span className="text-blue-600">Report</span></p>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">Inizializzazione in corso...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <HashRouter>
