@@ -177,9 +177,10 @@ export default async function handler(req: any, res: any) {
     }
 
     // --- UPDATE EXISTING USER ---
-    if (!targetUserId || !updates) {
-      return res.status(400).json({ error: 'Missing targetUserId or updates' });
-    }
+    if (action === 'update') {
+      if (!targetUserId || !updates) {
+        return res.status(400).json({ error: 'Missing targetUserId or updates' });
+      }
 
     // Verify target user is in the same company (unless SuperAdmin)
     const { data: targetData, error: targetDbError } = await supabaseAdmin
@@ -237,7 +238,10 @@ export default async function handler(req: any, res: any) {
           email_confirm: true
         });
       }
-      return res.status(500).json({ error: 'Update failed in database. Auth has been rolled back where possible.', detailed: finalDbError });
+        return res.status(500).json({ error: 'Update failed in database. Auth has been rolled back where possible.', detailed: finalDbError });
+      }
+
+      return res.status(200).json({ success: true });
     }
 
     // --- GENERATE RECOVERY LINK ---
@@ -285,7 +289,7 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({ success: true, recovery_link: linkData.properties.action_link });
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(400).json({ error: 'Invalid action' });
 
   } catch (err: any) {
     console.error('Admin Auth Service Error:', err);
