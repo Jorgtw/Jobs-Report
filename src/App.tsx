@@ -3190,45 +3190,49 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Listen for auth state changes (especially for recovery links)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event);
-      
-      if (session?.user) {
-        // If we have a session but no user state, fetch user data
-        if (!user) {
-          try {
-            const userData = await db.getUserByAuthId(session.user.id);
-            if (userData) {
-              // Special case: if it's a recovery, we want to stay on profile
-              const isRecovery = event === 'PASSWORD_RECOVERY' || window.location.href.includes('type=recovery');
-              
-              // Call handleLogin but override redirect if it's recovery
-              db.setCompanyId(userData.companyId || (userData as any).company_id);
-              db.setUserId(userData.id);
-              localStorage.setItem('ws_auth', JSON.stringify(userData));
-              setUser(userData);
-              setIsMobileMenuOpen(false);
-              
-              if (isRecovery) {
-                window.location.hash = '/profile';
-              } else {
-                window.location.hash = '/home';
-              }
+    const initAuth = async () => {
+      // 1. Check for current session (important for recovery links or page refreshes)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && !user) {
+        try {
+          const userData = await db.getUserByAuthId(session.user.id);
+          if (userData) {
+            const isRecovery = window.location.href.includes('type=recovery') || window.location.hash.includes('type=recovery');
+            
+            // Manual login setup
+            db.setCompanyId(userData.companyId || (userData as any).company_id);
+            db.setUserId(userData.id);
+            localStorage.setItem('ws_auth', JSON.stringify(userData));
+            setUser(userData);
+            
+            if (isRecovery) {
+              window.location.hash = '#/profile';
             }
-          } catch (err) {
-            console.error('Error fetching user after auth event:', err);
           }
-        } else if (event === 'PASSWORD_RECOVERY') {
-          // User already loaded, just redirect to profile
-          window.location.hash = '/profile';
+        } catch (err) {
+          console.error('Initial auth error:', err);
         }
       }
-    });
 
-    return () => {
-      subscription.unsubscribe();
+      // 2. Listen for future changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          window.location.hash = '#/profile';
+        } else if (event === 'SIGNED_IN' && session?.user && !user) {
+          const userData = await db.getUserByAuthId(session.user.id);
+          if (userData) {
+            handleLogin(userData);
+            if (window.location.href.includes('type=recovery')) {
+              window.location.hash = '#/profile';
+            }
+          }
+        }
+      });
+
+      return () => subscription.unsubscribe();
     };
+
+    initAuth();
   }, [user]);
 
   useEffect(() => {
