@@ -270,7 +270,7 @@ export default async function handler(req: any, res: any) {
         type: 'recovery',
         email: targetData.email,
         options: {
-          redirectTo: `${req.headers.origin || ''}/auth/v1/callback`
+          redirectTo: `https://jobs-report.vercel.app/auth/v1/callback`
         }
       });
 
