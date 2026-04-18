@@ -171,7 +171,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
         </div>
 
         <p className="mt-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-          © 2026 JobsReport · {t('common.rightsReserved')}
+          v1.1 · © 2026 JobsReport · {t('common.rightsReserved')}
           {' · '}
           <Link to="/privacy" className="hover:text-blue-500 transition-colors">{t('common.privacy')}</Link>
         </p>
