@@ -3269,18 +3269,6 @@ const App: React.FC = () => {
     initAuth();
   }, [user]);
 
-  // Recovery link detector (runs immediately on mount)
-  useEffect(() => {
-    const handleRecoveryLink = () => {
-      const h = window.location.hash;
-      if ((h.includes('access_token=') || h.includes('type=recovery')) && !h.startsWith('#/profile')) {
-        console.log('Detected recovery hash, redirecting...');
-        const params = h.includes('?') ? h.substring(h.indexOf('?')) : (h.startsWith('#/') ? h.substring(2) : h.substring(1));
-        window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + params);
-      }
-    };
-    handleRecoveryLink();
-  }, []);
 
   useEffect(() => {
     if (user && user.id) {
