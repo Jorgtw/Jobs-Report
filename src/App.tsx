@@ -1031,12 +1031,17 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
       
       const subject = encodeURIComponent(t('auth.emailInstructionsSubject'));
       let bodyText = t('auth.emailInstructionsBody');
-      // Ensure we have a name, fallback to username or 'Utente'
-      const displayName = u.name || u.username || 'Utente';
-      bodyText = bodyText.replace('{name}', displayName);
-      bodyText = bodyText.replace('{username}', u.username || '');
-      bodyText = bodyText.replace('{email}', u.email);
-      bodyText = bodyText.replace('{recovery_link}', recoveryLink);
+      
+      // ULTRA-ROBUST NAME REPLACEMENT
+      const nameValue = String(u.name || '').trim();
+      const usernameValue = String(u.username || '').trim();
+      const emailValue = String(u.email || '').trim();
+      const displayName = nameValue || usernameValue || emailValue || 'Utente';
+      
+      bodyText = bodyText.split('{name}').join(displayName);
+      bodyText = bodyText.split('{username}').join(usernameValue);
+      bodyText = bodyText.split('{email}').join(emailValue);
+      bodyText = bodyText.split('{recovery_link}').join(recoveryLink);
       
       const body = encodeURIComponent(bodyText);
       window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;

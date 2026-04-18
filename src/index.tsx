@@ -11,11 +11,18 @@ const queryClient = new QueryClient();
 // IMMEDIATE REDIRECT FOR RECOVERY LINKS
 // This runs before React mounts to ensure HashRouter doesn't get confused by Supabase tokens
 (function() {
-  const hash = window.location.hash;
-  if (hash.includes('access_token=') || hash.includes('type=recovery')) {
-    if (!hash.startsWith('#/profile')) {
-      const cleanParams = hash.includes('?') ? hash.substring(hash.indexOf('?')) : (hash.startsWith('#/') ? hash.substring(2) : hash.substring(1));
-      window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + cleanParams);
+  const h = window.location.hash;
+  const s = window.location.search;
+  
+  // Check both hash and search for recovery tokens
+  if (h.includes('access_token=') || h.includes('type=recovery') || s.includes('type=recovery')) {
+    if (!h.startsWith('#/profile')) {
+      console.log('RECOVERY DETECTED - FORCING REDIRECT');
+      const cleanParams = h.includes('?') ? h.substring(h.indexOf('?')) : (h.startsWith('#/') ? h.substring(2) : (h.startsWith('#') ? h.substring(1) : h));
+      const searchParams = s.startsWith('?') ? s.substring(1) : s;
+      const finalParams = [cleanParams, searchParams].filter(Boolean).join('&');
+      
+      window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + finalParams);
     }
   }
 })();
