@@ -3213,10 +3213,15 @@ const App: React.FC = () => {
   useEffect(() => {
     // Initial Auth Initialization
     const initAuth = async () => {
+      console.log('AUTH: Starting initialization...');
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('AUTH: Initial session:', session ? 'PRESENT' : 'NONE');
+      
       if (session?.user && !user) {
+        console.log('AUTH: Found session but no user state, fetching user data...');
         try {
           const userData = await db.getUserByAuthId(session.user.id);
+          console.log('AUTH: DB lookup result:', userData ? 'FOUND' : 'NOT FOUND');
           if (userData) {
             db.setCompanyId(userData.companyId || (userData as any).company_id);
             db.setUserId(userData.id);
@@ -3224,22 +3229,31 @@ const App: React.FC = () => {
             setUser(userData);
           }
         } catch (err) {
-          console.error('Initial auth error:', err);
+          console.error('AUTH: Initial auth error:', err);
         }
       }
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('AUTH EVENT:', event, 'Session:', session ? 'PRESENT' : 'NONE');
+        
         if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery'))) {
-          if (session?.user && !user) {
+          console.log('AUTH: Recovery flow detected in state change');
+          if (session?.user) {
+            console.log('AUTH: Fetching user data for recovery user:', session.user.id);
             const userData = await db.getUserByAuthId(session.user.id);
+            console.log('AUTH: Recovery DB lookup:', userData ? 'SUCCESS' : 'FAILED');
             if (userData) {
               db.setCompanyId(userData.companyId || (userData as any).company_id);
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
               setUser(userData);
+              console.log('AUTH: User set, redirecting to profile');
               window.location.hash = '#/profile';
+            } else {
+              console.error('AUTH: Recovery user NOT found in database!');
             }
           } else {
+            console.log('AUTH: No session user in recovery event, moving to profile anyway');
             window.location.hash = '#/profile';
           }
         }
