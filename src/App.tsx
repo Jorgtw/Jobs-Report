@@ -1031,7 +1031,9 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
       
       const subject = encodeURIComponent(t('auth.emailInstructionsSubject'));
       let bodyText = t('auth.emailInstructionsBody');
-      bodyText = bodyText.replace('{name}', u.name || '');
+      // Ensure we have a name, fallback to username or 'Utente'
+      const displayName = u.name || u.username || 'Utente';
+      bodyText = bodyText.replace('{name}', displayName);
       bodyText = bodyText.replace('{username}', u.username || '');
       bodyText = bodyText.replace('{email}', u.email);
       bodyText = bodyText.replace('{recovery_link}', recoveryLink);
@@ -3190,6 +3192,24 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // EMERGENCY HASH CHECK: Supabase recovery redirects often put tokens in the hash 
+    // which confuses HashRouter. We catch this before the router even initializes.
+    const checkHashForRecovery = () => {
+      const hash = window.location.hash;
+      if (hash.includes('type=recovery') || hash.includes('access_token=')) {
+        // If we see Supabase params in the hash, we are likely coming from a recovery link.
+        // We force the hash to #/profile to let our auth listener handle it.
+        if (!hash.startsWith('#/profile')) {
+          console.log('Recovery hash detected, forcing profile route');
+          // We keep the parameters so onAuthStateChange can still see them if needed
+          // but we ensure the path starts with #/profile
+          const params = hash.startsWith('#/') ? hash.substring(hash.indexOf('?') || hash.length) : hash.substring(1);
+          window.location.hash = '#/profile?' + params;
+        }
+      }
+    };
+    checkHashForRecovery();
+
     const initAuth = async () => {
       // 1. Check for current session (important for recovery links or page refreshes)
       const { data: { session } } = await supabase.auth.getSession();
