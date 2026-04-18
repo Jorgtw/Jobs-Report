@@ -83,13 +83,6 @@ class DBService {
     return t.substring(0, 5);
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
 
   public calculateTotalHours(startTime: string, endTime: string, breakHours: number, manualTotal?: number): number {
     if (manualTotal !== undefined && manualTotal !== null) {
@@ -217,25 +210,31 @@ class DBService {
     if (companyError) throw companyError;
     const newCompanyId = companyData[0].id;
 
-    // 3. Create admin worker
-    const hashedPassword = await this.hashPassword(adminPassword);
-    const sbObj = {
-      ...this.mapAppWorkerToSupabase({
-        name: adminName,
-        username: adminUsername,
-        password: hashedPassword,
-        role: 'admin',
-        status: 'active',
-        companyId: newCompanyId
-      }),
-      created_at: new Date().toISOString()
-    };
-    // Ensure both fields are set
-    sbObj.password = hashedPassword;
-    sbObj.password_hash = hashedPassword;
+    // 3. Create admin worker via Admin API (handles Supabase Auth and DB safely)
+    const token = await this.getAuthToken();
+    const response = await fetch('/api/admin-auth-update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+         action: 'create',
+         updates: {
+           name: adminName,
+           username: adminUsername,
+           password: adminPassword,
+           email: `${adminUsername.toLowerCase()}@jobsreport.it`, // Placeholder email for Auth
+           role: 'admin',
+           status: 'active',
+           companyId: newCompanyId
+         }
+      })
+    });
 
-    const { data: userData, error: userError } = await supabase.from('workers').insert([sbObj]).select();
-    if (userError) throw userError;
+    const apiData = await response.json();
+    if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
+    const userData = apiData.data;
 
     // 4. Create an internal client and project for absences and internal notes
     const internalClientName = `${companyName} - Uso Interno`;
@@ -265,7 +264,7 @@ class DBService {
         }]);
     }
 
-    return this.mapSupabaseWorker(userData[0]);
+    return this.mapSupabaseWorker(userData);
   }
 
   // --- Company Management Methods (SuperAdmin Only) ---
@@ -331,7 +330,8 @@ class DBService {
           comp.adminId = admin.id;
           comp.adminName = admin.name;
           comp.username = admin.username;
-          comp.password = admin.password_hash || admin.password || '';
+          // Security: do not return passwords or hashes to the UI
+          comp.password = '';
         }
       }
       return comp;
@@ -385,14 +385,26 @@ class DBService {
       const userUpdates: any = {};
       if (adminName) userUpdates.name = adminName;
       if (username) userUpdates.username = username;
-      if (password) {
-        userUpdates.password = null; // Do not store plain text
-        userUpdates.password_hash = null;
-      }
+      if (password) userUpdates.password = password; // Will be handled by Admin API
 
       if (Object.keys(userUpdates).length > 0) {
-        const { error: uError } = await supabase.from('workers').update(userUpdates).eq('id', adminId);
-        if (uError) throw uError;
+        const token = await this.getAuthToken();
+        const response = await fetch('/api/admin-auth-update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+             targetUserId: adminId,
+             updates: userUpdates
+          })
+        });
+
+        if (!response.ok) {
+          const apiData = await response.json();
+          throw new Error(apiData.error || 'Failed to update admin via API');
+        }
       }
     }
   }
@@ -631,7 +643,7 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username || '',
-      password: w.password_hash || w.password || '', // mantenuto per retrocompatibilità UI
+      // Security: do not return passwords or hashes to the UI
       companyId: w.company_id || null,
       authId: w.auth_id || null,
       subcontractorId: w.subcontractor_id || null,
@@ -662,10 +674,7 @@ class DBService {
       extra_cost: w.extraCost,
       address: w.address
     };
-    if (w.password || w.password_hash) {
-      obj.password = w.password || w.password_hash;
-      obj.password_hash = w.password || w.password_hash;
-    }
+    // password and password_hash fields are strictly ignored to prevent plain text storage
     return obj;
   }
 

@@ -60,45 +60,120 @@ export default async function handler(req: any, res: any) {
     
     // --- CREATE NEW USER ---
     if (action === 'create') {
-      const { name, username, password, email, role, status } = updates;
+      const { name, username, password, email, role, status, companyId } = updates;
       
-      // A. Create in Supabase Auth
-      const { data: authData, error: authCreateError } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { name, company_id: requesterData.company_id }
-      });
+      // Determine the company_id for the new user
+      const targetCompanyId = (isSuperAdmin && companyId) ? companyId : requesterData.company_id;
 
-      if (authCreateError) {
-        return res.status(500).json({ 
-          error: `Failed to create user in Auth: ${authCreateError.message}`, 
-          detailed: authCreateError 
+      let authId: string | null = null;
+      let isUpdateFlow = false;
+
+      // 1. Step 1: Check Identity Registry (Workers Table)
+      // This is the ONLY source for identity resolution at runtime.
+      const { data: existingWorker, error: lookupError } = await supabaseAdmin
+        .from('workers')
+        .select('auth_id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (lookupError) {
+        return res.status(500).json({ error: 'Identity registry lookup failed' });
+      }
+
+      if (existingWorker && existingWorker.auth_id) {
+        // CASE: User found in registry -> Update existing Auth account
+        authId = existingWorker.auth_id;
+        isUpdateFlow = true;
+        
+        const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(authId, {
+          password,
+          user_metadata: { name, company_id: targetCompanyId }
+        });
+
+        if (authUpdateError) {
+          return res.status(500).json({ error: `Auth update failed: ${authUpdateError.message}` });
+        }
+      } else {
+        // CASE: User not in registry -> Attempt to create new Auth account
+        const { data: authData, error: authCreateError } = await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: { name, company_id: targetCompanyId }
+        });
+
+        if (authCreateError) {
+          // If creation fails due to existing email not in our registry, it's an orphan account
+          if (authCreateError.message.toLowerCase().includes('already') || authCreateError.status === 422) {
+            console.error(`ORPHAN_DETECTED: Email ${email} exists in Auth but is missing from workers registry.`);
+            return res.status(409).json({ 
+              error: 'Identity conflict: This email is already registered in Supabase Auth but is missing from the local registry. Manual reconciliation by SuperAdmin is required.',
+              code: 'ORPHAN_DETECTED'
+            });
+          }
+          return res.status(500).json({ error: `Auth creation failed: ${authCreateError.message}` });
+        }
+
+        authId = authData.user.id;
+      }
+
+      // --- SAFETY GUARD: Ensure Auth ID is resolved before DB write ---
+      if (!authId) {
+        console.error('CRITICAL: AUTH_ID_UNRESOLVED for email:', email);
+        return res.status(500).json({ error: 'AUTH_ID_UNRESOLVED' });
+      }
+
+      // 2. Step 2: Synchronize Projection (Workers Table)
+      const workerObj: any = {
+        name,
+        username,
+        email, 
+        role: role || 'operator',
+        status: status || 'active',
+        company_id: targetCompanyId,
+        auth_id: authId,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('DEBUG_TRACE: Upsert payload for workers:', JSON.stringify(workerObj, null, 2));
+
+      const { data: finalWorker, error: syncError } = await supabaseAdmin
+        .from('workers')
+        .upsert([{
+          ...workerObj,
+          created_at: isUpdateFlow ? undefined : new Date().toISOString() 
+        }], { 
+          onConflict: 'auth_id'
+        })
+        .select()
+        .single();
+
+      if (syncError) {
+        console.error('DEBUG_TRACE: Sync Error Object:', JSON.stringify(syncError, null, 2));
+        console.error('DEBUG_TRACE: Sync Error Details:', {
+          code: syncError.code,
+          details: syncError.details,
+          hint: syncError.hint,
+          message: syncError.message
+        });
+
+        // Step 3: Failure Handling (Eventual Consistency)
+        console.error('SYNC_ERROR: Auth updated but database upsert failed:', syncError.message);
+        
+        // Mark as pending_sync for operational visibility
+        await supabaseAdmin.from('workers')
+          .update({ status: 'pending_sync' })
+          .eq('auth_id', authId);
+
+        // Return SUCCESS for the Auth operation as per requirements
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Auth synchronized, but database mapping failed (marked as pending_sync)', 
+          auth_id: authId 
         });
       }
 
-      const authId = authData.user.id;
-
-      // B. Create in workers table
-      const { data: workerData, error: workerCreateError } = await supabaseAdmin.from('workers').insert([{
-        name,
-        username,
-        email,
-        password: password, // For UI fallback
-        password_hash: password, // Consistency with project pattern
-        role: role || 'operator',
-        status: status || 'active',
-        company_id: requesterData.company_id,
-        auth_id: authId,
-        created_at: new Date().toISOString()
-      }]).select().single();
-
-      if (workerCreateError) {
-        // Rollback Auth creation? Maybe too complex for now, but good practice.
-        return res.status(500).json({ error: 'Auth user created, but database creation failed', detailed: workerCreateError });
-      }
-
-      return res.status(200).json({ success: true, data: workerData });
+      return res.status(200).json({ success: true, data: finalWorker });
     }
 
     // --- UPDATE EXISTING USER ---
@@ -145,10 +220,9 @@ export default async function handler(req: any, res: any) {
 
     // Update workers table
     const dbUpdates: any = { ...updates };
-    if (updates.password) {
-      dbUpdates.password = updates.password;
-      dbUpdates.password_hash = updates.password;
-    }
+    // Remove password fields from DB updates
+    delete dbUpdates.password;
+    delete dbUpdates.password_hash;
 
     const { error: finalDbError } = await supabaseAdmin
       .from('workers')
