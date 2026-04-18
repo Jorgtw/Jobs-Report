@@ -21,7 +21,7 @@ export const auth = {
   emailAlreadyInUse: "Bu e-posta zaten başka bir kullanıcı tarafından kullanılıyor.",
   sendInstructions: "Erişim talimatlarını gönder",
   emailInstructionsSubject: "Jobs Report erişim talimatlarınız",
-  emailInstructionsBody: "Merhaba,\n\nJobs Report portalına erişim için bilgileriniz:\n\nKullanıcı: {email}\nŞifre: {password}\n\nBuradan giriş yapın: {url}\n\nİyi çalışmalar!",
+  emailInstructionsBody: "Merhaba {name},\n\nJobs Report portalına erişim için bilgileriniz:\n\nKullanıcı: {email}\n\nŞifrenizi belirlemek için buradan giriş yapın:\n{recovery_link}\n\nİyi çalışmalar!",
   placeholderEmail: "E-posta adresini girin...",
   placeholderPassword: "Şifreyi girin...",
   noAccount: "Hesabınız yok mu?",

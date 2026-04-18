@@ -21,7 +21,7 @@ export const auth = {
   emailAlreadyInUse: "Este correo electrónico ya está en uso por otro usuario.",
   sendInstructions: "Enviar instrucciones de acceso",
   emailInstructionsSubject: "Tus instrucciones de acceso para Jobs Report",
-  emailInstructionsBody: "Hola,\n\naquí tienes los datos para acceder al portal Jobs Report:\n\nUsuario: {email}\nContraseña: {password}\n\nAccede aquí: {url}\n\n¡Buen trabajo!",
+  emailInstructionsBody: "Hola {name},\n\naquí tienes los datos para acceder al portal Jobs Report:\n\nUsuario: {email}\n\nAccede aquí para establecer tu contraseña:\n{recovery_link}\n\n¡Buen trabajo!",
   placeholderEmail: "Introduce la dirección de correo electrónico...",
   placeholderPassword: "Introduce la contraseña...",
   noAccount: "¿No tienes una cuenta?",

@@ -21,7 +21,7 @@ export const auth = {
   emailAlreadyInUse: "Denne e-mail adresse er allerede i brug af en anden bruger.",
   sendInstructions: "Send adgangsinstruktioner",
   emailInstructionsSubject: "Dine adgangsinstruktioner til Jobs Report",
-  emailInstructionsBody: "Hej,\n\nher er oplysningerne for at få adgang til Jobs Report portalen:\n\nBrugernavn: {email}\nAdgangskode: {password}\n\nLog ind her: {url}\n\nGod arbejdslyst!",
+  emailInstructionsBody: "Hej {name},\n\nher er oplysningerne for at få adgang til Jobs Report portalen:\n\nBrugernavn: {email}\n\nLog ind her for at vælge din adgangskode:\n{recovery_link}\n\nGod arbejdslyst!",
   placeholderEmail: "Indtast e-mail adresse...",
   placeholderPassword: "Indtast adgangskode...",
   noAccount: "Har du ikke en konto?",
