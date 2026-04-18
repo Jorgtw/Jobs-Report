@@ -8,23 +8,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
-(function() {
-  const h = window.location.hash;
-  const s = window.location.search;
-  
-  if (h.includes('access_token=') || h.includes('type=recovery') || s.includes('type=recovery')) {
-    if (!h.startsWith('#/profile')) {
-      console.log('RECOVERY DETECTED - UPDATING HASH');
-      const cleanParams = h.includes('?') ? h.substring(h.indexOf('?')) : (h.startsWith('#/') ? h.substring(2) : (h.startsWith('#') ? h.substring(1) : h));
-      const searchParams = s.startsWith('?') ? s.substring(1) : s;
-      const finalParams = [cleanParams, searchParams].filter(Boolean).join('&');
-      
-      // Update hash synchronously so HashRouter sees it on mount
-      window.location.hash = '#/profile?' + finalParams;
-    }
-  }
-})();
-
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
