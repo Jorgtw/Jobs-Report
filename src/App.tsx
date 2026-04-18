@@ -3190,6 +3190,33 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Listen for auth state changes (especially for recovery links)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        // User clicked a recovery link, session is already established by Supabase
+        // We'll redirect to profile to change password
+        window.location.hash = '/profile';
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        // If we are on the login page and get a session (e.g. from recovery or persistent login)
+        if (!user) {
+          try {
+            const userData = await db.getUserByAuthId(session.user.id);
+            if (userData) {
+              handleLogin(userData);
+            }
+          } catch (err) {
+            console.error('Error fetching user after sign in:', err);
+          }
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
+
+  useEffect(() => {
     if (user && user.id) {
       db.setUserId(user.id);
       if ((user.role as any) === 'superadmin') {
