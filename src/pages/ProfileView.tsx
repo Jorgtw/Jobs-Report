@@ -54,12 +54,17 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
       setMessage({ text: t('auth.passwordMismatch'), type: 'error' });
       return;
     }
+    if (passForm.newPass.length < 6) {
+      setMessage({ text: t('auth.passwordTooShort') || 'La password deve essere di almeno 6 caratteri', type: 'error' });
+      return;
+    }
     try {
-      await db.updateUser(user.id, { password: passForm.newPass });
+      const { error } = await supabase.auth.updateUser({ password: passForm.newPass });
+      if (error) throw error;
       setMessage({ text: t('auth.passwordChanged'), type: 'success' });
       setPassForm({ newPass: '', confirmPass: '' });
-    } catch (err) {
-      setMessage({ text: t('common.updateError'), type: 'error' });
+    } catch (err: any) {
+      setMessage({ text: err?.message || t('common.updateError'), type: 'error' });
     }
   };
 
