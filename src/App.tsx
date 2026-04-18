@@ -3192,42 +3192,31 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // EMERGENCY HASH CHECK: Supabase recovery redirects often put tokens in the hash 
-    // which confuses HashRouter. We catch this before the router even initializes.
-    const checkHashForRecovery = () => {
-      const hash = window.location.hash;
-      if (hash.includes('type=recovery') || hash.includes('access_token=')) {
-        // If we see Supabase params in the hash, we are likely coming from a recovery link.
-        // We force the hash to #/profile to let our auth listener handle it.
-        if (!hash.startsWith('#/profile')) {
-          console.log('Recovery hash detected, forcing profile route');
-          // We keep the parameters so onAuthStateChange can still see them if needed
-          // but we ensure the path starts with #/profile
-          const params = hash.startsWith('#/') ? hash.substring(hash.indexOf('?') || hash.length) : hash.substring(1);
-          window.location.hash = '#/profile?' + params;
-        }
+    // EMERGENCY HASH CHECK: Supabase recovery redirects put tokens in the hash.
+    // If we see access_token and we're not already on a known route, force /profile.
+    const hash = window.location.hash;
+    if (hash.includes('access_token=') || hash.includes('type=recovery')) {
+      if (!hash.startsWith('#/profile')) {
+        console.log('Recovery link detected, forcing navigation to profile');
+        const cleanHash = hash.startsWith('#/') ? hash.substring(2) : (hash.startsWith('#') ? hash.substring(1) : hash);
+        window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + cleanHash);
+        return;
       }
-    };
-    checkHashForRecovery();
+    }
 
     const initAuth = async () => {
-      // 1. Check for current session (important for recovery links or page refreshes)
+      // 1. Check for current session (important for recovery links)
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (session?.user && !user) {
         try {
           const userData = await db.getUserByAuthId(session.user.id);
           if (userData) {
-            const isRecovery = window.location.href.includes('type=recovery') || window.location.hash.includes('type=recovery');
-            
             // Manual login setup
             db.setCompanyId(userData.companyId || (userData as any).company_id);
             db.setUserId(userData.id);
             localStorage.setItem('ws_auth', JSON.stringify(userData));
             setUser(userData);
-            
-            if (isRecovery) {
-              window.location.hash = '#/profile';
-            }
           }
         } catch (err) {
           console.error('Initial auth error:', err);
@@ -3236,15 +3225,18 @@ const App: React.FC = () => {
 
       // 2. Listen for future changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          window.location.hash = '#/profile';
-        } else if (event === 'SIGNED_IN' && session?.user && !user) {
-          const userData = await db.getUserByAuthId(session.user.id);
-          if (userData) {
-            handleLogin(userData);
-            if (window.location.href.includes('type=recovery')) {
+        if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+          if (session?.user && !user) {
+            const userData = await db.getUserByAuthId(session.user.id);
+            if (userData) {
+              db.setCompanyId(userData.companyId || (userData as any).company_id);
+              db.setUserId(userData.id);
+              localStorage.setItem('ws_auth', JSON.stringify(userData));
+              setUser(userData);
               window.location.hash = '#/profile';
             }
+          } else if (event === 'PASSWORD_RECOVERY') {
+            window.location.hash = '#/profile';
           }
         }
       });
