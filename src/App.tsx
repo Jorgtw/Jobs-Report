@@ -3236,25 +3236,28 @@ const App: React.FC = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('AUTH EVENT:', event, 'Session:', session ? 'PRESENT' : 'NONE');
         
-        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery'))) {
-          console.log('AUTH: Recovery flow detected in state change');
-          if (session?.user) {
-            console.log('AUTH: Fetching user data for recovery user:', session.user.id);
+        if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+          console.log('AUTH: Valid auth event detected');
+          if (session?.user && !user) {
+            console.log('AUTH: Fetching user data for auth user:', session.user.id);
             const userData = await db.getUserByAuthId(session.user.id);
-            console.log('AUTH: Recovery DB lookup:', userData ? 'SUCCESS' : 'FAILED');
+            console.log('AUTH: DB lookup result:', userData ? 'SUCCESS' : 'FAILED');
             if (userData) {
               db.setCompanyId(userData.companyId || (userData as any).company_id);
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
               setUser(userData);
-              console.log('AUTH: User set, redirecting to profile');
-              window.location.hash = '#/profile';
+              console.log('AUTH: User set in app state');
+              
+              // Only force redirect to profile if it was explicitly a recovery flow
+              // Or if the hash still contains recovery info. Otherwise, let normal routing happen.
+              if (event === 'PASSWORD_RECOVERY' || window.location.hash.includes('type=recovery')) {
+                console.log('AUTH: Recovery flow confirmed, redirecting to profile');
+                window.location.hash = '#/profile';
+              }
             } else {
-              console.error('AUTH: Recovery user NOT found in database!');
+              console.error('AUTH: User NOT found in database for auth_id:', session.user.id);
             }
-          } else {
-            console.log('AUTH: No session user in recovery event, moving to profile anyway');
-            window.location.hash = '#/profile';
           }
         }
       });
