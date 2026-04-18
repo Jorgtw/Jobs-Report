@@ -635,6 +635,7 @@ class DBService {
       },
       body: JSON.stringify({
          action: 'generate-recovery-link',
+         targetUserId: id,
          updates: { targetUserId: id }
       })
     });
