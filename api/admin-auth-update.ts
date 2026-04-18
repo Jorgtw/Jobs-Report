@@ -240,6 +240,51 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: 'Update failed in database. Auth has been rolled back where possible.', detailed: finalDbError });
     }
 
+    // --- GENERATE RECOVERY LINK ---
+    if (action === 'generate-recovery-link') {
+      const { targetUserId } = updates;
+      if (!targetUserId) return res.status(400).json({ error: 'Missing targetUserId' });
+
+      // Resolve the user and their email
+      const { data: targetData, error: targetDbError } = await supabaseAdmin
+        .from('workers')
+        .select('company_id, auth_id, email')
+        .eq('id', targetUserId)
+        .single();
+
+      if (targetDbError || !targetData || !targetData.auth_id) {
+        return res.status(404).json({ error: 'User not found in registry or missing auth_id' });
+      }
+
+      // Security check: same company or superadmin
+      if (!isSuperAdmin && targetData.company_id !== requesterData.company_id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      // Generate the recovery link
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'recovery',
+        email: targetData.email,
+        options: {
+          redirectTo: `${req.headers.origin || ''}/auth/v1/callback`
+        }
+      });
+
+      if (
+        linkError || 
+        typeof linkData?.properties?.action_link !== 'string' || 
+        !linkData.properties.action_link
+      ) {
+        console.error('RECOVERY_LINK_GENERATION_FAILED', linkError);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'RECOVERY_LINK_FAILED' 
+        });
+      }
+
+      return res.status(200).json({ success: true, recovery_link: linkData.properties.action_link });
+    }
+
     return res.status(200).json({ success: true });
 
   } catch (err: any) {

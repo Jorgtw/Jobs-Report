@@ -1019,19 +1019,29 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
     }
   };
 
-  const handleSendInstructions = (u: any) => {
+  const handleSendInstructions = async (u: any) => {
     if (!u.email) {
       alert(t('auth.placeholderEmail'));
       return;
     }
-    const subject = encodeURIComponent(t('auth.emailInstructionsSubject'));
-    let bodyText = t('auth.emailInstructionsBody');
-    bodyText = bodyText.replace('{name}', u.name || '');
-    bodyText = bodyText.replace('{username}', u.username || '');
-    const displayedPassword = u.password || '';
-    bodyText = bodyText.replace('{password}', displayedPassword);
-    const body = encodeURIComponent(bodyText);
-    window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;
+    
+    try {
+      // Get a secure recovery link from the admin API
+      const recoveryLink = await db.generateRecoveryLink(u.id);
+      
+      const subject = encodeURIComponent(t('auth.emailInstructionsSubject'));
+      let bodyText = t('auth.emailInstructionsBody');
+      bodyText = bodyText.replace('{name}', u.name || '');
+      bodyText = bodyText.replace('{username}', u.username || '');
+      bodyText = bodyText.replace('{email}', u.email);
+      bodyText = bodyText.replace('{recovery_link}', recoveryLink);
+      
+      const body = encodeURIComponent(bodyText);
+      window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;
+    } catch (err: any) {
+      console.error('Failed to send instructions:', err);
+      alert(t('auth.registrationErrorConnection'));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

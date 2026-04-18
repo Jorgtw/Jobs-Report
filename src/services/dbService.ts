@@ -625,6 +625,27 @@ class DBService {
     if (error) throw error;
   }
 
+  async generateRecoveryLink(id: string) {
+    const token = await this.getAuthToken();
+    const response = await fetch('/api/admin-auth-update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+         action: 'generate-recovery-link',
+         updates: { targetUserId: id }
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok || typeof data?.recovery_link !== 'string') {
+      throw new Error(data?.error || 'RECOVERY_LINK_INVALID');
+    }
+    return data.recovery_link;
+  }
+
   async deleteUser(id: string) {
     // 1. Remove references from rapportini_workers to avoid foreign key constraints
     await supabase.from('rapportini_workers').delete().eq('worker_id', id);
