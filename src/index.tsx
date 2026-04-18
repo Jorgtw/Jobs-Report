@@ -8,34 +8,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
-// IMMEDIATE REDIRECT FOR RECOVERY LINKS
-// This runs before React mounts to ensure HashRouter doesn't get confused by Supabase tokens
 (function() {
   const h = window.location.hash;
   const s = window.location.search;
   
-  // Check both hash and search for recovery tokens
   if (h.includes('access_token=') || h.includes('type=recovery') || s.includes('type=recovery')) {
     if (!h.startsWith('#/profile')) {
-      console.log('RECOVERY DETECTED - FORCING REDIRECT');
-      
-      // SHOW SPLASH SCREEN
-      const splash = document.createElement('div');
-      splash.style.cssText = 'position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;';
-      splash.innerHTML = `
-        <div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #2563eb;border-radius:50%;animate:spin 1s linear infinite;"></div>
-        <p style="margin-top:20px;color:#1e293b;font-weight:600;">Configurazione accesso in corso...</p>
-        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-      `;
-      document.body.appendChild(splash);
-
+      console.log('RECOVERY DETECTED - UPDATING HASH');
       const cleanParams = h.includes('?') ? h.substring(h.indexOf('?')) : (h.startsWith('#/') ? h.substring(2) : (h.startsWith('#') ? h.substring(1) : h));
       const searchParams = s.startsWith('?') ? s.substring(1) : s;
       const finalParams = [cleanParams, searchParams].filter(Boolean).join('&');
       
-      setTimeout(() => {
-        window.location.replace(window.location.origin + window.location.pathname + '#/profile?' + finalParams);
-      }, 500);
+      // Update hash synchronously so HashRouter sees it on mount
+      window.location.hash = '#/profile?' + finalParams;
     }
   }
 })();
