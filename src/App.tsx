@@ -3192,21 +3192,36 @@ const App: React.FC = () => {
   useEffect(() => {
     // Listen for auth state changes (especially for recovery links)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        // User clicked a recovery link, session is already established by Supabase
-        // We'll redirect to profile to change password
-        window.location.hash = '/profile';
-      } else if (event === 'SIGNED_IN' && session?.user) {
-        // If we are on the login page and get a session (e.g. from recovery or persistent login)
+      console.log('Auth event:', event);
+      
+      if (session?.user) {
+        // If we have a session but no user state, fetch user data
         if (!user) {
           try {
             const userData = await db.getUserByAuthId(session.user.id);
             if (userData) {
-              handleLogin(userData);
+              // Special case: if it's a recovery, we want to stay on profile
+              const isRecovery = event === 'PASSWORD_RECOVERY' || window.location.href.includes('type=recovery');
+              
+              // Call handleLogin but override redirect if it's recovery
+              db.setCompanyId(userData.companyId || (userData as any).company_id);
+              db.setUserId(userData.id);
+              localStorage.setItem('ws_auth', JSON.stringify(userData));
+              setUser(userData);
+              setIsMobileMenuOpen(false);
+              
+              if (isRecovery) {
+                window.location.hash = '/profile';
+              } else {
+                window.location.hash = '/home';
+              }
             }
           } catch (err) {
-            console.error('Error fetching user after sign in:', err);
+            console.error('Error fetching user after auth event:', err);
           }
+        } else if (event === 'PASSWORD_RECOVERY') {
+          // User already loaded, just redirect to profile
+          window.location.hash = '/profile';
         }
       }
     });
