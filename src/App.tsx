@@ -3211,57 +3211,63 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Initial Auth Initialization
-    const initAuth = async () => {
-      console.log('AUTH: Starting initialization...');
-      // IMPORTANT: Check for recovery BEFORE getSession() which clears the hash
-      const isRecoveryFlow = window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token=');
-      console.log('AUTH: Recovery flow detected in URL:', isRecoveryFlow);
+    // Check for recovery URL IMMEDIATELY on first mount, before anything async runs
+    const h = window.location.hash;
+    if (h.includes('type=recovery') || (h.includes('access_token=') && h.includes('recovery'))) {
+      sessionStorage.setItem('recovery_pending', 'true');
+      console.log('AUTH: Recovery flag saved to sessionStorage');
+    }
+    const isRecoveryPending = sessionStorage.getItem('recovery_pending') === 'true';
 
+    const initAuth = async () => {
+      console.log('AUTH: Starting initialization... recovery_pending:', isRecoveryPending);
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('AUTH: Initial session:', session ? 'PRESENT' : 'NONE');
+      console.log('AUTH: Initial session:', session ? 'PRESENT' : 'NONE', 'session.user:', session?.user ? session.user.id : 'NONE');
       
-      if (session?.user && (isRecoveryFlow || !user)) {
-        console.log('AUTH: Processing session, isRecovery:', isRecoveryFlow, 'hasUser:', !!user);
+      if (session?.user) {
+        console.log('AUTH: Session user found, fetching worker data...');
         try {
           const userData = await db.getUserByAuthId(session.user.id);
-          console.log('AUTH: DB lookup result:', userData ? 'FOUND' : 'NOT FOUND');
+          console.log('AUTH: DB lookup result:', userData ? `FOUND (${userData.name})` : 'NOT FOUND');
           if (userData) {
             db.setCompanyId(userData.companyId || (userData as any).company_id);
             db.setUserId(userData.id);
             localStorage.setItem('ws_auth', JSON.stringify(userData));
             setUser(userData);
-            // If this was a recovery link, send user to profile to set their password
-            if (isRecoveryFlow) {
-              console.log('AUTH: Recovery session confirmed, redirecting to profile');
+            if (isRecoveryPending) {
+              console.log('AUTH: Recovery pending, redirecting to profile');
+              sessionStorage.removeItem('recovery_pending');
               window.location.hash = '#/profile';
             }
           }
         } catch (err) {
           console.error('AUTH: Initial auth error:', err);
         }
+      } else {
+        console.log('AUTH: No session.user available yet, waiting for onAuthStateChange...');
       }
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('AUTH EVENT:', event, 'Session:', session ? 'PRESENT' : 'NONE');
+        console.log('AUTH EVENT:', event, 'session.user:', session?.user ? session.user.id : 'NONE');
         
-        // For PASSWORD_RECOVERY events, always handle regardless of current user state
-        if (event === 'PASSWORD_RECOVERY') {
-          console.log('AUTH: PASSWORD_RECOVERY event - fetching user and redirecting to profile');
+        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && sessionStorage.getItem('recovery_pending') === 'true')) {
+          console.log('AUTH: Recovery event detected in onAuthStateChange');
           if (session?.user) {
             const userData = await db.getUserByAuthId(session.user.id);
-            console.log('AUTH: DB lookup result:', userData ? 'SUCCESS' : 'FAILED');
+            console.log('AUTH: Recovery user lookup:', userData ? `FOUND (${userData.name})` : 'FAILED');
             if (userData) {
               db.setCompanyId(userData.companyId || (userData as any).company_id);
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
               setUser(userData);
+              sessionStorage.removeItem('recovery_pending');
+              console.log('AUTH: Redirecting to profile from onAuthStateChange');
               window.location.hash = '#/profile';
             }
           }
-        } else if (event === 'SIGNED_IN') {
-          if (session?.user && !user) {
-            console.log('AUTH: SIGNED_IN - fetching user data');
+        } else if (event === 'SIGNED_IN' && !user) {
+          if (session?.user) {
+            console.log('AUTH: Normal SIGNED_IN - fetching user data');
             const userData = await db.getUserByAuthId(session.user.id);
             if (userData) {
               db.setCompanyId(userData.companyId || (userData as any).company_id);
@@ -3278,7 +3284,7 @@ const App: React.FC = () => {
     };
 
     initAuth();
-  }, [user]);
+  }, []);
 
 
   useEffect(() => {
