@@ -189,6 +189,15 @@ class DBService {
     return data ? this.mapSupabaseWorker(data) : null;
   }
 
+  async getUserByAuthId(authId: string) {
+    const { data, error } = await supabase.from('workers').select('*').eq('auth_id', authId).maybeSingle();
+    if (error) {
+      console.error('Error fetching user by auth_id:', error);
+      return null;
+    }
+    return data ? this.mapSupabaseWorker(data) : null;
+  }
+
   async registerCompany(companyName: string, adminName: string, adminUsername: string, adminPassword: string) {
     // 1. Check if username already exists globally
     const { data: existingUser, error: checkErr } = await supabase
