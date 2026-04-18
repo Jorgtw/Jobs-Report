@@ -3214,6 +3214,10 @@ const App: React.FC = () => {
     // Initial Auth Initialization
     const initAuth = async () => {
       console.log('AUTH: Starting initialization...');
+      // IMPORTANT: Check for recovery BEFORE getSession() which clears the hash
+      const isRecoveryFlow = window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token=');
+      console.log('AUTH: Recovery flow detected in URL:', isRecoveryFlow);
+
       const { data: { session } } = await supabase.auth.getSession();
       console.log('AUTH: Initial session:', session ? 'PRESENT' : 'NONE');
       
@@ -3227,6 +3231,11 @@ const App: React.FC = () => {
             db.setUserId(userData.id);
             localStorage.setItem('ws_auth', JSON.stringify(userData));
             setUser(userData);
+            // If this was a recovery link, send user to profile to set their password
+            if (isRecoveryFlow) {
+              console.log('AUTH: Recovery session confirmed, redirecting to profile');
+              window.location.hash = '#/profile';
+            }
           }
         } catch (err) {
           console.error('AUTH: Initial auth error:', err);
@@ -3236,10 +3245,10 @@ const App: React.FC = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('AUTH EVENT:', event, 'Session:', session ? 'PRESENT' : 'NONE');
         
-        if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-          console.log('AUTH: Valid auth event detected');
-          if (session?.user && !user) {
-            console.log('AUTH: Fetching user data for auth user:', session.user.id);
+        // For PASSWORD_RECOVERY events, always handle regardless of current user state
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('AUTH: PASSWORD_RECOVERY event - fetching user and redirecting to profile');
+          if (session?.user) {
             const userData = await db.getUserByAuthId(session.user.id);
             console.log('AUTH: DB lookup result:', userData ? 'SUCCESS' : 'FAILED');
             if (userData) {
@@ -3247,16 +3256,18 @@ const App: React.FC = () => {
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
               setUser(userData);
-              console.log('AUTH: User set in app state');
-              
-              // Only force redirect to profile if it was explicitly a recovery flow
-              // Or if the hash still contains recovery info. Otherwise, let normal routing happen.
-              if (event === 'PASSWORD_RECOVERY' || window.location.hash.includes('type=recovery')) {
-                console.log('AUTH: Recovery flow confirmed, redirecting to profile');
-                window.location.hash = '#/profile';
-              }
-            } else {
-              console.error('AUTH: User NOT found in database for auth_id:', session.user.id);
+              window.location.hash = '#/profile';
+            }
+          }
+        } else if (event === 'SIGNED_IN') {
+          if (session?.user && !user) {
+            console.log('AUTH: SIGNED_IN - fetching user data');
+            const userData = await db.getUserByAuthId(session.user.id);
+            if (userData) {
+              db.setCompanyId(userData.companyId || (userData as any).company_id);
+              db.setUserId(userData.id);
+              localStorage.setItem('ws_auth', JSON.stringify(userData));
+              setUser(userData);
             }
           }
         }
