@@ -634,7 +634,7 @@ class DBService {
     if (error) throw error;
   }
 
-  async generateRecoveryLink(id: string) {
+  async sendAccessInstructions(id: string): Promise<void> {
     const token = await this.getAuthToken();
     const response = await fetch('/api/admin-auth-update', {
       method: 'POST',
@@ -644,16 +644,21 @@ class DBService {
       },
       body: JSON.stringify({
          action: 'generate-recovery-link',
-         targetUserId: id,
-         updates: { targetUserId: id }
+         targetUserId: id
       })
     });
 
-    const data = await response.json();
-    if (!response.ok || typeof data?.recovery_link !== 'string') {
-      throw new Error(data?.error || 'RECOVERY_LINK_INVALID');
+    let data: any;
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Non-JSON response from admin API:', text);
+      throw new Error(`Server error (${response.status}): unexpected response format.`);
     }
-    return data.recovery_link;
+
+    if (!response.ok) throw new Error(data?.error || 'Failed to send access instructions');
   }
 
   async deleteUser(id: string) {

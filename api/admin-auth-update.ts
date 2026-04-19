@@ -246,13 +246,13 @@ export default async function handler(req: any, res: any) {
 
     // --- GENERATE RECOVERY LINK ---
     if (action === 'generate-recovery-link') {
-      const { targetUserId } = updates;
+      const { targetUserId } = req.body;
       if (!targetUserId) return res.status(400).json({ error: 'Missing targetUserId' });
 
       // Resolve the user and their email
       const { data: targetData, error: targetDbError } = await supabaseAdmin
         .from('workers')
-        .select('company_id, auth_id, email')
+        .select('company_id, auth_id, email, name')
         .eq('id', targetUserId)
         .single();
 
@@ -286,7 +286,57 @@ export default async function handler(req: any, res: any) {
         });
       }
 
-      return res.status(200).json({ success: true, recovery_link: linkData.properties.action_link });
+      // Send email via Resend — link is NOT returned to frontend
+      const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+      const displayName = targetData.name || targetData.email;
+      const emailHtml = `
+        <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">
+          <h2 style="color:#1e293b">Accesso a Jobs Report</h2>
+          <p>Ciao <strong>${displayName}</strong>,</p>
+          <p>Il tuo amministratore ti ha inviato le istruzioni per accedere a <strong>Jobs Report</strong>.</p>
+          <p>Clicca il bottone qui sotto per impostare la tua password e accedere:</p>
+          <a href="${linkData.properties.action_link}"
+             style="display:inline-block;margin:16px 0;padding:12px 28px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">
+            Imposta password e accedi
+          </a>
+          <p style="color:#94a3b8;font-size:12px;margin-top:28px;">
+            Il link è valido per 24 ore. Se non hai richiesto questo accesso, ignora questa email.
+          </p>
+        </div>`;
+
+      const resendResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: 'Jobs Report <noreply@jobs-report.app>',
+          to: [targetData.email],
+          subject: 'Le tue istruzioni di accesso – Jobs Report',
+          html: emailHtml
+        })
+      });
+
+      if (!resendResponse.ok) {
+        const resendError = await resendResponse.json().catch(() => ({}));
+        console.error('RESEND_SEND_FAILED', resendError);
+        return res.status(500).json({ error: 'Email sending failed. Database not updated.', detailed: resendError });
+      }
+
+      // Only update DB after confirmed email delivery — two sequential calls
+      await supabaseAdmin
+        .from('workers')
+        .update({
+          last_invitation_sent_at: new Date().toISOString()
+        })
+        .eq('id', targetUserId);
+
+      await supabaseAdmin.rpc('increment_invitation_count', {
+        worker_id: targetUserId
+      });
+
+      return res.status(200).json({ success: true, message: 'Email sent successfully' });
     }
 
     return res.status(400).json({ error: 'Invalid action' });

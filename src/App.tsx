@@ -965,6 +965,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [sendStatus, setSendStatus] = useState<Record<string, 'success' | 'error'>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -1021,35 +1022,17 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
   };
 
   const handleSendInstructions = async (u: any) => {
-    if (!u.email) {
-      alert(t('auth.placeholderEmail'));
-      return;
-    }
-    
+    if (!u.email) return;
+
     try {
       setSendingId(u.id);
-      // Get a secure recovery link from the admin API
-      const recoveryLink = await db.generateRecoveryLink(u.id);
-      
-      const subject = encodeURIComponent(t('auth.emailInstructionsSubject'));
-      let bodyText = t('auth.emailInstructionsBody');
-      
-      // ULTRA-ROBUST NAME REPLACEMENT
-      const nameValue = String(u.name || '').trim();
-      const usernameValue = String(u.username || '').trim();
-      const emailValue = String(u.email || '').trim();
-      const displayName = nameValue || usernameValue || emailValue || 'Utente';
-      
-      bodyText = bodyText.split('{name}').join(displayName);
-      bodyText = bodyText.split('{username}').join(usernameValue);
-      bodyText = bodyText.split('{email}').join(emailValue);
-      bodyText = bodyText.split('{recovery_link}').join(recoveryLink);
-      
-      const body = encodeURIComponent(bodyText);
-      window.location.href = `mailto:${u.email}?subject=${subject}&body=${body}`;
+      await db.sendAccessInstructions(u.id);
+      setSendStatus(prev => ({ ...prev, [u.id]: 'success' }));
+      setTimeout(() => setSendStatus(prev => { const next = { ...prev }; delete next[u.id]; return next; }), 3000);
     } catch (err: any) {
       console.error('Failed to send instructions:', err);
-      alert(t('auth.registrationErrorConnection'));
+      setSendStatus(prev => ({ ...prev, [u.id]: 'error' }));
+      setTimeout(() => setSendStatus(prev => { const next = { ...prev }; delete next[u.id]; return next; }), 3000);
     } finally {
       setSendingId(null);
     }
@@ -1140,10 +1123,10 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
                 {u.email && (
-                  <button 
-                    disabled={sendingId === u.id}
-                    onClick={() => handleSendInstructions(u)} 
-                    className={`p-2.5 rounded-xl transition-all ${sendingId === u.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`} 
+                  <button
+                    disabled={sendingId === u.id || !u.email}
+                    onClick={() => handleSendInstructions(u)}
+                    className={`p-2.5 rounded-xl transition-all ${sendingId === u.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
                     title={t('auth.sendInstructions')}
                   >
                     {sendingId === u.id ? (
@@ -1152,6 +1135,11 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                       <Mail size={18} />
                     )}
                   </button>
+                )}
+                {sendStatus[u.id] && (
+                  <span className={`text-xs font-bold ${sendStatus[u.id] === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                    {sendStatus[u.id] === 'success' ? '✓' : '✗'}
+                  </span>
                 )}
                 {onImpersonate && (
                   <button onClick={() => onImpersonate(u)} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title={t('dashboard.impersonateUser')}>
@@ -1267,7 +1255,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
                   {editingId && formData.email && (
-                    <button type="button" onClick={() => handleSendInstructions(formData)} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
+                    <button type="button" onClick={() => handleSendInstructions({ id: editingId, email: formData.email })} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
                       <Mail size={16} /> {t('auth.sendInstructions')}
                     </button>
                   )}
