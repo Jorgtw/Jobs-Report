@@ -47,6 +47,7 @@ import { useReports } from './hooks/useReports';
 import { useSummary } from './hooks/useSummary';
 import { useUsers } from './hooks/useUsers';
 import ProfileView from './pages/ProfileView';
+import ResetPasswordView from './pages/ResetPasswordView';
 import Tooltip from './components/common/Tooltip';
 import { generateCompliancePDF } from './services/exportService';
 
@@ -3225,7 +3226,7 @@ const App: React.FC = () => {
             if (isRecoveryPending) {
               console.log('AUTH: Recovery pending, redirecting to profile');
               sessionStorage.removeItem('recovery_pending');
-              window.location.hash = '#/profile';
+              window.location.hash = '#/reset-password';
             }
           }
         } catch (err) {
@@ -3250,7 +3251,7 @@ const App: React.FC = () => {
               setUser(userData);
               sessionStorage.removeItem('recovery_pending');
               console.log('AUTH: Redirecting to profile from onAuthStateChange');
-              window.location.hash = '#/profile';
+              window.location.hash = '#/reset-password';
             }
           }
         } else if (event === 'SIGNED_IN' && !user) {
@@ -3425,6 +3426,7 @@ const App: React.FC = () => {
           <Route path="/presentation" element={<PresentationView />} />
           <Route path="/privacy" element={<PrivacyView />} />
           <Route path="/terms" element={<TermsView />} />
+          <Route path="/reset-password" element={<ResetPasswordView t={t} />} />
 
           {/* Protected Routes Wrapper */}
           <Route 
