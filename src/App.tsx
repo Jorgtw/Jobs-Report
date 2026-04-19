@@ -1210,7 +1210,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} />
                 </FullWidthField>
                 <FullWidthField label={t('projects.personEmail')}>
-                  <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} />
+                  <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} readOnly={!!editingId} />
                 </FullWidthField>
                 <FullWidthField label={t('projects.personRate')}>
                   <div className="flex items-center gap-2">
