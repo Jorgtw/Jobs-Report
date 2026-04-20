@@ -1223,17 +1223,7 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                     <Tooltip text={t('projects.tooltip_overtimeHourlyRate')} />
                   </div>
                 </FullWidthField>
-                {/* Username and Password only for Internal personnel */}
-                {!formData.subcontractorId && (
-                  <>
-                    <FullWidthField label={t('projects.personUsername')}>
-                      <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
-                    </FullWidthField>
-                    <FullWidthField label={t('projects.personPassword')}>
-                      <input type="text" required={!editingId} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
-                    </FullWidthField>
-                  </>
-                )}
+                {/* Fields moved to Access and Security section below */}
                 <div className="md:col-span-2">
                   <FullWidthField label={t('projects.personAddress')}>
                     <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} />
@@ -1244,7 +1234,50 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                     <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses + " min-h-[60px]"} />
                   </FullWidthField>
                 </div>
-              </div>
+                </div>
+
+                {/* Access and Security Section (Internal Personnel only) */}
+                {!formData.subcontractorId && (
+                  <div className="mt-4 pt-6 border-t">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
+                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight">{t('projects.accessAndSecurity')}</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                      <FullWidthField label={t('projects.personUsername')}>
+                        <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
+                      </FullWidthField>
+                      <FullWidthField label={editingId ? t('auth.resetPassword') : t('projects.personPassword')}>
+                        <div className="space-y-1">
+                          <input 
+                            type="text" 
+                            required={!editingId} 
+                            value={formData.password} 
+                            onChange={e => setFormData({ ...formData, password: e.target.value })} 
+                            disabled={isEditingDemo} 
+                            className={inputClasses} 
+                            placeholder={editingId ? t('auth.passwordChangeHint') : ''} 
+                          />
+                          {editingId && <p className="text-[9px] text-slate-400 font-medium ml-1 italic">{t('auth.passwordChangeHint')}</p>}
+                        </div>
+                      </FullWidthField>
+                      
+                      {/* Send access instructions button integrated here */}
+                      {editingId && formData.email && (
+                        <div className="md:col-span-2">
+                          <button 
+                            type="button" 
+                            onClick={() => handleSendInstructions({ id: editingId, email: formData.email })} 
+                            className="w-full px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 shadow-sm"
+                          >
+                            <Mail size={16} /> {t('auth.sendInstructions')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
                 <div className="flex items-center gap-3">
                   <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">{t('projects.personStatus')}:</label>
@@ -1254,11 +1287,6 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   </div>
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
-                  {editingId && formData.email && (
-                    <button type="button" onClick={() => handleSendInstructions({ id: editingId, email: formData.email })} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
-                      <Mail size={16} /> {t('auth.sendInstructions')}
-                    </button>
-                  )}
                   <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                   <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
                     {editingId ? t('common.update') : t('common.save')}

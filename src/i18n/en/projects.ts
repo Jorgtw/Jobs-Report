@@ -103,4 +103,5 @@ export const projects = {
   noMessages: 'No messages present',
   typeMessagePlaceholder: 'Write a note or notice...',
   errorSendingMessage: 'Error sending message',
+  accessAndSecurity: 'Access and Security',
 } as const;

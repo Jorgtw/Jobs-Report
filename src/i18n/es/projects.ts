@@ -96,4 +96,5 @@ export const projects = {
   noMessages: 'No hay mensajes presentes',
   typeMessagePlaceholder: 'Escribe una nota o aviso...',
   errorSendingMessage: 'Error al enviar el mensaje',
+  accessAndSecurity: 'Acceso y Seguridad',
 };

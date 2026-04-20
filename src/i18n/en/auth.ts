@@ -58,4 +58,6 @@ export const auth = {
   termsLink: "Terms of Service",
   termsAcceptMiddle: "and the",
   privacyLink: "Privacy Policy",
+  resetPassword: "Reset Password",
+  passwordChangeHint: "Leave empty to keep current password",
 };

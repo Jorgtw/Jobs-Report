@@ -58,4 +58,6 @@ export const auth = {
   termsLink: "Termini di Servizio",
   termsAcceptMiddle: "e la",
   privacyLink: "Privacy Policy",
+  resetPassword: "Reset Password",
+  passwordChangeHint: "Lascia vuoto per non modificare",
 };
