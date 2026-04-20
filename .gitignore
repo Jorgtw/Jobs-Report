@@ -30,3 +30,6 @@ lerna-debug.log*
 .env
 .env.local
 .env.production
+
+# Scratch
+scratch/

@@ -1168,12 +1168,6 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                   {t('dashboard.demoFieldsLocked')}
                 </div>
               )}
-              {editingId && !formData.subcontractorId && (
-                <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-[10px] font-bold border border-blue-100 flex items-start gap-2">
-                  <AlertCircle size={14} className="shrink-0" />
-                  {t('auth.loginCredentialsWarning')}
-                </div>
-              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 <FullWidthField label={t('projects.personName')}>
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
@@ -1243,6 +1237,13 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
                       <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
                       <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight">{t('projects.accessAndSecurity')}</h3>
                     </div>
+
+                    {editingId && (
+                      <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-[10px] font-bold border border-blue-100 flex items-start gap-2 mb-4">
+                        <AlertCircle size={14} className="shrink-0" />
+                        {t('auth.loginCredentialsWarning')}
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
                       <FullWidthField label={t('projects.personUsername')}>
                         <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />

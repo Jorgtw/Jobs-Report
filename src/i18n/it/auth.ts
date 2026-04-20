@@ -17,7 +17,7 @@ export const auth = {
   forgotPasswordTitle: "Password Dimenticata",
   registerLink: "Registrati",
   registrationTitle: "Richiesta di registrazione",
-  loginCredentialsWarning: "Usa le tue credenziali aziendali per accedere.",
+  loginCredentialsWarning: "Queste sono le credenziali che l'operatore dovrà usare per accedere all'app.",
   emailAlreadyInUse: "Questa email è già in uso da un altro utente.",
   sendInstructions: "Invia istruzioni di accesso",
   emailInstructionsSubject: "Le tue istruzioni di accesso per Jobs Report",
