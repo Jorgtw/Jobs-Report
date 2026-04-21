@@ -131,10 +131,13 @@ class DBService {
 
   async getSubcontractors() {
     const compId = this.requireCompanyId();
-    let query = supabase.from('subcontractors').select('*');
-    if (compId) query = query.eq('company_id', compId);
+    // SSOT: subcontractors table still has company_id (it's a tenant-owned table)
+    // but we ensure we always filter by the active context.
+    const { data, error } = await supabase
+      .from('subcontractors')
+      .select('*')
+      .eq('company_id', compId);
     
-    const { data, error } = await query;
     if (error) {
       console.error('Error fetching subcontractors:', error);
       return [];
@@ -145,6 +148,67 @@ class DBService {
   private async getWorkerById(id: string): Promise<User | null> {
     const { data } = await supabase.from('workers').select('*').eq('id', id).single();
     return data ? this.mapSupabaseWorker(data) : null;
+  }
+
+  async addUser(worker: any) {
+    const compId = this.requireCompanyId();
+    
+    // 1. Check if worker already exists globally by email
+    const { data: existingWorker } = await supabase
+      .from('workers')
+      .select('id, auth_id, name')
+      .eq('email', worker.email)
+      .maybeSingle();
+
+    let workerId = existingWorker?.id;
+    let authId = existingWorker?.auth_id;
+
+    if (!existingWorker) {
+      // 2. Create new global profile if not exists
+      const sbWorker = {
+        ...this.mapAppWorkerToSupabase(worker),
+        created_at: new Date().toISOString()
+      };
+      const { data, error: insErr } = await supabase.from('workers').insert([sbWorker]).select();
+      if (insErr) throw insErr;
+      workerId = data[0].id;
+      authId = data[0].auth_id;
+    }
+
+    // 3. Create the association in user_companies (SSOT)
+    // If the user already has an auth_id, we link them immediately.
+    // If not (new user or legacy), the association will be completed during their first login/repair.
+    if (authId) {
+       const { error: assocErr } = await supabase.from('user_companies').upsert({
+         user_id: authId,
+         company_id: compId,
+         role: worker.role || 'operator'
+       }, { onConflict: 'user_id, company_id' });
+       
+       if (assocErr) throw assocErr;
+    } else {
+       // Legacy/Pending: We might need a way to link by email if auth_id is missing, 
+       // but for now the repair_user_companies RPC handles this on first login.
+       console.log('Worker found/created but no auth_id yet. Association will trigger on first login.');
+    }
+
+    return this.getUserById(workerId!);
+  }
+
+  async updateUser(id: string, updates: any) {
+    const mappedUpdates = this.mapAppWorkerToSupabase(updates);
+    const worker = await this.getUserById(id);
+    
+    // SSOT: If role changed, update user_companies as well
+    if (updates.role && worker?.authId) {
+      await supabase.from('user_companies')
+        .update({ role: updates.role })
+        .eq('user_id', worker.authId)
+        .eq('company_id', this.requireCompanyId());
+    }
+
+    const { error } = await supabase.from('workers').update(mappedUpdates).eq('id', id);
+    if (error) throw error;
   }
 
   async addSubcontractor(sub: any) {
@@ -172,12 +236,29 @@ class DBService {
 
   async getUsers() {
     const compId = this.requireCompanyId();
-    let query = supabase.from('workers').select('*');
-    if (compId) query = query.eq('company_id', compId);
+    
+    // SSOT: Fetch users authorized for this company via user_companies bridge
+    const { data: authorized, error: authErr } = await supabase
+      .from('user_companies')
+      .select('auth_id')
+      .eq('company_id', compId);
 
-    const { data, error } = await query;
+    if (authErr || !authorized) {
+      console.error('Error fetching authorized users:', authErr);
+      return [];
+    }
+
+    const authIds = authorized.map(a => a.auth_id);
+    if (authIds.length === 0) return [];
+
+    // Fetch the worker profiles for these auth IDs
+    const { data, error } = await supabase
+      .from('workers')
+      .select('*')
+      .in('auth_id', authIds);
+
     if (error) {
-      console.error('Error fetching workers:', error);
+      console.error('Error fetching worker profiles:', error);
       return [];
     }
     return data.map(w => this.mapSupabaseWorker(w));
@@ -195,7 +276,31 @@ class DBService {
       console.error('Error fetching user by auth_id:', error);
       return null;
     }
-    return data ? this.mapSupabaseWorker(data) : null;
+    if (!data) return null;
+
+    // SSOT Context & Repair logic for hydration
+    let { data: contexts } = await supabase.rpc('get_user_session_context');
+    if (!contexts || contexts.length === 0) {
+      await supabase.rpc('repair_user_companies');
+      const retry = await supabase.rpc('get_user_session_context');
+      contexts = retry.data;
+    }
+
+    const availableCompanies = contexts?.map((c: any) => ({
+      id: c.cid,
+      name: c.cname,
+      role: c.urole
+    })) || [];
+
+    const user = this.mapSupabaseWorker(data);
+    user.availableCompanies = availableCompanies;
+    
+    // Set active company if possible
+    if (availableCompanies.length > 0) {
+       this.setCompanyId(availableCompanies[0].id);
+    }
+    
+    return user;
   }
 
   async registerCompany(companyName: string, adminName: string, adminUsername: string, adminPassword: string) {
@@ -329,17 +434,26 @@ class DBService {
       return [];
     }
 
-    const { data: workers, error: wError } = await supabase.from('workers').select('*').eq('role', 'admin');
+    // SSOT: Fetch admin memberships from the bridge table
+    const { data: memberships } = await supabase
+      .from('user_companies')
+      .select('company_id, auth_id')
+      .eq('role', 'admin');
+
+    const adminAuthIds = memberships?.map(m => m.auth_id) || [];
+    const { data: workers } = adminAuthIds.length > 0 
+      ? await supabase.from('workers').select('id, name, username, auth_id').in('auth_id', adminAuthIds)
+      : { data: [] };
 
     return companies.map(c => {
       const comp = this.mapSupabaseCompany(c);
-      if (!wError && workers) {
-        const admin = workers.find((w: any) => w.company_id === c.id);
+      const membership = memberships?.find(m => m.company_id === c.id);
+      if (membership) {
+        const admin = workers?.find(w => w.auth_id === membership.auth_id);
         if (admin) {
           comp.adminId = admin.id;
           comp.adminName = admin.name;
           comp.username = admin.username;
-          // Security: do not return passwords or hashes to the UI
           comp.password = '';
         }
       }
@@ -430,19 +544,21 @@ class DBService {
     const { data: reports } = await supabase.from('reports').select('id').eq('company_id', id);
     if (reports && reports.length > 0) {
       const reportIds = reports.map((r: any) => r.id);
-      // Elimina workers e spese dei rapportini
       await supabase.from('rapportini_workers').delete().in('rapportino_id', reportIds);
-      // Prova anche con report_id (per sicurezza)
       await supabase.from('rapportini_workers').delete().in('report_id', reportIds);
     }
     // 2. Elimina i report della ditta
     await supabase.from('reports').delete().eq('company_id', id);
-    // 3. Elimina utenti, subappaltatori, progetti, clienti
-    await supabase.from('workers').delete().eq('company_id', id);
+    
+    // 3. SSOT: Elimina le associazioni degli utenti, ma NON i profili worker globali
+    await supabase.from('user_companies').delete().eq('company_id', id);
+    
+    // 4. Elimina dati specifici del tenant
     await supabase.from('subcontractors').delete().eq('company_id', id);
     await supabase.from('projects').delete().eq('company_id', id);
     await supabase.from('clients').delete().eq('company_id', id);
-    // 4. Elimina la ditta
+    
+    // 5. Elimina la ditta
     const { error } = await supabase.from('companies').delete().eq('id', id);
     if (error) throw error;
   }
@@ -553,12 +669,46 @@ class DBService {
       }
     }
 
-    const user = this.mapSupabaseWorker(workerData, isPremium, companyName);
+    // NEW: SSOT Company Context & Repair logic
+    let { data: contexts, error: rpcError } = await supabase.rpc('get_user_session_context');
     
-    // Check if truly superadmin via user_roles for extra safety
-    const isSA = await this.checkIsSuperAdmin(user.id);
-    this.setIsSuperAdmin(isSA);
-    if (isSA) user.role = 'superadmin';
+    if (rpcError) console.error("RPC Context Error:", rpcError);
+
+    if (!contexts || contexts.length === 0) {
+      await supabase.rpc('repair_user_companies');
+      const retry = await supabase.rpc('get_user_session_context');
+      contexts = retry.data;
+    }
+
+    const availableCompanies = contexts?.map((c: any) => ({
+      id: c.cid,
+      name: c.cname,
+      role: c.urole
+    })) || [];
+
+    if (availableCompanies.length > 0) {
+      this.setCompanyId(availableCompanies[0].id);
+      
+      const { data: compData } = await supabase
+        .from('companies')
+        .select('name, status, is_premium')
+        .eq('id', availableCompanies[0].id)
+        .single();
+        
+      const user = this.mapSupabaseWorker(workerData, compData?.is_premium, compData?.name);
+      user.availableCompanies = availableCompanies;
+      
+      // Check if truly superadmin via user_roles for extra safety
+      const isSA = await this.checkIsSuperAdmin(user.id);
+      this.setIsSuperAdmin(isSA);
+      if (isSA) user.role = 'superadmin';
+      
+      return user;
+    }
+
+    const user = this.mapSupabaseWorker(workerData);
+    user.availableCompanies = availableCompanies;
+    return user;
 
     return user;
   }
@@ -679,8 +829,8 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username || '',
-      // Security: do not return passwords or hashes to the UI
-      companyId: w.company_id || null,
+      // SSOT: Use current session company if possible
+      companyId: this.currentCompanyId || w.company_id || null,
       authId: w.auth_id || null,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
@@ -703,7 +853,8 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username,
-      company_id: w.companyId,
+      // SSOT: Do not save company_id back to workers table (Phase 3 Prep)
+      // company_id: w.companyId, 
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,

@@ -293,9 +293,31 @@ const AppLayout: React.FC<{
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
                 <div className="flex flex-col items-end mt-1">
-                  <p className="text-[10px] font-extrabold text-blue-600 leading-none uppercase tracking-tight">
-                    {user.companyName}
-                  </p>
+                  {user.availableCompanies && user.availableCompanies.length > 1 ? (
+                    <select 
+                      value={db.requireCompanyId()}
+                      onChange={(e) => {
+                        const newId = e.target.value;
+                        const selected = user.availableCompanies?.find(c => c.id === newId);
+                        if (selected) {
+                          db.setCompanyId(newId);
+                          const updated = { ...user, companyId: selected.id, companyName: selected.name, role: selected.role };
+                          setUser(updated);
+                          localStorage.setItem('ws_auth', JSON.stringify(updated));
+                          window.location.reload(); // Refresh all hooks with new context
+                        }
+                      }}
+                      className="text-[10px] font-extrabold text-blue-600 bg-blue-50 border-none rounded px-1.5 py-0.5 outline-none cursor-pointer hover:bg-blue-100 transition-colors uppercase tracking-tight"
+                    >
+                      {user.availableCompanies.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-[10px] font-extrabold text-blue-600 leading-none uppercase tracking-tight">
+                      {user.companyName}
+                    </p>
+                  )}
                   <p className="text-[10px] text-slate-400 capitalize bg-slate-50 px-1.5 py-0.5 rounded mt-0.5 border border-slate-100 font-medium">
                     {t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` as any)}
                   </p>
@@ -1043,20 +1065,9 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Preventive email validation
-      if (formData.email) {
-        const { data: existingUser } = await supabase
-          .from('workers')
-          .select('id, name')
-          .eq('email', formData.email)
-          .maybeSingle();
-
-        if (existingUser && existingUser.id !== editingId) {
-          alert(t('auth.emailAlreadyInUse'));
-          return;
-        }
-      }
-
+      // SSOT: We no longer block existing emails here. 
+      // db.addUser handles linking existing global profiles to the current company.
+      
       const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
       const isSensitive = !!(editingId && (formData.email !== users.find(u => u.id === editingId)?.email || formData.password !== users.find(u => u.id === editingId)?.password));
 
@@ -3250,7 +3261,9 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('ws_auth');
     if (saved) {
       const parsed = JSON.parse(saved);
-      db.setCompanyId(parsed.companyId || parsed.company_id);
+      if (parsed.availableCompanies?.length > 0) {
+        db.setCompanyId(parsed.companyId || parsed.availableCompanies[0].id);
+      }
       db.setUserId(parsed.id);
       return parsed;
     }
@@ -3302,7 +3315,9 @@ const App: React.FC = () => {
           const userData = await db.getUserByAuthId(session.user.id);
           console.log('AUTH: DB lookup result:', userData ? `FOUND (${userData.name})` : 'NOT FOUND');
           if (userData) {
-            db.setCompanyId(userData.companyId || (userData as any).company_id);
+            if (userData.availableCompanies?.length > 0) {
+              db.setCompanyId(userData.availableCompanies[0].id);
+            }
             db.setUserId(userData.id);
             localStorage.setItem('ws_auth', JSON.stringify(userData));
             setUser(userData);
@@ -3328,7 +3343,9 @@ const App: React.FC = () => {
             const userData = await db.getUserByAuthId(session.user.id);
             console.log('AUTH: Recovery user lookup:', userData ? `FOUND (${userData.name})` : 'FAILED');
             if (userData) {
-              db.setCompanyId(userData.companyId || (userData as any).company_id);
+              if (userData.availableCompanies?.length > 0) {
+                db.setCompanyId(userData.availableCompanies[0].id);
+              }
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
               setUser(userData);
@@ -3342,7 +3359,9 @@ const App: React.FC = () => {
             console.log('AUTH: Normal SIGNED_IN - fetching user data');
             const userData = await db.getUserByAuthId(session.user.id);
             if (userData) {
-              db.setCompanyId(userData.companyId || (userData as any).company_id);
+              if (userData.availableCompanies?.length > 0) {
+                db.setCompanyId(userData.availableCompanies[0].id);
+              }
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
               setUser(userData);
@@ -3417,7 +3436,7 @@ const App: React.FC = () => {
           event: '*',
           schema: 'public',
           table: 'internal_communications',
-          filter: `company_id=eq.${user.companyId}`
+          filter: `company_id=eq.${db.requireCompanyId()}`
         },
         () => {
           updateUnread();
@@ -3443,7 +3462,9 @@ const App: React.FC = () => {
   }, [user?.id, user?.companyId]);
 
   const handleLogin = (u: User) => {
-    db.setCompanyId(u.companyId || (u as any).company_id);
+    if (u.availableCompanies?.length > 0) {
+      db.setCompanyId(u.availableCompanies[0].id);
+    }
     db.setUserId(u.id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
     window.location.hash = '/home'; // Go to Welcome Page (HomeView) after login
@@ -3468,7 +3489,11 @@ const App: React.FC = () => {
       localStorage.setItem('ws_auth_admin', JSON.stringify(user));
     }
     // Switch to target user
-    db.setCompanyId(targetUser.companyId || (targetUser as any).company_id);
+    if (targetUser.availableCompanies?.length > 0) {
+      db.setCompanyId(targetUser.availableCompanies[0].id);
+    } else {
+      db.setCompanyId(targetUser.companyId); // Last resort fallback
+    }
     db.setUserId(targetUser.id);
     localStorage.setItem('ws_auth', JSON.stringify(targetUser));
     setUser(targetUser);
@@ -3477,7 +3502,9 @@ const App: React.FC = () => {
 
   const handleBackToAdmin = () => {
     if (!adminUser) return;
-    db.setCompanyId(adminUser.companyId || (adminUser as any).company_id);
+    if (adminUser.availableCompanies?.length > 0) {
+      db.setCompanyId(adminUser.availableCompanies[0].id);
+    }
     db.setUserId(adminUser.id);
     localStorage.setItem('ws_auth', JSON.stringify(adminUser));
     setUser(adminUser);

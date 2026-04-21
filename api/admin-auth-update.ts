@@ -36,10 +36,10 @@ export default async function handler(req: any, res: any) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    // 2. Fetch requester's role and company from database
+    // 2. Fetch requester's role (Global)
     const { data: requesterData, error: requesterDbError } = await supabaseAdmin
       .from('workers')
-      .select('id, role, company_id')
+      .select('id, role')
       .eq('auth_id', requesterAuthUser.id)
       .single();
 
@@ -47,32 +47,39 @@ export default async function handler(req: any, res: any) {
       return res.status(403).json({ error: 'Requester not found in database' });
     }
 
-    // Check if requester is Admin or SuperAdmin
-    const { data: saRole } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', requesterData.id).maybeSingle();
-    const isSuperAdmin = saRole?.role === 'superadmin';
-    const isAdmin = requesterData.role === 'admin' || isSuperAdmin;
-
-    if (!isAdmin) {
-      return res.status(403).json({ error: 'Only Admins can perform this action' });
-    }
+    const isSuperAdmin = requesterData.role === 'superadmin';
 
     const { targetUserId, updates, action = 'update' } = req.body;
+    const { companyId } = updates || {};
     
     // --- CREATE NEW USER ---
     if (action === 'create') {
-      const { name, username, password, email, role, status, companyId } = updates;
+      const { name, username, password, email, role, status } = updates;
       
-      // Determine the company_id for the new user
-      const targetCompanyId = (isSuperAdmin && companyId) ? companyId : requesterData.company_id;
+      // Determine the company_id (SSOT)
+      const targetCompanyId = companyId;
+
+      if (!isSuperAdmin) {
+        // Verify requester belongs to this company as Admin/Supervisor
+        const { data: membership } = await supabaseAdmin
+          .from('user_companies')
+          .select('role')
+          .eq('auth_id', requesterAuthUser.id)
+          .eq('company_id', targetCompanyId)
+          .single();
+
+        if (membership?.role !== 'admin' && membership?.role !== 'supervisor') {
+          return res.status(403).json({ error: 'Insufficient permissions for this company' });
+        }
+      }
 
       let authId: string | null = null;
       let isUpdateFlow = false;
 
       // 1. Step 1: Check Identity Registry (Workers Table)
-      // This is the ONLY source for identity resolution at runtime.
       const { data: existingWorker, error: lookupError } = await supabaseAdmin
         .from('workers')
-        .select('auth_id')
+        .select('auth_id, company_id')
         .eq('email', email)
         .maybeSingle();
 
@@ -81,99 +88,73 @@ export default async function handler(req: any, res: any) {
       }
 
       if (existingWorker && existingWorker.auth_id) {
-        // CASE: User found in registry -> Update existing Auth account
+        // CASE: User already in system -> Use existing ID
         authId = existingWorker.auth_id;
         isUpdateFlow = true;
         
-        const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(authId, {
-          password,
-          user_metadata: { name, company_id: targetCompanyId }
-        });
-
-        if (authUpdateError) {
-          return res.status(500).json({ error: `Auth update failed: ${authUpdateError.message}` });
-        }
+        // Optional: Update global profile fields in workers (but NOT company_id or role)
+        const { name: updateName, username: updateUsername } = updates;
+        await supabaseAdmin.from('workers')
+          .update({ name: updateName, username: updateUsername, updated_at: new Date().toISOString() })
+          .eq('auth_id', authId);
+          
       } else {
-        // CASE: User not in registry -> Attempt to create new Auth account
-        const { data: authData, error: authCreateError } = await supabaseAdmin.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: { name, company_id: targetCompanyId }
-        });
+        // CASE: User not in registry -> Check if they exist in Supabase Auth (Orphan account)
+        const { data: authListData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
 
-        if (authCreateError) {
-          // If creation fails due to existing email not in our registry, it's an orphan account
-          if (authCreateError.message.toLowerCase().includes('already') || authCreateError.status === 422) {
-            console.error(`ORPHAN_DETECTED: Email ${email} exists in Auth but is missing from workers registry.`);
-            return res.status(409).json({ 
-              error: 'Identity conflict: This email is already registered in Supabase Auth but is missing from the local registry. Manual reconciliation by SuperAdmin is required.',
-              code: 'ORPHAN_DETECTED'
-            });
+        if (existingAuthUser) {
+          authId = existingAuthUser.id;
+        } else {
+          // Attempt to create new Auth account
+          const { data: authData, error: authCreateError } = await supabaseAdmin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: { name, company_id: targetCompanyId }
+          });
+
+          if (authCreateError) {
+            return res.status(500).json({ error: `Auth creation failed: ${authCreateError.message}` });
           }
-          return res.status(500).json({ error: `Auth creation failed: ${authCreateError.message}` });
+          authId = authData.user.id;
         }
 
-        authId = authData.user.id;
+        // Create initial profile in workers
+        await supabaseAdmin.from('workers').insert([{
+          name,
+          username,
+          email,
+          auth_id: authId,
+          company_id: targetCompanyId, // Default company
+          role: role || 'worker',      // Default role
+          status: status || 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }]);
       }
 
-      // --- SAFETY GUARD: Ensure Auth ID is resolved before DB write ---
-      if (!authId) {
-        console.error('CRITICAL: AUTH_ID_UNRESOLVED for email:', email);
-        return res.status(500).json({ error: 'AUTH_ID_UNRESOLVED' });
-      }
-
-      // 2. Step 2: Synchronize Projection (Workers Table)
-      const workerObj: any = {
-        name,
-        username,
-        email, 
-        role: role || 'operator',
-        status: status || 'active',
-        company_id: targetCompanyId,
-        auth_id: authId,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('DEBUG_TRACE: Upsert payload for workers:', JSON.stringify(workerObj, null, 2));
-
-      const { data: finalWorker, error: syncError } = await supabaseAdmin
-        .from('workers')
-        .upsert([{
-          ...workerObj,
-          created_at: isUpdateFlow ? undefined : new Date().toISOString() 
-        }], { 
-          onConflict: 'auth_id'
+      // --- STEP 2: SSOT Membership (user_companies) ---
+      // This is the source of truth for the multi-company architecture.
+      const { data: finalAssociation, error: bridgeError } = await supabaseAdmin
+        .from('user_companies')
+        .upsert({
+          auth_id: authId,
+          company_id: targetCompanyId,
+          role: role || 'worker'
+        }, { 
+          onConflict: 'auth_id, company_id' 
         })
         .select()
         .single();
 
-      if (syncError) {
-        console.error('DEBUG_TRACE: Sync Error Object:', JSON.stringify(syncError, null, 2));
-        console.error('DEBUG_TRACE: Sync Error Details:', {
-          code: syncError.code,
-          details: syncError.details,
-          hint: syncError.hint,
-          message: syncError.message
-        });
-
-        // Step 3: Failure Handling (Eventual Consistency)
-        console.error('SYNC_ERROR: Auth updated but database upsert failed:', syncError.message);
-        
-        // Mark as pending_sync for operational visibility
-        await supabaseAdmin.from('workers')
-          .update({ status: 'pending_sync' })
-          .eq('auth_id', authId);
-
-        // Return SUCCESS for the Auth operation as per requirements
-        return res.status(200).json({ 
-          success: true, 
-          message: 'Auth synchronized, but database mapping failed (marked as pending_sync)', 
-          auth_id: authId 
-        });
+      if (bridgeError) {
+        console.error('SSOT Sync Error:', bridgeError);
+        return res.status(500).json({ error: 'Failed to synchronize company membership' });
       }
 
-      return res.status(200).json({ success: true, data: finalWorker });
+      return res.status(200).json({ success: true, data: { auth_id: authId, company_id: targetCompanyId } });
+    }
     }
 
     // --- UPDATE EXISTING USER ---
@@ -193,8 +174,18 @@ export default async function handler(req: any, res: any) {
       return res.status(404).json({ error: 'Target user not found' });
     }
 
-    if (!isSuperAdmin && targetData.company_id !== requesterData.company_id) {
-      return res.status(403).json({ error: 'Unauthorized' });
+    if (!isSuperAdmin) {
+      // Verify requester has access to target's company
+      const { data: hasAccess } = await supabaseAdmin
+        .from('user_companies')
+        .select('id')
+        .eq('auth_id', requesterAuthUser.id)
+        .eq('company_id', targetData.company_id)
+        .maybeSingle();
+
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
+      }
     }
 
     // Sync Auth if email or password changed (with auto-confirm)
@@ -261,8 +252,18 @@ export default async function handler(req: any, res: any) {
       }
 
       // Security check: same company or superadmin
-      if (!isSuperAdmin && targetData.company_id !== requesterData.company_id) {
-        return res.status(403).json({ error: 'Unauthorized' });
+      if (!isSuperAdmin) {
+        // Verify requester has access to target's company
+        const { data: hasAccess } = await supabaseAdmin
+          .from('user_companies')
+          .select('id')
+          .eq('auth_id', requesterAuthUser.id)
+          .eq('company_id', targetData.company_id)
+          .maybeSingle();
+
+        if (!hasAccess) {
+          return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
+        }
       }
 
       // Generate the recovery link

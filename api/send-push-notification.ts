@@ -39,35 +39,39 @@ export default async function handler(req: any, res: any) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // 2. Risoluzione Destinatari (Worker IDs)
-    let recipientIds: string[] = [];
+    // --- SSOT RECIPIENT SELECTION ---
+    // 1. Get all authorized auth_ids for this company from user_companies
+    let authQuery = supabase.from('user_companies').select('auth_id').eq('company_id', company_id);
+    if (target_type === 'role') authQuery = authQuery.eq('role', target_id);
+    
+    const { data: authorizedUsers, error: authErr } = await authQuery;
+    if (authErr || !authorizedUsers) throw authErr;
 
-    if (target_type === 'all') {
-      const { data } = await supabase.from('workers').select('id').eq('company_id', company_id).eq('status', 'active');
-      recipientIds = data?.map(w => w.id) || [];
-    } else if (target_type === 'role') {
-      const { data } = await supabase.from('workers').select('id').eq('company_id', company_id).eq('role', target_id).eq('status', 'active');
-      recipientIds = data?.map(w => w.id) || [];
-    } else if (target_type === 'user') {
-      recipientIds = [target_id];
-    } else if (target_type === 'project') {
-      const { data } = await supabase.from('projects').select('assigned_worker_ids').eq('id', target_id).single();
-      recipientIds = data?.assigned_worker_ids || [];
-    }
+    const authIds = authorizedUsers.map(u => u.auth_id);
+    if (authIds.length === 0) return res.status(200).json({ message: 'Nessun destinatario autorizzato' });
 
-    // Rimuoviamo il mittente dai destinatari per evitare l'auto-notifica
-    recipientIds = recipientIds.filter(id => id !== sender_id);
+    // 2. Resolve Worker IDs from Auth IDs
+    const { data: workerMap, error: workerErr } = await supabase
+      .from('workers')
+      .select('id')
+      .in('auth_id', authIds)
+      .eq('status', 'active');
+    
+    if (workerErr || !workerMap) throw workerErr;
+    const recipientIds = workerMap.map(w => w.id).filter(id => id !== sender_id);
 
-    if (recipientIds.length === 0) {
-      return res.status(200).json({ message: 'Nessun destinatario trovato' });
-    }
+    if (recipientIds.length === 0) return res.status(200).json({ message: 'Nessun destinatario attivo trovato' });
 
-    // 3. Recupero Token FCM per i destinatari
+    // 3. Fetch Push Tokens (SSOT)
     const { data: subscriptions, error: subsError } = await supabase
       .from('user_push_subscriptions')
       .select('worker_id, fcm_token')
       .in('worker_id', recipientIds)
       .eq('is_active', true);
+
+    if (subsError || !subscriptions || subscriptions.length === 0) {
+      return res.status(200).json({ message: 'Nessun token push attivo per i destinatari' });
+    }
 
     if (subsError || !subscriptions || subscriptions.length === 0) {
       return res.status(200).json({ message: 'Nessun token push trovato per i destinatari' });
