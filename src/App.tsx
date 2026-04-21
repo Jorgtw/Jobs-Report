@@ -197,8 +197,9 @@ const AppLayout: React.FC<{
   children: React.ReactNode,
   isMobileMenuOpen: boolean,
   setIsMobileMenuOpen: (open: boolean) => void,
-  unreadCount: number
-}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount }) => {
+  unreadCount: number,
+  setUser: (user: User | null) => void
+}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -3462,7 +3463,7 @@ const App: React.FC = () => {
   }, [user?.id, user?.companyId]);
 
   const handleLogin = (u: User) => {
-    if (u.availableCompanies?.length > 0) {
+    if (u.availableCompanies && u.availableCompanies.length > 0) {
       db.setCompanyId(u.availableCompanies[0].id);
     }
     db.setUserId(u.id);
@@ -3489,10 +3490,10 @@ const App: React.FC = () => {
       localStorage.setItem('ws_auth_admin', JSON.stringify(user));
     }
     // Switch to target user
-    if (targetUser.availableCompanies?.length > 0) {
+    if (targetUser.availableCompanies && targetUser.availableCompanies.length > 0) {
       db.setCompanyId(targetUser.availableCompanies[0].id);
     } else {
-      db.setCompanyId(targetUser.companyId); // Last resort fallback
+      db.setCompanyId(targetUser.companyId ?? null); // Last resort fallback
     }
     db.setUserId(targetUser.id);
     localStorage.setItem('ws_auth', JSON.stringify(targetUser));
@@ -3502,7 +3503,7 @@ const App: React.FC = () => {
 
   const handleBackToAdmin = () => {
     if (!adminUser) return;
-    if (adminUser.availableCompanies?.length > 0) {
+    if (adminUser.availableCompanies && adminUser.availableCompanies.length > 0) {
       db.setCompanyId(adminUser.availableCompanies[0].id);
     }
     db.setUserId(adminUser.id);
@@ -3552,6 +3553,7 @@ const App: React.FC = () => {
                   isMobileMenuOpen={isMobileMenuOpen}
                   setIsMobileMenuOpen={setIsMobileMenuOpen}
                   unreadCount={unreadCount}
+                  setUser={setUser}
                 >
                   {adminUser && (
                     <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">

@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'operator' | 'supervisor';
+export type Role = 'admin' | 'operator' | 'supervisor' | 'superadmin';
 export type UserStatus = 'active' | 'inactive';
 
 export interface Company {
@@ -26,15 +26,17 @@ export interface Subcontractor {
 
 export interface User {
   id: string;
+  authId?: string;
   name: string;
   username: string;
   password: string;
   email?: string;
-  role: Role;
+  role: Role | 'superadmin';
   status: UserStatus;
   companyId?: string | null;
   companyName?: string;
   isPremium?: boolean;
+  availableCompanies?: { id: string; name: string; role: Role }[];
   hourlyRate?: number;
   extraCost?: number;
   overtimeHourlyRate?: number;

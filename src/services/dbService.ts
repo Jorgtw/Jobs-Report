@@ -29,7 +29,7 @@ class DBService {
     this.isSuperAdminRole = isSA;
   }
 
-  private requireCompanyId(): string {
+  public requireCompanyId(): string {
     if (!this.currentCompanyId && !this.isSuperAdminRole) {
       throw new Error("company_id is required but not set in DBService.");
     }
@@ -205,6 +205,27 @@ class DBService {
         .update({ role: updates.role })
         .eq('user_id', worker.authId)
         .eq('company_id', this.requireCompanyId());
+    }
+
+    // Sync with Supabase Auth via Admin API for sensitive fields
+    const isSensitiveUpdate = !!(updates.email || updates.password);
+    if (isSensitiveUpdate) {
+      const token = await this.getAuthToken();
+      const response = await fetch('/api/admin-auth-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+           targetUserId: id,
+           updates: mappedUpdates
+        })
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update user via admin API');
+      }
     }
 
     const { error } = await supabase.from('workers').update(mappedUpdates).eq('id', id);
@@ -655,20 +676,6 @@ class DBService {
       return null;
     }
 
-    // 4. Check premium e status azienda
-    let isPremium = false;
-    let companyName = '';
-    if (workerData.company_id) {
-      const { data: compData, error: compErr } = await supabase.from('companies').select('name, status, is_premium').eq('id', workerData.company_id).single();
-      if (!compErr && compData) {
-        if (compData.status === 'inactive') {
-          throw new Error('Company is inactive');
-        }
-        isPremium = !!compData.is_premium;
-        companyName = compData.name;
-      }
-    }
-
     // NEW: SSOT Company Context & Repair logic
     let { data: contexts, error: rpcError } = await supabase.rpc('get_user_session_context');
     
@@ -711,77 +718,6 @@ class DBService {
     return user;
 
     return user;
-  }
-
-  async addUser(user: any) {
-    const token = await this.getAuthToken();
-    
-    // Sync with Supabase Auth via Admin API
-    const response = await fetch('/api/admin-auth-update', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-         action: 'create',
-         updates: user
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Failed to create user via admin API');
-    return data.data;
-  }
-
-  async updateUser(id: string, updates: any) {
-    const mappedUpdates = this.mapAppWorkerToSupabase(updates);
-    
-    // Check if email or password ACTUALLY changed to avoid redundant API calls
-    let isSensitiveUpdate = false;
-    const isEditingUser = !!updates.username || !!updates.email || !!updates.password;
-
-    if (isEditingUser && (updates.email || updates.password)) {
-      const currentUser = await this.getUserById(id);
-      if (currentUser) {
-        const emailChanged = updates.email && updates.email !== currentUser.email;
-        const passwordChanged = updates.password && updates.password !== currentUser.password;
-        isSensitiveUpdate = !!(emailChanged || passwordChanged);
-      }
-    }
-
-    if (isSensitiveUpdate) {
-      // Sync with Supabase Auth via Admin API
-      const token = await this.getAuthToken();
-      
-      const response = await fetch('/api/admin-auth-update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-           targetUserId: id,
-           updates: mappedUpdates // Send already mapped snake_case fields
-        })
-      });
-
-      let data: any;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        console.error('Non-JSON response from admin API:', text);
-        throw new Error(`Server error (${response.status}): The server returned an unexpected response format.`);
-      }
-
-      if (!response.ok) throw new Error(data.error || 'Failed to update user via admin API');
-      return data;
-    }
-
-    const { error } = await supabase.from('workers').update(mappedUpdates).eq('id', id);
-    if (error) throw error;
   }
 
   async sendAccessInstructions(id: string): Promise<void> {
