@@ -193,7 +193,7 @@ const AppLayout: React.FC<{
   setIsMobileMenuOpen: (open: boolean) => void,
   unreadCount: number,
   setUser: (user: User | null) => void
-}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
+}> = ({ user, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -525,6 +525,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean,
 // --- Work Summary View ---
 import { useQueryClient } from '@tanstack/react-query';
 const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
+  const queryClient = useQueryClient();
   const { data: clients = [] } = useClients();
   const { lang, t } = useTranslation();
   

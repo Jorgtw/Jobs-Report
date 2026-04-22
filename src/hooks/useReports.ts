@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { db } from '../services/dbService';
-import { WorkReport, Role } from '../types';
+import { WorkReport } from '../types';
 
 export const useReports = () => {
   const queryClient = useQueryClient();
