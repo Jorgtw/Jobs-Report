@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { db } from '../services/dbService';
 import { WorkReport, Role } from '../types';
 
-export const useReports = (userId: string, role: Role) => {
+export const useReports = () => {
   const queryClient = useQueryClient();
 
   const query = useQuery<WorkReport[], Error>({
-    queryKey: ['reports', userId, role],
+    queryKey: ['reports'],
     queryFn: async () => {
       const reports = await db.getReports();
       return reports || [];

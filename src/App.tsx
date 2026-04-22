@@ -193,7 +193,7 @@ const AppLayout: React.FC<{
   setIsMobileMenuOpen: (open: boolean) => void,
   unreadCount: number,
   setUser: (user: User | null) => void
-}> = ({ user, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
+}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -525,11 +525,10 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean,
 // --- Work Summary View ---
 import { useQueryClient } from '@tanstack/react-query';
 const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
-  const queryClient = useQueryClient();
   const { data: clients = [] } = useClients();
   const { lang, t } = useTranslation();
   
-    const { data: rawSummary = [] } = useSummary();
+  const { data: rawSummary = [] } = useSummary();
   const { data: projects = [] } = useProjects();
   const { data: users = [] } = useUsers();
   const { data: subcontractors = [] } = useSubcontractors();
@@ -1996,7 +1995,7 @@ const SubcontractorsView: React.FC = () => {
 
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const { lang, t } = useTranslation();
-  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user.id, user.role as any);
+  const { data: reports = [], createReport, updateReport, deleteReport } = useReports();
     const { data: projects = [] } = useProjects();
   const { data: clients = [] } = useClients();
   const [isModalOpen, setIsModalOpen] = useState(false);
