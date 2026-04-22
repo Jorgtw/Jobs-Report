@@ -8,7 +8,7 @@ export const useReports = (userId: string, role: Role) => {
   const query = useQuery<WorkReport[], Error>({
     queryKey: ['reports', userId, role],
     queryFn: async () => {
-      const reports = await db.getReports(userId, role);
+      const reports = await db.getReports();
       return reports || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minuti

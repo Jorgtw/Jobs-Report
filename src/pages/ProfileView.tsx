@@ -29,7 +29,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      db.getReports(user.id, user.role).then(reports => {
+      db.getReports().then(reports => {
         const filtered = reports.filter(r => {
           const rDate = new Date(r.date);
           return rDate >= startOfMonth;

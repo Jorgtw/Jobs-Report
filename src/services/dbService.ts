@@ -1,4 +1,4 @@
-import { Role, ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, User } from '../types';
+import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, User } from '../types';
 import { supabase } from './supabase';
 
 class DBService {

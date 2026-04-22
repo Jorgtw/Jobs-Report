@@ -193,7 +193,7 @@ const AppLayout: React.FC<{
   setIsMobileMenuOpen: (open: boolean) => void,
   unreadCount: number,
   setUser: (user: User | null) => void
-}> = ({ user, isSuperAdmin, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
+}> = ({ user, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -202,8 +202,7 @@ const AppLayout: React.FC<{
     setIsMobileMenuOpen(false);
   }, [location.pathname, setIsMobileMenuOpen]);
 
-  const navLinks = getNavLinks(t, isSuperAdmin);
-  const filteredLinks = navLinks.filter(link => isSuperAdmin ? true : link.roles.some(r => r.toLowerCase() === user.role.toLowerCase()));
+  const filteredLinks = getNavLinks(t, user);
 
   const renderSidebarContent = (onItemClick?: () => void) => (
     <div className="flex flex-col h-full py-6">
@@ -414,7 +413,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
   const [hours, setHours] = useState<number | null>(null);
 
   useEffect(() => {
-    db.getReports(user.id, user.role).then(reports => {
+    db.getReports().then(reports => {
       // Filtriamo solo i rapportini in stato "Pending" (non ancora pagati)
       const filtered = reports.filter(r => (r.invoiceStatus || 'Pending') === 'Pending');
       const total = filtered.reduce((sum: number, r: any) => {
@@ -452,8 +451,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean, unreadCount: number }> = ({ user, isSuperAdmin, isMobile, unreadCount }) => {
   const { t } = useTranslation();
-  const navLinks = getNavLinks(t, isSuperAdmin);
-  const actions = navLinks.filter(l => isSuperAdmin ? true : l.roles.some(r => r.toLowerCase() === user.role.toLowerCase()));
+  const actions = getNavLinks(t, user);
 
   const handleManualLogout = () => {
     db.setCompanyId(null);
@@ -2016,7 +2014,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     db.getUsers().then(u => setPersonnel(u.filter((usr: User) => usr.status === 'active')));
   }, []);
 
-  const canEditReport = (r: WorkReport) => {
+  const canEditReport = (_r: WorkReport) => {
     return authService.can(user, 'update', 'reports');
   };
     const [showFilters, setShowFilters] = useState(false);
