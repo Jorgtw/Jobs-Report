@@ -200,7 +200,7 @@ class DBService {
     if (updates.role && worker?.authId) {
       await supabase.from('user_companies')
         .update({ role: updates.role })
-        .eq('user_id', worker.authId)
+        .eq('auth_id', worker.authId)
         .eq('company_id', this.requireCompanyId());
     }
 
