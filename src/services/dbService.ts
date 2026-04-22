@@ -309,10 +309,10 @@ class DBService {
     if (!data) return null;
 
     // SSOT Context & Repair logic for hydration
-    let { data: contexts } = await supabase.rpc('get_user_session_context');
+    let { data: contexts } = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
     if (!contexts || contexts.length === 0) {
       await supabase.rpc('repair_user_companies');
-      const retry = await supabase.rpc('get_user_session_context');
+      const retry = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
       contexts = retry.data;
     }
 

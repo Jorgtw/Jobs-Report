@@ -3479,23 +3479,40 @@ const App: React.FC = () => {
     setIsMobileMenuOpen(false); // Reset menu state on logout
   };
 
-  const handleImpersonate = (targetUser: User) => {
+  const handleImpersonate = async (targetUser: User) => {
     if (!user) return;
-    // Save current user as admin context if not already impersonating
-    if (!adminUser) {
-      setAdminUser(user);
-      localStorage.setItem('ws_auth_admin', JSON.stringify(user));
+    try {
+      // Save current user as admin context if not already impersonating
+      if (!adminUser) {
+        setAdminUser(user);
+        localStorage.setItem('ws_auth_admin', JSON.stringify(user));
+      }
+
+      // Fetch the full profile and context for the target user (Hydration)
+      // This is crucial for multi-tenant stability
+      const fullProfile = await db.getUserByAuthId(targetUser.authId!);
+      if (!fullProfile) {
+        throw new Error('Could not resolve full profile for impersonation');
+      }
+
+      // Switch to target user
+      if (fullProfile.availableCompanies && fullProfile.availableCompanies.length > 0) {
+        db.setCompanyId(fullProfile.availableCompanies[0].id);
+      } else {
+        db.setCompanyId(fullProfile.companyId ?? null);
+      }
+      
+      db.setUserId(fullProfile.id);
+      localStorage.setItem('ws_auth', JSON.stringify(fullProfile));
+      setUser(fullProfile);
+      
+      // Force return to home to reset all view states
+      window.location.hash = '#/home';
+      setIsMobileMenuOpen(false);
+    } catch (err: any) {
+      console.error('Impersonation failed:', err);
+      alert('Failed to switch user: ' + err.message);
     }
-    // Switch to target user
-    if (targetUser.availableCompanies && targetUser.availableCompanies.length > 0) {
-      db.setCompanyId(targetUser.availableCompanies[0].id);
-    } else {
-      db.setCompanyId(targetUser.companyId ?? null); // Last resort fallback
-    }
-    db.setUserId(targetUser.id);
-    localStorage.setItem('ws_auth', JSON.stringify(targetUser));
-    setUser(targetUser);
-    window.location.hash = '/';
   };
 
   const handleBackToAdmin = () => {
