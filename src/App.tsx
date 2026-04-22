@@ -3507,7 +3507,7 @@ const App: React.FC = () => {
       setUser(fullProfile);
       
       // Force return to home to reset all view states
-      window.location.hash = '#/home';
+      window.location.hash = '/home';
       setIsMobileMenuOpen(false);
     } catch (err: any) {
       console.error('Impersonation failed:', err);
