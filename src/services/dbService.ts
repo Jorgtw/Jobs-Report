@@ -220,8 +220,20 @@ class DBService {
         })
       });
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to update user via admin API');
+        let errorMessage = 'Failed to update user via admin API';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            errorMessage = data.error || errorMessage;
+          } else {
+            const text = await response.text();
+            console.error('API Error (Non-JSON):', text);
+          }
+        } catch (e) {
+          console.error('Error parsing API error response:', e);
+        }
+        throw new Error(errorMessage);
       }
     }
 
