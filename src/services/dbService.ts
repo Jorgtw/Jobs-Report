@@ -253,11 +253,13 @@ class DBService {
   }
 
   async getUsers() {
+    const compId = this.requireCompanyId();
+    
     // SSOT: Fetch users authorized for current company via user_companies bridge
-    // RLS already filters user_companies by the active user session.
     const { data: authorized, error: authErr } = await supabase
       .from('user_companies')
-      .select('auth_id');
+      .select('auth_id')
+      .eq('company_id', compId);
 
     if (authErr || !authorized) {
       console.error('Error fetching authorized users:', authErr);
