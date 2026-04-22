@@ -319,16 +319,21 @@ class DBService {
     const availableCompanies = contexts?.map((c: any) => ({
       id: c.cid,
       name: c.cname,
-      role: c.urole
+      role: c.urole,
+      isPremium: !!c.is_premium
     })) || [];
 
     const user = this.mapSupabaseWorker(data);
     user.availableCompanies = availableCompanies;
     
-    // Set active company if possible
+    // Set active company and sync premium status
     const activeCompId = user.companyId || (availableCompanies.length > 0 ? availableCompanies[0].id : null);
     if (activeCompId) {
        this.setCompanyId(activeCompId);
+       const activeComp = availableCompanies.find(c => c.id === activeCompId);
+       if (activeComp) {
+         user.isPremium = activeComp.isPremium;
+       }
     }
     
     return user;
