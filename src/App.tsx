@@ -37,6 +37,7 @@ import {
   Phone,
 } from 'lucide-react';
 import { db } from './services/dbService';
+import { authService } from './services/authService';
 import { User, Role, UserStatus, Client, Project, WorkReport, Subcontractor, AdditionalWorker, Expense } from './types';
 import { Language } from './i18n';
 import { useTranslation, localeMap } from './contexts/LanguageContext';
@@ -85,27 +86,20 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 );
 
 // --- Navigation Config ---
-const getNavLinks = (t: any, isSuperAdmin: boolean = false) => {
+const getNavLinks = (t: any, user: User | null) => {
   const links = [
-    { name: t('common.clients'), path: '/clients', icon: Users, roles: ['admin'], color: 'bg-emerald-500' },
-    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, roles: ['admin'], color: 'bg-rose-500' },
-    { name: t('common.projects'), path: '/projects', icon: Briefcase, roles: ['admin', 'supervisor', 'operator'], color: 'bg-amber-500' },
-    { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, roles: ['admin', 'supervisor', 'operator'], color: 'bg-blue-600', premiumOnly: true },
-    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, roles: ['admin'], color: 'bg-cyan-500' },
-    { name: t('common.reports'), path: '/reports', icon: FileText, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-500' },
-    { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, roles: ['admin', 'supervisor'], color: 'bg-indigo-500' },
-    { name: t('auth.profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' },
-    { name: t('common.help'), path: '/help', icon: HelpCircle, roles: ['admin', 'operator', 'supervisor'], color: 'bg-blue-600' }
+    { name: t('common.clients'), path: '/clients', icon: Users, show: authService.can(user, 'read', 'clients'), color: 'bg-emerald-500' },
+    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: authService.can(user, 'read', 'workers'), color: 'bg-rose-500' },
+    { name: t('common.projects'), path: '/projects', icon: Briefcase, show: authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
+    { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
+    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: authService.canAccessAdmin(user), color: 'bg-cyan-500' },
+    { name: t('common.reports'), path: '/reports', icon: FileText, show: authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
+    { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
+    { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user, color: 'bg-slate-600' },
+    { name: t('common.help'), path: '/help', icon: HelpCircle, show: !!user, color: 'bg-blue-600' }
   ];
 
-  if (isSuperAdmin) {
-    return [
-      { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, roles: ['admin', 'operator', 'supervisor'], color: 'bg-purple-600' },
-      { name: t('auth.profile'), path: '/profile', icon: UserIcon, roles: ['admin', 'operator', 'supervisor'], color: 'bg-slate-600' }
-    ];
-  }
-  
-  return links;
+  return links.filter(l => l.show);
 };
 
 // --- Language Selector ---
@@ -294,9 +288,9 @@ const AppLayout: React.FC<{
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
                 <div className="flex flex-col items-end mt-1">
-                  {user.availableCompanies && user.availableCompanies.length > 1 ? (
+                    {user.availableCompanies && user.availableCompanies.length > 1 ? (
                     <select 
-                      value={db.requireCompanyId()}
+                      value={user.companyId || ''}
                       onChange={(e) => {
                         const newId = e.target.value;
                         const selected = user.availableCompanies?.find(c => c.id === newId);
@@ -477,7 +471,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean,
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('reports.activityManagement')}</p>
       </div>
 
-      {isSuperAdmin ? <SuperAdminDashboard /> : (user.role === 'admin' || user.role === 'supervisor' ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
+      {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
 
       {isMobile && (
         <div className="flex justify-center mb-6">
@@ -1583,7 +1577,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-slate-900">{t('projects.listTitle')}</h1>
-        {user.role === 'admin' && (
+        {authService.can(user, 'create', 'projects') && (
           <div className="flex gap-2">
             <button onClick={() => resetForm(false)} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
               <Plus size={16} /> {t('projects.new')}
@@ -1592,7 +1586,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
         )}
       </div>
       <div className="grid grid-cols-1 gap-4">
-        {projects.filter(p => (user.role === 'admin' || user.role === 'supervisor') ? true : canUserAccessProject(p, user.id)).map(p => {
+        {projects.filter(p => authService.can(user, 'approve', 'reports') ? true : canUserAccessProject(p, user.id)).map(p => {
           const client = clients.find(c => c.id === p.clientId);
           return (
             <div key={p.id} className={`bg-white p-5 rounded-2xl border ${p.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
@@ -1609,9 +1603,9 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
-                {user.role === 'admin' && <button onClick={() => handleDelete(p.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>}
+                {authService.can(user, 'delete', 'projects') && <button onClick={() => handleDelete(p.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>}
                 <button onClick={() => handleEdit(p)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
-                  {user.role === 'admin' ? <Pencil size={18} /> : <Eye size={18} />}
+                  {authService.can(user, 'update', 'projects') ? <Pencil size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -1626,14 +1620,14 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-bold text-slate-900">
                 {editingId 
-                  ? (user.role === 'admin' ? t('projects.edit') : (editingProject?.name || '---')) 
+                  ? (authService.can(user, 'update', 'projects') ? t('projects.edit') : (editingProject?.name || '---')) 
                   : t('projects.new')
                 }
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
 
-            {user.role === 'admin' ? (
+            {authService.can(user, 'update', 'projects') ? (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                   <FullWidthField label={t('projects.isInternal')} className="md:col-span-2">
@@ -2023,17 +2017,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   }, []);
 
   const canEditReport = (r: WorkReport) => {
-    if (user.role === 'admin') return true;
-    if (user.role === 'supervisor') {
-      // Supervisors can edit their own and reports from their assigned projects OR if they are an additional worker
-      const isAuthor = r.userId === user.id;
-      const proj = projects.find(p => p.id === r.projectId);
-      const isAssigned = proj ? canUserAccessProject(proj, user.id) : false;
-      const isHelper = r.additionalWorkers?.some(aw => aw.userId === user.id);
-      return isAuthor || isAssigned || isHelper;
-    }
-    // Operators only edit what they created
-    return r.userId === user.id;
+    return authService.can(user, 'update', 'reports');
   };
     const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -2694,7 +2678,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
                             if (isInternalMode) return p.isInternal;
                             if (p.isInternal) return false;
-                            if (user.role === 'admin') return true;
+                             if (authService.canAccessAdmin(user)) return true;
                             return canUserAccessProject(p, user.id);
                           })
                           .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -3261,12 +3245,21 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('ws_auth');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.availableCompanies?.length > 0) {
-        db.setCompanyId(parsed.companyId || parsed.availableCompanies[0].id);
+      try {
+        const parsed = JSON.parse(saved);
+        // Robust hydration: prefer companyId if present, fallback to first available company
+        const activeCompId = parsed.companyId || parsed.availableCompanies?.[0]?.id;
+        if (activeCompId) {
+          db.setCompanyId(activeCompId);
+        }
+        if (parsed.id) {
+          db.setUserId(parsed.id);
+        }
+        return parsed;
+      } catch (e) {
+        console.error("Error parsing saved auth:", e);
+        return null;
       }
-      db.setUserId(parsed.id);
-      return parsed;
     }
     return null;
   });
@@ -3316,8 +3309,9 @@ const App: React.FC = () => {
           const userData = await db.getUserByAuthId(session.user.id);
           console.log('AUTH: DB lookup result:', userData ? `FOUND (${userData.name})` : 'NOT FOUND');
           if (userData) {
-            if (userData.availableCompanies?.length > 0) {
-              db.setCompanyId(userData.availableCompanies[0].id);
+            const activeCompId = userData.companyId || userData.availableCompanies?.[0]?.id;
+            if (activeCompId) {
+              db.setCompanyId(activeCompId);
             }
             db.setUserId(userData.id);
             localStorage.setItem('ws_auth', JSON.stringify(userData));
@@ -3344,8 +3338,9 @@ const App: React.FC = () => {
             const userData = await db.getUserByAuthId(session.user.id);
             console.log('AUTH: Recovery user lookup:', userData ? `FOUND (${userData.name})` : 'FAILED');
             if (userData) {
-              if (userData.availableCompanies?.length > 0) {
-                db.setCompanyId(userData.availableCompanies[0].id);
+              const activeCompId = userData.companyId || userData.availableCompanies?.[0]?.id;
+              if (activeCompId) {
+                db.setCompanyId(activeCompId);
               }
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
@@ -3360,8 +3355,9 @@ const App: React.FC = () => {
             console.log('AUTH: Normal SIGNED_IN - fetching user data');
             const userData = await db.getUserByAuthId(session.user.id);
             if (userData) {
-              if (userData.availableCompanies?.length > 0) {
-                db.setCompanyId(userData.availableCompanies[0].id);
+              const activeCompId = userData.companyId || userData.availableCompanies?.[0]?.id;
+              if (activeCompId) {
+                db.setCompanyId(activeCompId);
               }
               db.setUserId(userData.id);
               localStorage.setItem('ws_auth', JSON.stringify(userData));
@@ -3428,6 +3424,9 @@ const App: React.FC = () => {
     };
 
     updateUnread();
+
+    const companyId = user.companyId || db.getUserIdSafe(); // Safe fallback for RLS channel
+    if (!companyId) return;
 
     const channel = supabase
       .channel('global_unread_count')
@@ -3569,12 +3568,12 @@ const App: React.FC = () => {
                   <Routes>
                     <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} isMobile={isMobile} unreadCount={unreadCount} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
-                    <Route path="/work-summary" element={(user.role === 'admin' || user.role === 'supervisor') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/clients" element={user.role === "admin" ? <ClientsView t={t} /> : <Navigate to="/" />} />
+                    <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
+                    <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} /> : <Navigate to="/" />} />
                     <Route path="/projects" element={<ProjectsView user={user} />} />
                     <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
-                    <Route path="/subcontractors" element={user.role === 'admin' ? <SubcontractorsView /> : <Navigate to="/" />} />
-                    <Route path="/personnel" element={user.role === 'admin' ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
+                    <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
+                    <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
                     <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
                     <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
@@ -3585,7 +3584,7 @@ const App: React.FC = () => {
             } 
           />
         </Routes>
-      {showOnboarding && user && user.role === 'admin' && (
+      {showOnboarding && user && authService.canAccessAdmin(user) && (
         <OnboardingGuide 
           userRole={user.role} 
           onComplete={() => {

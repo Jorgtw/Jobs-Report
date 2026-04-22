@@ -31,7 +31,8 @@ class DBService {
 
   public requireCompanyId(): string {
     if (!this.currentCompanyId && !this.isSuperAdminRole) {
-      throw new Error("company_id is required but not set in DBService.");
+      console.warn("DBService: company_id requested but not set. This may be a transient state during initialization.");
+      return '';
     }
     return this.currentCompanyId || '';
   }
@@ -130,13 +131,9 @@ class DBService {
   }
 
   async getSubcontractors() {
-    const compId = this.requireCompanyId();
-    // SSOT: subcontractors table still has company_id (it's a tenant-owned table)
-    // but we ensure we always filter by the active context.
     const { data, error } = await supabase
       .from('subcontractors')
-      .select('*')
-      .eq('company_id', compId);
+      .select('*');
     
     if (error) {
       console.error('Error fetching subcontractors:', error);
@@ -180,10 +177,10 @@ class DBService {
     // If not (new user or legacy), the association will be completed during their first login/repair.
     if (authId) {
        const { error: assocErr } = await supabase.from('user_companies').upsert({
-         user_id: authId,
+         auth_id: authId,
          company_id: compId,
          role: worker.role || 'operator'
-       }, { onConflict: 'user_id, company_id' });
+       }, { onConflict: 'auth_id, company_id' });
        
        if (assocErr) throw assocErr;
     } else {
@@ -256,13 +253,11 @@ class DBService {
   }
 
   async getUsers() {
-    const compId = this.requireCompanyId();
-    
-    // SSOT: Fetch users authorized for this company via user_companies bridge
+    // SSOT: Fetch users authorized for current company via user_companies bridge
+    // RLS already filters user_companies by the active user session.
     const { data: authorized, error: authErr } = await supabase
       .from('user_companies')
-      .select('auth_id')
-      .eq('company_id', compId);
+      .select('auth_id');
 
     if (authErr || !authorized) {
       console.error('Error fetching authorized users:', authErr);
@@ -317,8 +312,9 @@ class DBService {
     user.availableCompanies = availableCompanies;
     
     // Set active company if possible
-    if (availableCompanies.length > 0) {
-       this.setCompanyId(availableCompanies[0].id);
+    const activeCompId = user.companyId || (availableCompanies.length > 0 ? availableCompanies[0].id : null);
+    if (activeCompId) {
+       this.setCompanyId(activeCompId);
     }
     
     return user;
@@ -841,8 +837,7 @@ class DBService {
   }
 
   async getClients() {
-    const compId = this.requireCompanyId();
-    const { data, error } = await supabase.from('clients').select('*').eq('company_id', compId);
+    const { data, error } = await supabase.from('clients').select('*');
     if (error) {
       console.error('Error fetching clients:', error);
       return [];
@@ -925,8 +920,7 @@ class DBService {
   }
 
   async getProjects() {
-    const compId = this.requireCompanyId();
-    const { data, error } = await supabase.from('projects').select('*').eq('company_id', compId);
+    const { data, error } = await supabase.from('projects').select('*');
     if (error) {
       console.error('Error fetching projects:', error);
       return [];
@@ -1388,44 +1382,11 @@ class DBService {
     };
   }
 
-  async getReports(userId?: string, role?: Role) {
-    const compId = this.requireCompanyId();
-    let query = supabase
+  async getReports() {
+    const { data, error } = await supabase
       .from('reports')
-      .select(`*, additionalWorkers:rapportini_workers(*)`)
-      .eq('company_id', compId);
+      .select(`*, additionalWorkers:rapportini_workers(*)`);
 
-    if (role !== 'admin' && userId) {
-      if (role === 'supervisor') {
-        const projects = await this.getProjects();
-        const assignedProjectIds = projects
-          .filter((p: any) => !p.assignedWorkerIds || p.assignedWorkerIds.length === 0 || p.assignedWorkerIds.includes(userId))
-          .map((p: any) => p.id);
-
-        const { data, error } = await query;
-        if (error) {
-          console.error('Error fetching reports:', error);
-          return [];
-        }
-        return data.map(r => this.mapSupabaseReport(r)).filter((r: any) =>
-          r.userId === userId ||
-          r.additionalWorkers.some((aw: any) => aw.userId === userId) ||
-          assignedProjectIds.includes(r.projectId)
-        );
-      } else {
-        const { data, error } = await query;
-        if (error) {
-          console.error('Error fetching reports:', error);
-          return [];
-        }
-        return data.map(r => this.mapSupabaseReport(r)).filter((r: any) =>
-          r.userId === userId ||
-          r.additionalWorkers.some((aw: any) => aw.userId === userId)
-        );
-      }
-    }
-
-    const { data, error } = await query;
     if (error) {
       console.error('Error fetching reports:', error);
       return [];
@@ -1590,9 +1551,8 @@ class DBService {
   }
 
   async deleteReport(id: string) {
-    // 1. Delete associated workers and expenses first to avoid foreign key constraints
+    // 1. Delete associated workers first to avoid foreign key constraints
     await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
-    await supabase.from('rapportini_expenses').delete().eq('rapportino_id', id);
 
     // 2. Delete the main report
     const { error } = await supabase.from('reports').delete().eq('id', id);
@@ -1601,7 +1561,7 @@ class DBService {
 
   async getSummary(): Promise<ReportSummary[]> {
     const [reports, projects, clients, workers] = await Promise.all([
-      this.getReports('admin', 'admin'),
+      this.getReports(),
       this.getProjects(),
       this.getClients(),
       this.getUsers()
