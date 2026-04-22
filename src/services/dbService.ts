@@ -805,7 +805,8 @@ class DBService {
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
       extra_cost: w.extraCost,
-      address: w.address
+      address: w.address,
+      internal_note: w.notes
     };
     // password and password_hash fields are strictly ignored to prevent plain text storage
     return obj;
