@@ -724,13 +724,9 @@ class DBService {
     if (availableCompanies.length > 0) {
       this.setCompanyId(availableCompanies[0].id);
       
-      const { data: compData } = await supabase
-        .from('companies')
-        .select('name, status, is_premium')
-        .eq('id', availableCompanies[0].id)
-        .single();
-        
-      const user = this.mapSupabaseWorker(workerData, compData?.is_premium, compData?.name);
+      const userContext = contexts?.find((c: any) => c.cid === availableCompanies[0].id) || {};
+      
+      const user = this.mapSupabaseWorker(workerData, userContext.is_premium, userContext.cname);
       user.availableCompanies = availableCompanies;
       
       // Check if truly superadmin via user_roles for extra safety
