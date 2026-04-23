@@ -86,7 +86,7 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 
 // --- Navigation Config ---
 const getNavLinks = (t: any, user: User | null) => {
-  const isSA = user?.role === 'superadmin';
+  const isSA = user?.role?.toLowerCase() === 'superadmin';
   
   const links = [
     { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
@@ -315,7 +315,7 @@ const AppLayout: React.FC<{
                     </p>
                   )}
                   <p className="text-[10px] text-slate-400 capitalize bg-slate-50 px-1.5 py-0.5 rounded mt-0.5 border border-slate-100 font-medium">
-                    {t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` as any)}
+                    {t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()}` as any)}
                   </p>
                 </div>
               </div>
@@ -3380,7 +3380,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (user && user.id) {
       db.setUserId(user.id);
-      if ((user.role as any) === 'superadmin') {
+      if (user.role?.toLowerCase() === 'superadmin') {
         setIsSuperAdmin(true);
         db.setIsSuperAdmin(true);
         // Ensure Superadmin always has premium features locally without triggering loops

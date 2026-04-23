@@ -42,16 +42,19 @@ const SuperAdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      console.log("SA DASH: Starting data load...");
       try {
         const [s, top] = await Promise.all([
           db.getGlobalWeeklyStats(),
           db.getGlobalWeeklyActiveCompaniesList()
         ]);
+        console.log("SA DASH: Data loaded successfully", { s, top });
         setStats(s);
         setTopActive(top);
       } catch (err) {
-        console.error("Error loading SA dashboard stats:", err);
+        console.error("SA DASH ERROR:", err);
       } finally {
+        console.log("SA DASH: Loading finished");
         setLoading(false);
       }
     };
