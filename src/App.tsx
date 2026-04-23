@@ -30,7 +30,6 @@ import {
   Mail,
   HelpCircle,
   CheckCircle2,
-  Sparkles,
   Lock,
   Settings,
   MapPin,
@@ -452,7 +451,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
 };
 
 // --- Home View (Launcher) ---
-const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean, unreadCount: number }> = ({ user, isSuperAdmin, isMobile, unreadCount }) => {
+const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
   const { t } = useTranslation();
   const actions = getNavLinks(t, user);
 
@@ -3592,7 +3591,7 @@ const App: React.FC = () => {
                     </div>
                   )}
                   <Routes>
-                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} isMobile={isMobile} unreadCount={unreadCount} />} />
+                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} /> : <Navigate to="/" />} />
