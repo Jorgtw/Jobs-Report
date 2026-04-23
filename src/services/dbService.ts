@@ -341,6 +341,7 @@ class DBService {
        if (activeComp) {
          if (!saContext) user.role = activeComp.role;
          user.isPremium = saContext ? true : activeComp.isPremium;
+         user.companyName = activeComp.name;
        }
     }
     

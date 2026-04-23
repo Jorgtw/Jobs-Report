@@ -2485,7 +2485,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             const dateObj = new Date(r.date);
             const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
             const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
-            const personalHours = (r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0)).toFixed(2);
+            const teamTotalHours = (r.teamTotalHours || (r.totalHours + (r.additionalWorkers?.reduce((sum: number, aw: any) => sum + (aw.totalHours || 0), 0) || 0))).toFixed(2);
 
             return (
               <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
@@ -2518,7 +2518,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <Users size={12} /> <span className="font-bold">{totalWorkersCount}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
-                    <Clock size={12} /> <span className="font-bold">{personalHours}h</span>
+                    <Clock size={12} /> <span className="font-bold">{teamTotalHours}h</span>
                   </div>
                   {r.invoiceStatus && (
                     <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${
@@ -2547,7 +2547,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <th className="px-3 py-2 font-black">{t('reports.headerProject')}</th>
                 <th className="px-3 py-2 font-black hidden lg:table-cell">{t('reports.description')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('reports.people')}</th>
-                <th className="px-3 py-2 font-black text-center w-24">{t('reports.personalHours')}</th>
+                <th className="px-3 py-2 font-black text-center w-24">{t('reports.headerTotal')}</th>
                 <th className="px-3 py-2 font-black text-right w-36">{t('common.actions')}</th>
               </tr>
             </thead>
@@ -2557,7 +2557,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 const dateObj = new Date(r.date);
                 const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
                 const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
-                const personalHours = (r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0)).toFixed(2);
+                const teamTotalHours = (r.teamTotalHours || (r.totalHours + (r.additionalWorkers?.reduce((sum: number, aw: any) => sum + (aw.totalHours || 0), 0) || 0))).toFixed(2);
 
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
@@ -2571,7 +2571,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     </td>
                     <td className="px-3 py-1.5 text-center">
                       <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100">
-                        {personalHours}h
+                        {teamTotalHours}h
                       </span>
                     </td>
                     <td className="px-3 py-1.5 text-right whitespace-nowrap">
