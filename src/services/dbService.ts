@@ -278,14 +278,18 @@ class DBService {
       return [];
     }
 
-    const authIds = authorized.map(a => a.auth_id);
-    if (authIds.length === 0) return [];
+    const authIds = authorized ? authorized.map(a => a.auth_id).filter(Boolean) : [];
 
-    // Fetch the worker profiles for these auth IDs
-    const { data, error } = await supabase
-      .from('workers')
-      .select('*')
-      .in('auth_id', authIds);
+    // Fetch worker profiles: they belong either via SSOT auth_id OR directly via company_id (for non-auth workers)
+    let query = supabase.from('workers').select('*');
+    
+    if (authIds.length > 0) {
+      query = query.or(`company_id.eq.${compId},auth_id.in.(${authIds.join(',')})`);
+    } else {
+      query = query.eq('company_id', compId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching worker profiles:', error);
@@ -811,8 +815,8 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username,
-      // SSOT: Do not save company_id back to workers table (Phase 3 Prep)
-      // company_id: w.companyId, 
+      // SSOT: Save company_id for non-auth workers (subcontractors, legacy)
+      company_id: w.companyId, 
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
