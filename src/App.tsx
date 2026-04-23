@@ -3383,7 +3383,7 @@ const App: React.FC = () => {
       if ((user.role as any) === 'superadmin') {
         setIsSuperAdmin(true);
         db.setIsSuperAdmin(true);
-        // Force premium status for global superadmin to unlock all UI features
+        // Ensure Superadmin always has premium features locally without triggering loops
         if (!user.isPremium) {
           const updated = { ...user, isPremium: true };
           setUser(updated);
@@ -3403,11 +3403,10 @@ const App: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (user && user.companyId) {
+    if (user && user.companyId && !isSuperAdmin) { // Don't override superadmin state with company data
       db.getCompanyDetails(user.companyId).then(comp => {
         if (comp) {
           const updatedUser = { ...user, companyName: comp.name, isPremium: comp.isPremium };
-          // Only update if something changed to avoid loops
           if (user.companyName !== comp.name || user.isPremium !== comp.isPremium) {
             setUser(updatedUser);
             localStorage.setItem('ws_auth', JSON.stringify(updatedUser));
