@@ -326,13 +326,21 @@ class DBService {
     const user = this.mapSupabaseWorker(data);
     user.availableCompanies = availableCompanies;
     
-    // Set active company and sync premium status
+    // Sync main role and premium status with session context (SSOT)
+    const saContext = availableCompanies.find((c: any) => c.role === 'superadmin');
+    if (saContext) {
+      user.role = 'superadmin';
+      user.isPremium = true;
+    }
+
+    // Set active company and sync context role if not already superadmin
     const activeCompId = user.companyId || (availableCompanies.length > 0 ? availableCompanies[0].id : null);
     if (activeCompId) {
        this.setCompanyId(activeCompId);
        const activeComp = availableCompanies.find((c: any) => c.id === activeCompId);
        if (activeComp) {
-         user.isPremium = activeComp.isPremium;
+         if (!saContext) user.role = activeComp.role;
+         user.isPremium = saContext ? true : activeComp.isPremium;
        }
     }
     
