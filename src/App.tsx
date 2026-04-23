@@ -3036,7 +3036,7 @@ const CompaniesView: React.FC = () => {
       adminName: c.adminName || '',
       username: c.username || '',
       password: c.password || '',
-      isPremium: !!c.is_premium,
+      isPremium: !!c.isPremium,
       address: c.address || '',
       city: c.city || '',
       country: c.country || '',
@@ -3127,11 +3127,11 @@ const CompaniesView: React.FC = () => {
                   <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
                   <td className="px-5 py-4">
                     <button 
-                      onClick={() => handleTogglePremium(c.id, !!c.is_premium)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${c.is_premium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 shadow-sm hover:scale-105' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                      onClick={() => handleTogglePremium(c.id, !!c.isPremium)}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 shadow-sm hover:scale-105' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
                     >
                       <Building2 size={12} />
-                      {c.is_premium ? 'PREMIUM' : 'BASE'}
+                      {c.isPremium ? 'PREMIUM' : 'BASE'}
                     </button>
                   </td>
                   <td className="px-5 py-4">
