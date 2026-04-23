@@ -2500,7 +2500,12 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       )}
                     </div>
                     <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
-                    {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-0.5" title={r.description}>{r.description}</div>}
+                    <div className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
+                      <UserIcon size={12} className="text-slate-400" />
+                      {users.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}
+                      {totalWorkersCount > 1 && <span className="text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}
+                    </div>
+                    {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-1" title={r.description}>{r.description}</div>}
                   </div>
                   <div className="flex gap-1.5">
                     <button onClick={() => handleComplianceClick(r)} className="p-2 text-indigo-600 bg-indigo-50 active:bg-indigo-100 rounded-lg transition-colors border border-indigo-100" title={t('reports.complianceReport')}><CheckCircle2 size={16} /></button>
@@ -2545,6 +2550,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest">
                 <th className="px-3 py-2 font-black w-32">{t('reports.headerDate')}</th>
                 <th className="px-3 py-2 font-black">{t('reports.headerProject')}</th>
+                <th className="px-3 py-2 font-black">{t('reports.worker')}</th>
                 <th className="px-3 py-2 font-black hidden lg:table-cell">{t('reports.description')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('reports.people')}</th>
                 <th className="px-3 py-2 font-black text-center w-24">{t('reports.headerTotal')}</th>
@@ -2563,6 +2569,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
                     <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate max-w-[150px]" title={proj?.name}>{proj?.name || '---'}</td>
+                    <td className="px-3 py-1.5 text-xs text-slate-700 truncate max-w-[120px]">
+                      {users.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}
+                      {totalWorkersCount > 1 && <span className="ml-1 text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}
+                    </td>
                     <td className="px-3 py-1.5 text-xs text-slate-600 truncate max-w-[150px] hidden lg:table-cell" title={r.description}>{r.description || '---'}</td>
                     <td className="px-3 py-1.5 text-center">
                       <span className="inline-flex items-center justify-center bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
