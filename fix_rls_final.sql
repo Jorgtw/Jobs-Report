@@ -1,0 +1,52 @@
+-- 1. FIX: Risolviamo l'errore 406 sulla tabella companies
+-- Assicuriamoci che gli utenti possano leggere i dati della loro azienda
+DROP POLICY IF EXISTS "Users can view their companies" ON public.companies;
+DROP POLICY IF EXISTS "SSOT: Companies Access" ON public.companies;
+
+CREATE POLICY "SSOT: Companies Access" ON public.companies
+FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_companies
+    WHERE user_companies.company_id = companies.id
+    AND user_companies.auth_id = auth.uid()
+  )
+);
+
+-- 2. FIX: Risolviamo la visibilità dei collaboratori senza account
+-- Modifichiamo can_access_worker per permettere agli admin di vedere
+-- anche i lavoratori (subappaltatori/operai) che non hanno un auth_id
+DROP POLICY IF EXISTS "SSOT: Workers Access" ON public.workers;
+DROP POLICY IF EXISTS "SSOT: Workers Update" ON public.workers;
+
+CREATE OR REPLACE FUNCTION public.can_access_worker_v2(target_auth_id UUID, target_company_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN (
+    -- È il mio profilo
+    (target_auth_id IS NOT NULL AND target_auth_id = auth.uid())
+    OR
+    -- Oppure appartiene a una mia azienda e io sono admin/supervisor
+    (target_company_id IS NOT NULL AND public.is_admin_of_company(target_company_id))
+    OR
+    -- Fallback SSOT: controlla tramite user_companies bridge
+    (target_auth_id IS NOT NULL AND EXISTS (
+      SELECT 1 FROM public.user_companies my_uc
+      JOIN public.user_companies their_uc ON my_uc.company_id = their_uc.company_id
+      WHERE my_uc.auth_id = auth.uid()
+      AND my_uc.role::TEXT IN ('admin', 'supervisor', 'superadmin')
+      AND their_uc.auth_id = target_auth_id
+    ))
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE POLICY "SSOT: Workers Access" ON public.workers
+FOR SELECT TO authenticated
+USING (public.can_access_worker_v2(auth_id, company_id));
+
+CREATE POLICY "SSOT: Workers Update" ON public.workers
+FOR UPDATE TO authenticated
+USING (public.can_access_worker_v2(auth_id, company_id));
+
+NOTIFY pgrst, 'reload schema';

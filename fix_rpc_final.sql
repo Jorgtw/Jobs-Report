@@ -1,4 +1,6 @@
--- Aggiornamento dell'RPC per supportare l'impersonificazione (Hydration)
+DROP FUNCTION IF EXISTS public.get_user_session_context();
+DROP FUNCTION IF EXISTS public.get_user_session_context(UUID);
+
 CREATE OR REPLACE FUNCTION public.get_user_session_context(target_auth_id UUID DEFAULT NULL)
 RETURNS TABLE (
   cid UUID,
@@ -9,7 +11,6 @@ RETURNS TABLE (
 DECLARE
   uid UUID;
 BEGIN
-  -- Se target_auth_id è fornito, usa quello, altrimenti usa l'utente loggato
   uid := COALESCE(target_auth_id, auth.uid());
   
   RETURN QUERY
@@ -23,3 +24,6 @@ BEGIN
   WHERE uc.auth_id = uid;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.get_user_session_context(UUID) TO authenticated;
+NOTIFY pgrst, 'reload schema';

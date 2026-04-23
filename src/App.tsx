@@ -87,14 +87,17 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 
 // --- Navigation Config ---
 const getNavLinks = (t: any, user: User | null) => {
+  const isSA = user?.role === 'superadmin';
+  
   const links = [
-    { name: t('common.clients'), path: '/clients', icon: Users, show: authService.can(user, 'read', 'clients'), color: 'bg-emerald-500' },
+    { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
+    { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && authService.can(user, 'read', 'clients'), color: 'bg-emerald-500' },
     { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: authService.can(user, 'read', 'workers'), color: 'bg-rose-500' },
-    { name: t('common.projects'), path: '/projects', icon: Briefcase, show: authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
+    { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
     { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
-    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: authService.canAccessAdmin(user), color: 'bg-cyan-500' },
-    { name: t('common.reports'), path: '/reports', icon: FileText, show: authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
-    { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
+    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
+    { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
+    { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: !isSA && authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
     { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user, color: 'bg-slate-600' },
     { name: t('common.help'), path: '/help', icon: HelpCircle, show: !!user, color: 'bg-blue-600' }
   ];
@@ -461,63 +464,55 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean, isMobile: boolean,
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-6 px-4 animate-in fade-in duration-500">
+    <div className="max-w-3xl mx-auto py-6 px-4 animate-in fade-in duration-500">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           {t('common.welcome')}, {user.name.split(' ')[0]}
         </h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">{t('reports.activityManagement')}</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">
+          {isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}
+        </p>
       </div>
 
       {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
 
-      {isMobile && (
-        <div className="flex justify-center mb-6">
-          <button 
-            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat'))}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold hover:bg-blue-100 transition-all border border-blue-100/50 shadow-sm animate-pulse-subtle"
-          >
-            <Sparkles size={14} />
-            {t('common.needHelpChat')}
-          </button>
-        </div>
-      )}
-
-      <nav className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {actions.map((link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            data-onboarding={`home-${link.path.replace('/', '')}`}
-            className="flex items-center gap-3 p-2.5 bg-white border border-slate-100 rounded-xl hover:border-blue-500 hover:bg-slate-50 transition-all group shadow-sm active:scale-[0.98]"
-          >
-            <div className={`${link.color} p-2 rounded-lg text-white shadow-sm transition-transform group-hover:scale-105`}>
-              <link.icon size={16} />
-            </div>
-            <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
-            {link.path === '/communications' && unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
-                {unreadCount}
-              </span>
-            )}
-            {(link as any).premiumOnly && !user.isPremium ? (
-              <Lock size={12} className="ml-auto text-slate-300" />
-            ) : (
-              <ChevronRight size={12} className="ml-auto text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
-            )}
-          </Link>
-        ))}
+      <div className="mt-8">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">
+          {isSuperAdmin ? 'Quick Access Tools' : t('common.quickMenu')}
+        </h3>
         
-        <button 
-          onClick={handleManualLogout}
-          className="flex items-center gap-3 p-2.5 bg-white border border-slate-100 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group shadow-sm active:scale-[0.98] sm:col-span-2 mt-2"
-        >
-          <div className="bg-slate-100 p-2 rounded-lg text-slate-400 shadow-sm transition-transform group-hover:scale-105 group-hover:bg-red-500 group-hover:text-white">
-            <LogOut size={16} />
-          </div>
-          <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
-        </button>
-      </nav>
+        <nav className={`grid ${isSuperAdmin ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'} gap-3`}>
+          {actions.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl hover:border-blue-500 hover:shadow-md hover:shadow-blue-50 transition-all group active:scale-[0.98]"
+            >
+              <div className={`${link.color} p-2.5 rounded-xl text-white shadow-sm transition-transform group-hover:scale-110`}>
+                <link.icon size={18} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">Apri {link.name}</span>
+              </div>
+              <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+            </Link>
+          ))}
+          
+          <button 
+            onClick={handleManualLogout}
+            className={`flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl hover:border-red-500 hover:bg-red-50 transition-all group active:scale-[0.98] ${isSuperAdmin ? '' : 'sm:col-span-2'}`}
+          >
+            <div className="bg-slate-100 p-2.5 rounded-xl text-slate-400 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white">
+              <LogOut size={18} />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Esci dal sistema</span>
+            </div>
+          </button>
+        </nav>
+      </div>
     </div>
   );
 };
