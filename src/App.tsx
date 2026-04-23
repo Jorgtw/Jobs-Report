@@ -3104,7 +3104,7 @@ const CompaniesView: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900">{t('projects.companiesManagement')}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t('dashboard.companiesManagement')}</h1>
         <button onClick={resetForm} className="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl shadow-lg hover:bg-purple-700 transition-all">
           <Plus size={16} className="mr-2 inline" /> {t('dashboard.createCompanyBtn')}
         </button>
