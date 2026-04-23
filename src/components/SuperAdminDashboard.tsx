@@ -142,34 +142,6 @@ const SuperAdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer Info (Horizontalized & Secondary Style) */}
-      <div className="flex flex-col sm:flex-row gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
-        <div className="flex-1 flex gap-3 items-start">
-          <div className="p-1.5 bg-white rounded-lg border border-slate-200 shrink-0 text-amber-500">
-            <Clock size={16} />
-          </div>
-          <div>
-            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('dashboard.pendingRequestsReminder')}</h4>
-            <p className="text-[10px] text-slate-500 font-medium leading-tight">
-              {t('dashboard.pendingRequestsDesc')}
-            </p>
-          </div>
-        </div>
-        
-        <div className="w-px bg-slate-200 mx-1 hidden sm:block"></div>
-
-        <div className="flex-1 flex gap-3 items-start">
-          <div className="p-1.5 bg-white rounded-lg border border-slate-200 shrink-0 text-blue-500">
-            <Activity size={16} />
-          </div>
-          <div>
-            <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-tighter mb-0.5">{t('dashboard.quickSupport')}</h4>
-            <p className="text-[10px] text-slate-500 font-medium leading-tight">
-              {t('dashboard.quickSupportDesc')}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

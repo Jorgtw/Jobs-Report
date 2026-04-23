@@ -93,12 +93,12 @@ const getNavLinks = (t: any, user: User | null) => {
     { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && authService.can(user, 'read', 'clients'), color: 'bg-emerald-500' },
     { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: authService.can(user, 'read', 'workers'), color: 'bg-rose-500' },
     { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
-    { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
+    { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: !isSA && authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
     { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
     { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
     { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: !isSA && authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
     { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user, color: 'bg-slate-600' },
-    { name: t('common.help'), path: '/help', icon: HelpCircle, show: !!user, color: 'bg-blue-600' }
+    { name: t('common.help'), path: '/help', icon: HelpCircle, show: !isSA && !!user, color: 'bg-blue-600' }
   ];
 
   return links.filter(l => l.show);
