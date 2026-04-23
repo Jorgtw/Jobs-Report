@@ -2502,7 +2502,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
                     <div className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
                       <UserIcon size={12} className="text-slate-400" />
-                      {users.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}
+                      {personnel.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}
                       {totalWorkersCount > 1 && <span className="text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}
                     </div>
                     {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-1" title={r.description}>{r.description}</div>}
@@ -2570,7 +2570,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
                     <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate max-w-[150px]" title={proj?.name}>{proj?.name || '---'}</td>
                     <td className="px-3 py-1.5 text-xs text-slate-700 truncate max-w-[120px]">
-                      {users.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}
+                      {personnel.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}
                       {totalWorkersCount > 1 && <span className="ml-1 text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}
                     </td>
                     <td className="px-3 py-1.5 text-xs text-slate-600 truncate max-w-[150px] hidden lg:table-cell" title={r.description}>{r.description || '---'}</td>

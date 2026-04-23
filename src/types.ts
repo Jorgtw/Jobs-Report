@@ -114,6 +114,7 @@ export interface WorkReport {
   breakHours: number;
   manualTotalHours?: number;
   totalHours: number;
+  teamTotalHours?: number;
   description: string;
   notes: string;
   expenses: Expense[];
