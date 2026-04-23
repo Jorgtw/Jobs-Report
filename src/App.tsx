@@ -3178,7 +3178,7 @@ const CompaniesView: React.FC = () => {
                   <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className={inputClasses} placeholder={t('auth.usernamePlaceholder')} />
                 </FullWidthField>
                 <FullWidthField label={t('dashboard.adminPassword')}>
-                  <input type="text" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder={t('dashboard.tempPasswordPlaceholder')} />
+                  <input type="text" required={!editingId} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder={t('dashboard.tempPasswordPlaceholder')} />
                 </FullWidthField>
               </div>
               {editingId && (
