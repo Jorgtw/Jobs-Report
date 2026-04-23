@@ -3379,6 +3379,12 @@ const App: React.FC = () => {
       if ((user.role as any) === 'superadmin') {
         setIsSuperAdmin(true);
         db.setIsSuperAdmin(true);
+        // Force premium status for global superadmin to unlock all UI features
+        if (!user.isPremium) {
+          const updated = { ...user, isPremium: true };
+          setUser(updated);
+          localStorage.setItem('ws_auth', JSON.stringify(updated));
+        }
       } else {
         db.checkIsSuperAdmin(user.id).then(isSA => {
           setIsSuperAdmin(isSA);

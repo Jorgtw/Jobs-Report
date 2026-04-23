@@ -52,6 +52,7 @@ export const projects = {
   roleOperator: 'Operaio',
   roleSupervisor: 'Incaricato',
   roleAdmin: 'Amministratore',
+  roleSuperadmin: 'Super Amministratore',
   personName: 'Nome',
   personType: 'Tipo di personale',
   personInternal: 'Personale interno',

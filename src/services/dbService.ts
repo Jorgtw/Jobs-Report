@@ -330,7 +330,7 @@ class DBService {
     const activeCompId = user.companyId || (availableCompanies.length > 0 ? availableCompanies[0].id : null);
     if (activeCompId) {
        this.setCompanyId(activeCompId);
-       const activeComp = availableCompanies.find(c => c.id === activeCompId);
+       const activeComp = availableCompanies.find((c: any) => c.id === activeCompId);
        if (activeComp) {
          user.isPremium = activeComp.isPremium;
        }
@@ -730,8 +730,6 @@ class DBService {
 
     const user = this.mapSupabaseWorker(workerData);
     user.availableCompanies = availableCompanies;
-    return user;
-
     return user;
   }
 
