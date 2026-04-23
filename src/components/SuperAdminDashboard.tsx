@@ -4,8 +4,7 @@ import {
   Activity, 
   FileText, 
   Award, 
-  TrendingUp,
-  Clock
+  TrendingUp
 } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
