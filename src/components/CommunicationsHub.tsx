@@ -288,9 +288,12 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       ]);
       
       setCommsBySection({
-        inbox,
-        outbox
+        inbox: inbox.filter(m => m.status !== 'deleted' && m.status !== 'archived'),
+        outbox: outbox.filter(m => m.status !== 'deleted' && m.status !== 'archived')
       });
+
+      // Refresh global sidebar badge
+      window.dispatchEvent(new CustomEvent('refresh-unread-count'));
     } catch (err) {
       console.error('Error fetching communications:', err);
     }
@@ -409,11 +412,19 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
         case 'read': await db.markAsRead(commId); break;
       }
       fetchMainData();
-      if (selectedThread?.id === commId) {
-        const updated = await db.getThread(commId);
-        setThreadMessages(updated);
-        const root = updated.find(m => m.id === commId);
-        if (root) setSelectedThread(root);
+      const isPartOfSelected = selectedThread?.id === commId || threadMessages.some(m => m.id === commId);
+      if (isPartOfSelected) {
+        if (action === 'delete' && selectedThread?.id === commId) {
+          setSelectedThread(null);
+          setThreadMessages([]);
+          if (isMobile) setMobileView('list');
+        } else {
+          const threadId = selectedThread?.id || commId;
+          const updated = await db.getThread(threadId);
+          setThreadMessages(updated);
+          const root = updated.find(m => m.id === threadId);
+          if (root) setSelectedThread(root);
+        }
       }
     } catch (err) {
       console.error(`Error performing ${action}:`, err);
@@ -536,7 +547,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('common.internalCommMenu')}</h2>
             <div className="flex items-center gap-2">
-              {isSupported && !loading && (
+              {isSupported && (
                 <button 
                   onClick={() => isSubscribed ? unsubscribeUser() : requestPermission()}
                   className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${isSubscribed ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-slate-400 border border-slate-200'}`}

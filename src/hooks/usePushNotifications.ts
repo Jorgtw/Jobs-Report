@@ -88,10 +88,28 @@ export const usePushNotifications = (user: User | null) => {
     if (!user) return;
 
     try {
-      // 1. Registrazione Service Worker (fondamentale per getToken)
+      // 1. Registrazione e Attivazione Service Worker
       if ('serviceWorker' in navigator) {
-        await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        console.log("[PUSH] Service Worker registrato con successo");
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        
+        // Aspettiamo che sia pronto
+        await navigator.serviceWorker.ready;
+
+        // Se c'è un nuovo worker in attesa, forziamo l'attivazione
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          // Diamo un piccolo delay per l'attivazione
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // Se non è ancora il controller, dobbiamo attendere o forzare il controllo
+        if (!navigator.serviceWorker.controller) {
+          console.log("[PUSH] SW non ancora controller. Tentativo di claim...");
+          // Un ricaricamento forzato della pagina sarebbe l'ultima spiaggia, 
+          // ma spesso basta attendere che il worker prenda il controllo.
+        }
+        
+        console.log("[PUSH] Service Worker pronto e attivo");
       }
 
       // 2. Ottenimento token reale da Firebase
@@ -113,9 +131,11 @@ export const usePushNotifications = (user: User | null) => {
           }, { onConflict: 'worker_id, fcm_token' });
 
         if (!error) {
-          // Notifichiamo il cambiamento a tutte le altre istanze dell'hook
-          window.dispatchEvent(new CustomEvent('push-subscription-change'));
-          setIsSubscribed(true);
+          // Give the DB a moment to index before refreshing state
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('push-subscription-change'));
+            setIsSubscribed(true);
+          }, 300);
         }
       } else {
         console.warn("[PUSH] Impossibile ottenere il token. Verifica config Firebase.");

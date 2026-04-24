@@ -1335,19 +1335,25 @@ class DBService {
 
   async deleteComm(id: string) {
     const compId = this.requireCompanyId();
+    // Mark both the root and its children as deleted
     const { error } = await supabase
       .from('internal_communications')
       .update({ status: 'deleted' })
-      .eq('id', id)
+      .or(`id.eq.${id},parent_id.eq.${id}`)
       .eq('company_id', compId);
     if (error) throw error;
   }
 
   async markAsRead(communicationId: string) {
     const userId = this.requireUserId();
+    const compId = this.requireCompanyId();
     const { error } = await supabase
       .from('communication_read_receipts')
-      .upsert({ communication_id: communicationId, user_id: userId });
+      .upsert({ 
+        communication_id: communicationId, 
+        user_id: userId,
+        company_id: compId
+      });
     if (error) throw error;
   }
 

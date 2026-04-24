@@ -2313,7 +2313,26 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
             </div>
           )}
           <button 
-            onClick={() => { setEditingId(null); setFormData({ ...formData, projectId: '', userId: user.id, date: new Date().toISOString().split('T')[0], expenses: [], additionalWorkers: [], activityType: 'work' }); setIsModalOpen(true); }}
+            onClick={() => { 
+              setEditingId(null); 
+              setFormData({ 
+                ...formData, 
+                projectId: '', 
+                userId: user.id, 
+                date: new Date().toISOString().split('T')[0], 
+                startTime: '08:00',
+                endTime: '17:00',
+                breakHours: 1,
+                manualTotalHours: undefined,
+                overtimeHours: 0,
+                description: '',
+                expenses: [], 
+                additionalWorkers: [], 
+                activityType: 'work',
+                invoiceStatus: 'Pending'
+              }); 
+              setIsModalOpen(true); 
+            }}
             className="px-4 py-2 bg-blue-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-blue-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >
             <Plus size={16} /> {t('reports.new')}
@@ -2625,7 +2644,16 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       onClick={() => {
                         const wasInternal = formData.activityType === 'internal' || formData.activityType === 'sickness' || formData.activityType === 'holiday';
                         if (wasInternal) {
-                          setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined });
+                          setFormData({ 
+                            ...formData, 
+                            activityType: 'work', 
+                            projectId: '', 
+                            startTime: '08:00', 
+                            endTime: '17:00', 
+                            breakHours: 1, 
+                            manualTotalHours: undefined,
+                            invoiceStatus: 'Pending'
+                          });
                         }
                       }} 
                       className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
@@ -3431,9 +3459,12 @@ const App: React.FC = () => {
     };
 
     updateUnread();
+    window.addEventListener('refresh-unread-count', updateUnread);
 
     const companyId = user.companyId || db.getUserIdSafe(); // Safe fallback for RLS channel
-    if (!companyId) return;
+    if (!companyId) {
+      return () => window.removeEventListener('refresh-unread-count', updateUnread);
+    }
 
     const channel = supabase
       .channel('global_unread_count')
@@ -3464,6 +3495,7 @@ const App: React.FC = () => {
       .subscribe();
 
     return () => {
+      window.removeEventListener('refresh-unread-count', updateUnread);
       supabase.removeChannel(channel);
     };
   }, [user?.id, user?.companyId]);
