@@ -27,11 +27,12 @@ try {
 
 export { messaging };
 
-export const requestForToken = async () => {
+export const requestForToken = async (registration?: ServiceWorkerRegistration) => {
   if (!messaging) return null;
   try {
     const currentToken = await getToken(messaging, { 
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration
     });
     return currentToken;
   } catch (err) {

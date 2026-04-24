@@ -89,31 +89,25 @@ export const usePushNotifications = (user: User | null) => {
 
     try {
       // 1. Registrazione e Attivazione Service Worker
+      let swRegistration: ServiceWorkerRegistration | undefined;
       if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         
         // Aspettiamo che sia pronto
         await navigator.serviceWorker.ready;
 
         // Se c'è un nuovo worker in attesa, forziamo l'attivazione
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        if (swRegistration.waiting) {
+          swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
           // Diamo un piccolo delay per l'attivazione
           await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        // Se non è ancora il controller, dobbiamo attendere o forzare il controllo
-        if (!navigator.serviceWorker.controller) {
-          console.log("[PUSH] SW non ancora controller. Tentativo di claim...");
-          // Un ricaricamento forzato della pagina sarebbe l'ultima spiaggia, 
-          // ma spesso basta attendere che il worker prenda il controllo.
         }
         
         console.log("[PUSH] Service Worker pronto e attivo");
       }
 
-      // 2. Ottenimento token reale da Firebase
-      const token = await requestForToken();
+      // 2. Ottenimento token reale da Firebase (passando la registrazione)
+      const token = await requestForToken(swRegistration);
 
       if (token) {
         const { error } = await supabase
