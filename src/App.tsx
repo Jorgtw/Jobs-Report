@@ -520,13 +520,13 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
 import { useQueryClient } from '@tanstack/react-query';
 const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   const queryClient = useQueryClient();
-  const { data: clients = [] } = useClients(user?.companyId);
+  const { data: clients = [] } = useClients(user?.companyId ?? undefined);
   const { lang, t } = useTranslation();
   
-  const { data: rawSummary = [] } = useSummary(user?.companyId);
-  const { data: projects = [] } = useProjects(user?.companyId);
-  const { data: users = [] } = useUsers(user?.companyId);
-  const { data: subcontractors = [] } = useSubcontractors(user?.companyId);
+  const { data: rawSummary = [] } = useSummary(user?.companyId ?? undefined);
+  const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
+  const { data: users = [] } = useUsers(user?.companyId ?? undefined);
+  const { data: subcontractors = [] } = useSubcontractors(user?.companyId ?? undefined);
 
   const summary = React.useMemo(() => {
     if (user.role === 'supervisor') {
@@ -1317,7 +1317,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
     createClient,
     updateClient,
     deleteClient
-  } = useClients(user?.companyId);
+  } = useClients(user?.companyId ?? undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -1461,8 +1461,8 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
 
 // --- Projects View ---
 const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
-  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects(user?.companyId);
-  const { data: clients = [] } = useClients(user?.companyId);
+  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects(user?.companyId ?? undefined);
+  const { data: clients = [] } = useClients(user?.companyId ?? undefined);
     const { t } = useTranslation();
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1994,10 +1994,10 @@ const SubcontractorsView: React.FC<{ user: User }> = ({ user }) => {
 
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const { lang, t } = useTranslation();
-  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId);
-    const { data: projects = [] } = useProjects(user?.companyId);
-  const { data: clients = [] } = useClients(user?.companyId);
-  const { data: subcontractors = [] } = useSubcontractors(user?.companyId);
+  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined);
+    const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
+  const { data: clients = [] } = useClients(user?.companyId ?? undefined);
+  useSubcontractors(user?.companyId ?? undefined); // Fetch but don't bind to local variable if unused, or just pass context
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
