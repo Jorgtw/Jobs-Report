@@ -30,13 +30,19 @@ export { messaging };
 export const requestForToken = async (registration?: ServiceWorkerRegistration) => {
   if (!messaging) return null;
   try {
+    console.log("[PUSH] Chiamata getToken Firebase...");
+    if (typeof window !== 'undefined') window.alert("FIREBASE: Avvio recupero token...");
+    
     const currentToken = await getToken(messaging, { 
       vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: registration
     });
+    
+    if (typeof window !== 'undefined') window.alert("FIREBASE: Token ricevuto con successo!");
     return currentToken;
-  } catch (err) {
+  } catch (err: any) {
     console.error('An error occurred while retrieving token. ', err);
+    if (typeof window !== 'undefined') window.alert("FIREBASE ERRORE: " + err.message);
     return null;
   }
 };
