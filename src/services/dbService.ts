@@ -131,9 +131,11 @@ class DBService {
   }
 
   async getSubcontractors() {
+    const compId = this.requireCompanyId();
     const { data, error } = await supabase
       .from('subcontractors')
-      .select('*');
+      .select('*')
+      .eq('company_id', compId);
     
     if (error) {
       console.error('Error fetching subcontractors:', error);
@@ -253,14 +255,19 @@ class DBService {
   }
 
   async updateSubcontractor(id: string, updates: any) {
+    const compId = this.requireCompanyId();
     const sbObj = this.mapAppSubcontractorToSupabase(updates);
-    const { error } = await supabase.from('subcontractors').update(sbObj).eq('id', id);
+    const { error } = await supabase.from('subcontractors')
+      .update(sbObj)
+      .eq('id', id)
+      .eq('company_id', compId);
     if (error) throw error;
   }
 
   async deleteSubcontractor(id: string) {
-    await supabase.from('workers').update({ subcontractor_id: null }).eq('subcontractor_id', id);
-    const { error } = await supabase.from('subcontractors').delete().eq('id', id);
+    const compId = this.requireCompanyId();
+    await supabase.from('workers').update({ subcontractor_id: null }).eq('subcontractor_id', id).eq('company_id', compId);
+    const { error } = await supabase.from('subcontractors').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
   }
 
@@ -864,7 +871,11 @@ class DBService {
   }
 
   async getClients() {
-    const { data, error } = await supabase.from('clients').select('*');
+    const compId = this.requireCompanyId();
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('company_id', compId);
     if (error) {
       console.error('Error fetching clients:', error);
       return [];
@@ -884,13 +895,18 @@ class DBService {
   }
 
   async updateClient(id: string, updates: any) {
+    const compId = this.requireCompanyId();
     const sbClient = this.mapAppClientToSupabase(updates);
-    const { error } = await supabase.from('clients').update(sbClient).eq('id', id);
+    const { error } = await supabase.from('clients')
+      .update(sbClient)
+      .eq('id', id)
+      .eq('company_id', compId);
     if (error) throw error;
   }
 
   async deleteClient(id: string) {
-    const { error } = await supabase.from('clients').delete().eq('id', id);
+    const compId = this.requireCompanyId();
+    const { error } = await supabase.from('clients').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
   }
 
@@ -947,7 +963,11 @@ class DBService {
   }
 
   async getProjects() {
-    const { data, error } = await supabase.from('projects').select('*');
+    const compId = this.requireCompanyId();
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('company_id', compId);
     if (error) {
       console.error('Error fetching projects:', error);
       return [];
@@ -988,13 +1008,18 @@ class DBService {
   }
 
   async updateProject(id: string, updates: any) {
+    const compId = this.requireCompanyId();
     const sbObj = this.mapAppProjectToSupabase(updates);
-    const { error } = await supabase.from('projects').update(sbObj).eq('id', id);
+    const { error } = await supabase.from('projects')
+      .update(sbObj)
+      .eq('id', id)
+      .eq('company_id', compId);
     if (error) throw error;
   }
 
   async deleteProject(id: string) {
-    const { error } = await supabase.from('projects').delete().eq('id', id);
+    const compId = this.requireCompanyId();
+    const { error } = await supabase.from('projects').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
   }
 
@@ -1416,9 +1441,11 @@ class DBService {
   }
 
   async getReports() {
+    const compId = this.requireCompanyId();
     const { data, error } = await supabase
       .from('reports')
-      .select(`*, additionalWorkers:rapportini_workers(*)`);
+      .select(`*, additionalWorkers:rapportini_workers(*)`)
+      .eq('company_id', compId);
 
     if (error) {
       console.error('Error fetching reports:', error);
@@ -1510,7 +1537,8 @@ class DBService {
     const { error: reportsError } = await supabase
       .from('reports')
       .delete()
-      .in('id', ids);
+      .in('id', ids)
+      .eq('company_id', compId);
 
     if (reportsError) {
       console.error('Error deleting reports:', reportsError);
@@ -1539,7 +1567,11 @@ class DBService {
       overtime_hours: updates.overtimeHours || 0
     };
 
-    const { error } = await supabase.from('reports').update(sbObj).eq('id', id);
+    const compId = this.requireCompanyId();
+    const { error } = await supabase.from('reports')
+      .update(sbObj)
+      .eq('id', id)
+      .eq('company_id', compId);
     if (error) throw error;
 
     await supabase.from('reports').update({ invoice_status: updates.invoiceStatus || 'Pending' }).eq('id', id);
@@ -1579,16 +1611,25 @@ class DBService {
 
   async bulkUpdateInvoiceStatus(reportIds: string[], newStatus: string) {
     if (!reportIds || reportIds.length === 0) return;
-    const { error } = await supabase.from('reports').update({ invoice_status: newStatus }).in('id', reportIds);
+    const compId = this.requireCompanyId();
+    const { error } = await supabase.from('reports')
+      .update({ invoice_status: newStatus })
+      .in('id', reportIds)
+      .eq('company_id', compId);
     if (error) throw error;
   }
 
   async deleteReport(id: string) {
+    const compId = this.requireCompanyId();
     // 1. Delete associated workers first to avoid foreign key constraints
+    // We check company_id on reports to ensure it belongs to the tenant
+    const { data: report } = await supabase.from('reports').select('id').eq('id', id).eq('company_id', compId).single();
+    if (!report) throw new Error("Report not found or access denied");
+
     await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
 
     // 2. Delete the main report
-    const { error } = await supabase.from('reports').delete().eq('id', id);
+    const { error } = await supabase.from('reports').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
   }
 
