@@ -2,16 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { db } from '../services/dbService';
 import { Project } from '../types';
 
-export const useProjects = () => {
+export const useProjects = (companyId?: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery<Project[], Error>({
-    queryKey: ['projects'],
+    queryKey: ['projects', companyId],
     queryFn: async () => {
       const projects = await db.getProjects();
       return projects || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minuti
+    enabled: !!companyId,
   });
 
   const createProject = useMutation({

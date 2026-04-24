@@ -520,13 +520,13 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
 import { useQueryClient } from '@tanstack/react-query';
 const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   const queryClient = useQueryClient();
-  const { data: clients = [] } = useClients();
+  const { data: clients = [] } = useClients(user?.companyId);
   const { lang, t } = useTranslation();
   
-  const { data: rawSummary = [] } = useSummary();
-  const { data: projects = [] } = useProjects();
-  const { data: users = [] } = useUsers();
-  const { data: subcontractors = [] } = useSubcontractors();
+  const { data: rawSummary = [] } = useSummary(user?.companyId);
+  const { data: projects = [] } = useProjects(user?.companyId);
+  const { data: users = [] } = useUsers(user?.companyId);
+  const { data: subcontractors = [] } = useSubcontractors(user?.companyId);
 
   const summary = React.useMemo(() => {
     if (user.role === 'supervisor') {
@@ -969,7 +969,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
 // --- Profile View ---
 // --- Help View ---
 // --- Personnel View ---
-const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpersonate }) => {
+const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }> = ({ user, onImpersonate }) => {
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [subcontractors, setSubcontractors] = useState<any[]>([]);
@@ -980,12 +980,14 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
 
   useEffect(() => {
     const load = async () => {
+      // Ensure DB context is correct for this component
+      if (user?.companyId) db.setCompanyId(user.companyId);
       const [u, s] = await Promise.all([db.getUsers(), db.getSubcontractors()]);
       setUsers(u);
       setSubcontractors(s);
     };
     load();
-  }, []);
+  }, [user?.companyId]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -1306,15 +1308,16 @@ const PersonnelView: React.FC<{ onImpersonate?: (u: User) => void }> = ({ onImpe
 
 interface ClientsViewProps {
   t: (key: string) => string;
+  user: User;
 }
 
-const ClientsView: React.FC<ClientsViewProps> = ({ t }) => {
+const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
   const {
     data: clients = [],
     createClient,
     updateClient,
     deleteClient
-  } = useClients();
+  } = useClients(user?.companyId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -1458,8 +1461,8 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t }) => {
 
 // --- Projects View ---
 const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
-  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects();
-  const { data: clients = [] } = useClients();
+  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects(user?.companyId);
+  const { data: clients = [] } = useClients(user?.companyId);
     const { t } = useTranslation();
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1814,15 +1817,16 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
 };
 
 // --- Subcontractors View ---
-const SubcontractorsView: React.FC = () => {
+const SubcontractorsView: React.FC<{ user: User }> = ({ user }) => {
   const { t } = useTranslation();
   const [subs, setSubs] = useState<Subcontractor[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (user?.companyId) db.setCompanyId(user.companyId);
     db.getSubcontractors().then(setSubs);
-  }, []);
+  }, [user?.companyId]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -1990,9 +1994,10 @@ const SubcontractorsView: React.FC = () => {
 
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const { lang, t } = useTranslation();
-  const { data: reports = [], createReport, updateReport, deleteReport } = useReports();
-    const { data: projects = [] } = useProjects();
-  const { data: clients = [] } = useClients();
+  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId);
+    const { data: projects = [] } = useProjects(user?.companyId);
+  const { data: clients = [] } = useClients(user?.companyId);
+  const { data: subcontractors = [] } = useSubcontractors(user?.companyId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -3625,11 +3630,11 @@ const App: React.FC = () => {
                     <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                     <Route path="/reports" element={<ReportsView user={user} />} />
                     <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} /> : <Navigate to="/" />} />
+                    <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
                     <Route path="/projects" element={<ProjectsView user={user} />} />
                     <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
-                    <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
-                    <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
+                    <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView user={user} /> : <Navigate to="/" />} />
+                    <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
                     <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
                     <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />

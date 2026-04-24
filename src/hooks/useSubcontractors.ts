@@ -1,16 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { db } from '../services/dbService';
 
-export const useSubcontractors = () => {
+export const useSubcontractors = (companyId?: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery<any[], Error>({
-    queryKey: ['subcontractors'],
+    queryKey: ['subcontractors', companyId],
     queryFn: async () => {
       const subs = await db.getSubcontractors();
       return subs || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minuti
+    enabled: !!companyId,
   });
 
   const createSubcontractor = useMutation({
