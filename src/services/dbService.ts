@@ -1575,7 +1575,10 @@ class DBService {
       .eq('company_id', compId);
     if (error) throw error;
 
-    await supabase.from('reports').update({ invoice_status: updates.invoiceStatus || 'Pending' }).eq('id', id);
+    await supabase.from('reports')
+      .update({ invoice_status: updates.invoiceStatus || 'Pending' })
+      .eq('id', id)
+      .eq('company_id', compId);
 
     if (additionalWorkers !== undefined) {
       const { error: delErr } = await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
