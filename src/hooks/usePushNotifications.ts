@@ -62,6 +62,7 @@ export const usePushNotifications = (user: User | null) => {
   };
 
   const requestPermission = async () => {
+    if (typeof window !== 'undefined') window.alert("DEBUG: Procedura Push Avviata!");
     if (!('Notification' in window)) {
       console.warn("Questo browser non supporta le notifiche push.");
       return false;
