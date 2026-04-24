@@ -96,18 +96,22 @@ export const usePushNotifications = (user: User | null) => {
       let swRegistration: ServiceWorkerRegistration | undefined;
       if ('serviceWorker' in navigator) {
         console.log("[PUSH] Registrazione Service Worker in corso...");
+        window.alert("Fase 1: Registrazione Service Worker...");
         swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         
         console.log("[PUSH] Attesa Service Worker ready...");
+        window.alert("Fase 2: Attesa Service Worker pronto...");
         await navigator.serviceWorker.ready;
 
         if (swRegistration.waiting) {
           console.log("[PUSH] Nuovo worker in attesa, forzo skipWaiting...");
+          window.alert("Fase 3: Nuovo worker rilevato, attivazione...");
           swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
           await new Promise(resolve => setTimeout(resolve, 500));
         }
         
         console.log("[PUSH] Service Worker pronto e attivo");
+        window.alert("Fase 4: Service Worker ATTIVO!");
       }
 
       // 2. Ottenimento token reale da Firebase
