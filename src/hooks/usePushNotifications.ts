@@ -69,7 +69,9 @@ export const usePushNotifications = (user: User | null) => {
 
     setLoading(true);
     try {
+      console.log("[PUSH] Richiesta permesso al browser...");
       const result = await Notification.requestPermission();
+      console.log("[PUSH] Risultato permesso:", result);
       setPermission(result);
       
       if (result === 'granted') {
@@ -86,30 +88,33 @@ export const usePushNotifications = (user: User | null) => {
 
   const subscribeUser = async () => {
     if (!user) return;
+    console.log("[PUSH] Avvio procedura di sottoscrizione...");
 
     try {
       // 1. Registrazione e Attivazione Service Worker
       let swRegistration: ServiceWorkerRegistration | undefined;
       if ('serviceWorker' in navigator) {
+        console.log("[PUSH] Registrazione Service Worker in corso...");
         swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         
-        // Aspettiamo che sia pronto
+        console.log("[PUSH] Attesa Service Worker ready...");
         await navigator.serviceWorker.ready;
 
-        // Se c'è un nuovo worker in attesa, forziamo l'attivazione
         if (swRegistration.waiting) {
+          console.log("[PUSH] Nuovo worker in attesa, forzo skipWaiting...");
           swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          // Diamo un piccolo delay per l'attivazione
           await new Promise(resolve => setTimeout(resolve, 500));
         }
         
         console.log("[PUSH] Service Worker pronto e attivo");
       }
 
-      // 2. Ottenimento token reale da Firebase (passando la registrazione)
+      // 2. Ottenimento token reale da Firebase
+      console.log("[PUSH] Richiesta token a Firebase...");
       const token = await requestForToken(swRegistration);
 
       if (token) {
+        console.log("[PUSH] Token ottenuto con successo, invio al DB...");
         const { error } = await supabase
           .from('user_push_subscriptions')
           .upsert({
@@ -125,17 +130,19 @@ export const usePushNotifications = (user: User | null) => {
           }, { onConflict: 'worker_id, fcm_token' });
 
         if (!error) {
-          // Give the DB a moment to index before refreshing state
+          console.log("[PUSH] Sottoscrizione salvata nel DB correttamente");
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('push-subscription-change'));
             setIsSubscribed(true);
           }, 300);
+        } else {
+          console.error("[PUSH] Errore salvataggio DB:", error);
         }
       } else {
-        console.warn("[PUSH] Impossibile ottenere il token. Verifica config Firebase.");
+        console.warn("[PUSH] Nessun token ricevuto da Firebase. Controlla VAPID KEY e configurazione.");
       }
     } catch (error) {
-      console.error("Errore durante la sottoscrizione push:", error);
+      console.error("[PUSH] Errore critico durante la sottoscrizione:", error);
     }
   };
 
