@@ -151,8 +151,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     isSubscribed,
     requestPermission,
     unsubscribeUser,
-    isSupported,
-    loading
+    isSupported
   } = usePushNotifications(currentUser);
   
   // Forward States
