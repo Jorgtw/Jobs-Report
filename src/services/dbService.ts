@@ -1521,6 +1521,7 @@ class DBService {
 
   async deleteReports(ids: string[]) {
     if (!ids || ids.length === 0) return;
+    const compId = this.requireCompanyId();
     
     // 1. First delete from rapportini_workers (using rapportino_id)
     const { error: workersError } = await supabase
