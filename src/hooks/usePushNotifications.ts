@@ -39,30 +39,36 @@ export const usePushNotifications = (user: User | null) => {
   const checkSubscriptionAndRefresh = async () => {
     if (!user) return;
     
-    const { data: sub } = await supabase
-      .from('user_push_subscriptions')
-      .select('id, updated_at')
-      .eq('worker_id', user.id)
-      .eq('is_active', true)
-      .maybeSingle();
-      
-    setIsSubscribed(!!sub);
+    try {
+      const { data: subs, error } = await supabase
+        .from('user_push_subscriptions')
+        .select('id, updated_at')
+        .eq('worker_id', user.id)
+        .eq('is_active', true)
+        .limit(1);
 
-    // Se il token non viene aggiornato da più di 7 giorni, lo aggiorniamo
-    if (sub) {
-      const lastUpdate = new Date(sub.updated_at).getTime();
-      const now = new Date().getTime();
-      const daysSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60 * 24);
+      if (error) throw error;
       
-      if (daysSinceUpdate > 7) {
-        console.log("[PUSH] Il token è datato, avvio refresh...");
-        await subscribeUser();
+      const sub = subs && subs.length > 0 ? subs[0] : null;
+      setIsSubscribed(!!sub);
+
+      // Se il token non viene aggiornato da più di 7 giorni, lo aggiorniamo
+      if (sub) {
+        const lastUpdate = new Date(sub.updated_at).getTime();
+        const now = new Date().getTime();
+        const daysSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60 * 24);
+        
+        if (daysSinceUpdate > 7) {
+          await subscribeUser();
+        }
       }
+    } catch (error) {
+      console.error("[PUSH] Errore verifica sottoscrizione:", error);
+      setIsSubscribed(false);
     }
   };
 
   const requestPermission = async () => {
-    if (typeof window !== 'undefined') window.alert("DEBUG: Procedura Push Avviata!");
     if (!('Notification' in window)) {
       console.warn("Questo browser non supporta le notifiche push.");
       return false;
@@ -70,9 +76,7 @@ export const usePushNotifications = (user: User | null) => {
 
     setLoading(true);
     try {
-      console.log("[PUSH] Richiesta permesso al browser...");
       const result = await Notification.requestPermission();
-      console.log("[PUSH] Risultato permesso:", result);
       setPermission(result);
       
       if (result === 'granted') {
@@ -80,7 +84,7 @@ export const usePushNotifications = (user: User | null) => {
       }
       return result === 'granted';
     } catch (error) {
-      console.error("Errore nella richiesta permessi:", error);
+      console.error("[PUSH] Errore richiesta permessi:", error);
       return false;
     } finally {
       setLoading(false);
@@ -89,37 +93,22 @@ export const usePushNotifications = (user: User | null) => {
 
   const subscribeUser = async () => {
     if (!user) return;
-    console.log("[PUSH] Avvio procedura di sottoscrizione...");
 
     try {
-      // 1. Registrazione e Attivazione Service Worker
       let swRegistration: ServiceWorkerRegistration | undefined;
       if ('serviceWorker' in navigator) {
-        console.log("[PUSH] Registrazione Service Worker in corso...");
-        window.alert("Fase 1: Registrazione Service Worker...");
         swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        
-        console.log("[PUSH] Attesa Service Worker ready...");
-        window.alert("Fase 2: Attesa Service Worker pronto...");
         await navigator.serviceWorker.ready;
 
         if (swRegistration.waiting) {
-          console.log("[PUSH] Nuovo worker in attesa, forzo skipWaiting...");
-          window.alert("Fase 3: Nuovo worker rilevato, attivazione...");
           swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
           await new Promise(resolve => setTimeout(resolve, 500));
         }
-        
-        console.log("[PUSH] Service Worker pronto e attivo");
-        window.alert("Fase 4: Service Worker ATTIVO!");
       }
 
-      // 2. Ottenimento token reale da Firebase
-      console.log("[PUSH] Richiesta token a Firebase...");
       const token = await requestForToken(swRegistration);
 
       if (token) {
-        console.log("[PUSH] Token ottenuto con successo, invio al DB...");
         const { error } = await supabase
           .from('user_push_subscriptions')
           .upsert({
@@ -135,22 +124,14 @@ export const usePushNotifications = (user: User | null) => {
           }, { onConflict: 'worker_id, fcm_token' });
 
         if (!error) {
-          console.log("[PUSH] Sottoscrizione salvata nel DB correttamente");
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('push-subscription-change'));
             setIsSubscribed(true);
-          }, 300);
-        } else {
-          console.error("[PUSH] Errore salvataggio DB:", error);
-          window.alert("ERRORE DATABASE: " + error.message);
+          }, 500);
         }
-      } else {
-        console.warn("[PUSH] Nessun token ricevuto da Firebase.");
-        window.alert("ERRORE FIREBASE: Impossibile ottenere il token. Verifica la configurazione o i permessi del browser.");
       }
     } catch (error: any) {
-      console.error("[PUSH] Errore critico:", error);
-      window.alert("ERRORE CRITICO: " + (error.message || "Errore sconosciuto"));
+      console.error("[PUSH] Errore sottoscrizione:", error);
     }
   };
 
