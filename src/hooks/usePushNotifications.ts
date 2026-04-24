@@ -138,12 +138,15 @@ export const usePushNotifications = (user: User | null) => {
           }, 300);
         } else {
           console.error("[PUSH] Errore salvataggio DB:", error);
+          window.alert("ERRORE DATABASE: " + error.message);
         }
       } else {
-        console.warn("[PUSH] Nessun token ricevuto da Firebase. Controlla VAPID KEY e configurazione.");
+        console.warn("[PUSH] Nessun token ricevuto da Firebase.");
+        window.alert("ERRORE FIREBASE: Impossibile ottenere il token. Verifica la configurazione o i permessi del browser.");
       }
-    } catch (error) {
-      console.error("[PUSH] Errore critico durante la sottoscrizione:", error);
+    } catch (error: any) {
+      console.error("[PUSH] Errore critico:", error);
+      window.alert("ERRORE CRITICO: " + (error.message || "Errore sconosciuto"));
     }
   };
 
