@@ -194,11 +194,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('push_notifications_sound');
+    const saved = localStorage.getItem('app_notification_audio');
     soundEnabledRef.current = saved !== null ? JSON.parse(saved) : true;
 
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'push_notifications_sound') {
+      if (e.key === 'app_notification_audio') {
         soundEnabledRef.current = e.newValue !== null ? JSON.parse(e.newValue) : true;
       }
     };

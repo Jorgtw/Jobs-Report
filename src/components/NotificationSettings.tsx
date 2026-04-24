@@ -13,12 +13,12 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user, t }) 
   
   // Initialize state from localStorage
   const [soundEnabled, setSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem('push_notifications_sound');
+    const saved = localStorage.getItem('app_notification_audio');
     return saved !== null ? JSON.parse(saved) : true;
   });
 
   useEffect(() => {
-    localStorage.setItem('push_notifications_sound', JSON.stringify(soundEnabled));
+    localStorage.setItem('app_notification_audio', JSON.stringify(soundEnabled));
   }, [soundEnabled]);
 
   if (!isSupported) return null;
