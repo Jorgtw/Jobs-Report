@@ -15,7 +15,8 @@ import {
   Trash2,
   X,
   Bell,
-  BellOff
+  BellOff,
+  Forward
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { InternalCommunication, CommType, User as AppUser, Project } from '../types';
@@ -657,7 +658,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       <div className={`${isMobile && mobileView === 'list' ? 'hidden' : 'flex'} w-full md:w-2/3 flex flex-col bg-white`}>
         {selectedThread ? (
           <>
-            <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
+            <div className="px-4 md:px-6 py-3 md:py-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 gap-2">
               <div className="flex items-center gap-4">
                 {isMobile && (
                   <button 
@@ -667,7 +668,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     <ChevronLeft size={24} />
                   </button>
                 )}
-                <h3 className="flex flex-col gap-1">
+                <h3 className="flex flex-col gap-1 min-w-0">
                   <div className="flex items-center gap-2">
                     {selectedThread.senderName && (
                       <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold ring-4 ring-blue-50">
@@ -679,23 +680,23 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                     </span>
                   </div>
 
-                  <div className="flex flex-col gap-1 pl-10">
-                    <div className="text-[12px] flex gap-1.5">
+                  <div className="flex flex-col gap-0.5 md:gap-1 pl-0 md:pl-10 mt-1 md:mt-0">
+                    <div className="text-[12px] flex gap-1.5 min-w-0">
                       <span className="text-gray-400 uppercase font-bold tracking-tighter">{t('communications.sender')}:</span>
-                      <span className="text-slate-700 font-[500]">{selectedThread.senderName}</span>
+                      <span className="text-slate-700 font-[500] truncate">{selectedThread.senderName}</span>
                     </div>
-                    <div className="text-[12px] flex gap-1.5">
+                    <div className="text-[12px] flex gap-1.5 min-w-0">
                       <span className="text-gray-400 uppercase font-bold tracking-tighter">{t('communications.recipient')}:</span>
-                      <span className="text-slate-700 font-[500]">
+                      <span className="text-slate-700 font-[500] truncate">
                         {selectedThread.targetType === 'all' 
                           ? t('communications.allUsers') 
                           : (workers.find(w => w.id === selectedThread.targetId)?.name || (selectedThread.targetId === currentUser.id ? currentUser.name : '-'))}
                       </span>
                     </div>
                     {selectedThread.projectId && (
-                      <div className="text-[12px] flex gap-1.5">
+                      <div className="text-[12px] flex gap-1.5 min-w-0">
                         <span className="text-gray-400 uppercase font-bold tracking-tighter">{t('common.project')}:</span>
-                        <span className="text-slate-700 font-[500]">
+                        <span className="text-slate-700 font-[500] truncate">
                           {projects.find(p => p.id === selectedThread.projectId)?.name || '-'}
                         </span>
                       </div>
@@ -704,13 +705,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                 </h3>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
                 {['open', 'in_progress'].includes(selectedThread.status) && (
                   <button 
                     onClick={() => setIsForwardPanelOpen(!isForwardPanelOpen)}
                     className={`px-3.5 py-1.5 border text-[12px] font-bold rounded transition-all uppercase tracking-tighter ${isForwardPanelOpen ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50'}`}
                   >
-                    {t('communications.forward')}
+                    {isMobile ? <Forward size={16} /> : t('communications.forward')}
                   </button>
                 )}
 
