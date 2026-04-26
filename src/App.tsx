@@ -980,8 +980,8 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
 
   useEffect(() => {
     const load = async () => {
-      // Ensure DB context is correct for this component
-      if (user?.companyId) db.setCompanyId(user.companyId);
+      // Ensure DB context is correct for this component (handle both set and clear)
+      db.setCompanyId(user?.companyId ?? null);
       const [u, s] = await Promise.all([db.getUsers(), db.getSubcontractors()]);
       setUsers(u);
       setSubcontractors(s);
@@ -1824,7 +1824,7 @@ const SubcontractorsView: React.FC<{ user: User }> = ({ user }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.companyId) db.setCompanyId(user.companyId);
+    db.setCompanyId(user?.companyId ?? null);
     db.getSubcontractors().then(setSubs);
   }, [user?.companyId]);
 

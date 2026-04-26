@@ -131,11 +131,21 @@ class DBService {
   }
 
   async getSubcontractors() {
-    const compId = this.requireCompanyId();
-    const { data, error } = await supabase
-      .from('subcontractors')
-      .select('*')
-      .eq('company_id', compId);
+    const isSA = this.isSuperAdminRole;
+    const compId = this.currentCompanyId;
+    
+    let query = supabase.from('subcontractors').select('*');
+    
+    // SSOT: If a company is selected, filter by it. 
+    // If no company is selected and user is SuperAdmin, show all.
+    if (compId) {
+      query = query.eq('company_id', compId);
+    } else if (!isSA) {
+      console.warn('DBService: getSubcontractors called without companyId and user is not SuperAdmin');
+      return [];
+    }
+    
+    const { data, error } = await query;
     
     if (error) {
       console.error('Error fetching subcontractors:', error);
@@ -272,37 +282,48 @@ class DBService {
   }
 
   async getUsers() {
-    const compId = this.requireCompanyId();
+    const isSA = this.isSuperAdminRole;
+    const compId = this.currentCompanyId;
     
-    // SSOT: Fetch users authorized for current company via user_companies bridge
-    const { data: authorized, error: authErr } = await supabase
-      .from('user_companies')
-      .select('auth_id')
-      .eq('company_id', compId);
+    // SSOT: If a company is selected, fetch via bridge table
+    if (compId) {
+      const { data: authorized, error: authErr } = await supabase
+        .from('user_companies')
+        .select('auth_id')
+        .eq('company_id', compId);
 
-    if (authErr || !authorized) {
-      console.error('Error fetching authorized users:', authErr);
-      return [];
-    }
+      if (authErr) {
+        console.error('Error fetching authorized users:', authErr);
+        return [];
+      }
 
-    const authIds = authorized ? authorized.map(a => a.auth_id).filter(Boolean) : [];
+      const authIds = authorized ? authorized.map(a => a.auth_id).filter(Boolean) : [];
 
-    // Fetch worker profiles: they belong either via SSOT auth_id OR directly via company_id (for non-auth workers)
-    let query = supabase.from('workers').select('*');
-    
-    if (authIds.length > 0) {
-      query = query.or(`company_id.eq.${compId},auth_id.in.(${authIds.join(',')})`);
+      let query = supabase.from('workers').select('*');
+      if (authIds.length > 0) {
+        query = query.or(`company_id.eq.${compId},auth_id.in.(${authIds.join(',')})`);
+      } else {
+        query = query.eq('company_id', compId);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        console.error('Error fetching worker profiles:', error);
+        return [];
+      }
+      return data.map(w => this.mapSupabaseWorker(w));
+    } else if (isSA) {
+      // Global View for SuperAdmin: fetch all workers
+      const { data, error } = await supabase.from('workers').select('*');
+      if (error) {
+        console.error('Error fetching all worker profiles for SuperAdmin:', error);
+        return [];
+      }
+      return data.map(w => this.mapSupabaseWorker(w));
     } else {
-      query = query.eq('company_id', compId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Error fetching worker profiles:', error);
+      console.warn('DBService: getUsers called without companyId and user is not SuperAdmin');
       return [];
     }
-    return data.map(w => this.mapSupabaseWorker(w));
   }
 
   async getUserById(id: string) {
@@ -345,15 +366,18 @@ class DBService {
     }
 
     // Set active company and sync context role if not already superadmin
-    const activeCompId = user.companyId || (availableCompanies.length > 0 ? availableCompanies[0].id : null);
+    // SSOT Priority: 1. Memberships in user_companies (bridge table), 2. Legacy companyId in workers table
+    const activeCompId = (availableCompanies.length > 0 ? availableCompanies[0].id : null) || user.companyId;
     if (activeCompId) {
-       this.setCompanyId(activeCompId);
-       const activeComp = availableCompanies.find((c: any) => c.id === activeCompId);
-       if (activeComp) {
-         if (!saContext) user.role = activeComp.role;
-         user.isPremium = saContext ? true : activeComp.isPremium;
-         user.companyName = activeComp.name;
-       }
+      this.setCompanyId(activeCompId);
+      user.companyId = activeCompId;
+      
+      const compContext = availableCompanies.find((c: any) => c.id === activeCompId);
+      if (compContext && !saContext) {
+        user.role = compContext.role;
+        user.isPremium = compContext.isPremium;
+        user.companyName = compContext.name;
+      }
     }
     
     return user;
