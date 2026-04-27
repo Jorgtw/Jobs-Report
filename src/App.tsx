@@ -2811,27 +2811,27 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         </select>
                       </div>
 
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label>
-                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
+                        <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                       </div>
                       
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label>
-                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
+                        <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                       </div>
                       
                       <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label>
-                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
+                        <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                       </div>
                       
-                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                         <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label>
-                        <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
+                        <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} />
                       </div>
                       
-                      <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label>
                         <input
                           type="number"
@@ -2839,7 +2839,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''}
                           onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
                           placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)}
-                          className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px]"
+                          className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px] text-[11px] sm:text-sm"
                         />
                       </div>
                       <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-2 sm:top-1/2 sm:-translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
@@ -2854,27 +2854,27 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                       </div>
                     </div>
                     
-                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label>
-                      <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
+                      <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                     </div>
                     
-                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
+                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label>
-                      <input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1`} />
+                      <input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                     </div>
                     
                     <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label>
-                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1`} />
+                      <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                     </div>
                     
-                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                       <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label>
-                      <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1`} />
+                      <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} />
                     </div>
                     
-                    <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
+                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label>
                       <input
                         type="number"
@@ -2882,7 +2882,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''}
                         onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
                         placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)}
-                        className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px]"
+                        className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px] text-[11px] sm:text-sm"
                       />
                     </div>
                   </div>

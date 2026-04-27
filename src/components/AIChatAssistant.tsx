@@ -131,7 +131,7 @@ const AIChatAssistant: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
+    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col items-end">
       {isOpen && (
         <div className="mb-4 w-[calc(100vw-3rem)] sm:w-[400px] h-[500px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 duration-300">
           <div className="bg-slate-900 p-4 text-white flex items-center justify-between">
