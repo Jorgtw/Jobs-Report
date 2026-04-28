@@ -287,27 +287,11 @@ class DBService {
     
     // SSOT: If a company is selected, fetch via bridge table
     if (compId) {
-      const { data: authorized, error: authErr } = await supabase
-        .from('user_companies')
-        .select('auth_id')
-        .eq('company_id', compId);
-
-      if (authErr) {
-        console.error('Error fetching authorized users:', authErr);
-        return [];
-      }
-
-      const authIds = authorized ? authorized.map(a => a.auth_id).filter(Boolean) : [];
-
-      let query = supabase.from('workers').select('*');
-      if (authIds.length > 0) {
-        // Fallback ripristinato: .or() è vitale sia per legacy users non ancora migrati (Fase 3 da fare sul DB), 
-        // sia per gli "offline workers" (es. dipendenti di subappaltatori creati senza email) che non 
-        // avendo un auth_id non possono esistere in user_companies.
-        query = query.or(`company_id.eq.${compId},auth_id.in.(${authIds.join(',')})`);
-      } else {
-        query = query.eq('company_id', compId);
-      }
+      // Architettura Caso 1: `workers` è il dominio operativo puro.
+      // Non ci interessa la lista authIds da user_companies (che è solo l'ACL per il login).
+      // Tutti coloro che operano in questa azienda hanno `company_id = compId`.
+      // La sicurezza (chi può leggere questo dato) è gestita da RLS su Supabase.
+      const query = supabase.from('workers').select('*').eq('company_id', compId);
 
       const { data, error } = await query;
       if (error) {
