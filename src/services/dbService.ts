@@ -301,10 +301,12 @@ class DBService {
 
       let query = supabase.from('workers').select('*');
       if (authIds.length > 0) {
-        query = query.in('auth_id', authIds);
+        // Fallback ripristinato: .or() è vitale sia per legacy users non ancora migrati (Fase 3 da fare sul DB), 
+        // sia per gli "offline workers" (es. dipendenti di subappaltatori creati senza email) che non 
+        // avendo un auth_id non possono esistere in user_companies.
+        query = query.or(`company_id.eq.${compId},auth_id.in.(${authIds.join(',')})`);
       } else {
-        // SSOT: Nessun utente autorizzato in user_companies per questa company
-        return [];
+        query = query.eq('company_id', compId);
       }
 
       const { data, error } = await query;
@@ -843,8 +845,9 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username,
-      // SSOT: Company assignment is handled exclusively in user_companies
-      // company_id: w.companyId (Legacy write removed)
+      // SSOT per Offline Workers: Senza auth_id, user_companies non può mapparli. 
+      // company_id in workers è l'unico legame rimasto per il personale non registrato.
+      company_id: w.companyId,
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
