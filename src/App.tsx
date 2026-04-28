@@ -22,7 +22,6 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  ChevronRight,
   Download,
   Copy,
   Search,
