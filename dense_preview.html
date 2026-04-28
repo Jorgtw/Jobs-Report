@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Preview - Baseline vs Dense Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
+        .tap-target-warning { position: relative; }
+        .tap-target-warning::after {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 44px; height: 44px; border: 1px dashed rgba(239, 68, 68, 0.4); border-radius: 4px;
+            pointer-events: none; z-index: 10; display: none;
+        }
+        .show-warnings .tap-target-warning::after { display: block; }
+        .highlight-density { transition: all 0.3s; }
+        .show-density .highlight-density { background-color: rgba(59, 130, 246, 0.1) !important; outline: 1px solid rgba(59, 130, 246, 0.5); }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Navbar controlli Preview -->
+    <div class="fixed top-0 left-0 right-0 bg-slate-900 text-white p-3 flex flex-wrap gap-4 items-center justify-between z-50 text-sm shadow-xl">
+        <div class="font-bold flex items-center gap-2">
+            <span class="bg-blue-600 p-1 rounded">UX</span> Preview Tool
+        </div>
+        <div class="flex items-center gap-4">
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="mode" value="baseline" onchange="toggleMode('baseline')"> 
+                Baseline (Old)
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="mode" value="dense" checked onchange="toggleMode('dense')"> 
+                Dense Mode (New)
+            </label>
+            <div class="w-px h-4 bg-slate-600 mx-2"></div>
+            <label class="flex items-center gap-2 cursor-pointer text-yellow-400">
+                <input type="checkbox" id="warnings-toggle" onchange="toggleWarnings(this.checked)"> 
+                Mostra Tap Targets < 44px
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-blue-400">
+                <input type="checkbox" id="density-toggle" onchange="toggleDensity(this.checked)"> 
+                Highlight Spacing
+            </label>
+        </div>
+        <div class="text-xs text-slate-400">Usa gli strumenti sviluppatore (F12) per testare i breakpoint: 1920, 1366, 768.</div>
+    </div>
+
+    <div class="pt-20 pb-10">
+        <!-- BASELINE (OLD UI) -->
+        <div id="baseline-view" class="hidden">
+            <div class="max-w-3xl mx-auto py-6 px-4 highlight-density">
+                <div class="mb-8 text-center highlight-density">
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Benvenuto, Mario</h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">Gestione Attività</p>
+                </div>
+
+                <!-- Vecchia Compact Dashboard -->
+                <div class="mb-6 bg-white p-4 rounded-xl border border-slate-100 shadow-sm highlight-density">
+                    <div class="flex items-center gap-2 mb-3 ml-0.5">
+                        <h2 class="text-[9px] font-black text-slate-900 uppercase tracking-[0.2em]">Lavori in corso</h2>
+                    </div>
+                    <div class="divide-y divide-slate-50">
+                        <div class="grid grid-cols-3 gap-2 pb-2">
+                            <div class="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Progetti</span>
+                                <span class="text-sm font-black tracking-tighter text-slate-900">12</span>
+                            </div>
+                            <div class="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Report</span>
+                                <span class="text-sm font-black tracking-tighter text-slate-900">45</span>
+                            </div>
+                            <div class="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Ore</span>
+                                <span class="text-sm font-black tracking-tighter text-slate-900">340.5</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 pt-2">
+                            <div class="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Spese Stimate</span>
+                                <span class="text-sm font-black tracking-tighter text-rose-600">1.200,00</span>
+                            </div>
+                            <div class="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Da Fatturare</span>
+                                <span class="text-sm font-black tracking-tighter text-blue-600">15.000,00</span>
+                            </div>
+                            <div class="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Margine</span>
+                                <span class="text-sm font-black tracking-tighter text-emerald-600">13.800,00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vecchio Quick Menu -->
+                <div class="mt-8 highlight-density">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Quick Access Tools</h3>
+                    <nav class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-blue-500 p-2.5 rounded-xl text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight">Progetti</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Apri Progetti</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-emerald-500 p-2.5 rounded-xl text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight">Rapportini</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Apri Rapportini</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-violet-500 p-2.5 rounded-xl text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight">Personale</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Apri Personale</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-amber-500 p-2.5 rounded-xl text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight">Clienti</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Apri Clienti</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl cursor-pointer sm:col-span-2 tap-target-warning highlight-density">
+                            <div class="bg-slate-100 p-2.5 rounded-xl text-slate-400">X</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[11px] font-black text-slate-500 uppercase tracking-tight">Esci</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Esci dal sistema</span>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- DENSE MODE (NEW UI) -->
+        <div id="dense-view" class="block">
+            <div class="max-w-5xl mx-auto py-4 px-2 sm:px-4 highlight-density">
+                <div class="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-slate-100 pb-2 highlight-density">
+                    <div>
+                        <h1 class="text-lg font-black text-slate-800 tracking-tight">Benvenuto, Mario</h1>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Gestione Attività</p>
+                    </div>
+                </div>
+
+                <!-- Nuova Compact Dashboard -->
+                <div class="mb-4 bg-white p-3 rounded-lg border border-slate-200 shadow-sm highlight-density">
+                    <div class="flex items-center gap-2 mb-2 ml-0.5">
+                        <h2 class="text-[10px] font-black text-slate-700 uppercase tracking-wider">Lavori in corso</h2>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        <div class="grid grid-cols-3 gap-1 pb-1.5">
+                            <div class="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5">Progetti</span>
+                                <span class="text-sm font-black tracking-tight text-slate-900">12</span>
+                            </div>
+                            <div class="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5">Report</span>
+                                <span class="text-sm font-black tracking-tight text-slate-900">45</span>
+                            </div>
+                            <div class="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5">Ore</span>
+                                <span class="text-sm font-black tracking-tight text-slate-900">340.5</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1 pt-1.5">
+                            <div class="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5">Spese Stimate</span>
+                                <span class="text-sm font-black tracking-tight text-rose-600">1.200,00</span>
+                            </div>
+                            <div class="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5">Da Fatturare</span>
+                                <span class="text-sm font-black tracking-tight text-blue-600">15.000,00</span>
+                            </div>
+                            <div class="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors cursor-pointer tap-target-warning">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5">Margine</span>
+                                <span class="text-sm font-black tracking-tight text-emerald-600">13.800,00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nuovo Quick Menu -->
+                <div class="mt-6 highlight-density">
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">Strumenti Rapidi</h3>
+                    <nav class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                        <div class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-blue-500 p-1.5 rounded-md text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Progetti</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-emerald-500 p-1.5 rounded-md text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Rapportini</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-violet-500 p-1.5 rounded-md text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Personale</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-amber-500 p-1.5 rounded-md text-white">★</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Clienti</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer tap-target-warning highlight-density">
+                            <div class="bg-slate-100 p-1.5 rounded-md text-slate-400">X</div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Esci</span>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMode(mode) {
+            if (mode === 'baseline') {
+                document.getElementById('baseline-view').classList.remove('hidden');
+                document.getElementById('baseline-view').classList.add('block');
+                document.getElementById('dense-view').classList.remove('block');
+                document.getElementById('dense-view').classList.add('hidden');
+            } else {
+                document.getElementById('baseline-view').classList.remove('block');
+                document.getElementById('baseline-view').classList.add('hidden');
+                document.getElementById('dense-view').classList.remove('hidden');
+                document.getElementById('dense-view').classList.add('block');
+            }
+        }
+
+        function toggleWarnings(show) {
+            if (show) {
+                document.body.classList.add('show-warnings');
+            } else {
+                document.body.classList.remove('show-warnings');
+            }
+        }
+
+        function toggleDensity(show) {
+            if (show) {
+                document.body.classList.add('show-density');
+            } else {
+                document.body.classList.remove('show-density');
+            }
+        }
+    </script>
+</body>
+</html>

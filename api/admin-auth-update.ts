@@ -104,7 +104,7 @@ export default async function handler(req: any, res: any) {
             email,
             password,
             email_confirm: true,
-            user_metadata: { name, company_id: targetCompanyId }
+            user_metadata: { name }
           });
 
           if (authCreateError) {
@@ -118,7 +118,6 @@ export default async function handler(req: any, res: any) {
           username,
           email,
           auth_id: authId,
-          company_id: targetCompanyId,
           role: role || 'worker',
           status: status || 'active',
           created_at: new Date().toISOString(),
@@ -153,7 +152,7 @@ export default async function handler(req: any, res: any) {
       console.log('API: Update request for targetUserId:', targetUserId);
       const { data: targetData, error: targetDbError } = await supabaseAdmin
         .from('workers')
-        .select('company_id, auth_id, email')
+        .select('auth_id, email')
         .eq('id', targetUserId)
         .single();
 
@@ -163,14 +162,27 @@ export default async function handler(req: any, res: any) {
       }
 
       if (!isSuperAdmin) {
-        const { data: hasAccess } = await supabaseAdmin
+        // Ricava le ditte in cui il requester è admin o supervisor
+        const { data: requesterCompanies } = await supabaseAdmin
           .from('user_companies')
-          .select('id')
+          .select('company_id')
           .eq('auth_id', requesterAuthUser.id)
-          .eq('company_id', targetData.company_id)
-          .maybeSingle();
+          .in('role', ['admin', 'supervisor']);
+          
+        const reqCompanyIds = requesterCompanies?.map(c => c.company_id) || [];
+        
+        if (reqCompanyIds.length === 0) {
+           return res.status(403).json({ error: 'Unauthorized: No administrative companies found' });
+        }
 
-        if (!hasAccess) {
+        // Controlla se il target appartiene ad almeno una di queste ditte
+        const { data: targetCompanies } = await supabaseAdmin
+          .from('user_companies')
+          .select('company_id')
+          .eq('auth_id', targetData.auth_id)
+          .in('company_id', reqCompanyIds);
+
+        if (!targetCompanies || targetCompanies.length === 0) {
           return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
         }
       }
@@ -229,7 +241,7 @@ export default async function handler(req: any, res: any) {
 
       const { data: targetData, error: targetDbError } = await supabaseAdmin
         .from('workers')
-        .select('company_id, auth_id, email, name')
+        .select('auth_id, email, name')
         .eq('id', targetUserId)
         .single();
 
@@ -238,14 +250,25 @@ export default async function handler(req: any, res: any) {
       }
 
       if (!isSuperAdmin) {
-        const { data: hasAccess } = await supabaseAdmin
+        const { data: requesterCompanies } = await supabaseAdmin
           .from('user_companies')
-          .select('id')
+          .select('company_id')
           .eq('auth_id', requesterAuthUser.id)
-          .eq('company_id', targetData.company_id)
-          .maybeSingle();
+          .in('role', ['admin', 'supervisor']);
+          
+        const reqCompanyIds = requesterCompanies?.map(c => c.company_id) || [];
+        
+        if (reqCompanyIds.length === 0) {
+           return res.status(403).json({ error: 'Unauthorized: No administrative companies found' });
+        }
 
-        if (!hasAccess) {
+        const { data: targetCompanies } = await supabaseAdmin
+          .from('user_companies')
+          .select('company_id')
+          .eq('auth_id', targetData.auth_id)
+          .in('company_id', reqCompanyIds);
+
+        if (!targetCompanies || targetCompanies.length === 0) {
           return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
         }
       }

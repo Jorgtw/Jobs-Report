@@ -301,9 +301,10 @@ class DBService {
 
       let query = supabase.from('workers').select('*');
       if (authIds.length > 0) {
-        query = query.or(`company_id.eq.${compId},auth_id.in.(${authIds.join(',')})`);
+        query = query.in('auth_id', authIds);
       } else {
-        query = query.eq('company_id', compId);
+        // SSOT: Nessun utente autorizzato in user_companies per questa company
+        return [];
       }
 
       const { data, error } = await query;
@@ -819,7 +820,7 @@ class DBService {
       status: w.status,
       username: w.username || '',
       // SSOT: Use current session company if possible
-      companyId: this.currentCompanyId || w.company_id || null,
+      companyId: this.currentCompanyId || null,
       authId: w.auth_id || null,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
@@ -842,8 +843,8 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username,
-      // SSOT: Save company_id for non-auth workers (subcontractors, legacy)
-      company_id: w.companyId, 
+      // SSOT: Company assignment is handled exclusively in user_companies
+      // company_id: w.companyId (Legacy write removed)
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,

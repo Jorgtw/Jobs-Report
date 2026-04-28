@@ -372,12 +372,12 @@ const CompactDashboard: React.FC = () => {
   }, []);
 
   const SmallStat = ({ label, value, to, valueColor = "text-slate-900", isLoading }: { label: string, value: string | number, to: string, valueColor?: string, isLoading?: boolean }) => (
-    <Link to={to} className="flex flex-col py-1.5 px-1 hover:bg-slate-50 rounded-lg transition-colors overflow-hidden">
-      <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1 truncate">{label}</span>
+    <Link to={to} className="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors overflow-hidden">
+      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none mb-0.5 truncate">{label}</span>
       {isLoading ? (
-        <span className="inline-block w-10 h-3 bg-slate-100 animate-pulse rounded mt-0.5" />
+        <span className="inline-block w-8 h-3 bg-slate-100 animate-pulse rounded" />
       ) : (
-        <span className={`text-sm font-black tracking-tighter truncate ${valueColor}`}>{value}</span>
+        <span className={`text-sm font-black tracking-tight truncate ${valueColor}`}>{value}</span>
       )}
     </Link>
   );
@@ -385,21 +385,21 @@ const CompactDashboard: React.FC = () => {
   const formatNum = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-      <div className="flex items-center gap-2 mb-3 ml-0.5">
-        <h2 className="text-[9px] font-black text-slate-900 uppercase tracking-[0.2em]">{t('dashboard.worksInProgress')}</h2>
+    <div className="mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex items-center gap-2 mb-2 ml-0.5">
+        <h2 className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t('dashboard.worksInProgress')}</h2>
       </div>
       
-      <div className="divide-y divide-slate-50">
+      <div className="divide-y divide-slate-100">
         {/* Row 1: Counters */}
-        <div className="grid grid-cols-3 gap-2 pb-2">
+        <div className="grid grid-cols-3 gap-1 pb-1.5">
           <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" isLoading={loading} />
           <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" isLoading={loading} />
           <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" isLoading={loading} />
         </div>
         
         {/* Row 2: Economic Values */}
-        <div className="grid grid-cols-3 gap-2 pt-2">
+        <div className="grid grid-cols-3 gap-1 pt-1.5">
           <SmallStat label={t('dashboard.estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" isLoading={loading} />
           <SmallStat label={t('dashboard.toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" isLoading={loading} />
           <SmallStat label={t('dashboard.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} isLoading={loading} />
@@ -432,19 +432,19 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
   if (hours === null) return null;
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-6 flex items-center justify-between group hover:shadow-md transition-all">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-          <Clock size={24} />
+    <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-4 flex items-center justify-between group hover:shadow-md transition-all">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-amber-50 rounded-md flex items-center justify-center text-amber-600">
+          <Clock size={16} />
         </div>
         <div>
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('common.pendingHoursSummary')}</h3>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">{t('reports.pendingStatusSubtitle')}</p>
+          <h3 className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{t('common.pendingHoursSummary')}</h3>
+          <p className="text-[10px] font-medium text-slate-400 mt-0.5">{t('reports.pendingStatusSubtitle')}</p>
         </div>
       </div>
-      <div className="text-3xl font-black text-amber-600">
+      <div className="text-xl font-black text-amber-600">
         {hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        <span className="text-sm font-bold ml-1 text-slate-400">h</span>
+        <span className="text-[10px] font-bold ml-0.5 text-slate-400">h</span>
       </div>
     </div>
   );
@@ -463,51 +463,50 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4 animate-in fade-in duration-500">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          {t('common.welcome')}, {user.name.split(' ')[0]}
-        </h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">
-          {isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}
-        </p>
+    <div className="max-w-5xl mx-auto py-4 px-2 sm:px-4 animate-in fade-in duration-500">
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-slate-100 pb-2">
+        <div>
+          <h1 className="text-lg font-black text-slate-800 tracking-tight">
+            {t('common.welcome')}, {user.name}
+          </h1>
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            {isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}
+          </p>
+        </div>
       </div>
 
       {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
 
-      <div className="mt-8">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">
-          {isSuperAdmin ? 'Quick Access Tools' : t('common.quickMenu')}
+      <div className="mt-6">
+        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
+          {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
         
-        <nav className={`grid ${isSuperAdmin ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'} gap-3`}>
+        <nav className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2`}>
           {actions.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl hover:border-blue-500 hover:shadow-md hover:shadow-blue-50 transition-all group active:scale-[0.98]"
+              className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg hover:border-blue-400 hover:shadow-sm transition-all group active:scale-[0.99]"
             >
-              <div className={`${link.color} p-2.5 rounded-xl text-white shadow-sm transition-transform group-hover:scale-110`}>
-                <link.icon size={18} />
+              <div className={`${link.color} p-1.5 rounded-md text-white opacity-90 group-hover:opacity-100 transition-opacity`}>
+                <link.icon size={14} />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">Apri {link.name}</span>
+                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
               </div>
-              <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
             </Link>
           ))}
           
           <button 
             onClick={handleManualLogout}
-            className={`flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl hover:border-red-500 hover:bg-red-50 transition-all group active:scale-[0.98] ${isSuperAdmin ? '' : 'sm:col-span-2'}`}
+            className={`flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg hover:border-red-400 hover:bg-red-50 transition-all group active:scale-[0.99]`}
           >
-            <div className="bg-slate-100 p-2.5 rounded-xl text-slate-400 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white">
-              <LogOut size={18} />
+            <div className="bg-slate-100 p-1.5 rounded-md text-slate-400 transition-colors group-hover:bg-red-500 group-hover:text-white">
+              <LogOut size={14} />
             </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Esci dal sistema</span>
+            <div className="flex flex-col min-w-0 text-left">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors truncate">{t('common.logout')}</span>
             </div>
           </button>
         </nav>
