@@ -1102,7 +1102,7 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
           <Plus size={16} className="mr-2" /> {t('projects.personnelNew')}
         </button>
       </div>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-2">
         {[...users].sort((a, b) => {
           const aType = a.status === 'inactive' ? 2 : (!a.subcontractorId ? 0 : 1);
           const bType = b.status === 'inactive' ? 2 : (!b.subcontractorId ? 0 : 1);
@@ -1111,7 +1111,7 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
         }).map(u => {
           const sub = subcontractors.find(s => s.id === u.subcontractorId);
           return (
-            <div key={u.id} className={`bg-white p-4 rounded-2xl border ${u.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
+            <div key={u.id} className={`bg-white px-4 py-3 rounded-xl border ${u.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
               <div className="min-w-0 flex-1">
                 <h3 className="font-bold text-slate-900 text-base truncate">
                   {u.name}
@@ -1126,7 +1126,7 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
                   <button
                     disabled={sendingId === u.id || !u.email}
                     onClick={() => handleSendInstructions(u)}
-                    className={`p-2.5 rounded-xl transition-all ${sendingId === u.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
+                    className={`p-2 rounded-lg transition-all ${sendingId === u.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
                     title={t('auth.sendInstructions')}
                   >
                     {sendingId === u.id ? (
@@ -1142,12 +1142,12 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
                   </span>
                 )}
                 {onImpersonate && (
-                  <button onClick={() => onImpersonate(u)} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title={t('dashboard.impersonateUser')}>
+                  <button onClick={() => onImpersonate(u)} className="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title={t('dashboard.impersonateUser')}>
                     <UserIcon size={18} />
                   </button>
                 )}
-                <button onClick={() => handleEdit(u)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"><Pencil size={18} /></button>
-                <button onClick={() => handleDelete(u.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>
+                <button onClick={() => handleEdit(u)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"><Pencil size={18} /></button>
+                <button onClick={() => handleDelete(u.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"><Trash2 size={18} /></button>
               </div>
             </div>
           );
@@ -1384,9 +1384,9 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
           <Plus size={16} className="mr-2 inline" /> {t('projects.clientNew')}
         </button>
       </div>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-2">
         {clients.map(c => (
-          <div key={c.id} className={`bg-white p-4 rounded-2xl border ${c.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
+          <div key={c.id} className={`bg-white px-4 py-3 rounded-xl border ${c.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
             <div className="min-w-0 flex-1">
               <h3 className="font-bold text-slate-900 text-base truncate">{c.name}</h3>
               <p className="text-xs text-slate-500 font-medium mt-1 truncate">
@@ -1394,8 +1394,8 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
               </p>
             </div>
             <div className="flex gap-2 shrink-0 ml-4 items-center">
-              <button onClick={() => handleEdit(c)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"><Pencil size={18} /></button>
-              <button onClick={() => handleLocalDelete(c.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>
+              <button onClick={() => handleEdit(c)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"><Pencil size={18} /></button>
+              <button onClick={() => handleLocalDelete(c.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -1578,14 +1578,14 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
           </div>
         )}
       </div>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-2">
         {projects.filter(p => authService.can(user, 'approve', 'reports') ? true : canUserAccessProject(p, user.id)).map(p => {
           const client = clients.find(c => c.id === p.clientId);
           return (
-            <div key={p.id} className={`bg-white p-5 rounded-2xl border ${p.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
+            <div key={p.id} className={`bg-white px-4 py-3 rounded-xl border ${p.status === 'active' ? 'border-slate-200' : 'border-slate-100 opacity-60'} flex justify-between items-center group hover:border-blue-200 hover:shadow-md transition-all`}>
               <div className="flex items-center gap-4 min-w-0 cursor-pointer flex-1" onClick={() => handleEdit(p)}>
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${p.status === 'active' ? 'bg-amber-50 text-amber-500' : 'bg-slate-50 text-slate-400'}`}>
-                  <Briefcase size={24} />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${p.status === 'active' ? 'bg-amber-50 text-amber-500' : 'bg-slate-50 text-slate-400'}`}>
+                  <Briefcase size={20} />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-bold text-slate-900 text-lg truncate flex items-center gap-2">
@@ -1596,8 +1596,8 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0 ml-4 items-center">
-                {authService.can(user, 'delete', 'projects') && <button onClick={() => handleDelete(p.id)} className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"><Trash2 size={18} /></button>}
-                <button onClick={() => handleEdit(p)} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
+                {authService.can(user, 'delete', 'projects') && <button onClick={() => handleDelete(p.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"><Trash2 size={18} /></button>}
+                <button onClick={() => handleEdit(p)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
                   {authService.can(user, 'update', 'projects') ? <Pencil size={18} /> : <Eye size={18} />}
                 </button>
               </div>
