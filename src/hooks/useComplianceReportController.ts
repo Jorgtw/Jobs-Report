@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { WorkReport, User, Project, Client } from '../types';
-import { db } from '../services/dbService';
-import { generateCompliancePDF } from '../services/exportService';
+import { complianceReportService } from '../services/complianceReportService';
 import { Language } from '../i18n';
 
 export function useComplianceReportController(
@@ -29,35 +28,16 @@ export function useComplianceReportController(
   const handleGenerateCompliance = async (photos: string[], signature: string) => {
     if (!complianceReportToSign) return;
     
-    const project = projects.find(p => p.id === complianceReportToSign.projectId);
-    const client = clients.find(c => c.id === project?.clientId);
-
-    // Resolve additional worker names from personnel list
-    const resolvedAdditionalWorkers = (complianceReportToSign.additionalWorkers || []).map(aw => ({
-      ...aw,
-      personName: aw.personName || personnel.find(u => u.id === aw.userId)?.name || '---',
-    }));
-
-    // Fetch company details and admin emails
-    const companyDetails = await db.getCompanyDetails(user.companyId || '');
-    const adminEmails = await db.getCompanyAdminEmails(user.companyId || '');
-
-    const reportData = {
-      ...complianceReportToSign,
-      additionalWorkers: resolvedAdditionalWorkers,
-      clientName: client?.name || '---',
-      projectName: project?.name || '---',
-      projectAddress: project?.address || '',
-      userName: personnel.find(u => u.id === complianceReportToSign.userId)?.name || user.name,
-      companyName: companyDetails?.name || '',
-      companyAddress: companyDetails?.address || '',
-      companyCity: companyDetails?.city || '',
-      companyPhone: companyDetails?.phone || '',
-      companyEmail: companyDetails?.email || '',
-      companyVat: companyDetails?.vatNumber || '',
-    };
-
-    await generateCompliancePDF(reportData, photos, signature, lang, adminEmails);
+    await complianceReportService.processAndGenerate(
+      complianceReportToSign,
+      user,
+      projects,
+      clients,
+      personnel,
+      photos,
+      signature,
+      lang
+    );
   };
 
   return {
