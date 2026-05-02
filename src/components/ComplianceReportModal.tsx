@@ -76,7 +76,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
       return;
     }
     if (!isSatisfied) {
-      alert('⚠️ È necessario confermare la soddisfazione del cliente prima di procedere.');
+      alert('⚠️ ' + t('reports.complianceSatisfactionRequired'));
       return;
     }
 
@@ -118,7 +118,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
               {t('reports.descriptionOfWork')}
             </label>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm italic">
-              {report.description || 'Nessuna descrizione inserita.'}
+              {report.description || t('reports.complianceNoDescription')}
             </div>
           </section>
 
@@ -197,7 +197,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                 {isSatisfied && <CheckCircle2 size={14} />}
               </div>
               <p className="text-xs text-slate-700 font-medium leading-tight">
-                Il cliente dichiara che i lavori sono stati eseguiti a regola d'arte e conferma la propria soddisfazione per l'intervento effettuato.
+                {t('reports.complianceSatisfactionDeclaration')}
               </p>
             </div>
           </section>

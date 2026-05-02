@@ -125,5 +125,8 @@ export const reports = {
   clientSignature: "Podpis klienta",
   photoEvidence: "Dowód fotograficzny",
   descriptionOfWork: "Opis prac",
-  workTeam: "Zespół roboczy"
+  workTeam: "Zespół roboczy",
+  complianceSatisfactionRequired: "Przed kontynuowaniem wymagane jest potwierdzenie satysfakcji klienta.",
+  complianceNoDescription: "Brak opisu.",
+  complianceSatisfactionDeclaration: "Klient oświadcza, że prace zostały wykonane zgodnie ze sztuką i potwierdza swoje zadowolenie z wykonanej usługi."
 };

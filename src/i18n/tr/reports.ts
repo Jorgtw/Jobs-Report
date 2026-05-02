@@ -125,5 +125,8 @@ export const reports = {
   clientSignature: "Müşteri İmzası",
   photoEvidence: "Fotoğraf Kanıtı",
   descriptionOfWork: "İş Açıklaması",
-  workTeam: "Çalışma Ekibi"
+  workTeam: "Çalışma Ekibi",
+  complianceSatisfactionRequired: "Devam etmeden önce müşteri memnuniyeti onayı gereklidir.",
+  complianceNoDescription: "Açıklama girilmedi.",
+  complianceSatisfactionDeclaration: "Müşteri, işin standartlara uygun olarak yapıldığını beyan eder ve verilen hizmetten memnuniyetini onaylar."
 };

@@ -125,5 +125,8 @@ export const reports = {
   clientSignature: "Klientunderskrift",
   photoEvidence: "Fotodokumentation",
   descriptionOfWork: "Arbejdsbeskrivelse",
-  workTeam: "Arbejdshold"
+  workTeam: "Arbejdshold",
+  complianceSatisfactionRequired: "Kundetilfredshedsbekræftelse er påkrævet for at fortsætte.",
+  complianceNoDescription: "Ingen beskrivelse angivet.",
+  complianceSatisfactionDeclaration: "Kunden erklærer, at arbejdet er udført i overensstemmelse med standarder og bekræfter sin tilfredshed med den udførte service."
 };
