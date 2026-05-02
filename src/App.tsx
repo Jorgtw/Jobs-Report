@@ -50,7 +50,7 @@ import { useUsers } from './hooks/useUsers';
 import ProfileView from './pages/ProfileView';
 import ResetPasswordView from './pages/ResetPasswordView';
 import Tooltip from './components/common/Tooltip';
-import { generateCompliancePDF } from './services/exportService';
+import { useComplianceReportController } from './hooks/useComplianceReportController';
 
 // --- Local Components ---
 import PresentationView from './PresentationView';
@@ -2002,7 +2002,16 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
-  const [complianceReportToSign, setComplianceReportToSign] = useState<WorkReport | null>(null);
+  
+  const { 
+    complianceReportToSign, 
+    openComplianceReport: handleComplianceClick, 
+    closeComplianceReport, 
+    handleGenerateCompliance 
+  } = useComplianceReportController(user, projects, clients, personnel, lang, (feature) => {
+    setUpgradeFeature(feature);
+    setIsUpgradeModalOpen(true);
+  });
 
   useEffect(() => {
     }, []);
@@ -2220,46 +2229,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     setIsModalOpen(true);
   };
 
-  const handleComplianceClick = (r: WorkReport) => {
-    if (!user.isPremium) {
-      setUpgradeFeature('compliance');
-      setIsUpgradeModalOpen(true);
-      return;
-    }
-    setComplianceReportToSign(r);
-  };
-
-  const handleGenerateCompliance = async (photos: string[], signature: string) => {
-    if (!complianceReportToSign) return;
-    const project = projects.find(p => p.id === complianceReportToSign.projectId);
-    const client = clients.find(c => c.id === project?.clientId);
-
-    // Resolve additional worker names from personnel list
-    const resolvedAdditionalWorkers = (complianceReportToSign.additionalWorkers || []).map(aw => ({
-      ...aw,
-      personName: aw.personName || personnel.find(u => u.id === aw.userId)?.name || '---',
-    }));
-
-    // Fetch company details and admin emails
-    const companyDetails = await db.getCompanyDetails(user.companyId || '');
-    const adminEmails = await db.getCompanyAdminEmails(user.companyId || '');
-
-    const reportData = {
-      ...complianceReportToSign,
-      additionalWorkers: resolvedAdditionalWorkers,
-      clientName: client?.name || '---',
-      projectName: project?.name || '---',
-      projectAddress: project?.address || '',
-      userName: personnel.find(u => u.id === complianceReportToSign.userId)?.name || user.name,
-      companyName: companyDetails?.name || '',
-      companyAddress: companyDetails?.address || '',
-      companyCity: companyDetails?.city || '',
-      companyPhone: companyDetails?.phone || '',
-      companyEmail: companyDetails?.email || '',
-      companyVat: companyDetails?.vatNumber || '',
-    };
-    await generateCompliancePDF(reportData, photos, signature, lang, adminEmails);
-  };
 
   return (
     <div className="space-y-6">
@@ -3014,7 +2983,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       {complianceReportToSign && (
         <ComplianceReportModal 
           report={complianceReportToSign} 
-          onClose={() => setComplianceReportToSign(null)} 
+          onClose={closeComplianceReport} 
           onGenerate={handleGenerateCompliance} 
         />
       )}
