@@ -16,6 +16,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
   const [photos, setPhotos] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
+  const [isSatisfied, setIsSatisfied] = useState(false);
 
   const { t } = useTranslation();
 
@@ -74,6 +75,10 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
       alert('⚠️ ' + t('reports.complianceSignatureRequired'));
       return;
     }
+    if (!isSatisfied) {
+      alert('⚠️ È necessario confermare la soddisfazione del cliente prima di procedere.');
+      return;
+    }
 
     setIsGenerating(true);
     try {
@@ -107,6 +112,16 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
         </div>
 
         <div className="space-y-8">
+          {/* Work Description Section */}
+          <section>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block">
+              {t('reports.descriptionOfWork')}
+            </label>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm italic">
+              {report.description || 'Nessuna descrizione inserita.'}
+            </div>
+          </section>
+
           {/* Photos Section */}
           <section>
             <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block">
@@ -176,15 +191,24 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                 </p>
               </div>
             </div>
+
+            <div className="mt-4 flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl cursor-pointer" onClick={() => setIsSatisfied(!isSatisfied)}>
+              <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${isSatisfied ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-300'}`}>
+                {isSatisfied && <CheckCircle2 size={14} />}
+              </div>
+              <p className="text-xs text-slate-700 font-medium leading-tight">
+                Il cliente dichiara che i lavori sono stati eseguiti a regola d'arte e conferma la propria soddisfazione per l'intervento effettuato.
+              </p>
+            </div>
           </section>
 
           {/* Action Button */}
           <div className="pt-6 border-t">
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || !isSatisfied || !hasSigned}
               className={`w-full py-4 rounded-2xl font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 ${
-                hasSigned
+                hasSigned && isSatisfied
                   ? 'bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700 active:scale-[0.98]'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
