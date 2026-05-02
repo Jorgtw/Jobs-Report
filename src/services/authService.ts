@@ -28,12 +28,20 @@ export const authService = {
         break;
 
       case 'projects':
-      case 'clients':
         if (action === 'read') return true;
         if (action === 'create' || action === 'update' || action === 'delete') return isAdmin || isSupervisor;
         break;
 
+      case 'clients':
+        if (action === 'read') return isAdmin || isSupervisor;
+        if (action === 'create' || action === 'update' || action === 'delete') return isAdmin || isSupervisor;
+        break;
+
       case 'workers':
+        if (action === 'read') return isAdmin || isSupervisor;
+        if (action === 'create' || action === 'update' || action === 'delete') return isAdmin;
+        break;
+
       case 'communications':
         if (action === 'read') return true;
         if (action === 'create' || action === 'update' || action === 'delete') return isAdmin;

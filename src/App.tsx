@@ -89,8 +89,8 @@ const getNavLinks = (t: any, user: User | null) => {
   
   const links = [
     { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
-    { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && authService.can(user, 'read', 'clients'), color: 'bg-emerald-500' },
-    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: authService.can(user, 'read', 'workers'), color: 'bg-rose-500' },
+    { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-emerald-500' },
+    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-rose-500' },
     { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
     { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: !isSA && authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
     { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
