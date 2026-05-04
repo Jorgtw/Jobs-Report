@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from './services/supabase';
@@ -86,7 +87,7 @@ const FullWidthField: React.FC<{ label: string; children: React.ReactNode; class
 // --- Navigation Config ---
 const getNavLinks = (t: any, user: User | null) => {
   const isSA = user?.role?.toLowerCase() === 'superadmin';
-  
+
   const links = [
     { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
     { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-emerald-500' },
@@ -160,7 +161,7 @@ const usePWAInstall = () => {
 
 const InstallButton: React.FC<{ variant?: 'sidebar' | 'login' }> = ({ variant = 'login' }) => {
   const { isInstallable, install } = usePWAInstall();
-  
+
   const { t } = useTranslation();
 
 
@@ -185,10 +186,10 @@ const InstallButton: React.FC<{ variant?: 'sidebar' | 'login' }> = ({ variant = 
 };
 
 // --- Layout ---
-const AppLayout: React.FC<{ 
-  user: User, 
-  isSuperAdmin: boolean, 
-  onLogout: () => void, 
+const AppLayout: React.FC<{
+  user: User,
+  isSuperAdmin: boolean,
+  onLogout: () => void,
   children: React.ReactNode,
   isMobileMenuOpen: boolean,
   setIsMobileMenuOpen: (open: boolean) => void,
@@ -271,7 +272,7 @@ const AppLayout: React.FC<{
         <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 relative">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Menu className="w-6 h-6" /></button>
-            
+
             {/* Mobile Company Name (Left Aligned) */}
             <span className="lg:hidden text-sm font-bold text-slate-900 uppercase tracking-tight truncate max-w-[50vw]">
               {user.companyName}
@@ -281,15 +282,15 @@ const AppLayout: React.FC<{
               {filteredLinks.find(l => l.path === location.pathname)?.name || (location.pathname === '/' ? t('common.welcome') : '')}
             </h2>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <LanguageSelector />
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">{user.name}</p>
                 <div className="flex flex-col items-end mt-1">
-                    {user.availableCompanies && user.availableCompanies.length > 1 ? (
-                    <select 
+                  {user.availableCompanies && user.availableCompanies.length > 1 ? (
+                    <select
                       value={user.companyId || ''}
                       onChange={(e) => {
                         const newId = e.target.value;
@@ -350,7 +351,7 @@ const CompactDashboard: React.FC = () => {
 
       const activeProjectsCount = allProjects.filter(p => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
       const pendingData = summary.filter(s => (s.invoiceStatus || 'Pending') === 'Pending');
-      
+
       const pendingReports = new Set(pendingData.map(s => s.id.split('_')[0])).size;
       const pendingHours = pendingData.reduce((acc, s) => acc + (s.totalHours || 0), 0);
       const pendingExpenses = pendingData.reduce((acc, s) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
@@ -388,7 +389,7 @@ const CompactDashboard: React.FC = () => {
       <div className="flex items-center gap-2 mb-2 ml-0.5">
         <h2 className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t('dashboard.worksInProgress')}</h2>
       </div>
-      
+
       <div className="divide-y divide-slate-100">
         {/* Row 1: Counters */}
         <div className="grid grid-cols-3 gap-1 pb-1.5">
@@ -396,7 +397,7 @@ const CompactDashboard: React.FC = () => {
           <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" isLoading={loading} />
           <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" isLoading={loading} />
         </div>
-        
+
         {/* Row 2: Economic Values */}
         <div className="grid grid-cols-3 gap-1 pt-1.5">
           <SmallStat label={t('dashboard.estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" isLoading={loading} />
@@ -480,7 +481,7 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
           {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
-        
+
         <nav className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2`}>
           {actions.map((link) => (
             <Link
@@ -496,8 +497,8 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
               </div>
             </Link>
           ))}
-          
-          <button 
+
+          <button
             onClick={handleManualLogout}
             className={`flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg hover:border-red-400 hover:bg-red-50 transition-all group active:scale-[0.99]`}
           >
@@ -520,7 +521,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   const queryClient = useQueryClient();
   const { data: clients = [] } = useClients(user?.companyId ?? undefined);
   const { lang, t } = useTranslation();
-  
+
   const { data: rawSummary = [] } = useSummary(user?.companyId ?? undefined);
   const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
   const { data: users = [] } = useUsers(user?.companyId ?? undefined);
@@ -590,14 +591,14 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         dates: new Set<string>()
       });
       const proj = map.get(key);
-      
+
       proj.hours += s.totalHours;
       proj.totalCost += (s.cost || 0) + (s.totalExpenses || 0);
       proj.totalExpenses += (s.totalExpenses || 0);
       proj.revenue += (s.revenue || 0);
       proj.dates.add(s.date);
     });
-    
+
     return Array.from(map.values()).map(p => ({
       ...p,
       margin: p.revenue - p.totalCost,
@@ -635,7 +636,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
         }));
         exportToExcel(rows, lang);
       }
-      
+
       const idsToDelete = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
       await db.deleteReports(idsToDelete);
       setIsArchiveModalOpen(false);
@@ -750,7 +751,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
               <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusPending')}</button>
             </div>
           </div>
-          
+
           {user.role === 'admin' && (
             <div className="flex-shrink-0 w-full sm:w-auto sm:ml-auto">
               <select
@@ -804,7 +805,7 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
               </div>
               <h2 className="text-xl font-black text-slate-900 mb-2">{t('reports.deleteConfirmationTitle')}</h2>
               <p className="text-sm text-slate-500 mb-6">{t('reports.deleteWarning')}</p>
-              
+
               <div className="w-full space-y-3">
                 <button
                   disabled={isDeleting}
@@ -1054,7 +1055,7 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
     try {
       // SSOT: We no longer block existing emails here. 
       // db.addUser handles linking existing global profiles to the current company.
-      
+
       const data = { ...formData, subcontractorId: formData.subcontractorId || undefined };
       const isSensitive = !!(editingId && (formData.email !== users.find(u => u.id === editingId)?.email || formData.password !== users.find(u => u.id === editingId)?.password));
 
@@ -1173,17 +1174,17 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
                 </FullWidthField>
                 <FullWidthField label={t('projects.personType')}>
-                  <select 
-                    value={formData.subcontractorId} 
+                  <select
+                    value={formData.subcontractorId}
                     onChange={e => {
                       const subId = e.target.value;
                       const sub = subcontractors.find(s => s.id === subId);
-                      setFormData({ 
-                        ...formData, 
+                      setFormData({
+                        ...formData,
                         subcontractorId: subId,
                         hourlyRate: sub ? sub.amount : (subId === "" ? 0 : formData.hourlyRate)
                       });
-                    }} 
+                    }}
                     className={inputClasses}
                   >
                     <option value="">{t('projects.personInternal')}</option>
@@ -1228,58 +1229,58 @@ const PersonnelView: React.FC<{ user: User, onImpersonate?: (u: User) => void }>
                     <textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={inputClasses + " min-h-[60px]"} />
                   </FullWidthField>
                 </div>
-                </div>
+              </div>
 
-                {/* Access and Security Section (Internal Personnel only) */}
-                {!formData.subcontractorId && (
-                  <div className="mt-4 pt-6 border-t">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
-                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight">{t('projects.accessAndSecurity')}</h3>
+              {/* Access and Security Section (Internal Personnel only) */}
+              {!formData.subcontractorId && (
+                <div className="mt-4 pt-6 border-t">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight">{t('projects.accessAndSecurity')}</h3>
+                  </div>
+
+                  {editingId && (
+                    <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-[10px] font-bold border border-blue-100 flex items-start gap-2 mb-4">
+                      <AlertCircle size={14} className="shrink-0" />
+                      {t('auth.loginCredentialsWarning')}
                     </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                    <FullWidthField label={t('projects.personUsername')}>
+                      <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
+                    </FullWidthField>
+                    <FullWidthField label={editingId ? t('auth.resetPassword') : t('projects.personPassword')}>
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          required={!editingId}
+                          value={formData.password}
+                          onChange={e => setFormData({ ...formData, password: e.target.value })}
+                          disabled={isEditingDemo}
+                          className={inputClasses}
+                          placeholder={editingId ? t('auth.passwordChangeHint') : ''}
+                        />
+                        {editingId && <p className="text-[9px] text-slate-400 font-medium ml-1 italic">{t('auth.passwordChangeHint')}</p>}
+                      </div>
+                    </FullWidthField>
 
-                    {editingId && (
-                      <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-[10px] font-bold border border-blue-100 flex items-start gap-2 mb-4">
-                        <AlertCircle size={14} className="shrink-0" />
-                        {t('auth.loginCredentialsWarning')}
+                    {/* Send access instructions button integrated here */}
+                    {editingId && formData.email && (
+                      <div className="md:col-span-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSendInstructions({ id: editingId, email: formData.email })}
+                          className="w-full px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          <Mail size={16} /> {t('auth.sendInstructions')}
+                        </button>
                       </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-                      <FullWidthField label={t('projects.personUsername')}>
-                        <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
-                      </FullWidthField>
-                      <FullWidthField label={editingId ? t('auth.resetPassword') : t('projects.personPassword')}>
-                        <div className="space-y-1">
-                          <input 
-                            type="text" 
-                            required={!editingId} 
-                            value={formData.password} 
-                            onChange={e => setFormData({ ...formData, password: e.target.value })} 
-                            disabled={isEditingDemo} 
-                            className={inputClasses} 
-                            placeholder={editingId ? t('auth.passwordChangeHint') : ''} 
-                          />
-                          {editingId && <p className="text-[9px] text-slate-400 font-medium ml-1 italic">{t('auth.passwordChangeHint')}</p>}
-                        </div>
-                      </FullWidthField>
-                      
-                      {/* Send access instructions button integrated here */}
-                      {editingId && formData.email && (
-                        <div className="md:col-span-2">
-                          <button 
-                            type="button" 
-                            onClick={() => handleSendInstructions({ id: editingId, email: formData.email })} 
-                            className="w-full px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 shadow-sm"
-                          >
-                            <Mail size={16} /> {t('auth.sendInstructions')}
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
                 <div className="flex items-center gap-3">
                   <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">{t('projects.personStatus')}:</label>
                   <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -1376,7 +1377,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
     setIsModalOpen(true);
   };
 
-    return (
+  return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900">{t('projects.clientsTitle')}</h1>
@@ -1461,18 +1462,20 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
 const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
   const { data: projects = [], createProject, updateProject, deleteProject } = useProjects(user?.companyId ?? undefined);
   const { data: clients = [] } = useClients(user?.companyId ?? undefined);
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
+      if (!user?.companyId) return;
+      db.setCompanyId(user.companyId);
       const [u] = await Promise.all([db.getUsers()]);
       setPersonnel(u.filter((usr: User) => usr.status === 'active'));
     };
     load();
-  }, []);
+  }, [user?.companyId]);
 
   const [formData, setFormData] = useState({
     clientId: '',
@@ -1538,9 +1541,9 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
     if (isInternal) {
       const internalClient = await db.getInternalClient();
       if (internalClient) {
-          internalClientId = internalClient.id;
+        internalClientId = internalClient.id;
       } else {
-          internalClientId = 'internal'; 
+        internalClientId = 'internal';
       }
     }
 
@@ -1612,8 +1615,8 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-bold text-slate-900">
-                {editingId 
-                  ? (authService.can(user, 'update', 'projects') ? t('projects.edit') : (editingProject?.name || '---')) 
+                {editingId
+                  ? (authService.can(user, 'update', 'projects') ? t('projects.edit') : (editingProject?.name || '---'))
                   : t('projects.new')
                 }
               </h2>
@@ -1698,7 +1701,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                             type="checkbox"
                             checked={formData.assignedWorkerIds.includes(u.id)}
                             onChange={e => {
-                              const newIds = e.target.checked 
+                              const newIds = e.target.checked
                                 ? [...formData.assignedWorkerIds, u.id]
                                 : formData.assignedWorkerIds.filter(id => id !== u.id);
                               setFormData({ ...formData, assignedWorkerIds: newIds });
@@ -1742,15 +1745,15 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                       <p className="text-xl font-black text-blue-600">{formData.name}</p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     {formData.address && (
                       <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('projects.address')}</label>
-                        <a 
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formData.address)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formData.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors group"
                         >
                           <span className="font-bold border-b border-dashed border-slate-300 group-hover:border-blue-300">{formData.address}</span>
@@ -1763,8 +1766,8 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('projects.contactPerson')}</label>
                         <div className="flex flex-col">
                           <span className="font-bold text-slate-900">{formData.siteContactName || '---'}</span>
-                          <a 
-                            href={`tel:${formData.siteContactPhone}`} 
+                          <a
+                            href={`tel:${formData.siteContactPhone}`}
                             className="flex items-center gap-2 text-blue-600 font-black hover:scale-105 transition-transform origin-left w-fit"
                           >
                             <Phone size={16} /> {formData.siteContactPhone}
@@ -1799,7 +1802,7 @@ const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex justify-end pt-4">
                   <button onClick={() => setIsModalOpen(false)} className="px-10 py-3 bg-slate-900 text-white rounded-2xl font-black shadow-lg hover:bg-slate-800 transition-all uppercase tracking-widest text-[10px]">
                     {t('common.back' as any) || 'Chiudi'}
@@ -1993,7 +1996,7 @@ const SubcontractorsView: React.FC<{ user: User }> = ({ user }) => {
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const { lang, t } = useTranslation();
   const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined);
-    const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
+  const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
   const { data: clients = [] } = useClients(user?.companyId ?? undefined);
   useSubcontractors(user?.companyId ?? undefined); // Fetch but don't bind to local variable if unused, or just pass context
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -2002,28 +2005,30 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
-  
-  const { 
-    complianceReportToSign, 
-    openComplianceReport: handleComplianceClick, 
-    closeComplianceReport, 
-    handleGenerateCompliance 
+
+  const {
+    complianceReportToSign,
+    openComplianceReport: handleComplianceClick,
+    closeComplianceReport,
+    handleGenerateCompliance
   } = useComplianceReportController(user, projects, clients, personnel, lang, (feature) => {
     setUpgradeFeature(feature);
     setIsUpgradeModalOpen(true);
   });
 
   useEffect(() => {
-    }, []);
+  }, []);
 
   useEffect(() => {
+    if (!user?.companyId) return;
+    db.setCompanyId(user.companyId);
     db.getUsers().then(u => setPersonnel(u.filter((usr: User) => usr.status === 'active')));
-  }, []);
+  }, [user?.companyId]);
 
   const canEditReport = (_r: WorkReport) => {
     return authService.can(user, 'update', 'reports');
   };
-    const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     projectId: '',
     userId: '',
@@ -2154,7 +2159,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
     setFormData({ ...formData, additionalWorkers: newWorkers });
   };
   const currentMainWorkerHours = db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours, formData.manualTotalHours);
-  
+
   // Personnel filtering based on project assignment
   const selectedProject = projects.find(p => p.id === formData.projectId);
   const availablePersonnel = useMemo(() => {
@@ -2237,7 +2242,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         <div className="flex flex-wrap gap-2 justify-end">
           {user.role !== 'admin' && (
             <div className="flex gap-2 w-full sm:w-auto">
-              <button 
+              <button
                 onClick={() => {
                   const personalRows = filteredReports.map(r => {
                     const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
@@ -2260,7 +2265,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               >
                 <FileDown size={14} className="mr-1.5" /> {t('reports.personalExportPDF')}
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const personalRows = filteredReports.map(r => {
                     const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
@@ -2284,26 +2289,26 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </button>
             </div>
           )}
-          <button 
-            onClick={() => { 
-              setEditingId(null); 
-              setFormData({ 
-                ...formData, 
-                projectId: '', 
-                userId: user.id, 
-                date: new Date().toISOString().split('T')[0], 
+          <button
+            onClick={() => {
+              setEditingId(null);
+              setFormData({
+                ...formData,
+                projectId: '',
+                userId: user.id,
+                date: new Date().toISOString().split('T')[0],
                 startTime: '08:00',
                 endTime: '17:00',
                 breakHours: 1,
                 manualTotalHours: undefined,
                 overtimeHours: 0,
                 description: '',
-                expenses: [], 
-                additionalWorkers: [], 
+                expenses: [],
+                additionalWorkers: [],
                 activityType: 'work',
                 invoiceStatus: 'Pending'
-              }); 
-              setIsModalOpen(true); 
+              });
+              setIsModalOpen(true);
             }}
             className="px-4 py-2 bg-blue-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-blue-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >
@@ -2314,57 +2319,57 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
       <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
         <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
-          <button 
+          <button
             onClick={() => setFilters({ ...filters, dateRange: 'today' })}
             className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'today' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
           >{t('common.today')}</button>
-          <button 
+          <button
             onClick={() => setFilters({ ...filters, dateRange: 'week' })}
             className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'week' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
           >{t('common.thisWeek')}</button>
-          <button 
+          <button
             onClick={() => setFilters({ ...filters, dateRange: 'month' })}
             className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'month' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
           >{t('common.thisMonth')}</button>
-          <button 
+          <button
             onClick={() => setFilters({ ...filters, dateRange: 'custom' })}
             className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
           >{t('common.customRange')}</button>
         </div>
-        <button 
-            onClick={() => setShowFilters(!showFilters)} 
-            className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`}
-            title={t('reports.filters')}
-          >
-            <Filter size={20} />
-          </button>
-          <button onClick={() => {
-            setEditingId(null);
-            setFormData({
-              projectId: '',
-              userId: user.id,
-              date: new Date().toISOString().split('T')[0],
-              startTime: '08:00',
-              endTime: '17:00',
-              breakHours: 1,
-              manualTotalHours: undefined,
-              overtimeHours: 0,
-              description: '',
-              expenses: [],
-              additionalWorkers: [],
-              activityType: 'work',
-              invoiceStatus: 'Pending'
-            });
-            setIsModalOpen(true);
-          }} 
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`}
+          title={t('reports.filters')}
+        >
+          <Filter size={20} />
+        </button>
+        <button onClick={() => {
+          setEditingId(null);
+          setFormData({
+            projectId: '',
+            userId: user.id,
+            date: new Date().toISOString().split('T')[0],
+            startTime: '08:00',
+            endTime: '17:00',
+            breakHours: 1,
+            manualTotalHours: undefined,
+            overtimeHours: 0,
+            description: '',
+            expenses: [],
+            additionalWorkers: [],
+            activityType: 'work',
+            invoiceStatus: 'Pending'
+          });
+          setIsModalOpen(true);
+        }}
           data-onboarding="new-report-btn"
           className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"
-          >
-            <Plus size={16} className="mr-2 inline" /> 
-            <span className="hidden sm:inline">{t('reports.new')}</span>
-            <span className="sm:hidden">{t('common.addBtn')}</span>
-          </button>
-        </div>
+        >
+          <Plus size={16} className="mr-2 inline" />
+          <span className="hidden sm:inline">{t('reports.new')}</span>
+          <span className="sm:hidden">{t('common.addBtn')}</span>
+        </button>
+      </div>
 
       {showFilters && (
         <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -2511,11 +2516,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                     <Clock size={12} /> <span className="font-bold">{teamTotalHours}h</span>
                   </div>
                   {r.invoiceStatus && (
-                    <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${
-                      r.invoiceStatus === 'Pagato' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                      r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                      'bg-amber-50 text-amber-600 border-amber-100'
-                    }`}>
+                    <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${r.invoiceStatus === 'Pagato' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                          'bg-amber-50 text-amber-600 border-amber-100'
+                      }`}>
                       {r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'))}
                     </div>
                   )}
@@ -2523,7 +2527,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </div>
             );
           })}
-            {reports.length === 0 && (
+          {reports.length === 0 && (
             <div className="p-8 text-center text-slate-500 text-sm">{t('common.noData')}</div>
           )}
         </div>
@@ -2601,7 +2605,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-bold text-slate-900">
-                {projects.find(p => p.id === formData.projectId)?.isInternal 
+                {projects.find(p => p.id === formData.projectId)?.isInternal
                   ? (editingId ? t('reports.edit') : t('reports.newInternal'))
                   : (editingId ? t('reports.edit') : t('reports.new'))}
               </h2>
@@ -2611,41 +2615,41 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                 <FullWidthField label={t('reports.activityType')} className="md:col-span-2">
                   <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => {
                         const wasInternal = formData.activityType === 'internal' || formData.activityType === 'sickness' || formData.activityType === 'holiday';
                         if (wasInternal) {
-                          setFormData({ 
-                            ...formData, 
-                            activityType: 'work', 
-                            projectId: '', 
-                            startTime: '08:00', 
-                            endTime: '17:00', 
-                            breakHours: 1, 
+                          setFormData({
+                            ...formData,
+                            activityType: 'work',
+                            projectId: '',
+                            startTime: '08:00',
+                            endTime: '17:00',
+                            breakHours: 1,
                             manualTotalHours: undefined,
                             invoiceStatus: 'Pending'
                           });
                         }
-                      }} 
+                      }}
                       className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
                     >
                       {t('reports.activityWork')}
                     </button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => {
                         const intProj = projects.find(p => p.isInternal);
-                        setFormData({ 
-                          ...formData, 
-                          activityType: 'internal', 
+                        setFormData({
+                          ...formData,
+                          activityType: 'internal',
                           projectId: intProj?.id || '',
                           startTime: '',
                           endTime: '',
                           breakHours: 0,
                           manualTotalHours: 0
                         });
-                      }} 
+                      }}
                       className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType !== 'work' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}
                     >
                       {t('reports.activityInternal')} / {t('reports.activityAbsence')}
@@ -2656,11 +2660,11 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 <FullWidthField label={t('reports.headerProject')}>
                   {(() => {
                     const isInternalMode = formData.activityType !== 'work';
-                    
+
                     return (
-                      <select 
-                        required 
-                        value={formData.projectId} 
+                      <select
+                        required
+                        value={formData.projectId}
                         onChange={e => {
                           const newProjectId = e.target.value;
                           const proj = projects.find(p => p.id === newProjectId);
@@ -2680,7 +2684,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
                             if (isInternalMode) return p.isInternal;
                             if (p.isInternal) return false;
-                             if (authService.canAccessAdmin(user)) return true;
+                            if (authService.canAccessAdmin(user)) return true;
                             return canUserAccessProject(p, user.id);
                           })
                           .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -2706,8 +2710,8 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                 )}
                 {formData.activityType !== 'work' && (
                   <FullWidthField label={t('reports.activityType')}>
-                    <select 
-                      value={formData.activityType} 
+                    <select
+                      value={formData.activityType}
                       onChange={e => {
                         const newType = e.target.value as any;
                         const updates: any = { activityType: newType };
@@ -2718,7 +2722,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           updates.breakHours = 0;
                         }
                         setFormData({ ...formData, ...updates });
-                      }} 
+                      }}
                       className={inputClasses}
                     >
                       <option value="internal">{t('reports.activityInternal')}</option>
@@ -2782,22 +2786,22 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label>
                         <input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                       </div>
-                      
+
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label>
                         <input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                       </div>
-                      
+
                       <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label>
                         <input type="number" step="0.25" value={aw.breakHours} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                       </div>
-                      
+
                       <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                         <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label>
                         <input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} />
                       </div>
-                      
+
                       <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                         <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label>
                         <input
@@ -2820,27 +2824,27 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         {personnel.find(u => u.id === formData.userId)?.name || t('reports.mainWorker')}
                       </div>
                     </div>
-                    
+
                     <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label>
                       <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                     </div>
-                    
+
                     <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label>
                       <input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                     </div>
-                    
+
                     <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label>
                       <input type="number" step="0.25" value={formData.breakHours} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} />
                     </div>
-                    
+
                     <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                       <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label>
                       <input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} />
                     </div>
-                    
+
                     <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2">
                       <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label>
                       <input
@@ -2981,10 +2985,10 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       )}
 
       {complianceReportToSign && (
-        <ComplianceReportModal 
-          report={complianceReportToSign} 
-          onClose={closeComplianceReport} 
-          onGenerate={handleGenerateCompliance} 
+        <ComplianceReportModal
+          report={complianceReportToSign}
+          onClose={closeComplianceReport}
+          onGenerate={handleGenerateCompliance}
         />
       )}
     </div>
@@ -2995,7 +2999,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
 
 // --- Auth View ---
 // AuthView removed in favor of LandingView
-  // --- Companies Management View (SuperAdmin Only) ---
+// --- Companies Management View (SuperAdmin Only) ---
 const CompaniesView: React.FC = () => {
   const { t } = useTranslation();
   const [companies, setCompanies] = useState<any[]>([]);
@@ -3126,7 +3130,7 @@ const CompaniesView: React.FC = () => {
                 <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
                   <td className="px-5 py-4">
-                    <button 
+                    <button
                       onClick={() => handleTogglePremium(c.id, !!c.isPremium)}
                       className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 shadow-sm hover:scale-105' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
                     >
@@ -3218,13 +3222,11 @@ const CompaniesView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
-                        formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
-                      }`}
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
+                        }`}
                     >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
-                        formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                      }`} />
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
+                        }`} />
                     </button>
                   </div>
                 </>
@@ -3242,7 +3244,7 @@ const CompaniesView: React.FC = () => {
     </div>
   );
 };
-  // --- Main App Component ---
+// --- Main App Component ---
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('ws_auth');
@@ -3271,9 +3273,9 @@ const App: React.FC = () => {
   });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { t } = useTranslation();
-  
-  
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isCommsUpgradeOpen, setIsCommsUpgradeOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -3304,7 +3306,7 @@ const App: React.FC = () => {
       console.log('AUTH: Starting initialization... recovery_pending:', isRecoveryPending);
       const { data: { session } } = await supabase.auth.getSession();
       console.log('AUTH: Initial session:', session ? 'PRESENT' : 'NONE', 'session.user:', session?.user ? session.user.id : 'NONE');
-      
+
       if (session?.user) {
         console.log('AUTH: Session user found, fetching worker data...');
         try {
@@ -3333,7 +3335,7 @@ const App: React.FC = () => {
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('AUTH EVENT:', event, 'session.user:', session?.user ? session.user.id : 'NONE');
-        
+
         if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && sessionStorage.getItem('recovery_pending') === 'true')) {
           console.log('AUTH: Recovery event detected in onAuthStateChange');
           if (session?.user) {
@@ -3514,11 +3516,11 @@ const App: React.FC = () => {
       } else {
         db.setCompanyId(fullProfile.companyId ?? null);
       }
-      
+
       db.setUserId(fullProfile.id);
       localStorage.setItem('ws_auth', JSON.stringify(fullProfile));
       setUser(fullProfile);
-      
+
       // Force return to home to reset all view states
       window.location.hash = '#/home';
       setIsMobileMenuOpen(false);
@@ -3558,63 +3560,63 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <Routes>
-          {/* Public & Entrance Route */}
-          <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
-          <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
-          <Route path="/presentation" element={<PresentationView />} />
-          <Route path="/privacy" element={<PrivacyView />} />
-          <Route path="/terms" element={<TermsView />} />
-          <Route path="/reset-password" element={<ResetPasswordView t={t} />} />
+        {/* Public & Entrance Route */}
+        <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
+        <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
+        <Route path="/presentation" element={<PresentationView />} />
+        <Route path="/privacy" element={<PrivacyView />} />
+        <Route path="/terms" element={<TermsView />} />
+        <Route path="/reset-password" element={<ResetPasswordView t={t} />} />
 
-          {/* Protected Routes Wrapper */}
-          <Route 
-            path="/*" 
-            element={
-              !user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <AppLayout 
-                  user={user} 
-                  isSuperAdmin={isSuperAdmin} 
-                  onLogout={handleLogout}
-                  isMobileMenuOpen={isMobileMenuOpen}
-                  setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  unreadCount={unreadCount}
-                  setUser={setUser}
-                >
-                  {adminUser && (
-                    <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
-                      <div className="flex items-center gap-2">
-                        <ShieldAlert size={16} />
-                        <span>{t('auth.impersonating')}: <span className="underline">{user.name}</span> ({user.username})</span>
-                      </div>
-                      <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
-                        <LogOut size={14} /> {t('auth.backToAdmin')}
-                      </button>
+        {/* Protected Routes Wrapper */}
+        <Route
+          path="/*"
+          element={
+            !user ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AppLayout
+                user={user}
+                isSuperAdmin={isSuperAdmin}
+                onLogout={handleLogout}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+                unreadCount={unreadCount}
+                setUser={setUser}
+              >
+                {adminUser && (
+                  <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert size={16} />
+                      <span>{t('auth.impersonating')}: <span className="underline">{user.name}</span> ({user.username})</span>
                     </div>
-                  )}
-                  <Routes>
-                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
-                    <Route path="/reports" element={<ReportsView user={user} />} />
-                    <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
-                    <Route path="/projects" element={<ProjectsView user={user} />} />
-                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
-                    <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
-                    <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
-                    <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
-                    <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
-                    <Route path="*" element={<Navigate to="/" />} />
-                  </Routes>
-                </AppLayout>
-              )
-            } 
-          />
-        </Routes>
+                    <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
+                      <LogOut size={14} /> {t('auth.backToAdmin')}
+                    </button>
+                  </div>
+                )}
+                <Routes>
+                  <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
+                  <Route path="/reports" element={<ReportsView user={user} />} />
+                  <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
+                  <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
+                  <Route path="/projects" element={<ProjectsView user={user} />} />
+                  <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
+                  <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView user={user} /> : <Navigate to="/" />} />
+                  <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
+                  <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
+                  <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
+                  <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+              </AppLayout>
+            )
+          }
+        />
+      </Routes>
       {showOnboarding && user && authService.canAccessAdmin(user) && (
-        <OnboardingGuide 
-          userRole={user.role} 
+        <OnboardingGuide
+          userRole={user.role}
           onComplete={() => {
             localStorage.setItem('onboarding_v1', 'completed');
             setShowOnboarding(false);

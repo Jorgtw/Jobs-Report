@@ -162,11 +162,12 @@ class DBService {
   async addUser(worker: any) {
     const compId = this.requireCompanyId();
     
-    // 1. Check if worker already exists globally by email
+    // 1. Check if worker already exists within THIS company (Option A)
     const { data: existingWorker } = await supabase
       .from('workers')
       .select('id, auth_id, name')
       .eq('email', worker.email)
+      .eq('company_id', compId)
       .maybeSingle();
 
     let workerId = existingWorker?.id;
@@ -285,17 +286,16 @@ class DBService {
     const isSA = this.isSuperAdminRole;
     const compId = this.currentCompanyId;
     
-    // SSOT: If a company is selected, fetch via bridge table
+    // Opzione A (Siloed): La tabella `workers` è la fonte di verità operativa.
+    // Ogni record appartiene a una sola azienda via `company_id`.
     if (compId) {
-      // Architettura Caso 1: `workers` è il dominio operativo puro.
-      // Non ci interessa la lista authIds da user_companies (che è solo l'ACL per il login).
-      // Tutti coloro che operano in questa azienda hanno `company_id = compId`.
-      // La sicurezza (chi può leggere questo dato) è gestita da RLS su Supabase.
-      const query = supabase.from('workers').select('*').eq('company_id', compId);
+      const { data, error } = await supabase
+        .from('workers')
+        .select('*')
+        .eq('company_id', compId);
 
-      const { data, error } = await query;
       if (error) {
-        console.error('Error fetching worker profiles:', error);
+        console.error('Error fetching workers:', error);
         return [];
       }
       return data.map(w => this.mapSupabaseWorker(w));
@@ -320,12 +320,23 @@ class DBService {
   }
 
   async getUserByAuthId(authId: string) {
-    const { data, error } = await supabase.from('workers').select('*').eq('auth_id', authId).maybeSingle();
+    // In Option A, we fetch the worker record that matches BOTH auth_id and the active company.
+    // However, during initial login, we might not know the company yet, so we get the first one
+    // and then resolve the context.
+    const { data, error } = await supabase
+      .from('workers')
+      .select('*')
+      .eq('auth_id', authId)
+      .order('created_at', { ascending: false });
+
     if (error) {
       console.error('Error fetching user by auth_id:', error);
       return null;
     }
-    if (!data) return null;
+    if (!data || data.length === 0) return null;
+    
+    // Default to the first profile found if we don't have a company context yet
+    const initialWorker = data[0]; 
 
     // SSOT Context & Repair logic for hydration
     let { data: contexts } = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
@@ -353,8 +364,13 @@ class DBService {
     }
 
     // Set active company and sync context role if not already superadmin
-    // SSOT Priority: 1. Memberships in user_companies (bridge table), 2. Legacy companyId in workers table
-    const activeCompId = (availableCompanies.length > 0 ? availableCompanies[0].id : null) || user.companyId;
+    const activeCompId = (availableCompanies.length > 0 ? availableCompanies[0].id : null) || initialWorker.company_id;
+    
+    // Now resolve the specific worker profile for this company (if multiple exist)
+    const activeWorkerData = data.find(w => w.company_id === activeCompId) || initialWorker;
+    const user = this.mapSupabaseWorker(activeWorkerData);
+    user.availableCompanies = availableCompanies;
+
     if (activeCompId) {
       this.setCompanyId(activeCompId);
       user.companyId = activeCompId;
@@ -708,17 +724,29 @@ class DBService {
       return null;
     }
 
-    // 3. Ora che l'utente è loggato in Supabase, le RLS sono sbloccate per la sua azienda!
-    // Scarichiamo il record "worker" completo.
-    const { data: workerData, error: workerErr } = await supabase
-      .from('workers')
-      .select('*')
-      .ilike('username', username.trim())
-      .eq('status', 'active')
-      .single();
+    // 3. ROBUST FETCH: Implementiamo un retry pattern come suggerito per gestire timing issues
+    let workerData = null;
+    let workerErr = null;
+    
+    for (let i = 0; i < 3; i++) {
+      const res = await supabase
+        .from('workers')
+        .select('*')
+        .eq('auth_id', authData.user.id)
+        .maybeSingle();
+        
+      if (res.data) {
+        workerData = res.data;
+        break;
+      }
+      
+      workerErr = res.error;
+      // Aspetta 150ms prima del prossimo tentativo
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
 
-    if (workerErr || !workerData) {
-      console.error('Record worker non trovato dopo il login:', workerErr);
+    if (!workerData) {
+      console.error('Record worker non trovato dopo i tentativi di login:', workerErr);
       return null;
     }
 
@@ -831,7 +859,7 @@ class DBService {
       username: w.username,
       // SSOT per Offline Workers: Senza auth_id, user_companies non può mapparli. 
       // company_id in workers è l'unico legame rimasto per il personale non registrato.
-      company_id: w.companyId,
+      company_id: w.companyId || this.currentCompanyId,
       subcontractor_id: w.subcontractorId,
       hourly_rate: w.hourlyRate,
       overtime_hourly_rate: w.overtimeHourlyRate,
