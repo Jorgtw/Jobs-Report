@@ -620,7 +620,10 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
           description: s.description || '',
           hours: s.totalHours,
           hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-          hourlyRevenue: 0, revenue: s.revenue || 0, paid: s.invoiceStatus
+          hourlyRevenue: 0, revenue: s.revenue || 0, 
+          paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
+                s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
+                t('common.statusPending')
         }));
         exportToPDF(rows, lang, user.name);
       } else if (exportType === 'excel') {
@@ -632,7 +635,10 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
           description: s.description || '',
           hours: s.totalHours,
           hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-          hourlyRevenue: 0, revenue: s.revenue || 0, paid: s.invoiceStatus
+          hourlyRevenue: 0, revenue: s.revenue || 0, 
+          paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
+                s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
+                t('common.statusPending')
         }));
         exportToExcel(rows, lang);
       }
@@ -663,7 +669,10 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                 description: s.description || '',
                 hours: s.totalHours,
                 hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-                hourlyRevenue: 0, revenue: s.revenue || 0, paid: s.invoiceStatus
+                hourlyRevenue: 0, revenue: s.revenue || 0, 
+                paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
+                      s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
+                      t('common.statusPending')
               }));
               exportToPDF(rows, lang, user.name);
             }}
@@ -681,7 +690,10 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
                 description: s.description || '',
                 hours: s.totalHours,
                 hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-                hourlyRevenue: 0, revenue: s.revenue || 0, paid: s.invoiceStatus
+                hourlyRevenue: 0, revenue: s.revenue || 0, 
+                paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
+                      s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
+                      t('common.statusPending')
               }));
               exportToExcel(rows, lang);
             }}
