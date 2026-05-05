@@ -452,7 +452,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
 
 // --- Home View (Launcher) ---
 const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSuperAdmin }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const actions = getNavLinks(t, user);
 
   const handleManualLogout = () => {
@@ -475,7 +475,38 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
         </div>
       </div>
 
-      {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : <PendingHoursCard user={user} />)}
+      {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : (
+        <div className="space-y-4">
+          <PendingHoursCard user={user} />
+          
+          {/* Primary Action Card for Workers */}
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl text-white shadow-xl shadow-blue-200 relative overflow-hidden group mb-6">
+            <div className="relative z-10">
+              <h2 className="text-2xl font-black mb-2 tracking-tight">
+                {lang === 'it' ? 'Pronto per il prossimo rapporto?' : 
+                 lang === 'da' ? 'Klar til næste rapport?' : 
+                 'Ready for the next report?'}
+              </h2>
+              <p className="text-blue-100 text-sm mb-8 max-w-xs font-medium opacity-90">
+                {lang === 'it' ? 'Registra le tue ore e le attività svolte oggi in pochi secondi.' : 
+                 lang === 'da' ? 'Registrer dine timer og aktiviteter udført i dag på få sekunder.' : 
+                 'Record your hours and activities performed today in seconds.'}
+              </p>
+              <Link 
+                to="/reports" 
+                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-blue-600 rounded-2xl font-black shadow-lg hover:scale-105 hover:shadow-white/20 transition-all active:scale-95 uppercase tracking-widest text-xs"
+              >
+                <Plus size={20} /> {t('reports.new')}
+              </Link>
+            </div>
+            
+            {/* Background Decoration Icon */}
+            <div className="absolute right-[-20px] bottom-[-40px] opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+              <FileText size={240} />
+            </div>
+          </div>
+        </div>
+      ))}
 
       <div className="mt-6">
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
@@ -2018,6 +2049,42 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
 
+  const [formData, setFormData] = useState({
+    projectId: '',
+    userId: user.id,
+    date: new Date().toISOString().split('T')[0],
+    startTime: '08:00',
+    endTime: '17:00',
+    breakHours: 1,
+    manualTotalHours: undefined as number | undefined,
+    overtimeHours: 0,
+    description: '',
+    expenses: [] as Expense[],
+    additionalWorkers: [] as AdditionalWorker[],
+    activityType: 'work' as 'work' | 'sickness' | 'holiday' | 'internal',
+    invoiceStatus: 'Pending'
+  });
+
+  const handleNewReport = () => {
+    setEditingId(null);
+    setFormData({
+      projectId: '',
+      userId: user.id,
+      date: new Date().toISOString().split('T')[0],
+      startTime: '08:00',
+      endTime: '17:00',
+      breakHours: 1,
+      manualTotalHours: undefined,
+      overtimeHours: 0,
+      description: '',
+      expenses: [],
+      additionalWorkers: [],
+      activityType: 'work',
+      invoiceStatus: 'Pending'
+    });
+    setIsModalOpen(true);
+  };
+
   const {
     complianceReportToSign,
     openComplianceReport: handleComplianceClick,
@@ -2100,21 +2167,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
       return true;
     });
   }, [reports, filters, projects]);
-  const [formData, setFormData] = useState({
-    projectId: '',
-    userId: user.id,
-    date: new Date().toISOString().split('T')[0],
-    startTime: '08:00',
-    endTime: '17:00',
-    breakHours: 1,
-    manualTotalHours: undefined as number | undefined,
-    overtimeHours: 0,
-    description: '',
-    expenses: [] as Expense[],
-    additionalWorkers: [] as AdditionalWorker[],
-    activityType: 'work' as 'work' | 'sickness' | 'holiday' | 'internal',
-    invoiceStatus: 'Pending'
-  });
 
   const addWorker = () => {
     setFormData({
@@ -2301,31 +2353,6 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
               </button>
             </div>
           )}
-          <button
-            onClick={() => {
-              setEditingId(null);
-              setFormData({
-                ...formData,
-                projectId: '',
-                userId: user.id,
-                date: new Date().toISOString().split('T')[0],
-                startTime: '08:00',
-                endTime: '17:00',
-                breakHours: 1,
-                manualTotalHours: undefined,
-                overtimeHours: 0,
-                description: '',
-                expenses: [],
-                additionalWorkers: [],
-                activityType: 'work',
-                invoiceStatus: 'Pending'
-              });
-              setIsModalOpen(true);
-            }}
-            className="px-4 py-2 bg-blue-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-blue-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
-          >
-            <Plus size={16} /> {t('reports.new')}
-          </button>
         </div>
       </div>
 
@@ -2355,25 +2382,8 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
         >
           <Filter size={20} />
         </button>
-        <button onClick={() => {
-          setEditingId(null);
-          setFormData({
-            projectId: '',
-            userId: user.id,
-            date: new Date().toISOString().split('T')[0],
-            startTime: '08:00',
-            endTime: '17:00',
-            breakHours: 1,
-            manualTotalHours: undefined,
-            overtimeHours: 0,
-            description: '',
-            expenses: [],
-            additionalWorkers: [],
-            activityType: 'work',
-            invoiceStatus: 'Pending'
-          });
-          setIsModalOpen(true);
-        }}
+        <button 
+          onClick={handleNewReport}
           data-onboarding="new-report-btn"
           className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"
         >
