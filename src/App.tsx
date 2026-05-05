@@ -519,13 +519,13 @@ const HomeView: React.FC<{ user: User, isSuperAdmin: boolean }> = ({ user, isSup
 import { useQueryClient } from '@tanstack/react-query';
 const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
   const queryClient = useQueryClient();
-  const { data: clients = [] } = useClients(user?.companyId ?? undefined);
+  const { data: clients = [] } = useClients(user?.companyId ?? undefined, user?.id);
   const { lang, t } = useTranslation();
 
-  const { data: rawSummary = [] } = useSummary(user?.companyId ?? undefined);
-  const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
-  const { data: users = [] } = useUsers(user?.companyId ?? undefined);
-  const { data: subcontractors = [] } = useSubcontractors(user?.companyId ?? undefined);
+  const { data: rawSummary = [] } = useSummary(user?.companyId ?? undefined, user?.id);
+  const { data: projects = [] } = useProjects(user?.companyId ?? undefined, user?.id);
+  const { data: users = [] } = useUsers(user?.companyId ?? undefined, user?.id);
+  const { data: subcontractors = [] } = useSubcontractors(user?.companyId ?? undefined, user?.id);
 
   const summary = React.useMemo(() => {
     if (user.role === 'supervisor') {
@@ -746,9 +746,9 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
             <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-tight shrink-0">{t('reports.adminStatusTitle')}</label>
             <div className="flex bg-slate-50 p-0.5 rounded-lg w-full sm:w-auto border border-slate-100">
               <button onClick={() => setAdminStatus('Tutti')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Tutti' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusAll')}</button>
+              <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusPending')}</button>
               <button onClick={() => setAdminStatus('Fatturato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Fatturato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusInvoiced')}</button>
               <button onClick={() => setAdminStatus('Pagato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pagato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusPaid')}</button>
-              <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusPending')}</button>
             </div>
           </div>
 
@@ -1316,7 +1316,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
     createClient,
     updateClient,
     deleteClient
-  } = useClients(user?.companyId ?? undefined);
+  } = useClients(user?.companyId ?? undefined, user?.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -1460,8 +1460,8 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
 
 // --- Projects View ---
 const ProjectsView: React.FC<{ user: User }> = ({ user }) => {
-  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects(user?.companyId ?? undefined);
-  const { data: clients = [] } = useClients(user?.companyId ?? undefined);
+  const { data: projects = [], createProject, updateProject, deleteProject } = useProjects(user?.companyId ?? undefined, user?.id);
+  const { data: clients = [] } = useClients(user?.companyId ?? undefined, user?.id);
   const { t } = useTranslation();
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1995,10 +1995,10 @@ const SubcontractorsView: React.FC<{ user: User }> = ({ user }) => {
 
 const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const { lang, t } = useTranslation();
-  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined);
-  const { data: projects = [] } = useProjects(user?.companyId ?? undefined);
-  const { data: clients = [] } = useClients(user?.companyId ?? undefined);
-  useSubcontractors(user?.companyId ?? undefined); // Fetch but don't bind to local variable if unused, or just pass context
+  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined, user?.id);
+  const { data: projects = [] } = useProjects(user?.companyId ?? undefined, user?.id);
+  const { data: clients = [] } = useClients(user?.companyId ?? undefined, user?.id);
+  useSubcontractors(user?.companyId ?? undefined, user?.id); // Fetch but don't bind to local variable if unused, or just pass context
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -3282,6 +3282,7 @@ const App: React.FC = () => {
     return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
   const [initializing, setInitializing] = useState(true);
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -3332,6 +3333,9 @@ const App: React.FC = () => {
       } else {
         console.log('AUTH: No session.user available yet, waiting for onAuthStateChange...');
       }
+      
+      setSessionReady(true);
+      setInitializing(false);
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('AUTH EVENT:', event, 'session.user:', session?.user ? session.user.id : 'NONE');
@@ -3543,14 +3547,14 @@ const App: React.FC = () => {
     window.location.hash = '/personnel';
   };
 
-  if (initializing) {
+  if (initializing || !sessionReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <div className="space-y-1">
             <p className="text-slate-900 font-extrabold text-lg tracking-tight">Jobs<span className="text-blue-600">Report</span></p>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">Inizializzazione in corso...</p>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">Verifica sessione in corso...</p>
           </div>
         </div>
       </div>

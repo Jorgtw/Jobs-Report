@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { db } from '../services/dbService';
 import { Project } from '../types';
 
-export const useProjects = (companyId?: string) => {
+export const useProjects = (companyId?: string, userId?: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery<Project[], Error>({
@@ -11,8 +11,10 @@ export const useProjects = (companyId?: string) => {
       const projects = await db.getProjects();
       return projects || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minuti
-    enabled: !!companyId,
+    staleTime: 1000 * 30, // 30 secondi
+    retry: 3,
+    refetchOnWindowFocus: true,
+    enabled: !!companyId && !!userId,
   });
 
   const createProject = useMutation({
