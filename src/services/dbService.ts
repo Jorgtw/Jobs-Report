@@ -1526,7 +1526,9 @@ class DBService {
       createdAt: new Date(r.created_at).getTime()
     };
   }
-
+  async getReports() {
+    await this.checkAuthSession();
+    const compId = this.requireCompanyId();
     const { data: { user } } = await supabase.auth.getUser();
     const uid = user?.id || 'NULL';
     
