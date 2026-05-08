@@ -2935,15 +2935,15 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           }}
                           className={`${inputClasses} w-full`}
                         >
-                          <option value="CANTIERE">Cantiere</option>
-                          <option value="RIMBORSO">Rimborso Personale</option>
-                          <option value="KM">Trasferta (KM)</option>
+                          <option value="CANTIERE">{t('reports.expenseCantiere')}</option>
+                          <option value="RIMBORSO">{t('reports.expenseRimborso')}</option>
+                          <option value="KM">{t('reports.expenseKm')}</option>
                         </select>
                       </div>
 
                       {exp.type === 'KM' && (
                         <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
-                          <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">KM</label>
+                          <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.kmDistance')}</label>
                           <input
                             type="number"
                             step="1"

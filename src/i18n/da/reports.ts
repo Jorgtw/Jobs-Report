@@ -128,5 +128,9 @@ export const reports = {
   workTeam: "Arbejdshold",
   complianceSatisfactionRequired: "Kundetilfredshedsbekræftelse er påkrævet for at fortsætte.",
   complianceNoDescription: "Ingen beskrivelse angivet.",
-  complianceSatisfactionDeclaration: "Kunden erklærer, at arbejdet er udført i overensstemmelse med standarder og bekræfter sin tilfredshed med den udførte service."
+  complianceSatisfactionDeclaration: "Kunden erklærer, at arbejdet er udført i overensstemmelse med standarder og bekræfter sin tilfredshed med den udførte service.",
+  expenseCantiere: "Arbejdsplads Udgift",
+  expenseRimborso: "Personlig Refusion",
+  expenseKm: "Rejse (KM)",
+  kmDistance: "Afstand (KM)"
 };
