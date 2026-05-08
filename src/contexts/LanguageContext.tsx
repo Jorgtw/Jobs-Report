@@ -15,7 +15,7 @@ export const useTranslation = () => useContext(LanguageContext);
 
 export const localeMap: Record<string, string> = {
   it: 'it-IT',
-  en: 'en-US',
+  en: 'en-GB',
   es: 'es-ES',
   pl: 'pl-PL',
   tr: 'tr-TR',

@@ -2334,7 +2334,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   const personalRows = filteredReports.map(r => {
                     const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
                     return {
-                      date: new Date(r.date).toLocaleDateString('en-GB'),
+                      date: new Date(r.date).toLocaleDateString(localeMap[lang]),
                       projectName: projects.find(p => p.id === r.projectId)?.name || '---',
                       clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
                       workerName: user.name,
