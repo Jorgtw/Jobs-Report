@@ -2909,7 +2909,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                         type="button"
                         onClick={() => setFormData({
                           ...formData,
-                          expenses: [...formData.expenses, { type: '', amount: 0, notes: '' } as any]
+                          expenses: [...formData.expenses, { type: 'CANTIERE', amount: 0, description: '', notes: '', km: '' } as any]
                         })}
                         className="text-xs font-bold text-amber-700 bg-white border border-amber-200 shadow-sm px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1"
                       >
@@ -2923,23 +2923,45 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                   )}
 
                   {formData.expenses.map((exp: any, idx: number) => (
-                    <div key={idx} className="bg-white p-2 rounded-xl border border-amber-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                      <div className="col-span-12 sm:col-span-4 flex flex-col gap-0.5">
+                    <div key={idx} className="bg-white p-2 rounded-xl border border-amber-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-8">
+                      <div className="col-span-12 sm:col-span-3 flex flex-col gap-0.5">
                         <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.placeholderExpenseType')}</label>
-                        <input
-                          type="text"
-                          placeholder={t('reports.placeholderExpenseType')}
-                          value={exp.type || ''}
+                        <select
+                          value={exp.type || 'CANTIERE'}
                           onChange={e => {
                             const updated = [...formData.expenses] as any[];
                             updated[idx] = { ...updated[idx], type: e.target.value };
                             setFormData({ ...formData, expenses: updated });
                           }}
                           className={`${inputClasses} w-full`}
-                        />
+                        >
+                          <option value="CANTIERE">Cantiere</option>
+                          <option value="RIMBORSO">Rimborso Personale</option>
+                          <option value="KM">Trasferta (KM)</option>
+                        </select>
                       </div>
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5">
-                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.amount')}</label>
+
+                      {exp.type === 'KM' && (
+                        <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5">
+                          <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">KM</label>
+                          <input
+                            type="number"
+                            step="1"
+                            min="1"
+                            placeholder="Km percorsi"
+                            value={exp.km || ''}
+                            onChange={e => {
+                              const updated = [...formData.expenses] as any[];
+                              updated[idx] = { ...updated[idx], km: e.target.value };
+                              setFormData({ ...formData, expenses: updated });
+                            }}
+                            className={`${inputClasses} w-full text-right`}
+                          />
+                        </div>
+                      )}
+
+                      <div className={`col-span-6 ${exp.type === 'KM' ? 'sm:col-span-2' : 'sm:col-span-4'} flex flex-col gap-0.5`}>
+                        <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.amount')} (€)</label>
                         <input
                           type="number"
                           step="0.01"
@@ -2954,15 +2976,16 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
                           className={`${inputClasses} w-full text-right`}
                         />
                       </div>
-                      <div className="col-span-8 sm:col-span-6 flex flex-col gap-0.5 pr-2">
+
+                      <div className={`col-span-12 ${exp.type === 'KM' ? 'sm:col-span-5' : 'sm:col-span-5'} flex flex-col gap-0.5`}>
                         <label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.placeholderExpenseNotes')}</label>
                         <input
                           type="text"
                           placeholder={t('reports.placeholderExpenseNotes')}
-                          value={exp.notes || ''}
+                          value={exp.description || exp.notes || ''}
                           onChange={e => {
                             const updated = [...formData.expenses] as any[];
-                            updated[idx] = { ...updated[idx], notes: e.target.value };
+                            updated[idx] = { ...updated[idx], description: e.target.value, notes: e.target.value };
                             setFormData({ ...formData, expenses: updated });
                           }}
                           className={`${inputClasses} w-full`}

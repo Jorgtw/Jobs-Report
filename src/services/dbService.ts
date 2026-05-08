@@ -1487,9 +1487,17 @@ class DBService {
 
 
   private mapSupabaseReport(r: any): any {
-    // expenses from rapportini_expenses join (array of {type,amount,notes})
-    const expensesList = Array.isArray(r.expenseItems)
-      ? r.expenseItems.map((e: any) => ({ type: e.type || e.category || '', amount: Number(e.amount) || 0, notes: e.notes || '' }))
+    const expensesList = Array.isArray(r.expenses)
+      ? r.expenses.map((e: any) => ({ 
+          id: e.id,
+          type: e.type || '', 
+          amount: Number(e.amount) || 0, 
+          description: e.description || '',
+          notes: e.description || '', // per retrocompatibilità UI finché non l'aggiorniamo
+          km: e.km !== null ? Number(e.km) : undefined,
+          workerId: e.worker_id,
+          createdBy: e.created_by
+        }))
       : [];
     return {
       id: r.id,
@@ -1536,7 +1544,7 @@ class DBService {
     
     const { data, error } = await supabase
       .from('reports')
-      .select(`*, additionalWorkers:rapportini_workers(*)`)
+      .select(`*, additionalWorkers:rapportini_workers(*), expenses:rapportini_expenses(*)`)
       .eq('company_id', compId);
 
     if (error) {
@@ -1555,25 +1563,22 @@ class DBService {
   }
 
   async addReport(report: any) {
-    const totalHours = this.calculateTotalHours(report.startTime, report.endTime, report.breakHours, report.manualTotalHours);
-
-    const additionalWorkers = report.additionalWorkers || [];
-    delete report.additionalWorkers;
-    delete report.expenses;
+    const { additionalWorkers = [], expenses = [], ...reportData } = report;
+    const totalHours = this.calculateTotalHours(reportData.startTime, reportData.endTime, reportData.breakHours, reportData.manualTotalHours);
 
     const newReport: any = {
-      project_id: report.projectId,
-      created_by: report.userId,
-      date: report.date,
-      start_time: this.formatForTime(report.startTime),
-      end_time: this.formatForTime(report.endTime),
-      break_hours: report.breakHours,
+      project_id: reportData.projectId,
+      created_by: reportData.userId,
+      date: reportData.date,
+      start_time: this.formatForTime(reportData.startTime),
+      end_time: this.formatForTime(reportData.endTime),
+      break_hours: reportData.breakHours,
       total_hours: totalHours,
-      manual_total_hours: report.manualTotalHours !== undefined ? report.manualTotalHours : null,
-      description: report.description,
-      "Notes": report.notes,
-      activity_type: report.activityType || 'work',
-      overtime_hours: report.overtimeHours || 0,
+      manual_total_hours: reportData.manualTotalHours !== undefined ? reportData.manualTotalHours : null,
+      description: reportData.description,
+      "Notes": reportData.notes,
+      activity_type: reportData.activityType || 'work',
+      overtime_hours: reportData.overtimeHours || 0,
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
     };
@@ -1583,7 +1588,23 @@ class DBService {
 
     const createdReportId = data[0].id;
 
-    await supabase.from('reports').update({ invoice_status: report.invoiceStatus || 'Pending' }).eq('id', createdReportId);
+    await supabase.from('reports').update({ invoice_status: reportData.invoiceStatus || 'Pending' }).eq('id', createdReportId);
+
+    // Salva le spese
+    if (expenses && expenses.length > 0) {
+      const expensesToAdd = expenses.map((e: any) => ({
+        company_id: this.requireCompanyId(),
+        rapportino_id: createdReportId,
+        worker_id: e.type === 'CANTIERE' ? null : (e.workerId || reportData.userId),
+        created_by: reportData.userId, // Audit tracciabilità
+        type: e.type && ['CANTIERE', 'RIMBORSO', 'KM'].includes(e.type.toUpperCase()) ? e.type.toUpperCase() : 'CANTIERE',
+        description: e.description || e.notes || '',
+        amount: Number(e.amount) || 0,
+        km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null
+      }));
+      const { error: expErr } = await supabase.from('rapportini_expenses').insert(expensesToAdd);
+      if (expErr) { console.error('Error inserting expenses:', expErr); throw expErr; }
+    }
 
     if (additionalWorkers.length > 0) {
       const workersToAdd = additionalWorkers.map((aw: any) => {
@@ -1594,8 +1615,8 @@ class DBService {
         return {
           rapportino_id: createdReportId,
           worker_id: aw.userId,
-          startTime: this.formatForTimestamp(report.date, aw.startTime),
-          endTime: this.formatForTimestamp(report.date, aw.endTime),
+          startTime: this.formatForTimestamp(reportData.date, aw.startTime),
+          endTime: this.formatForTimestamp(reportData.date, aw.endTime),
           breakHours: aw.breakHours,
           hours: hours,
           manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
@@ -1616,7 +1637,7 @@ class DBService {
       }
     }
 
-    return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenseItems: [] });
+    return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenses });
   }
 
   async deleteReports(ids: string[]) {
@@ -1648,24 +1669,22 @@ class DBService {
   }
 
   async updateReport(id: string, updates: any) {
-    const additionalWorkers = updates.additionalWorkers;
-    delete updates.additionalWorkers;
-    delete updates.expenses;
-    updates.totalHours = this.calculateTotalHours(updates.startTime, updates.endTime, updates.breakHours, updates.manualTotalHours);
+    const { additionalWorkers, expenses, ...updatesData } = updates;
+    updatesData.totalHours = this.calculateTotalHours(updatesData.startTime, updatesData.endTime, updatesData.breakHours, updatesData.manualTotalHours);
 
     const sbObj = {
-      project_id: updates.projectId,
-      created_by: updates.userId,
-      date: updates.date,
-      start_time: this.formatForTime(updates.startTime),
-      end_time: this.formatForTime(updates.endTime),
-      break_hours: updates.breakHours,
-      total_hours: updates.totalHours,
-      manual_total_hours: updates.manualTotalHours !== undefined ? updates.manualTotalHours : null,
-      description: updates.description,
-      "Notes": updates.notes,
-      activity_type: updates.activityType || 'work',
-      overtime_hours: updates.overtimeHours || 0
+      project_id: updatesData.projectId,
+      created_by: updatesData.userId,
+      date: updatesData.date,
+      start_time: this.formatForTime(updatesData.startTime),
+      end_time: this.formatForTime(updatesData.endTime),
+      break_hours: updatesData.breakHours,
+      total_hours: updatesData.totalHours,
+      manual_total_hours: updatesData.manualTotalHours !== undefined ? updatesData.manualTotalHours : null,
+      description: updatesData.description,
+      "Notes": updatesData.notes,
+      activity_type: updatesData.activityType || 'work',
+      overtime_hours: updatesData.overtimeHours || 0
     };
 
     const compId = this.requireCompanyId();
@@ -1676,9 +1695,30 @@ class DBService {
     if (error) throw error;
 
     await supabase.from('reports')
-      .update({ invoice_status: updates.invoiceStatus || 'Pending' })
+      .update({ invoice_status: updatesData.invoiceStatus || 'Pending' })
       .eq('id', id)
       .eq('company_id', compId);
+
+    // Aggiorna le spese: la strada più sicura è ricrearle
+    if (expenses !== undefined) {
+      const { error: delExpErr } = await supabase.from('rapportini_expenses').delete().eq('rapportino_id', id);
+      if (delExpErr) { console.error('Error deleting old expenses:', delExpErr); throw delExpErr; }
+
+      if (expenses.length > 0) {
+        const expensesToAdd = expenses.map((e: any) => ({
+          company_id: compId,
+          rapportino_id: id,
+          worker_id: e.type === 'CANTIERE' ? null : (e.workerId || updatesData.userId),
+          created_by: updatesData.userId, // Audit tracciabilità
+          type: e.type && ['CANTIERE', 'RIMBORSO', 'KM'].includes(e.type.toUpperCase()) ? e.type.toUpperCase() : 'CANTIERE',
+          description: e.description || e.notes || '',
+          amount: Number(e.amount) || 0,
+          km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null
+        }));
+        const { error: insExpErr } = await supabase.from('rapportini_expenses').insert(expensesToAdd);
+        if (insExpErr) { console.error('Error inserting new expenses:', insExpErr); throw insExpErr; }
+      }
+    }
 
     if (additionalWorkers !== undefined) {
       const { error: delErr } = await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
@@ -1692,8 +1732,8 @@ class DBService {
           return {
             rapportino_id: id,
             worker_id: aw.userId,
-            startTime: this.formatForTimestamp(updates.date, aw.startTime),
-            endTime: this.formatForTimestamp(updates.date, aw.endTime),
+            startTime: this.formatForTimestamp(updatesData.date, aw.startTime),
+            endTime: this.formatForTimestamp(updatesData.date, aw.endTime),
             breakHours: aw.breakHours,
             hours: hours,
             manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,

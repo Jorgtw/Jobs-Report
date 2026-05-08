@@ -41,7 +41,11 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
     setError('');
     try {
       const user = await db.loginUser('Admin.demo', 'demo123');
-      if (user) onLogin(user);
+      if (user) {
+        onLogin(user);
+      } else {
+        setError(t('auth.demoLoginFailed'));
+      }
     } catch (err) {
       setError(t('auth.demoLoginFailed'));
     } finally {

@@ -81,9 +81,13 @@ export interface Project {
 
 export interface Expense {
   id: string;
-  type: string;
+  type: 'CANTIERE' | 'RIMBORSO' | 'KM' | string; // Lascio 'string' finché la UI non è strict
   amount: number;
-  notes: string;
+  description: string;
+  notes?: string; // Manteniamo provvisoriamente per retrocompatibilità UI
+  km?: number | null;
+  workerId?: string | null;
+  createdBy?: string;
 }
 
 export interface AdditionalWorker {
