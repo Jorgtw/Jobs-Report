@@ -5,6 +5,9 @@ on:
     - cron: '0 3 * * *' # Ogni giorno alle 03:00 UTC
   workflow_dispatch: # Permette l'avvio manuale da GitHub
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -15,13 +18,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install @supabase/supabase-js
+        run: npm ci
 
       - name: Run Cleanup Script
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_URL: "https://gqetgbqlxljhhcaggoke.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/cleanup_reports.mjs
