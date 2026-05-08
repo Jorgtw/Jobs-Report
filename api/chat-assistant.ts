@@ -45,7 +45,8 @@ CONOSCENZA APP:
 - RAPPORTINI: Calcolo ore automatico (-1h pausa). Override manuale cliccando sul totale.
 - PREMIUM: Include Compliance Report (Firme/Foto).
 - COMUNICAZIONI: Nuovo sistema semplificato a due sezioni: INBOX (ricevuti) e INVIATI (mandati). Supporta thread e messaggi a tutto il team.
-- RUOLI: Admin vede KPI finanziari e ditta; Operaio vede i propri lavori.`,
+- SPESE: Gestione professionale in 3 tipi: Cantiere (materiali/noleggi), Rimborso (spese personali operaio), Trasferta (KM). I KM tracciano la distanza.
+- RUOLI: Admin vede KPI finanziari, margini e ditta; Operaio vede i propri lavori e rimborsi.`,
         generationConfig: {
           responseMimeType: "application/json",
         }
