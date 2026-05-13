@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trophy, Heart, MessageSquare, FileCheck, Check, Loader2, Sparkles, Zap } from 'lucide-react';
+import { X, Trophy, MessageSquare, FileCheck, Check, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabase';
 import { db } from '../services/dbService';

@@ -3336,6 +3336,7 @@ const App: React.FC = () => {
   });
   const [initializing, setInitializing] = useState(true);
   const [sessionReady, setSessionReady] = useState(false);
+  const { hasFeature } = useSubscription();
 
   useEffect(() => {
     const handleResize = () => {
