@@ -35,7 +35,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
           .from('plans')
           .select('*')
           .neq('code', 'free') // Don't show free as an upgrade option
-          .order('reports_limit', { ascending: true, nullsFirst: false });
+          .order('sort_order', { ascending: true });
 
         if (error) throw error;
         
