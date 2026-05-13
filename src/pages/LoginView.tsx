@@ -1,12 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Globe, ChevronRight } from 'lucide-react';
-import { db } from './services/dbService';
-import { LanguageContext } from './contexts/LanguageContext';
-import logoImg from './assets/logo.png';
+import { db } from '../services/dbService';
+import { useTranslation } from '../contexts/LanguageContext';
+import logoImg from '../assets/logo.png';
 
 export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
-  const { lang, setLang, t } = useContext(LanguageContext);
+  const { lang, setLang, t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

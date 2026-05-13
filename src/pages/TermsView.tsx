@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Scale, ShieldCheck, Mail, Building2, AlertTriangle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+
 const termsFeatures = [
   {
     icon: <Scale className="text-blue-500" />,
