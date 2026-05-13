@@ -52,6 +52,7 @@ import ProfileView from './pages/ProfileView';
 import ResetPasswordView from './pages/ResetPasswordView';
 import Tooltip from './components/common/Tooltip';
 import { useComplianceReportController } from './hooks/useComplianceReportController';
+import { useSubscription } from './hooks/useSubscription';
 
 // --- Local Components ---
 import PresentationView from './PresentationView';
@@ -198,6 +199,7 @@ const AppLayout: React.FC<{
 }> = ({ user, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { hasFeature } = useSubscription();
 
   // Close mobile menu automatically on route change
   React.useEffect(() => {
@@ -225,7 +227,7 @@ const AppLayout: React.FC<{
           >
             <link.icon className={`w-5 h-5 ${location.pathname === link.path ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
             <span className="truncate">{link.name}</span>
-            {(link as any).premiumOnly && !user.isPremium ? (
+            {(link as any).premiumOnly && !hasFeature('communications') ? (
               <Lock size={12} className="ml-auto text-slate-300" />
             ) : (
               link.path === '/communications' && unreadCount > 0 && (
@@ -2048,6 +2050,7 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
+  const { isLimitReached } = useSubscription();
 
   const [formData, setFormData] = useState({
     projectId: '',
@@ -2066,6 +2069,11 @@ const ReportsView: React.FC<{ user: User }> = ({ user }) => {
   });
 
   const handleNewReport = () => {
+    if (isLimitReached) {
+      setUpgradeFeature('generic');
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     setEditingId(null);
     setFormData({
       projectId: '',
@@ -3650,7 +3658,7 @@ const App: React.FC = () => {
                   <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                   <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
                   <Route path="/projects" element={<ProjectsView user={user} />} />
-                  <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
+                  <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={hasFeature('communications')} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
                   <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView user={user} /> : <Navigate to="/" />} />
                   <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                   <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />

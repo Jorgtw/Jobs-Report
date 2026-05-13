@@ -1,69 +1,194 @@
-import React from 'react';
-import { X, Trophy, Heart, MessageSquare, FileCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Trophy, Heart, MessageSquare, FileCheck, Check, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
+import { supabase } from '../services/supabase';
+import { db } from '../services/dbService';
 
 interface UpgradeModalProps {
   onClose: () => void;
   feature?: 'communications' | 'compliance' | 'generic';
 }
 
+const PLANS = [
+  {
+    code: 'basic',
+    name: 'Basic',
+    price: '249 DKK',
+    period: '/mese',
+    priceId: 'price_1TWcjXQL4s145ccHytvS9mr7',
+    description: 'Ideale per chi vuole report illimitati senza fronzoli.',
+    features: [
+      'Report illimitati',
+      'Firma digitale',
+      'Export PDF ed Excel',
+      'Storage sicuro cloud'
+    ],
+    color: 'blue',
+    buttonClass: 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
+  },
+  {
+    code: 'premium',
+    name: 'Premium',
+    price: '349 DKK',
+    period: '/mese',
+    priceId: 'price_1TWcltQL4s145ccHLebs1hVF',
+    description: 'Il pacchetto completo per la massima efficienza e controllo.',
+    features: [
+      'Tutto quello che c\'è in Basic',
+      'Comunicazioni aziendali',
+      'Compliance avanzata',
+      'Supporto prioritario'
+    ],
+    color: 'emerald',
+    popular: true,
+    buttonClass: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
+  }
+];
+
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = 'generic' }) => {
   const { t } = useTranslation();
+  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+
+  const handleUpgrade = async (priceId: string) => {
+    setLoadingPriceId(priceId);
+    try {
+      const companyId = db.requireCompanyId();
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { 
+          company_id: companyId,
+          price_id: priceId
+        }
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Si è verificato un errore durante l\'apertura del checkout. Riprova più tardi.');
+      setLoadingPriceId(null);
+    }
+  };
 
   const featureConfig = {
     communications: {
       icon: <MessageSquare size={32} />,
       iconBg: 'bg-blue-100 text-blue-600',
       title: t('communications.premiumFeature'),
-      desc: t('communications.internalCommunicationsDesc'),
+      desc: 'Sblocca le comunicazioni interne in tempo reale e tieni traccia dei messaggi aziendali.',
     },
     compliance: {
       icon: <FileCheck size={32} />,
       iconBg: 'bg-emerald-100 text-emerald-600',
-      title: t('communications.upgradeTitle'),
-      desc: t('communications.upgradeDesc'),
+      title: 'Modulo Compliance',
+      desc: 'Garantisci la conformità normativa con report avanzati e controlli di sicurezza automatizzati.',
     },
     generic: {
       icon: <Trophy size={32} />,
       iconBg: 'bg-amber-100 text-amber-600',
-      title: t('communications.upgradeTitle'),
-      desc: t('communications.upgradeDesc'),
+      title: 'Espandi il tuo business',
+      desc: 'Scegli il piano più adatto alle tue esigenze e porta Jobs-Report al livello successivo.',
     },
   };
 
   const cfg = featureConfig[feature];
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center sm:p-4">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 sm:p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-white sm:rounded-3xl p-8 w-full h-full sm:h-auto sm:max-w-lg relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 overflow-y-auto">
-        <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-600 transition-colors">
-          <X size={24} />
-        </button>
+      <div className="bg-slate-50 sm:rounded-[2rem] w-full h-full sm:h-auto sm:max-w-4xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 flex flex-col overflow-hidden">
+        
+        {/* Header */}
+        <div className="p-6 sm:p-8 bg-white border-b border-slate-200 relative">
+          <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-600 transition-colors z-20">
+            <X size={24} />
+          </button>
 
-        <div className="flex flex-col items-center text-center">
-          <div className={`w-20 h-20 ${cfg.iconBg} rounded-2xl flex items-center justify-center mb-6 shadow-inner ring-4 ring-white`}>
-            {cfg.icon}
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+            <div className={`w-16 h-16 ${cfg.iconBg} rounded-2xl flex items-center justify-center mb-4 shadow-sm`}>
+              {cfg.icon}
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 mb-2">{cfg.title}</h2>
+            <p className="text-slate-500 leading-relaxed">{cfg.desc}</p>
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {PLANS.map((plan) => (
+              <div 
+                key={plan.code}
+                className={`relative bg-white rounded-[1.5rem] p-8 border-2 transition-all duration-300 flex flex-col ${
+                  plan.popular ? 'border-emerald-500 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-lg hover:border-slate-200'
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                    <Sparkles size={12} />
+                    Consigliato
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-slate-900 mb-1">{plan.name}</h3>
+                  <p className="text-sm text-slate-500 leading-snug">{plan.description}</p>
+                </div>
+
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-slate-900">{plan.price}</span>
+                    <span className="text-slate-400 font-bold">{plan.period}</span>
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-4 mb-10">
+                  {plan.features.map((f, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        plan.color === 'emerald' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+                      }`}>
+                        <Check size={12} strokeWidth={4} />
+                      </div>
+                      <span className="text-sm font-medium text-slate-600">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  disabled={loadingPriceId !== null}
+                  onClick={() => handleUpgrade(plan.priceId)}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${plan.buttonClass}`}
+                >
+                  {loadingPriceId === plan.priceId ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <>
+                      <Zap size={18} fill="currentColor" />
+                      Attiva Ora
+                    </>
+                  )}
+                </button>
+              </div>
+            ))}
           </div>
 
-          <h2 className="text-2xl font-black text-slate-900 mb-2">{cfg.title}</h2>
-          <p className="text-slate-500 mb-8 leading-relaxed">{cfg.desc}</p>
-
-          <div className="w-full bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center gap-2 mb-8 text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">
-              <Heart fill="currentColor" size={24} />
-            </div>
-            <p className="text-sm font-bold text-slate-700">Per attivare il piano Premium contatta:</p>
-            <a href="mailto:jobsreportadmin@gmail.com" className="text-lg font-black text-blue-600 hover:text-blue-700 transition-colors">
-              jobsreportadmin@gmail.com
-            </a>
-            <div className="mt-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-xs font-bold text-amber-700">Nota: Il sistema di pagamento automatico sarà disponibile a breve.</p>
+          <div className="mt-12 text-center">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+              Pagamenti sicuri tramite Stripe
+            </p>
+            <div className="flex justify-center items-center gap-4 opacity-40 grayscale">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-5" />
             </div>
           </div>
-          
-          <p className="mt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-            JobsReport Premium Edition
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 bg-slate-100 border-t border-slate-200 text-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            JobsReport Professional Edition • Supporto 24/7
           </p>
         </div>
       </div>
