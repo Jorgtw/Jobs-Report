@@ -383,7 +383,9 @@ class DBService {
       id: c.cid,
       name: c.cname,
       role: c.urole,
-      isPremium: !!c.is_premium
+      isPremium: !!c.is_premium,
+      planCode: c.plan_code,
+      subscriptionStatus: c.subscription_status
     })) || [];
 
     // Sync main role and premium status with session context (SSOT)
@@ -411,6 +413,21 @@ class DBService {
         user.role = compContext.role;
         user.isPremium = compContext.isPremium;
         user.companyName = compContext.name;
+      }
+
+      // Pre-fetch detailed subscription status if possible
+      try {
+        const subStatus = await this.getSubscriptionStatus(activeCompId);
+        if (subStatus) {
+           user.subscription = {
+             planCode: subStatus.plan_code,
+             status: subStatus.status,
+             currentPeriodEnd: subStatus.current_period_end
+           };
+           user.isPremium = subStatus.plan_code === 'premium' || subStatus.plan_code === 'basic';
+        }
+      } catch (e) {
+        console.error('Error fetching initial subscription status:', e);
       }
     }
     
@@ -497,7 +514,7 @@ class DBService {
 
   // --- Company Management Methods (SuperAdmin Only) ---
   private mapSupabaseCompany(c: any): any {
-    return {
+    const comp: any = {
       id: c.id,
       name: c.name,
       status: c.status || 'active',
@@ -510,10 +527,76 @@ class DBService {
       country: c.country || '',
       createdAt: new Date(c.created_at).getTime()
     };
+
+    // Handle new subscription model
+    const sub = c.company_subscriptions;
+    if (sub) {
+      // PostgREST might return an array or a single object depending on the join
+      const subData = Array.isArray(sub) ? sub[0] : sub;
+      if (subData) {
+        comp.subscription = {
+          planCode: subData.plan_code,
+          status: subData.status,
+          currentPeriodEnd: subData.current_period_end
+        };
+        // Update isPremium based on the new source of truth
+        comp.isPremium = subData.plan_code === 'pro' && (subData.status === 'active' || subData.status === 'trialing');
+      }
+    }
+
+    return comp;
+  }
+
+  async canUseFeature(feature: string): Promise<boolean> {
+    const compId = this.currentCompanyId;
+    if (!compId) return false;
+    if (this.isSuperAdminRole) return true;
+
+    const { data, error } = await supabase.rpc('can_use_feature', {
+        p_company_id: compId,
+        p_feature: feature
+    });
+
+    if (error) {
+        console.error('Error checking feature access:', error);
+        return false;
+    }
+    return !!data;
+  }
+
+  async getSubscriptionStatus(companyId?: string): Promise<any> {
+    const cid = companyId || this.currentCompanyId;
+    if (!cid) return null;
+
+    // V2: Read from the access control view
+    const { data: viewData, error: viewError } = await supabase
+      .from('vw_access_control')
+      .select('*')
+      .eq('company_id', cid)
+      .maybeSingle();
+
+    if (viewError) {
+      console.error('Error fetching subscription status:', viewError);
+      throw viewError;
+    }
+    if (!viewData) return null;
+
+    // Map to the format expected by the rest of the codebase
+    return {
+      plan_code: viewData.plan_code,
+      status: viewData.billing_status,
+      current_period_end: viewData.current_period_end,
+      reports_count: viewData.current_usage,
+      reports_limit: viewData.reports_limit,
+    };
   }
 
   async getCompanyDetails(companyId: string): Promise<any> {
-    const { data, error } = await supabase.from('companies').select('*').eq('id', companyId).single();
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*, company_subscriptions(*)')
+      .eq('id', companyId)
+      .maybeSingle();
     if (error || !data) return null;
     return this.mapSupabaseCompany(data);
   }
@@ -542,7 +625,10 @@ class DBService {
   }
 
   async getAllCompanies() {
-    const { data: companies, error } = await supabase.from('companies').select('*');
+    const { data: companies, error } = await supabase
+      .from('companies')
+      .select('*, company_subscriptions(*)')
+      .order('name');
     if (error) {
       console.error('Error fetching companies:', error);
       return [];
@@ -864,14 +950,14 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username || '',
-      // SSOT: Use current session company if possible
-      companyId: this.currentCompanyId || null,
+      companyId: this.currentCompanyId || w.company_id || null,
       authId: w.auth_id || null,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
       extraCost: Number(w.extra_cost) || 0,
       isInternal: true,
+      // Legacy isPremium mapping - we should move away from this
       isPremium: isPremium ?? !!w.is_premium,
       companyName: companyName || '',
       address: w.address || w.billing_address || w.billingAddress || w.home_address || '',

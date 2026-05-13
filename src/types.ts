@@ -1,10 +1,17 @@
 export type Role = 'admin' | 'operator' | 'supervisor' | 'superadmin';
 export type UserStatus = 'active' | 'inactive';
 
+export interface Subscription {
+  planCode: string;
+  status: string;
+  currentPeriodEnd?: string;
+}
+
 export interface Company {
   id: string;
   name: string;
   status: 'active' | 'inactive';
+  subscription?: Subscription;
   is_premium?: boolean;
   createdAt: number;
 }
