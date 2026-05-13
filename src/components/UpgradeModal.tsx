@@ -32,7 +32,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
     const fetchPlans = async () => {
       try {
         const { data, error } = await supabase
-          .from('plans')
+          .from('vw_plans_catalog')
           .select('*')
           .neq('code', 'free') // Don't show free as an upgrade option
           .order('sort_order', { ascending: true });
