@@ -1,53 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Trophy, Heart, MessageSquare, FileCheck, Check, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabase';
 import { db } from '../services/dbService';
+import { useSubscription } from '../hooks/useSubscription';
 
 interface UpgradeModalProps {
   onClose: () => void;
   feature?: 'communications' | 'compliance' | 'generic';
 }
 
-const PLANS = [
-  {
-    code: 'basic',
-    name: 'Basic',
-    price: '249 DKK',
-    period: '/mese',
-    priceId: 'price_1TWcjXQL4s145ccHytvS9mr7',
-    description: 'Ideale per chi vuole report illimitati senza fronzoli.',
-    features: [
-      'Report illimitati',
-      'Firma digitale',
-      'Export PDF ed Excel',
-      'Storage sicuro cloud'
-    ],
-    color: 'blue',
-    buttonClass: 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
-  },
-  {
-    code: 'premium',
-    name: 'Premium',
-    price: '349 DKK',
-    period: '/mese',
-    priceId: 'price_1TWcltQL4s145ccHLebs1hVF',
-    description: 'Il pacchetto completo per la massima efficienza e controllo.',
-    features: [
-      'Tutto quello che c\'è in Basic',
-      'Comunicazioni aziendali',
-      'Compliance avanzata',
-      'Supporto prioritario'
-    ],
-    color: 'emerald',
-    popular: true,
-    buttonClass: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
-  }
-];
+interface PlanData {
+  code: string;
+  name: string;
+  price_label: string;
+  stripe_price_id: string;
+  description: string;
+  features_list: string[];
+  color_theme: string;
+  is_popular: boolean;
+}
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = 'generic' }) => {
   const { t } = useTranslation();
+  const { status } = useSubscription();
+  const [plans, setPlans] = useState<PlanData[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('plans')
+          .select('*')
+          .neq('code', 'free') // Don't show free as an upgrade option
+          .order('reports_limit', { ascending: true, nullsFirst: false });
+
+        if (error) throw error;
+        
+        // Filter out current plan if applicable
+        const currentCode = status?.planCode || 'free';
+        const filtered = (data || []).filter(p => p.code !== currentCode);
+        
+        setPlans(filtered);
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+
+    fetchPlans();
+  }, [status?.planCode]);
 
   const handleUpgrade = async (priceId: string) => {
     setLoadingPriceId(priceId);
@@ -95,6 +100,24 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
 
   const cfg = featureConfig[feature];
 
+  const getButtonClass = (color: string) => {
+    switch (color) {
+      case 'emerald': return 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200';
+      case 'blue': return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200';
+      case 'purple': return 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-200';
+      default: return 'bg-slate-800 hover:bg-slate-900 text-white';
+    }
+  };
+
+  const getIconColorClass = (color: string) => {
+    switch (color) {
+      case 'emerald': return 'bg-emerald-100 text-emerald-600';
+      case 'blue': return 'bg-blue-100 text-blue-600';
+      case 'purple': return 'bg-purple-100 text-purple-600';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 sm:p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose}></div>
@@ -117,63 +140,68 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
 
         {/* Pricing Cards */}
         <div className="flex-1 overflow-y-auto p-6 sm:p-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {PLANS.map((plan) => (
-              <div 
-                key={plan.code}
-                className={`relative bg-white rounded-[1.5rem] p-8 border-2 transition-all duration-300 flex flex-col ${
-                  plan.popular ? 'border-emerald-500 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-lg hover:border-slate-200'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                    <Sparkles size={12} />
-                    Consigliato
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <h3 className="text-xl font-black text-slate-900 mb-1">{plan.name}</h3>
-                  <p className="text-sm text-slate-500 leading-snug">{plan.description}</p>
-                </div>
-
-                <div className="mb-8">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-slate-900">{plan.price}</span>
-                    <span className="text-slate-400 font-bold">{plan.period}</span>
-                  </div>
-                </div>
-
-                <div className="flex-1 space-y-4 mb-10">
-                  {plan.features.map((f, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        plan.color === 'emerald' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
-                      }`}>
-                        <Check size={12} strokeWidth={4} />
-                      </div>
-                      <span className="text-sm font-medium text-slate-600">{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  disabled={loadingPriceId !== null}
-                  onClick={() => handleUpgrade(plan.priceId)}
-                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${plan.buttonClass}`}
+          {loadingPlans ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="animate-spin text-blue-600" size={40} />
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Caricamento piani...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {plans.map((plan) => (
+                <div 
+                  key={plan.code}
+                  className={`relative bg-white rounded-[1.5rem] p-8 border-2 transition-all duration-300 flex flex-col ${
+                    plan.is_popular ? 'border-emerald-500 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-lg hover:border-slate-200'
+                  }`}
                 >
-                  {loadingPriceId === plan.priceId ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <>
-                      <Zap size={18} fill="currentColor" />
-                      Attiva Ora
-                    </>
+                  {plan.is_popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                      <Sparkles size={12} />
+                      Consigliato
+                    </div>
                   )}
-                </button>
-              </div>
-            ))}
-          </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-xl font-black text-slate-900 mb-1">{plan.name}</h3>
+                    <p className="text-sm text-slate-500 leading-snug">{plan.description}</p>
+                  </div>
+
+                  <div className="mb-8">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-black text-slate-900">{plan.price_label}</span>
+                      <span className="text-slate-400 font-bold">/mese</span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 space-y-4 mb-10">
+                    {(plan.features_list || []).map((f, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${getIconColorClass(plan.color_theme)}`}>
+                          <Check size={12} strokeWidth={4} />
+                        </div>
+                        <span className="text-sm font-medium text-slate-600">{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    disabled={loadingPriceId !== null}
+                    onClick={() => handleUpgrade(plan.stripe_price_id)}
+                    className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${getButtonClass(plan.color_theme)}`}
+                  >
+                    {loadingPriceId === plan.stripe_price_id ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <>
+                        <Zap size={18} fill="currentColor" />
+                        Attiva Ora
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-12 text-center">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
