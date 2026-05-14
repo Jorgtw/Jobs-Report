@@ -427,6 +427,7 @@ class DBService {
     country?: string;
     vatNumber?: string;
     isPremium?: boolean;
+    sendEmail?: boolean;
   }) {
     const { 
       companyName, 
@@ -439,7 +440,8 @@ class DBService {
       city, 
       country, 
       vatNumber, 
-      isPremium 
+      isPremium,
+      sendEmail = true
     } = data;
 
     // 1. Check if username already exists globally
@@ -501,7 +503,7 @@ class DBService {
     const userData = apiData.data;
 
     // 4. Send Welcome Email with credentials
-    if (email && password) {
+    if (sendEmail && email && password) {
        try {
          await fetch('/api/sendEmail', {
            method: 'POST',

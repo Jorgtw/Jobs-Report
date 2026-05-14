@@ -32,6 +32,7 @@ const CompaniesView: React.FC = () => {
     phone: '',
     email: '',
     vatNumber: '',
+    sendWelcomeEmail: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -91,7 +92,10 @@ const CompaniesView: React.FC = () => {
           vatNumber: formData.vatNumber,
         });
       } else {
-        await db.registerCompany(formData);
+        await db.registerCompany({
+          ...formData,
+          sendEmail: formData.sendWelcomeEmail
+        });
       }
       setIsModalOpen(false);
       loadCompanies();
@@ -104,7 +108,7 @@ const CompaniesView: React.FC = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '' });
+    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '', sendWelcomeEmail: true });
     setIsModalOpen(true);
   };
 
@@ -123,6 +127,8 @@ const CompaniesView: React.FC = () => {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyName')}</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyEmail')}</th>
+                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.phone')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.premium')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyStatus')}</th>
                 <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('common.actions')}</th>
@@ -132,6 +138,8 @@ const CompaniesView: React.FC = () => {
               {companies.map(c => (
                 <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
+                  <td className="px-5 py-4 text-slate-500">{c.email || '-'}</td>
+                  <td className="px-5 py-4 text-slate-500">{c.phone || '-'}</td>
                   <td className="px-5 py-4">
                     <button
                       onClick={() => handleTogglePremium(c.id, !!c.isPremium)}
@@ -234,20 +242,38 @@ const CompaniesView: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                  <div>
-                    <p className="text-sm font-bold text-blue-800">{t('dashboard.premiumPlan')}</p>
-                    <p className="text-xs text-blue-600">Attiva subito le funzionalità premium per questa ditta.</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                    <div>
+                      <p className="text-sm font-bold text-blue-800">{t('dashboard.premiumPlan')}</p>
+                      <p className="text-xs text-blue-600">Attiva subito le funzionalità premium per questa ditta.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-blue-500' : 'bg-slate-300'
+                        }`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
+                        }`} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-blue-500' : 'bg-slate-300'
-                      }`}
-                  >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                      }`} />
-                  </button>
+
+                  <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                    <div>
+                      <p className="text-sm font-bold text-emerald-800">Invia Credenziali via Email</p>
+                      <p className="text-xs text-emerald-600">Invia automaticamente username e password all'indirizzo email della ditta.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail })}
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.sendWelcomeEmail ? 'bg-emerald-500' : 'bg-slate-300'
+                        }`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.sendWelcomeEmail ? 'translate-x-8' : 'translate-x-1'
+                        }`} />
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
