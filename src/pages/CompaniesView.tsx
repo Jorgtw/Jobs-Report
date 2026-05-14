@@ -91,7 +91,7 @@ const CompaniesView: React.FC = () => {
           vatNumber: formData.vatNumber,
         });
       } else {
-        await db.registerCompany(formData.companyName, formData.adminName, formData.username, formData.password);
+        await db.registerCompany(formData);
       }
       setIsModalOpen(false);
       loadCompanies();
@@ -192,47 +192,63 @@ const CompaniesView: React.FC = () => {
                   <input type="text" required={!editingId} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className={inputClasses} placeholder={t('dashboard.tempPasswordPlaceholder')} />
                 </FullWidthField>
               </div>
-              {editingId && (
-                <>
-                  <div className="pt-2 border-t">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">📋 {t('dashboard.corporateData')}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FullWidthField label={t('dashboard.address')}>
-                        <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderAddress')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.city')}>
-                        <input type="text" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderCity')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.country')}>
-                        <input type="text" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClasses} placeholder={t('dashboard.italy')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.phone')}>
-                        <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} placeholder={t('auth.phonePlaceholder')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.companyEmail')}>
-                        <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderEmail')} />
-                      </FullWidthField>
-                      <FullWidthField label={t('dashboard.vatNumber')}>
-                        <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderVat')} />
-                      </FullWidthField>
-                    </div>
+
+              <div className="pt-2 border-t">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">📋 {t('dashboard.corporateData')}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FullWidthField label={t('dashboard.address')}>
+                    <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderAddress')} />
+                  </FullWidthField>
+                  <FullWidthField label={t('dashboard.city')}>
+                    <input type="text" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderCity')} />
+                  </FullWidthField>
+                  <FullWidthField label={t('dashboard.country')}>
+                    <input type="text" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClasses} placeholder={t('dashboard.italy')} />
+                  </FullWidthField>
+                  <FullWidthField label={t('dashboard.phone')}>
+                    <input type="text" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputClasses} placeholder={t('auth.phonePlaceholder')} />
+                  </FullWidthField>
+                  <FullWidthField label={t('dashboard.companyEmail')}>
+                    <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderEmail')} />
+                  </FullWidthField>
+                  <FullWidthField label={t('dashboard.vatNumber')}>
+                    <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderVat')} />
+                  </FullWidthField>
+                </div>
+              </div>
+
+              {editingId ? (
+                <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div>
+                    <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
+                    <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <div>
-                      <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
-                      <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
-                        }`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                        }`} />
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
+                      }`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
+                      }`} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                  <div>
+                    <p className="text-sm font-bold text-blue-800">{t('dashboard.premiumPlan')}</p>
+                    <p className="text-xs text-blue-600">Attiva subito le funzionalità premium per questa ditta.</p>
                   </div>
-                </>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-blue-500' : 'bg-slate-300'
+                      }`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
+                      }`} />
+                  </button>
+                </div>
               )}
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>

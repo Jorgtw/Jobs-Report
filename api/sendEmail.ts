@@ -5,56 +5,77 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Metodo non consentito' });
   }
 
-  const { companyName, contactName, email, phone, notes } = req.body;
+  const { type = 'registration', companyName, contactName, adminName, email, phone, notes, username, password } = req.body;
   
-  console.log(`[REGISTRAZIONE] Nuova richiesta ricevuta: ${companyName} - ${email}`);
+  const adminEmailRecipient = process.env.ADMIN_EMAIL || 'jobsreportadmin@gmail.com';
+  const resendApiKey = process.env.RESEND_API_KEY || '';
 
-  // 1. SALVATAGGIO SEMPRE SU DATABASE
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+  let subject = '';
+  let textBody = '';
+  let to = [adminEmailRecipient];
 
-  if (supabaseUrl && supabaseKey) {
-    try {
-      const supabaseAdmin = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
-      const { error: dbError } = await supabaseAdmin.from('registration_requests').insert([{
-        company_name: companyName,
-        contact_name: contactName,
-        email: email,
-        phone: phone,
-        notes: notes,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      }]);
-      
-      if (dbError) {
-        console.warn(`[REGISTRAZIONE] DB warning (registration_requests potrebbe non esistere): ${dbError.message}`);
-      } else {
-        console.log(`[REGISTRAZIONE] Salvataggio su database confermato.`);
+  if (type === 'registration') {
+    console.log(`[REGISTRAZIONE] Nuova richiesta ricevuta: ${companyName} - ${email}`);
+    
+    // Save to DB
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (supabaseUrl && supabaseKey) {
+      try {
+        const supabaseAdmin = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+        await supabaseAdmin.from('registration_requests').insert([{
+          company_name: companyName,
+          contact_name: contactName,
+          email: email,
+          phone: phone,
+          notes: notes,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        }]);
+      } catch (e: any) {
+        console.error(`[REGISTRAZIONE] Errore DB: ${e.message}`);
       }
-    } catch (e: any) {
-      console.error(`[REGISTRAZIONE] Errore critico DB: ${e.message}`);
     }
-  } else {
-    console.warn(`[REGISTRAZIONE] Credenziali DB mancanti. Salvataggio ignorato.`);
+
+    subject = `[JobsReport] Nuova registrazione: ${companyName || 'N/D'}`;
+    textBody = [
+      'Nuova richiesta di registrazione su JobsReport.',
+      '',
+      `Nome azienda:  ${companyName || 'N/D'}`,
+      `Referente:     ${contactName || 'N/D'}`,
+      `Email:         ${email || 'N/D'}`,
+      `Telefono:      ${phone || 'N/D'}`,
+      `Note:          ${notes || 'N/D'}`,
+      '',
+      '---',
+      'Messaggio automatico da JobsReport'
+    ].join('\n');
+  } else if (type === 'welcome') {
+    console.log(`[WELCOME] Invio credenziali a: ${email}`);
+    
+    subject = `Benvenuto su JobsReport - Credenziali per ${companyName}`;
+    to = [email]; // Send to the new admin
+    
+    textBody = [
+      `Ciao ${adminName || 'Amministratore'},`,
+      '',
+      `Benvenuto su JobsReport! La tua azienda "${companyName}" è stata registrata con successo.`,
+      '',
+      'Ecco le tue credenziali di accesso:',
+      `URL:        https://jobs-report.vercel.app`,
+      `Username:   ${username}`,
+      `Password:   ${password}`,
+      '',
+      'Ti consigliamo di cambiare la password al primo accesso.',
+      '',
+      'Buon lavoro,',
+      'Il team di JobsReport',
+      '',
+      '---',
+      'Messaggio automatico da JobsReport'
+    ].join('\n');
   }
-
-  // 2. INVIO EMAIL (NON BLOCCANTE)
-  // NOTA: Con Resend in piano free, puoi inviare SOLO all'email dell'account Resend
-  // oppure a domini verificati. Usa ADMIN_EMAIL nelle env vars di Vercel.
-  const adminEmail = process.env.ADMIN_EMAIL || 'jobsreportadmin@gmail.com';
-
-  const textBody = [
-    'Nuova richiesta di registrazione su JobsReport.',
-    '',
-    `Nome azienda:  ${companyName || 'N/D'}`,
-    `Referente:     ${contactName || 'N/D'}`,
-    `Email:         ${email || 'N/D'}`,
-    `Telefono:      ${phone || 'N/D'}`,
-    `Note:          ${notes || 'N/D'}`,
-    '',
-    '---',
-    'Messaggio automatico da JobsReport'
-  ].join('\n');
 
   let emailSent = false;
   try {
@@ -62,31 +83,29 @@ export default async function handler(req: any, res: any) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY || ''}`,
+        'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
         from: 'JobsReport <onboarding@resend.dev>',
-        to: [adminEmail],
-        subject: `[JobsReport] Nuova registrazione: ${companyName || 'N/D'}`,
+        to: to,
+        subject: subject,
         text: textBody,
       }),
     });
 
-    const responseText = await response.text();
     if (response.ok) {
       emailSent = true;
-      console.log(`[REGISTRAZIONE] Email inviata a ${adminEmail} con successo.`);
     } else {
-      console.error(`[REGISTRAZIONE] Resend error ${response.status}: ${responseText}`);
+      const errorText = await response.text();
+      console.error(`[EMAIL] Resend error: ${errorText}`);
     }
   } catch (emailError: any) {
-    console.error(`[REGISTRAZIONE] Network exception email: ${emailError.message}`);
+    console.error(`[EMAIL] Network exception: ${emailError.message}`);
   }
 
-  // 3. RISPONDE SEMPRE CON SUCCESSO (la registrazione è salvata, email è opzionale)
   return res.status(200).json({ 
     success: true, 
-    message: 'Richiesta ricevuta ed elaborata',
     email_sent: emailSent
   });
 }
+

@@ -415,23 +415,60 @@ class DBService {
     return user;
   }
 
-  async registerCompany(companyName: string, adminName: string, adminUsername: string, adminPassword: string) {
+  async registerCompany(data: {
+    companyName: string;
+    adminName: string;
+    username: string;
+    password?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    vatNumber?: string;
+    isPremium?: boolean;
+  }) {
+    const { 
+      companyName, 
+      adminName, 
+      username, 
+      password, 
+      email, 
+      phone, 
+      address, 
+      city, 
+      country, 
+      vatNumber, 
+      isPremium 
+    } = data;
+
     // 1. Check if username already exists globally
     const { data: existingUser, error: checkErr } = await supabase
       .from('workers')
       .select('id')
-      .eq('username', adminUsername)
+      .eq('username', username)
       .maybeSingle();
 
     if (checkErr) throw checkErr;
     if (existingUser) {
-      throw new Error(`L'username '${adminUsername}' è già in uso. Scegline un altro.`);
+      throw new Error(`L'username '${username}' è già in uso. Scegline un altro.`);
     }
 
     // 2. Create company
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
-      .insert([{ name: companyName, status: 'active' }])
+      .insert([{ 
+        name: companyName, 
+        status: 'active',
+        email: email || null,
+        phone: phone || null,
+        address: address || null,
+        city: city || null,
+        country: country || null,
+        vat_number: vatNumber || null,
+        is_premium: !!isPremium,
+        premium_since: isPremium ? new Date().toISOString() : null
+      }])
       .select();
     if (companyError) throw companyError;
     const newCompanyId = companyData[0].id;
@@ -448,9 +485,10 @@ class DBService {
          action: 'create',
          updates: {
            name: adminName,
-           username: adminUsername,
-           password: adminPassword,
-           email: `${adminUsername.toLowerCase()}@jobsreport.it`, // Placeholder email for Auth
+           username: username,
+           password: password,
+           email: email || `${username.toLowerCase()}@jobsreport.it`, // Use real email if provided
+           phone: phone || null,
            role: 'admin',
            status: 'active',
            companyId: newCompanyId
@@ -462,7 +500,27 @@ class DBService {
     if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
     const userData = apiData.data;
 
-    // 4. Create an internal client and project for absences and internal notes
+    // 4. Send Welcome Email with credentials
+    if (email && password) {
+       try {
+         await fetch('/api/sendEmail', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             type: 'welcome',
+             companyName,
+             adminName,
+             username,
+             password,
+             email
+           })
+         });
+       } catch (emailErr) {
+         console.error('DBService: Failed to send welcome email:', emailErr);
+       }
+    }
+
+    // 5. Create an internal client and project for absences and internal notes
     const internalClientName = `${companyName} - Uso Interno`;
     const { data: clientData, error: clientError } = await supabase
       .from('clients')
