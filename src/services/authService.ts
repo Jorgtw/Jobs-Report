@@ -15,8 +15,8 @@ export const authService = {
     if (user.role === 'superadmin') return true;
 
     // Logica Admin / Supervisor
-    const isAdmin = user.role === 'admin';
-    const isSupervisor = user.role === 'supervisor';
+    const isAdmin = user.role?.toLowerCase() === 'admin';
+    const isSupervisor = user.role?.toLowerCase() === 'supervisor';
 
     switch (resource) {
       case 'reports':
@@ -79,7 +79,8 @@ export const authService = {
 
   isOperator(user: User | null): boolean {
     if (!user) return false;
-    if (user.role === 'superadmin') return false;
-    return user.role !== 'admin' && user.role !== 'supervisor';
+    const role = user.role?.toLowerCase();
+    if (role === 'superadmin') return false;
+    return role !== 'admin' && role !== 'supervisor';
   }
 };

@@ -23,6 +23,7 @@ export const useSubscription = (manualCompanyId?: string | null) => {
     // 1. Get company context: manual override or current DB state
     const companyId = manualCompanyId || db.getCompanyIdSafe();
     
+    // CRITICAL: Dormant state if no context. No query should ever be emitted.
     if (!companyId) {
       setLoading(false);
       setStatus(null);
@@ -74,8 +75,16 @@ export const useSubscription = (manualCompanyId?: string | null) => {
   }, [manualCompanyId]);
 
   useEffect(() => {
-    refreshStatus();
-  }, [refreshStatus, manualCompanyId]);
+    const companyId = manualCompanyId || db.getCompanyIdSafe();
+    
+    // GATING: Only trigger fetch if context is actually resolved.
+    if (companyId) {
+      refreshStatus();
+    } else {
+      setLoading(false);
+      setStatus(null);
+    }
+  }, [refreshStatus, manualCompanyId, db.getCompanyIdSafe()]);
 
   /**
    * Universal feature check. Derives answer from the correct source:

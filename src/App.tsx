@@ -320,7 +320,7 @@ const AppLayout: React.FC<{
         <div className="px-4 py-2 mb-2 bg-slate-50 rounded-xl opacity-60">
           <div className="flex items-center justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest">
             <span>JobsReport Engine</span>
-            <span className="text-blue-500">Build 82a70b5+</span>
+            <span className="text-blue-500">Build 82a70b5+ (AuthFix v3)</span>
           </div>
         </div>
         <button onClick={onLogout} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
@@ -429,96 +429,67 @@ const App: React.FC = () => {
   const { t } = useTranslation();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile] = useState(window.innerWidth < 768);
   const [isCommsUpgradeOpen, setIsCommsUpgradeOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
-  const [initializing, setInitializing] = useState(true);
-  const [sessionReady, setSessionReady] = useState(false);
-  const { hasFeature } = useSubscription(user?.companyId);
+  // --- App Bootstrap State Machine ---
+  type BootstrapStatus = 'initializing' | 'resolving_context' | 'ready' | 'unauthenticated' | 'error';
+  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('initializing');
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) setShowOnboarding(false);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    const h = window.location.hash;
-    if (h.includes('type=recovery') || (h.includes('access_token=') && h.includes('recovery'))) {
-      sessionStorage.setItem('recovery_pending', 'true');
-    }
-    const isRecoveryPending = sessionStorage.getItem('recovery_pending') === 'true';
-
-    const initAuth = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        // Se non c'è sessione, proviamo a vedere se è un problema temporaneo di inizializzazione
-        console.warn('DBService: No active session found in client. Retrying session fetch...');
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const { data: { session: retrySession } } = await supabase.auth.getSession();
-        if (!retrySession) {
-          setSessionReady(true);
-          setInitializing(false);
+    const bootstrap = async () => {
+      try {
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        
+        if (authError || !session) {
+          setBootstrapStatus('unauthenticated');
           return;
         }
-      }
-      if (session?.user) {
-        try {
-          const userData = await db.getUserByAuthId(session.user.id);
-          if (userData) {
-            const activeCompId = userData.companyId || userData.availableCompanies?.[0]?.id;
-            if (activeCompId) db.setCompanyId(activeCompId);
-            db.setUserId(userData.id);
-            localStorage.setItem('ws_auth', JSON.stringify(userData));
-            setUser(userData);
-            if (isRecoveryPending) {
-              sessionStorage.removeItem('recovery_pending');
-              window.location.hash = '#/reset-password';
-            }
-          }
-        } catch (err) {
-          // Auth initialization error
+
+        setBootstrapStatus('resolving_context');
+        
+        // Resolve worker data and company context (SSOT)
+        const userData = await db.getUserByAuthId(session.user.id);
+        
+        if (!userData) {
+          setBootstrapStatus('unauthenticated');
+          return;
         }
-      }
-      setSessionReady(true);
-      setInitializing(false);
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && sessionStorage.getItem('recovery_pending') === 'true')) {
-          if (session?.user) {
-            const userData = await db.getUserByAuthId(session.user.id);
-            if (userData) {
-              const activeCompId = userData.companyId || userData.availableCompanies?.[0]?.id;
-              if (activeCompId) db.setCompanyId(activeCompId);
-              db.setUserId(userData.id);
-              localStorage.setItem('ws_auth', JSON.stringify(userData));
-              setUser(userData);
-              sessionStorage.removeItem('recovery_pending');
-              window.location.hash = '#/reset-password';
-            }
-          }
-        } else if (event === 'SIGNED_IN' && !user) {
-          if (session?.user) {
-            const userData = await db.getUserByAuthId(session.user.id);
-            if (userData) {
-              const activeCompId = userData.companyId || userData.availableCompanies?.[0]?.id;
-              if (activeCompId) db.setCompanyId(activeCompId);
-              db.setUserId(userData.id);
-              localStorage.setItem('ws_auth', JSON.stringify(userData));
-              setUser(userData);
-            }
-          }
+
+        // Apply context to services
+        const activeCompId = userData.companyId || (userData.availableCompanies?.length ? userData.availableCompanies[0].id : null);
+        
+        if (activeCompId) {
+          db.setCompanyId(activeCompId);
+          db.setUserId(userData.id);
+          setUser(userData);
+          setBootstrapStatus('ready');
+        } else {
+          setBootstrapStatus('unauthenticated');
         }
-      });
-      setInitializing(false);
-      return () => subscription.unsubscribe();
+
+      } catch (err) {
+        console.error('Bootstrap critical failure:', err);
+        setBootstrapStatus('error');
+      }
     };
-    initAuth();
+
+    bootstrap();
+
+    // Listen for auth changes to re-trigger bootstrap if needed
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_IN') {
+        bootstrap();
+      } else if (event === 'SIGNED_OUT') {
+        setBootstrapStatus('unauthenticated');
+        setUser(null);
+        db.setCompanyId(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -561,7 +532,9 @@ const App: React.FC = () => {
 
   const [unreadCount, setUnreadCount] = useState(0);
   useEffect(() => {
-    if (!user) return;
+    const compId = db.getCompanyIdSafe();
+    if (!user || !compId) return;
+    
     const updateUnread = async () => {
       try {
         const count = await db.getUnreadCount();
@@ -573,7 +546,7 @@ const App: React.FC = () => {
     updateUnread();
     window.addEventListener('refresh-unread-count', updateUnread);
     return () => window.removeEventListener('refresh-unread-count', updateUnread);
-  }, [user?.id, user?.companyId]);
+  }, [user?.id, db.getCompanyIdSafe()]);
 
   const handleLogin = (u: User) => {
     if (u.availableCompanies && u.availableCompanies.length > 0) db.setCompanyId(u.availableCompanies[0].id);
@@ -627,15 +600,17 @@ const App: React.FC = () => {
     window.location.hash = '/personnel';
   };
 
-  if (initializing || !sessionReady) {
+
+
+  // --- Mount Gate ---
+  if (bootstrapStatus === 'initializing' || bootstrapStatus === 'resolving_context') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="space-y-1">
-            <p className="text-slate-900 font-extrabold text-lg tracking-tight">Jobs<span className="text-blue-600">Report</span></p>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">Verifica sessione in corso...</p>
-          </div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+            {bootstrapStatus === 'initializing' ? 'Verifica sessione...' : 'Caricamento contesto...'}
+          </p>
         </div>
       </div>
     );
@@ -643,14 +618,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <React.Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">Caricamento...</p>
-          </div>
-        </div>
-      }>
+      <React.Suspense fallback={null}>
         <Routes>
           <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
           <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
@@ -661,7 +629,7 @@ const App: React.FC = () => {
           <Route
             path="/*"
             element={
-              !user ? (
+              bootstrapStatus !== 'ready' || !user ? (
                 <Navigate to="/" replace />
               ) : (
                 <AppLayout
@@ -690,7 +658,7 @@ const App: React.FC = () => {
                     <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                     <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
                     <Route path="/projects" element={<ProjectsView user={user} />} />
-                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={hasFeature('communications')} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
+                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
                     <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />

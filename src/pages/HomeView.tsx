@@ -28,32 +28,41 @@ const CompactDashboard: React.FC = () => {
 
   useEffect(() => {
     const loadStats = async () => {
-      const [summary, allProjects] = await Promise.all([
-        db.getSummary(),
-        db.getProjects()
-      ]);
+      const compId = db.getCompanyIdSafe();
+      if (!compId) return;
+      
+      setLoading(true);
+      try {
+        const [summary, allProjects] = await Promise.all([
+          db.getSummary(),
+          db.getProjects()
+        ]);
 
-      const activeProjectsCount = allProjects.filter((p: any) => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
-      const pendingData = summary.filter((s: any) => (s.invoiceStatus || 'Pending') === 'Pending');
+        const activeProjectsCount = allProjects.filter((p: any) => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
+        const pendingData = summary.filter((s: any) => (s.invoiceStatus || 'Pending') === 'Pending');
 
-      const pendingReports = new Set(pendingData.map((s: any) => s.id.split('_')[0])).size;
-      const pendingHours = pendingData.reduce((acc: number, s: any) => acc + (s.totalHours || 0), 0);
-      const pendingExpenses = pendingData.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
-      const pendingToInvoice = pendingData.reduce((acc: number, s: any) => acc + (s.revenue || 0), 0);
-      const pendingMargin = pendingToInvoice - pendingExpenses;
+        const pendingReports = new Set(pendingData.map((s: any) => s.id.split('_')[0])).size;
+        const pendingHours = pendingData.reduce((acc: number, s: any) => acc + (s.totalHours || 0), 0);
+        const pendingExpenses = pendingData.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
+        const pendingToInvoice = pendingData.reduce((acc: number, s: any) => acc + (s.revenue || 0), 0);
+        const pendingMargin = pendingToInvoice - pendingExpenses;
 
-      setStats({
-        activeProjects: activeProjectsCount,
-        pendingReports,
-        pendingHours,
-        pendingExpenses,
-        pendingToInvoice,
-        pendingMargin
-      });
-      setLoading(false);
+        setStats({
+          activeProjects: activeProjectsCount,
+          pendingReports,
+          pendingHours,
+          pendingExpenses,
+          pendingToInvoice,
+          pendingMargin
+        });
+      } catch (err) {
+        console.error("Error loading stats:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     loadStats();
-  }, []);
+  }, [db.getCompanyIdSafe()]);
 
   const SmallStat = ({ label, value, to, valueColor = "text-slate-900", isLoading }: { label: string, value: string | number, to: string, valueColor?: string, isLoading?: boolean }) => (
     <Link to={to} className="flex flex-col py-1 px-2 hover:bg-slate-50 rounded transition-colors overflow-hidden">

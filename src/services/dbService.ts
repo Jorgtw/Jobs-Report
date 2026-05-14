@@ -1020,7 +1020,7 @@ class DBService {
 
   async getClients() {
     await this.checkAuthSession();
-    const compId = this.getCompanyIdSafe();
+    const compId = this.requireCompanyId();
     
     if (!compId && !this.isSuperAdminRole) {
       console.warn('DBService: getClients called without companyId');
@@ -1061,6 +1061,8 @@ class DBService {
     const { error } = await supabase.from('clients').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
   }
+
+
 
   async getInternalClient() {
     const compId = this.requireCompanyId();
@@ -1119,12 +1121,7 @@ class DBService {
 
   async getProjects() {
     await this.checkAuthSession();
-    const compId = this.getCompanyIdSafe();
-
-    if (!compId && !this.isSuperAdminRole) {
-      console.warn('DBService: getProjects called without companyId');
-      return [];
-    }
+    const compId = this.requireCompanyId();
     
     const { data, error } = await supabase
       .from('projects')
@@ -1544,9 +1541,8 @@ class DBService {
   }
 
   async getUnreadCount(): Promise<number> {
-    const userId = this.currentUserId;
-    const compId = this.currentCompanyId;
-    if (!userId || !compId) return 0;
+    const userId = this.requireUserId();
+    const compId = this.requireCompanyId();
     
     const { count, error } = await supabase
       .from('internal_communications')
@@ -1610,12 +1606,7 @@ class DBService {
   }
   async getReports() {
     await this.checkAuthSession();
-    const compId = this.getCompanyIdSafe();
-
-    if (!compId && !this.isSuperAdminRole) {
-      console.warn('DBService: getReports called without companyId');
-      return [];
-    }
+    const compId = this.requireCompanyId();
 
     const { data, error } = await supabase
       .from('reports')
