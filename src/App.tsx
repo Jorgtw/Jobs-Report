@@ -124,7 +124,7 @@ const LanguageSelector: React.FC = () => {
 };
 
 // --- User Settings Dropdown ---
-const UserDropdown: React.FC<{ user: User, onLogout: () => void, setUser: (u: User) => void }> = ({ user, onLogout, setUser }) => {
+const UserDropdown: React.FC<{ user: User, onLogout: () => void }> = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -394,7 +394,7 @@ const AppLayout: React.FC<{
                   </p>
                 </div>
               </div>
-              <UserDropdown user={user} onLogout={onLogout} setUser={setUser} />
+              <UserDropdown user={user} onLogout={onLogout} />
             </div>
           </div>
         </header>
