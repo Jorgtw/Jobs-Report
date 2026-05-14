@@ -14,7 +14,7 @@ import { SubscriptionStatus, Feature, PlanFeature, Permission } from '../types/f
  * 
  * The frontend is a pure consumer — zero business logic here.
  */
-export const useSubscription = (manualCompanyId?: string) => {
+export const useSubscription = (manualCompanyId?: string | null) => {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
