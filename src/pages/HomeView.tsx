@@ -4,7 +4,8 @@ import {
   FileText, 
   Plus, 
   Clock, 
-  LogOut 
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { authService } from '../services/authService';
@@ -202,29 +203,21 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
       {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : (
         <div className="space-y-4">
           <PendingHoursCard user={user} />
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl text-white shadow-xl shadow-blue-200 relative overflow-hidden group mb-6">
-            <div className="relative z-10">
-              <h2 className="text-2xl font-black mb-2 tracking-tight">
-                {lang === 'it' ? 'Pronto per il prossimo rapporto?' : 
-                 lang === 'da' ? 'Klar til næste rapport?' : 
-                 'Ready for the next report?'}
-              </h2>
-              <p className="text-blue-100 text-sm mb-8 max-w-xs font-medium opacity-90">
-                {lang === 'it' ? 'Registra le tue ore e le attività svolte oggi in pochi secondi.' : 
-                 lang === 'da' ? 'Registrer dine timer og aktiviteter udført i dag på få sekunder.' : 
-                 'Record your hours and activities performed today in seconds.'}
-              </p>
-              <Link 
-                to="/reports" 
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-blue-600 rounded-2xl font-black shadow-lg hover:scale-105 hover:shadow-white/20 transition-all active:scale-95 uppercase tracking-widest text-xs"
-              >
-                <Plus size={20} /> {t('reports.new')}
-              </Link>
+          <Link 
+            to="/reports" 
+            className="bg-blue-600 p-4 rounded-2xl text-white shadow-lg shadow-blue-200 flex items-center justify-between group hover:scale-[1.01] transition-all active:scale-[0.99] mb-6"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Plus size={24} />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-sm font-black uppercase tracking-tight leading-tight">{t('reports.new')}</h3>
+                <p className="text-[10px] font-bold text-blue-100 opacity-80 leading-tight mt-0.5">{t('reports.activityManagement')}</p>
+              </div>
             </div>
-            <div className="absolute right-[-20px] bottom-[-40px] opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
-              <FileText size={240} />
-            </div>
-          </div>
+            <ChevronRight size={20} className="text-blue-200 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       ))}
 
