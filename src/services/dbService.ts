@@ -762,7 +762,7 @@ class DBService {
           },
           body: JSON.stringify({
              action: 'update',
-             userId: adminId,
+             targetUserId: adminId,
              updates: userUpdates
           })
         });
