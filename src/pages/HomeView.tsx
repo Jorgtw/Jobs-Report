@@ -10,6 +10,7 @@ import { db } from '../services/dbService';
 import { authService } from '../services/authService';
 import { User } from '../types';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
+import { useSubscription } from '../hooks/useSubscription';
 import SuperAdminDashboard from '../components/SuperAdminDashboard';
 
 // --- Compact Dashboard component ---
@@ -138,24 +139,35 @@ interface HomeViewProps {
 const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
   const { t, lang } = useTranslation();
 
-  const getNavLinks = (t: any, user: User | null) => {
+  const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
     const isSA = user?.role?.toLowerCase() === 'superadmin';
+    const isOperator = user?.role === 'operator';
+
     const links = [
       { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
       { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-emerald-500' },
       { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-rose-500' },
       { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
-      { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: !isSA && authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
+      { 
+        name: t('common.internalCommMenu'), 
+        path: '/communications', 
+        icon: Mail, 
+        show: !isSA && authService.can(user, 'read', 'communications') && (!isOperator || hasCommunications), 
+        color: 'bg-blue-600', 
+        premiumOnly: true 
+      },
       { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
       { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
       { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: !isSA && authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
-      { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user, color: 'bg-slate-600' },
-      { name: t('common.help'), path: '/help', icon: HelpCircle, show: !isSA && !!user, color: 'bg-blue-600' }
+      { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user && !isOperator, color: 'bg-slate-600' },
+      { name: t('common.help'), path: '/help', icon: HelpCircle, show: !isSA && !!user && !isOperator, color: 'bg-blue-600' }
     ];
     return links.filter(l => l.show);
   };
 
-  const actions = getNavLinks(t, user);
+  const { hasFeature } = useSubscription(user.companyId);
+  const actions = getNavLinks(t, user, hasFeature('communications'));
+  const isOperator = user.role === 'operator';
 
   const handleManualLogout = () => {
     db.setCompanyId(null);
@@ -212,33 +224,35 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
 
-        <nav className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2`}>
+        <nav className={`grid grid-cols-2 ${isOperator ? 'sm:grid-cols-2 max-w-md' : 'sm:grid-cols-3 lg:grid-cols-4'} gap-3`}>
           {actions.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg hover:border-blue-400 hover:shadow-sm transition-all group active:scale-[0.99]"
+              className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl hover:border-blue-400 hover:shadow-md transition-all group active:scale-[0.98]"
             >
-              <div className={`${link.color} p-1.5 rounded-md text-white opacity-90 group-hover:opacity-100 transition-opacity`}>
-                <link.icon size={14} />
+              <div className={`${link.color} p-2.5 rounded-xl text-white shadow-sm group-hover:scale-110 transition-transform`}>
+                <link.icon size={18} />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
+                <span className="text-xs font-black text-slate-700 uppercase tracking-tight group-hover:text-blue-600 transition-colors truncate">{link.name}</span>
               </div>
             </Link>
           ))}
 
-          <button
-            onClick={handleManualLogout}
-            className={`flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg hover:border-red-400 hover:bg-red-50 transition-all group active:scale-[0.99]`}
-          >
-            <div className="bg-slate-100 p-1.5 rounded-md text-slate-400 transition-colors group-hover:bg-red-500 group-hover:text-white">
-              <LogOut size={14} />
-            </div>
-            <div className="flex flex-col min-w-0 text-left">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors truncate">{t('common.logout')}</span>
-            </div>
-          </button>
+          {!isOperator && (
+            <button
+              onClick={handleManualLogout}
+              className={`flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl hover:border-red-400 hover:bg-red-50 transition-all group active:scale-[0.98]`}
+            >
+              <div className="bg-slate-100 p-2.5 rounded-xl text-slate-400 transition-colors group-hover:bg-red-500 group-hover:text-white">
+                <LogOut size={18} />
+              </div>
+              <div className="flex flex-col min-w-0 text-left">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-tight group-hover:text-red-600 transition-colors truncate">{t('common.logout')}</span>
+              </div>
+            </button>
+          )}
         </nav>
       </div>
     </div>

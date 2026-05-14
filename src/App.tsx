@@ -16,6 +16,8 @@ import {
   HelpCircle,
   Download,
   Lock,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { db } from './services/dbService';
 import { authService } from './services/authService';
@@ -67,20 +69,28 @@ export const FullWidthField: React.FC<{ label: string; children: React.ReactNode
 );
 
 // --- Navigation Config ---
-const getNavLinks = (t: any, user: User | null) => {
+const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
   const isSA = user?.role?.toLowerCase() === 'superadmin';
+  const isOperator = user?.role === 'operator';
 
   const links = [
     { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
     { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-emerald-500' },
     { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-rose-500' },
     { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
-    { name: t('common.internalCommMenu'), path: '/communications', icon: Mail, show: !isSA && authService.can(user, 'read', 'communications'), color: 'bg-blue-600', premiumOnly: true },
+    { 
+      name: t('common.internalCommMenu'), 
+      path: '/communications', 
+      icon: Mail, 
+      show: !isSA && authService.can(user, 'read', 'communications') && (!isOperator || hasCommunications), 
+      color: 'bg-blue-600', 
+      premiumOnly: true 
+    },
     { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
     { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
     { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: !isSA && authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
-    { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user, color: 'bg-slate-600' },
-    { name: t('common.help'), path: '/help', icon: HelpCircle, show: !isSA && !!user, color: 'bg-blue-600' }
+    { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user && !isOperator, color: 'bg-slate-600' },
+    { name: t('common.help'), path: '/help', icon: HelpCircle, show: !isSA && !!user && !isOperator, color: 'bg-blue-600' }
   ];
 
   return links.filter(l => l.show);
@@ -107,6 +117,95 @@ const LanguageSelector: React.FC = () => {
               {l.label}
             </button>
           ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- User Settings Dropdown ---
+const UserDropdown: React.FC<{ user: User, onLogout: () => void, setUser: (u: User) => void }> = ({ user, onLogout, setUser }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    const saved = localStorage.getItem('app_notification_audio');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('app_notification_audio', JSON.stringify(soundEnabled));
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const isOperator = user.role === 'operator';
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm hover:bg-blue-200 transition-colors"
+      >
+        <UserIcon className="w-5 h-5" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="px-4 py-3 border-b border-slate-50">
+            <p className="text-sm font-black text-slate-900 leading-none">{user.name}</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+              {t(`projects.role${user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()}` as any)}
+            </p>
+          </div>
+
+          <div className="p-2 border-b border-slate-50">
+            <div className="flex items-center justify-between px-2 py-2 hover:bg-slate-50 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <div className={`p-1.5 rounded-lg ${soundEnabled ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                  {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">{t('communications.push_sound' as any)}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className={`w-10 h-5 rounded-full p-1 transition-all duration-200 ${soundEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+              >
+                <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform duration-200 ${soundEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+          </div>
+
+          <nav className="p-2">
+            {!isOperator && (
+              <Link
+                to="/profile"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all font-bold text-xs"
+              >
+                <UserIcon size={16} />
+                {t('auth.profile')}
+              </Link>
+            )}
+            <button
+              onClick={() => { onLogout(); setIsOpen(false); }}
+              className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all font-bold text-xs mt-1"
+            >
+              <LogOut size={16} />
+              {t('common.logout')}
+            </button>
+          </nav>
         </div>
       )}
     </div>
@@ -183,7 +282,8 @@ const AppLayout: React.FC<{
     setIsMobileMenuOpen(false);
   }, [location.pathname, setIsMobileMenuOpen]);
 
-  const filteredLinks = getNavLinks(t, user);
+  const hasComms = hasFeature('communications');
+  const filteredLinks = getNavLinks(t, user, hasComms);
 
   const renderSidebarContent = (onItemClick?: () => void) => (
     <div className="flex flex-col h-full py-6">
@@ -294,7 +394,7 @@ const AppLayout: React.FC<{
                   </p>
                 </div>
               </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 ring-4 ring-white shadow-sm"><UserIcon className="w-5 h-5" /></div>
+              <UserDropdown user={user} onLogout={onLogout} setUser={setUser} />
             </div>
           </div>
         </header>
