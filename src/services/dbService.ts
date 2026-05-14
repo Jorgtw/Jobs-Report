@@ -729,7 +729,7 @@ class DBService {
     if (error) throw error;
   }
 
-  async updateCompanyAndAdmin(companyId: string, companyName: string, adminId?: string, adminName?: string, username?: string, password?: string) {
+  async updateCompanyAndAdmin(companyId: string, companyName: string, adminId?: string, adminName?: string, username?: string, password?: string, sendEmail?: boolean, email?: string) {
     if (username && adminId) {
       const { data: existingUser, error: checkErr } = await supabase
         .from('workers')
@@ -749,7 +749,8 @@ class DBService {
       const userUpdates: any = {};
       if (adminName) userUpdates.name = adminName;
       if (username) userUpdates.username = username;
-      if (password) userUpdates.password = password; // Will be handled by Admin API
+      if (password) userUpdates.password = password;
+      if (email) userUpdates.email = email;
 
       if (Object.keys(userUpdates).length > 0) {
         const token = await this.getAuthToken();
@@ -760,7 +761,8 @@ class DBService {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-             targetUserId: adminId,
+             action: 'update',
+             userId: adminId,
              updates: userUpdates
           })
         });
@@ -768,6 +770,26 @@ class DBService {
         if (!response.ok) {
           const apiData = await response.json();
           throw new Error(apiData.error || 'Failed to update admin via API');
+        }
+
+        // 3. Send email if requested
+        if (sendEmail && email && (password || username)) {
+          try {
+            await fetch('/api/sendEmail', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'welcome',
+                companyName,
+                adminName: adminName || 'Amministratore',
+                username: username || '',
+                password: password || '********', 
+                email
+              })
+            });
+          } catch (emailErr) {
+            console.error('Failed to send email during update:', emailErr);
+          }
         }
       }
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, X, Mail } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 import { inputClasses, modalClasses, FullWidthField } from '../App';
@@ -82,7 +82,7 @@ const CompaniesView: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (editingId) {
-        await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password);
+        await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password, formData.sendWelcomeEmail, formData.email);
         await db.setPremiumStatus(editingId, formData.isPremium);
         await db.updateCompanyDetails(editingId, {
           address: formData.address,
@@ -162,6 +162,16 @@ const CompaniesView: React.FC = () => {
                     <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('common.edit')}>
                       <Pencil size={16} /> {t('common.edit')}
                     </button>
+                    <button 
+                      onClick={() => {
+                        handleEdit(c);
+                        setFormData(prev => ({ ...prev, sendWelcomeEmail: true }));
+                      }} 
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg font-medium transition-colors" 
+                      title="Invia Credenziali"
+                    >
+                      <Mail size={16} /> Invia
+                    </button>
                     <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
                       <Trash2 size={16} /> {t('common.delete')}
                     </button>
@@ -226,24 +236,24 @@ const CompaniesView: React.FC = () => {
                 </div>
               </div>
 
-              {editingId ? (
-                <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                  <div>
-                    <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
-                    <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
+              <div className="space-y-4">
+                {editingId ? (
+                  <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <div>
+                      <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
+                      <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
+                        }`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
+                        }`} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
-                      }`}
-                  >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                      }`} />
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
+                ) : (
                   <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
                     <div>
                       <p className="text-sm font-bold text-blue-800">{t('dashboard.premiumPlan')}</p>
@@ -259,24 +269,26 @@ const CompaniesView: React.FC = () => {
                         }`} />
                     </button>
                   </div>
+                )}
 
-                  <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
-                    <div>
-                      <p className="text-sm font-bold text-emerald-800">Invia Credenziali via Email</p>
-                      <p className="text-xs text-emerald-600">Invia automaticamente username e password all'indirizzo email della ditta.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail })}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.sendWelcomeEmail ? 'bg-emerald-500' : 'bg-slate-300'
-                        }`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.sendWelcomeEmail ? 'translate-x-8' : 'translate-x-1'
-                        }`} />
-                    </button>
+                <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                  <div>
+                    <p className="text-sm font-bold text-emerald-800">Invia Credenziali via Email</p>
+                    <p className="text-xs text-emerald-600">
+                      {editingId ? "Inserisci una password sopra per inviarla al cliente." : "Invia automaticamente username e password all'indirizzo email della ditta."}
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail })}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.sendWelcomeEmail ? 'bg-emerald-500' : 'bg-slate-300'
+                      }`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.sendWelcomeEmail ? 'translate-x-8' : 'translate-x-1'
+                      }`} />
+                  </button>
                 </div>
-              )}
+              </div>
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                 <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
