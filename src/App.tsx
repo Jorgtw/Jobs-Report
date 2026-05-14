@@ -521,7 +521,7 @@ const App: React.FC = () => {
     <HashRouter>
       <React.Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={user ? <Navigate to="/home" replace /> : <LoginView onLogin={handleLogin} />} />
+          <Route path="/" element={user ? <Navigate to="/reports" replace /> : <LoginView onLogin={handleLogin} />} />
           <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
           <Route path="/presentation" element={<PresentationView />} />
           <Route path="/privacy" element={<PrivacyView />} />
@@ -565,7 +565,7 @@ const App: React.FC = () => {
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
                     <Route path="/profile" element={<ProfileView user={user} onUpdate={updateUser} t={t} />} />
                     <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
-                    <Route path="*" element={<Navigate to="/" />} />
+                    <Route path="*" element={<Navigate to="/reports" />} />
                   </Routes>
                   {showOnboarding && user && authService.canAccessAdmin(user) && (
                     <OnboardingGuide
@@ -590,6 +590,10 @@ const App: React.FC = () => {
                   {isCommsUpgradeOpen && (
                     <UpgradeModal feature="communications" onClose={() => setIsCommsUpgradeOpen(false)} />
                   )}
+                  {/* Version Marker for Cache Debugging */}
+                  <div className="fixed bottom-2 left-2 text-[8px] font-bold text-slate-300 pointer-events-none z-[9999]">
+                    v1.2-FINAL-INFRA
+                  </div>
                 </AppLayout>
               )
             }

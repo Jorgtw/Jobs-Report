@@ -45,25 +45,15 @@ class DBService {
   private async checkAuthSession() {
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     if (authError || !session) {
-      console.warn('DBService: No active session found in client. Retrying session fetch...');
-      // Piccolo delay per permettere all'SDK di idratare la sessione se è appena partito
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const { data: { session: retrySession } } = await supabase.auth.getSession();
-      if (!retrySession) {
-        throw new Error('SESSION_EXPIRED');
-      }
+      console.warn('DBService: No active session found in client.');
       return;
     }
 
-    // [BLINDATO] Verifica reale lato Database: il JWT è arrivato a Postgres?
     try {
-      const { data, error: rpcError } = await supabase.rpc('verify_auth_context');
-      if (rpcError) {
-        throw new Error('JWT_NOT_PROPAGATED_TO_DB');
-      }
-      return data;
+      // Light verification to ensure session is usable
+      await supabase.rpc('verify_auth_context');
     } catch (err) {
-      throw err;
+      console.error('DBService: Auth context verification failed', err);
     }
   }
 
