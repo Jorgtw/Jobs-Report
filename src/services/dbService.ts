@@ -1033,11 +1033,16 @@ class DBService {
 
   async getClients() {
     await this.checkAuthSession();
-    const compId = this.requireCompanyId();
+    const compId = this.getCompanyIdSafe();
+    
+    if (!compId && !this.isSuperAdminRole) {
+      console.warn('DBService: getClients called without companyId');
+      return [];
+    }
     
     const { data: { user } } = await supabase.auth.getUser();
     const uid = user?.id || 'NULL';
-    console.log(`[RLS-AUDIT] Fetching clients | UID: ${uid} | CompID: ${compId}`);
+    console.log(`[RLS-AUDIT] Fetching clients | UID: ${uid} | CompID: ${compId || 'ALL'}`);
 
     const { data, error } = await supabase
       .from('clients')
@@ -1135,9 +1140,14 @@ class DBService {
 
   async getProjects() {
     await this.checkAuthSession();
-    const compId = this.requireCompanyId();
+    const compId = this.getCompanyIdSafe();
+
+    if (!compId && !this.isSuperAdminRole) {
+      console.warn('DBService: getProjects called without companyId');
+      return [];
+    }
     
-    console.log(`DBService: Fetching projects for company ${compId}...`);
+    console.log(`DBService: Fetching projects for company ${compId || 'ALL'}...`);
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -1626,11 +1636,17 @@ class DBService {
   }
   async getReports() {
     await this.checkAuthSession();
-    const compId = this.requireCompanyId();
+    const compId = this.getCompanyIdSafe();
+
+    if (!compId && !this.isSuperAdminRole) {
+      console.warn('DBService: getReports called without companyId');
+      return [];
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     const uid = user?.id || 'NULL';
     
-    console.log(`[RLS-AUDIT] Fetching reports | UID: ${uid} | CompID: ${compId}`);
+    console.log(`[RLS-AUDIT] Fetching reports | UID: ${uid} | CompID: ${compId || 'ALL'}`);
     
     const { data, error } = await supabase
       .from('reports')
