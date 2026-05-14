@@ -141,7 +141,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
 
   const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
     const isSA = user?.role?.toLowerCase() === 'superadmin';
-    const isOperator = user?.role?.toLowerCase() === 'operator';
+    const isOperator = authService.isOperator(user);
 
     const links = [
       { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
@@ -167,7 +167,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
 
   const { hasFeature } = useSubscription(user.companyId);
   const actions = getNavLinks(t, user, hasFeature('communications'));
-  const isOperator = user.role?.toLowerCase() === 'operator';
+  const isOperator = authService.isOperator(user);
 
   const handleManualLogout = () => {
     db.setCompanyId(null);

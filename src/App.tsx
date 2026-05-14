@@ -71,12 +71,12 @@ export const FullWidthField: React.FC<{ label: string; children: React.ReactNode
 // --- Navigation Config ---
 const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
   const isSA = user?.role?.toLowerCase() === 'superadmin';
-  const isOperator = user?.role?.toLowerCase() === 'operator';
+  const isOperator = authService.isOperator(user);
 
   const links = [
     { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
-    { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-emerald-500' },
-    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-rose-500' },
+    { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && authService.can(user, 'read', 'clients'), color: 'bg-emerald-500' },
+    { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: !isSA && authService.can(user, 'read', 'personnel'), color: 'bg-rose-500' },
     { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
     { 
       name: t('common.internalCommMenu'), 
@@ -86,7 +86,7 @@ const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = fal
       color: 'bg-blue-600', 
       premiumOnly: true 
     },
-    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
+    { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.can(user, 'read', 'subcontractors'), color: 'bg-cyan-500' },
     { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
     { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: !isSA && authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
     { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user && !isOperator, color: 'bg-slate-600' },
@@ -148,7 +148,7 @@ const UserDropdown: React.FC<{ user: User, onLogout: () => void }> = ({ user, on
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const isOperator = user.role?.toLowerCase() === 'operator';
+  const isOperator = authService.isOperator(user);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -456,7 +456,18 @@ const App: React.FC = () => {
     const isRecoveryPending = sessionStorage.getItem('recovery_pending') === 'true';
 
     const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session) {
+        // Se non c'è sessione, proviamo a vedere se è un problema temporaneo di inizializzazione
+        console.warn('DBService: No active session found in client. Retrying session fetch...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: { session: retrySession } } = await supabase.auth.getSession();
+        if (!retrySession) {
+          setSessionReady(true);
+          setInitializing(false);
+          return;
+        }
+      }
       if (session?.user) {
         try {
           const userData = await db.getUserByAuthId(session.user.id);

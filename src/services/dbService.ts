@@ -45,8 +45,14 @@ class DBService {
   private async checkAuthSession() {
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     if (authError || !session) {
-      console.warn('DBService: No active session found in client.');
-      throw new Error('SESSION_EXPIRED');
+      console.warn('DBService: No active session found in client. Retrying session fetch...');
+      // Piccolo delay per permettere all'SDK di idratare la sessione se è appena partito
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const { data: { session: retrySession } } = await supabase.auth.getSession();
+      if (!retrySession) {
+        throw new Error('SESSION_EXPIRED');
+      }
+      return;
     }
 
     // [BLINDATO] Verifica reale lato Database: il JWT è arrivato a Postgres?

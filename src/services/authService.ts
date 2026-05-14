@@ -1,7 +1,7 @@
 import { User } from '../types';
 
 export type Action = 'create' | 'read' | 'update' | 'delete' | 'approve' | 'manage_users' | 'access_admin';
-export type Resource = 'reports' | 'projects' | 'clients' | 'communications' | 'workers';
+export type Resource = 'reports' | 'projects' | 'clients' | 'communications' | 'workers' | 'personnel' | 'subcontractors';
 
 export const authService = {
   /**
@@ -37,7 +37,13 @@ export const authService = {
         if (action === 'create' || action === 'update' || action === 'delete') return isAdmin || isSupervisor;
         break;
 
+      case 'personnel':
       case 'workers':
+        if (action === 'read') return isAdmin || isSupervisor;
+        if (action === 'create' || action === 'update' || action === 'delete') return isAdmin;
+        break;
+
+      case 'subcontractors':
         if (action === 'read') return isAdmin || isSupervisor;
         if (action === 'create' || action === 'update' || action === 'delete') return isAdmin;
         break;
@@ -69,5 +75,11 @@ export const authService = {
 
   canAccessAdmin(user: User | null): boolean {
     return this.can(user, 'access_admin', 'admin' as any);
+  },
+
+  isOperator(user: User | null): boolean {
+    if (!user) return false;
+    if (user.role === 'superadmin') return false;
+    return user.role !== 'admin' && user.role !== 'supervisor';
   }
 };
