@@ -51,6 +51,7 @@ const CompaniesView: React.FC = () => {
       phone: c.phone || '',
       email: c.email || '',
       vatNumber: c.vatNumber || '',
+      sendWelcomeEmail: false,
     });
     setIsModalOpen(true);
   };
