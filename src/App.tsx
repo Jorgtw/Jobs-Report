@@ -557,35 +557,35 @@ const App: React.FC = () => {
                     <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
+                  {showOnboarding && user && authService.canAccessAdmin(user) && (
+                    <OnboardingGuide
+                      userRole={user.role}
+                      onComplete={() => {
+                        localStorage.setItem('onboarding_v1', 'completed');
+                        setShowOnboarding(false);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      onStepChange={(step) => {
+                        if (step.requiresSidebar) {
+                          setIsMobileMenuOpen(true);
+                        } else {
+                          if (window.innerWidth < 1024) {
+                            setIsMobileMenuOpen(false);
+                          }
+                        }
+                      }}
+                    />
+                  )}
+                  <AIChatAssistant />
+                  {isCommsUpgradeOpen && (
+                    <UpgradeModal feature="communications" onClose={() => setIsCommsUpgradeOpen(false)} />
+                  )}
                 </AppLayout>
               )
             }
           />
         </Routes>
       </React.Suspense>
-      {showOnboarding && user && authService.canAccessAdmin(user) && (
-        <OnboardingGuide
-          userRole={user.role}
-          onComplete={() => {
-            localStorage.setItem('onboarding_v1', 'completed');
-            setShowOnboarding(false);
-            setIsMobileMenuOpen(false);
-          }}
-          onStepChange={(step) => {
-            if (step.requiresSidebar) {
-              setIsMobileMenuOpen(true);
-            } else {
-              if (window.innerWidth < 1024) {
-                setIsMobileMenuOpen(false);
-              }
-            }
-          }}
-        />
-      )}
-      <AIChatAssistant />
-      {isCommsUpgradeOpen && (
-        <UpgradeModal feature="communications" onClose={() => setIsCommsUpgradeOpen(false)} />
-      )}
     </HashRouter>
   );
 };
