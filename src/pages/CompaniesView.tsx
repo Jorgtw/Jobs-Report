@@ -107,6 +107,21 @@ const CompaniesView: React.FC = () => {
     }
   };
 
+  const handlePrepareEmail = (c: any) => {
+    const subject = encodeURIComponent(`Credenziali di accesso Jobs Report - ${c.name}`);
+    const body = encodeURIComponent(
+      `Ciao ${c.adminName || 'Amministratore'},\n\n` +
+      `Ecco le tue credenziali di accesso per Jobs Report:\n\n` +
+      `URL: https://jobs-report.vercel.app\n` +
+      `Username: ${c.username}\n` +
+      `Password: ${c.password || '********'}\n\n` +
+      `Ti consigliamo di cambiare la password al primo accesso.\n\n` +
+      `Buon lavoro,\n` +
+      `Il team di JobsReport`
+    );
+    window.location.href = `mailto:${c.email}?subject=${subject}&body=${body}`;
+  };
+
   const resetForm = () => {
     setEditingId(null);
     setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '', sendWelcomeEmail: true });
@@ -163,14 +178,21 @@ const CompaniesView: React.FC = () => {
                       <Pencil size={16} /> {t('common.edit')}
                     </button>
                     <button 
+                      onClick={() => handlePrepareEmail(c)} 
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg font-medium transition-colors" 
+                      title="Prepara Email Manuale"
+                    >
+                      <Mail size={16} /> Prepara
+                    </button>
+                    <button 
                       onClick={() => {
                         handleEdit(c);
                         setFormData(prev => ({ ...prev, sendWelcomeEmail: true }));
                       }} 
                       className="flex items-center gap-1.5 px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg font-medium transition-colors" 
-                      title="Invia Credenziali"
+                      title="Invia Automatica"
                     >
-                      <Mail size={16} /> Invia
+                      <Building2 size={16} /> Auto
                     </button>
                     <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
                       <Trash2 size={16} /> {t('common.delete')}
@@ -272,21 +294,34 @@ const CompaniesView: React.FC = () => {
                 )}
 
                 <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
-                  <div>
-                    <p className="text-sm font-bold text-emerald-800">Invia Credenziali via Email</p>
-                    <p className="text-xs text-emerald-600">
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-emerald-800">Invio Credenziali</p>
+                    <p className="text-xs text-emerald-600 mb-2">
                       {editingId ? "Inserisci una password sopra per inviarla al cliente." : "Invia automaticamente username e password all'indirizzo email della ditta."}
                     </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail })}
+                        className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.sendWelcomeEmail ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'}`}
+                      >
+                        {formData.sendWelcomeEmail ? "AUTO-INVIO ATTIVO" : "ATTIVA AUTO-INVIO"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handlePrepareEmail({ 
+                          name: formData.companyName, 
+                          adminName: formData.adminName, 
+                          email: formData.email, 
+                          username: formData.username, 
+                          password: formData.password 
+                        })}
+                        className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 shadow-sm"
+                      >
+                        PREPARA EMAIL (MANUALE)
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail })}
-                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.sendWelcomeEmail ? 'bg-emerald-500' : 'bg-slate-300'
-                      }`}
-                  >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.sendWelcomeEmail ? 'translate-x-8' : 'translate-x-1'
-                      }`} />
-                  </button>
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t mt-4">
