@@ -822,16 +822,16 @@ class DBService {
     }
 
     // 2. Fai il login con Supabase Auth usando l'email ottenuta
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    const res = await supabase.auth.signInWithPassword({
       email: userEmail,
       password: password
     });
 
-    console.log("[DBService] Auth SignIn Result:", { 
-      success: !!authData.user, 
-      userId: authData.user?.id, 
-      error: authError?.message 
-    });
+    console.log("[DBService] LOGIN RESULT RAW:", res);
+    const sessionCheck = await supabase.auth.getSession();
+    console.log("[DBService] SESSION AFTER LOGIN:", sessionCheck);
+
+    const { data: authData, error: authError } = res;
 
     if (authError || !authData.user) {
       console.error('Errore credenziali Supabase Auth:', authError);
