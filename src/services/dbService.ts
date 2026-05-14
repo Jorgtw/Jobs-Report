@@ -827,6 +827,12 @@ class DBService {
       password: password
     });
 
+    console.log("[DBService] Auth SignIn Result:", { 
+      success: !!authData.user, 
+      userId: authData.user?.id, 
+      error: authError?.message 
+    });
+
     if (authError || !authData.user) {
       console.error('Errore credenziali Supabase Auth:', authError);
       return null;
@@ -845,10 +851,12 @@ class DBService {
         
       if (res.data) {
         workerData = res.data;
+        console.log("[DBService] Worker profile found at attempt", i+1);
         break;
       }
       
       workerErr = res.error;
+      console.warn(`[DBService] Worker fetch attempt ${i+1} failed:`, res.error);
       // Aspetta 150ms prima del prossimo tentativo
       await new Promise(resolve => setTimeout(resolve, 150));
     }
@@ -857,6 +865,8 @@ class DBService {
       console.error('Record worker non trovato dopo i tentativi di login:', workerErr);
       return null;
     }
+
+    console.log("[DBService] Login successfully completed for:", workerData.name);
 
     // NEW: SSOT Company Context & Repair logic
     let { data: contexts, error: rpcError } = await supabase.rpc('get_user_session_context');

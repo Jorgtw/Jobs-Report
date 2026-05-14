@@ -453,12 +453,22 @@ const App: React.FC = () => {
     return () => window.removeEventListener('refresh-unread-count', updateUnread);
   }, [user?.id, isReady]);
 
-  const handleLogin = (u: User) => {
+  const handleLogin = async (u: User) => {
+    console.log("[App] Handling login for user:", u.name);
     if (u.availableCompanies && u.availableCompanies.length > 0) db.setCompanyId(u.availableCompanies[0].id);
     db.setUserId(u.id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
+    
+    // Safety check: verify if session is actually there before reload
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log("[App] Session status before reload:", session ? "VALID" : "MISSING");
+    
     window.location.hash = '/home';
-    window.location.reload(); 
+    
+    // Give a tiny breath for the router and storage to settle
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const handleLogout = async () => {
