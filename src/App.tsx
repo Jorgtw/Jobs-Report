@@ -20,6 +20,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { db } from './services/dbService';
+import { useCompany } from './contexts/CompanyContext';
 import { authService } from './services/authService';
 import { User, Project } from './types';
 import { Language } from './i18n';
@@ -406,21 +407,7 @@ const AppLayout: React.FC<{
 
 // --- App Component ---
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('ws_auth');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const activeCompId = parsed.companyId || parsed.availableCompanies?.[0]?.id;
-        if (activeCompId) db.setCompanyId(activeCompId);
-        if (parsed.id) db.setUserId(parsed.id);
-        return parsed;
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
-  });
+  const { user, status, isReady, updateUser } = useCompany();
   const [adminUser, setAdminUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('ws_auth_admin');
     return saved ? JSON.parse(saved) : null;
@@ -434,106 +421,24 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
-  // --- App Bootstrap State Machine ---
-  type BootstrapStatus = 'initializing' | 'resolving_context' | 'ready' | 'unauthenticated' | 'error';
-  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('initializing');
-
-  useEffect(() => {
-    const bootstrap = async () => {
-      try {
-        const { data: { session }, error: authError } = await supabase.auth.getSession();
-        
-        if (authError || !session) {
-          setBootstrapStatus('unauthenticated');
-          return;
-        }
-
-        setBootstrapStatus('resolving_context');
-        
-        // Resolve worker data and company context (SSOT)
-        const userData = await db.getUserByAuthId(session.user.id);
-        
-        if (!userData) {
-          setBootstrapStatus('unauthenticated');
-          return;
-        }
-
-        // Apply context to services
-        const activeCompId = userData.companyId || (userData.availableCompanies?.length ? userData.availableCompanies[0].id : null);
-        
-        if (activeCompId) {
-          db.setCompanyId(activeCompId);
-          db.setUserId(userData.id);
-          setUser(userData);
-          setBootstrapStatus('ready');
-        } else {
-          setBootstrapStatus('unauthenticated');
-        }
-
-      } catch (err) {
-        console.error('Bootstrap critical failure:', err);
-        setBootstrapStatus('error');
-      }
-    };
-
-    bootstrap();
-
-    // Listen for auth changes to re-trigger bootstrap if needed
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_IN') {
-        bootstrap();
-      } else if (event === 'SIGNED_OUT') {
-        setBootstrapStatus('unauthenticated');
-        setUser(null);
-        db.setCompanyId(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   useEffect(() => {
     if (user && user.id) {
-      db.setUserId(user.id);
       if (user.role?.toLowerCase() === 'superadmin') {
         setIsSuperAdmin(true);
         db.setIsSuperAdmin(true);
-        if (!user.isPremium) {
-          const updated = { ...user, isPremium: true };
-          setUser(updated);
-          localStorage.setItem('ws_auth', JSON.stringify(updated));
-        }
       } else {
         db.checkIsSuperAdmin(user.id).then(isSA => {
           setIsSuperAdmin(isSA);
           db.setIsSuperAdmin(isSA);
-        }).catch(console.error);
+        });
       }
-    } else {
-      setIsSuperAdmin(false);
-      db.setIsSuperAdmin(false);
-      db.setUserId(null);
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (user && user.companyId && !isSuperAdmin) {
-      db.getCompanyDetails(user.companyId).then(comp => {
-        if (comp) {
-          const updatedUser = { ...user, companyName: comp.name, isPremium: comp.isPremium };
-          if (user.companyName !== comp.name || user.isPremium !== comp.isPremium) {
-            setUser(updatedUser);
-            localStorage.setItem('ws_auth', JSON.stringify(updatedUser));
-          }
-        }
-      }).catch(console.error);
-    }
-  }, [user?.companyId, user?.companyName, user?.isPremium]);
+  }, [user?.id]);
 
   const [unreadCount, setUnreadCount] = useState(0);
   useEffect(() => {
-    const compId = db.getCompanyIdSafe();
-    if (!user || !compId) return;
+    if (!isReady || !user) return;
     
     const updateUnread = async () => {
       try {
@@ -546,47 +451,35 @@ const App: React.FC = () => {
     updateUnread();
     window.addEventListener('refresh-unread-count', updateUnread);
     return () => window.removeEventListener('refresh-unread-count', updateUnread);
-  }, [user?.id, db.getCompanyIdSafe()]);
+  }, [user?.id, isReady]);
 
   const handleLogin = (u: User) => {
     if (u.availableCompanies && u.availableCompanies.length > 0) db.setCompanyId(u.availableCompanies[0].id);
     db.setUserId(u.id);
     localStorage.setItem('ws_auth', JSON.stringify(u));
     window.location.hash = '/home';
-    setUser(u);
-    setIsMobileMenuOpen(false);
-  };
-  const handleLogout = () => {
-    db.setCompanyId(null);
-    setUser(null);
-    setAdminUser(null);
-    localStorage.removeItem('ws_auth'); supabase.auth.signOut();
-    localStorage.removeItem('ws_auth_admin');
-    setIsSuperAdmin(false);
-    setIsMobileMenuOpen(false);
+    window.location.reload(); 
   };
 
-  const handleImpersonate = async (targetUser: User) => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('ws_auth');
+    localStorage.removeItem('ws_auth_admin');
+    db.setCompanyId(null);
+    window.location.hash = '/';
+  };
+
+  const handleImpersonate = (targetUser: User) => {
     if (!user) return;
-    try {
-      if (!adminUser) {
-        setAdminUser(user);
-        localStorage.setItem('ws_auth_admin', JSON.stringify(user));
-      }
-      const fullProfile = await db.getUserByAuthId(targetUser.authId!);
-      if (fullProfile.availableCompanies && fullProfile.availableCompanies.length > 0) {
-        db.setCompanyId(fullProfile.availableCompanies[0].id);
-      } else {
-        db.setCompanyId(fullProfile.companyId ?? null);
-      }
-      db.setUserId(fullProfile.id);
-      localStorage.setItem('ws_auth', JSON.stringify(fullProfile));
-      setUser(fullProfile);
-      window.location.hash = '#/home';
-      setIsMobileMenuOpen(false);
-    } catch (err: any) {
-      alert('Failed to switch user: ' + err.message);
-    }
+    setAdminUser(user);
+    localStorage.setItem('ws_auth_admin', JSON.stringify(user));
+    
+    if (targetUser.companyId) db.setCompanyId(targetUser.companyId);
+    db.setUserId(targetUser.id);
+    localStorage.setItem('ws_auth', JSON.stringify(targetUser));
+    
+    window.location.hash = '/home';
+    window.location.reload();
   };
 
   const handleBackToAdmin = () => {
@@ -594,22 +487,20 @@ const App: React.FC = () => {
     if (adminUser.availableCompanies && adminUser.availableCompanies.length > 0) db.setCompanyId(adminUser.availableCompanies[0].id);
     db.setUserId(adminUser.id);
     localStorage.setItem('ws_auth', JSON.stringify(adminUser));
-    setUser(adminUser);
     setAdminUser(null);
     localStorage.removeItem('ws_auth_admin');
     window.location.hash = '/personnel';
+    window.location.reload();
   };
 
-
-
   // --- Mount Gate ---
-  if (bootstrapStatus === 'initializing' || bootstrapStatus === 'resolving_context') {
+  if (status === 'loading' || status === 'resolving') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-            {bootstrapStatus === 'initializing' ? 'Verifica sessione...' : 'Caricamento contesto...'}
+            {status === 'loading' ? 'Inizializzazione...' : 'Risoluzione contesto...'}
           </p>
         </div>
       </div>
@@ -629,7 +520,7 @@ const App: React.FC = () => {
           <Route
             path="/*"
             element={
-              bootstrapStatus !== 'ready' || !user ? (
+              !isReady || !user ? (
                 <Navigate to="/" replace />
               ) : (
                 <AppLayout
@@ -639,7 +530,7 @@ const App: React.FC = () => {
                   isMobileMenuOpen={isMobileMenuOpen}
                   setIsMobileMenuOpen={setIsMobileMenuOpen}
                   unreadCount={unreadCount}
-                  setUser={setUser}
+                  setUser={updateUser}
                 >
                   {adminUser && (
                     <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
@@ -662,7 +553,7 @@ const App: React.FC = () => {
                     <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
                     <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                     <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
-                    <Route path="/profile" element={<ProfileView user={user} onUpdate={(updated) => { setUser(updated); localStorage.setItem('ws_auth', JSON.stringify(updated)); }} t={t} />} />
+                    <Route path="/profile" element={<ProfileView user={user} onUpdate={updateUser} t={t} />} />
                     <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>

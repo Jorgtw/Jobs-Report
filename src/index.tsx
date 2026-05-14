@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { CompanyProvider } from './contexts/CompanyContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -19,7 +20,9 @@ root.render(
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
-          <App />
+          <CompanyProvider>
+            <App />
+          </CompanyProvider>
         </LanguageProvider>
       </QueryClientProvider>
     </ErrorBoundary>
