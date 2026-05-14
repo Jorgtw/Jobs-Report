@@ -230,7 +230,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           filter: `company_id=eq.${currentUser.companyId}`
         },
         (payload) => {
-          console.log('Real-time update received:', payload);
           
           // 3. Playback Logic for Foreground Notifications - Only if I am the recipient or it's for everyone
           const newData = payload.new as any;
@@ -254,8 +253,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           }
         }
       )
-      .subscribe((status) => {
-        console.log('Supabase subscription status:', status);
+      .subscribe(() => {
+        // subscription status
       });
 
     return () => {

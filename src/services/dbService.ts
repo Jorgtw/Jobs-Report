@@ -53,13 +53,10 @@ class DBService {
     try {
       const { data, error: rpcError } = await supabase.rpc('verify_auth_context');
       if (rpcError) {
-        console.error('[RLS-STRESS] RPC Auth Verification Failed:', rpcError);
         throw new Error('JWT_NOT_PROPAGATED_TO_DB');
       }
-      console.log(`[RLS-STRESS] DB-Verified UID: ${data.uid}`);
       return data;
     } catch (err) {
-      console.error('[RLS-STRESS] Pre-flight Auth check failed:', err);
       throw err;
     }
   }
@@ -316,33 +313,17 @@ class DBService {
     // Opzione A (Siloed): La tabella `workers` è la fonte di verità operativa.
     // Ogni record appartiene a una sola azienda via `company_id`.
     if (compId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      const uid = user?.id || 'NULL';
-      console.log(`[RLS-AUDIT] Fetching workers | UID: ${uid} | CompID: ${compId || 'ALL'}`);
-      
       const { data, error } = await supabase
         .from('workers')
         .select('*')
         .eq('company_id', compId);
 
-      if (error) {
-        console.error('[RLS-AUDIT] Error fetching workers:', error);
-        throw error;
-      }
-      console.log(`[RLS-AUDIT] Success | UID: ${uid} | Rows: ${data?.length || 0}`);
+      if (error) throw error;
       return data.map(w => this.mapSupabaseWorker(w));
     } else if (isSA) {
       // Global View for SuperAdmin: fetch all workers
-      const { data: { user } } = await supabase.auth.getUser();
-      const uid = user?.id || 'NULL';
-      console.log(`[RLS-AUDIT] Fetching all workers | UID: ${uid}`);
-      
       const { data, error } = await supabase.from('workers').select('*');
-      if (error) {
-        console.error('[RLS-AUDIT] Error fetching all worker profiles for SuperAdmin:', error);
-        throw error;
-      }
-      console.log(`[RLS-AUDIT] Success | UID: ${uid} | Rows: ${data?.length || 0}`);
+      if (error) throw error;
       return data.map(w => this.mapSupabaseWorker(w));
     } else {
       console.warn('DBService: getUsers called without companyId and user is not SuperAdmin');
@@ -1040,19 +1021,11 @@ class DBService {
       return [];
     }
     
-    const { data: { user } } = await supabase.auth.getUser();
-    const uid = user?.id || 'NULL';
-    console.log(`[RLS-AUDIT] Fetching clients | UID: ${uid} | CompID: ${compId || 'ALL'}`);
-
     const { data, error } = await supabase
       .from('clients')
       .select('*')
       .eq('company_id', compId);
-    if (error) {
-      console.error('[RLS-AUDIT] Error fetching clients:', error);
-      throw error;
-    }
-    console.log(`[RLS-AUDIT] Success | UID: ${uid} | Rows: ${data?.length || 0}`);
+    if (error) throw error;
     return data.map(c => this.mapSupabaseClient(c));
   }
 
@@ -1147,18 +1120,13 @@ class DBService {
       return [];
     }
     
-    console.log(`DBService: Fetching projects for company ${compId || 'ALL'}...`);
     const { data, error } = await supabase
       .from('projects')
       .select('*')
       .eq('company_id', compId);
+
+    if (error) throw error;
     
-    if (error) {
-      console.error('Error fetching projects:', error);
-      throw error;
-    }
-    
-    console.log(`DBService: Found ${data?.length || 0} projects.`);
     return data.map(p => this.mapSupabaseProject(p));
   }
 
@@ -1643,29 +1611,14 @@ class DBService {
       return [];
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    const uid = user?.id || 'NULL';
-    
-    console.log(`[RLS-AUDIT] Fetching reports | UID: ${uid} | CompID: ${compId || 'ALL'}`);
-    
     const { data, error } = await supabase
       .from('reports')
       .select(`*, additionalWorkers:rapportini_workers(*), expenses:rapportini_expenses(*)`)
       .eq('company_id', compId);
 
-    if (error) {
-      console.error('[RLS-AUDIT] Error fetching reports:', error);
-      throw error;
-    }
+    if (error) throw error;
     
-    const count = data?.length || 0;
-    console.log(`[RLS-AUDIT] Success | UID: ${uid} | CompID: ${compId} | Rows: ${count}`);
-    
-    if (count === 0 && uid !== 'NULL') {
-      console.warn(`[RLS-AUDIT] SUSPICIOUS EMPTY RESULT: 0 reports for user ${uid} in company ${compId}. Verify RLS policies and user_companies table.`);
-    }
-    
-    return data.map(r => this.mapSupabaseReport(r));
+    return (data || []).map(r => this.mapSupabaseReport(r));
   }
 
   async addReport(report: any) {
@@ -1885,8 +1838,6 @@ class DBService {
 
   async getSummary(): Promise<ReportSummary[]> {
     await this.checkAuthSession();
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log(`[RLS-AUDIT] Generating Summary | UID: ${user?.id || 'NULL'}`);
     
     const [reports, projects, clients, workers] = await Promise.all([
       this.getReports(),

@@ -472,7 +472,7 @@ const App: React.FC = () => {
             }
           }
         } catch (err) {
-          console.error('AUTH: Initial auth error:', err);
+          // Auth initialization error
         }
       }
       setSessionReady(true);

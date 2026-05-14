@@ -33,13 +33,13 @@ const CompactDashboard: React.FC = () => {
         db.getProjects()
       ]);
 
-      const activeProjectsCount = allProjects.filter(p => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
-      const pendingData = summary.filter(s => (s.invoiceStatus || 'Pending') === 'Pending');
+      const activeProjectsCount = allProjects.filter((p: any) => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
+      const pendingData = summary.filter((s: any) => (s.invoiceStatus || 'Pending') === 'Pending');
 
-      const pendingReports = new Set(pendingData.map(s => s.id.split('_')[0])).size;
-      const pendingHours = pendingData.reduce((acc, s) => acc + (s.totalHours || 0), 0);
-      const pendingExpenses = pendingData.reduce((acc, s) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
-      const pendingToInvoice = pendingData.reduce((acc, s) => acc + (s.revenue || 0), 0);
+      const pendingReports = new Set(pendingData.map((s: any) => s.id.split('_')[0])).size;
+      const pendingHours = pendingData.reduce((acc: number, s: any) => acc + (s.totalHours || 0), 0);
+      const pendingExpenses = pendingData.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
+      const pendingToInvoice = pendingData.reduce((acc: number, s: any) => acc + (s.revenue || 0), 0);
       const pendingMargin = pendingToInvoice - pendingExpenses;
 
       setStats({
