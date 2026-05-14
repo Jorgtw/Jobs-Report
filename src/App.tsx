@@ -71,7 +71,7 @@ export const FullWidthField: React.FC<{ label: string; children: React.ReactNode
 // --- Navigation Config ---
 const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
   const isSA = user?.role?.toLowerCase() === 'superadmin';
-  const isOperator = user?.role === 'operator';
+  const isOperator = user?.role?.toLowerCase() === 'operator';
 
   const links = [
     { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
@@ -148,7 +148,7 @@ const UserDropdown: React.FC<{ user: User, onLogout: () => void }> = ({ user, on
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const isOperator = user.role === 'operator';
+  const isOperator = user.role?.toLowerCase() === 'operator';
 
   return (
     <div className="relative" ref={dropdownRef}>
