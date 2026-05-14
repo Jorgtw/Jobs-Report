@@ -147,7 +147,7 @@ interface HomeViewProps {
 }
 
 const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
 
   const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
     const isSA = user?.role?.toLowerCase() === 'superadmin';
