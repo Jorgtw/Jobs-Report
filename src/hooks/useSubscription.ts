@@ -14,21 +14,24 @@ import { SubscriptionStatus, Feature, PlanFeature, Permission } from '../types/f
  * 
  * The frontend is a pure consumer — zero business logic here.
  */
-export const useSubscription = () => {
+export const useSubscription = (manualCompanyId?: string) => {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
   const refreshStatus = useCallback(async () => {
+    // 1. Get company context: manual override or current DB state
+    const companyId = manualCompanyId || db.getCompanyIdSafe();
+    
+    if (!companyId) {
+      setLoading(false);
+      setStatus(null);
+      return;
+    }
+
     setLoading(true);
     try {
-      const companyId = db.requireCompanyId();
-      if (!companyId) {
-        setStatus(null);
-        return;
-      }
-
-      // 1. STATE: Read from the aggregation view
+      // 2. STATE: Read from the aggregation view
       const { data: viewData, error: viewError } = await supabase
         .from('vw_access_control')
         .select('*')
@@ -41,7 +44,7 @@ export const useSubscription = () => {
         return;
       }
 
-      // 2. PERMISSION: Only the runtime policy decision (single RPC)
+      // 3. PERMISSION: Only the runtime policy decision (single RPC)
       const { data: canCreate } = await supabase
         .rpc('can_company_create_report', { p_company_id: companyId });
 
@@ -52,13 +55,11 @@ export const useSubscription = () => {
         currentPeriodEnd: viewData.current_period_end,
         currentUsage: viewData.current_usage,
         reportsLimit: viewData.reports_limit,
-        // Plan features: static, from plans catalog via view
         planFeatures: {
           compliance: viewData.has_compliance ?? false,
           communications: viewData.has_communications ?? false,
           multiworker: viewData.has_multiworker ?? false,
         },
-        // Permissions: dynamic, from policy RPC
         permissions: {
           can_create_reports: canCreate ?? false,
         },
@@ -70,11 +71,11 @@ export const useSubscription = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [manualCompanyId]);
 
   useEffect(() => {
     refreshStatus();
-  }, [refreshStatus]);
+  }, [refreshStatus, manualCompanyId]);
 
   /**
    * Universal feature check. Derives answer from the correct source:

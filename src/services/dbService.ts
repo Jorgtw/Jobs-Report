@@ -21,6 +21,10 @@ class DBService {
     this.currentUserId = id;
   }
 
+  public getCompanyIdSafe(): string | null {
+    return this.currentCompanyId;
+  }
+
   public getUserIdSafe(): string | null {
     return this.currentUserId;
   }

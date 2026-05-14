@@ -177,7 +177,7 @@ const AppLayout: React.FC<{
 }> = ({ user, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
-  const { hasFeature } = useSubscription();
+  const { hasFeature } = useSubscription(user.companyId);
 
   React.useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -336,7 +336,7 @@ const App: React.FC = () => {
   });
   const [initializing, setInitializing] = useState(true);
   const [sessionReady, setSessionReady] = useState(false);
-  const { hasFeature } = useSubscription();
+  const { hasFeature } = useSubscription(user?.companyId);
 
   useEffect(() => {
     const handleResize = () => {
