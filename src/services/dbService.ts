@@ -874,9 +874,24 @@ class DBService {
     const cleanUsername = username.trim();
     
     // 1. Usa la nuova RPC per ottenere l'email dall'username
-    const { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
+    let { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
     
     console.log(`[DBService] RPC Result for ${cleanUsername}:`, { userEmail, emailError });
+
+    // FALLBACK: Se la RPC fallisce (magari perché l'utente non è 'active'), proviamo una query diretta
+    if (!userEmail) {
+      console.log(`[DBService] RPC null, attempting fallback direct lookup for: ${cleanUsername}`);
+      const { data: fallbackWorker } = await supabase
+        .from('workers')
+        .select('email, status')
+        .eq('username', cleanUsername)
+        .maybeSingle();
+      
+      if (fallbackWorker) {
+        console.warn(`[DBService] User found via fallback but might be inactive. Status: ${fallbackWorker.status}`);
+        userEmail = fallbackWorker.email;
+      }
+    }
 
     if (emailError || !userEmail) {
       console.error('Non trovo l\'utente o utente non attivo:', emailError);
