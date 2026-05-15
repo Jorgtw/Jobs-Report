@@ -502,23 +502,12 @@ class DBService {
     if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
     const userData = apiData.data;
 
-    // 4. Send Welcome Email with credentials
-    if (sendEmail && email && password) {
+    // 4. Send Welcome Email with professional link (Supabase Recovery)
+    if (sendEmail && email) {
        try {
-         await fetch('/api/sendEmail', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({
-             type: 'welcome',
-             companyName,
-             adminName,
-             username,
-             password,
-             email
-           })
-         });
+         await this.sendAccessInstructions(userData.id);
        } catch (emailErr) {
-         console.error('DBService: Failed to send welcome email:', emailErr);
+         console.error('DBService: Failed to send professional welcome email:', emailErr);
        }
     }
 
@@ -772,23 +761,12 @@ class DBService {
           throw new Error(apiData.error || 'Failed to update admin via API');
         }
 
-        // 3. Send email if requested
-        if (sendEmail && email && (password || username)) {
+        // 3. Send professional email if requested
+        if (sendEmail && email) {
           try {
-            await fetch('/api/sendEmail', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: 'welcome',
-                companyName,
-                adminName: adminName || 'Amministratore',
-                username: username || '',
-                password: password || '********', 
-                email
-              })
-            });
+            await this.sendAccessInstructions(adminId);
           } catch (emailErr) {
-            console.error('Failed to send email during update:', emailErr);
+            console.error('Failed to send professional email during update:', emailErr);
           }
         }
       }

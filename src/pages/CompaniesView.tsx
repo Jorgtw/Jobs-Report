@@ -9,6 +9,8 @@ const CompaniesView: React.FC = () => {
   const [companies, setCompanies] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [sendStatus, setSendStatus] = useState<Record<string, 'success' | 'error'>>({});
 
   useEffect(() => {
     loadCompanies();
@@ -107,8 +109,28 @@ const CompaniesView: React.FC = () => {
     }
   };
 
+  const handleSendInstructions = async (c: any) => {
+    if (!c.email || !c.adminId) {
+      alert("Email o Admin ID mancante per questa ditta.");
+      return;
+    }
+
+    try {
+      setSendingId(c.id);
+      await db.sendAccessInstructions(c.adminId);
+      setSendStatus(prev => ({ ...prev, [c.id]: 'success' }));
+      setTimeout(() => setSendStatus(prev => { const next = { ...prev }; delete next[c.id]; return next; }), 3000);
+    } catch (err: any) {
+      console.error('Failed to send instructions:', err);
+      setSendStatus(prev => ({ ...prev, [c.id]: 'error' }));
+      setTimeout(() => setSendStatus(prev => { const next = { ...prev }; delete next[c.id]; return next; }), 3000);
+    } finally {
+      setSendingId(null);
+    }
+  };
+
   const handlePrepareEmail = (c: any) => {
-    const subject = encodeURIComponent(`Credenziali di accesso Jobs Report - ${c.name}`);
+    const subject = encodeURIComponent(`Credenziali di accesso Jobs Report - ${c.name || c.companyName}`);
     const body = encodeURIComponent(
       `Ciao ${c.adminName || 'Amministratore'},\n\n` +
       `Ecco le tue credenziali di accesso per Jobs Report:\n\n` +
@@ -185,15 +207,23 @@ const CompaniesView: React.FC = () => {
                       <Mail size={16} /> Prepara
                     </button>
                     <button 
-                      onClick={() => {
-                        handleEdit(c);
-                        setFormData(prev => ({ ...prev, sendWelcomeEmail: true }));
-                      }} 
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg font-medium transition-colors" 
-                      title="Invia Automatica"
+                      disabled={sendingId === c.id || !c.email}
+                      onClick={() => handleSendInstructions(c)} 
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${sendingId === c.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} 
+                      title="Invia Istruzioni Professionali (Auto)"
                     >
-                      <Building2 size={16} /> Auto
+                      {sendingId === c.id ? (
+                        <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                      ) : (
+                        <Mail size={16} />
+                      )}
+                      {t('auth.sendInstructions')}
                     </button>
+                    {sendStatus[c.id] && (
+                      <span className={`flex items-center px-2 text-sm font-bold ${sendStatus[c.id] === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {sendStatus[c.id] === 'success' ? '✓' : '✗'}
+                      </span>
+                    )}
                     <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
                       <Trash2 size={16} /> {t('common.delete')}
                     </button>
@@ -302,15 +332,22 @@ const CompaniesView: React.FC = () => {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail })}
-                        className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.sendWelcomeEmail ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'}`}
+                        disabled={sendingId === editingId || !formData.email}
+                        onClick={() => {
+                          if (editingId) {
+                             handleSendInstructions({ id: editingId, adminId: formData.adminId, email: formData.email, name: formData.companyName });
+                          } else {
+                             setFormData({ ...formData, sendWelcomeEmail: !formData.sendWelcomeEmail });
+                          }
+                        }}
+                        className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.sendWelcomeEmail || (editingId && sendStatus[editingId] === 'success') ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'}`}
                       >
-                        {formData.sendWelcomeEmail ? "AUTO-INVIO ATTIVO" : "ATTIVA AUTO-INVIO"}
+                        {sendingId === editingId ? "INVIO IN CORSO..." : (formData.sendWelcomeEmail ? "AUTO-INVIO ATTIVO" : "INVIA ISTRUZIONI (AUTO)")}
                       </button>
                       <button
                         type="button"
                         onClick={() => handlePrepareEmail({ 
-                          name: formData.companyName, 
+                          companyName: formData.companyName, 
                           adminName: formData.adminName, 
                           email: formData.email, 
                           username: formData.username, 
