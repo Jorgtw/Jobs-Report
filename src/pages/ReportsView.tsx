@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+// Triggering Vercel rebuild for restoration
 import { 
   Plus, 
   Pencil, 
