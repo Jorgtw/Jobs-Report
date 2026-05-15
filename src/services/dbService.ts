@@ -862,9 +862,10 @@ class DBService {
 
   async loginUser(username: string, password?: string) {
     if (!password) return null;
+    const cleanUsername = username.trim();
     
-    // 1. Usa la nuova RPC per ottenere l'email dall'username (bypassa RLS in modo sicuro)
-    const { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: username });
+    // 1. Usa la nuova RPC per ottenere l'email dall'username
+    const { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
     
     if (emailError || !userEmail) {
       console.error('Non trovo l\'utente o utente non attivo:', emailError);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-// Triggering Vercel rebuild for restoration
+// Triggering Vercel rebuild for professional email flow restoration - 2026-05-15
 import { 
   Plus, 
   Pencil, 
