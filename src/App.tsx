@@ -530,8 +530,12 @@ const App: React.FC = () => {
           <Route
             path="/*"
             element={
-              (!isReady && status !== 'resolving') || (!user && status !== 'resolving') ? (
+              ((!isReady && status !== 'resolving') || (!user && status !== 'resolving')) ? (
                 <Navigate to="/" replace />
+              ) : !user ? (
+                <div className="min-h-screen flex items-center justify-center bg-white">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
               ) : (
                 <AppLayout
                   user={user}
