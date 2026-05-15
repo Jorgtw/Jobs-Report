@@ -876,6 +876,8 @@ class DBService {
     // 1. Usa la nuova RPC per ottenere l'email dall'username
     const { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
     
+    console.log(`[DBService] RPC Result for ${cleanUsername}:`, { userEmail, emailError });
+
     if (emailError || !userEmail) {
       console.error('Non trovo l\'utente o utente non attivo:', emailError);
       return null;

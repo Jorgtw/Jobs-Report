@@ -38,7 +38,7 @@ const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ t }) => {
       const { error } = await supabase.auth.updateUser({ password: form.newPass });
       if (error) throw error;
       setMessage({ text: t('auth.passwordChanged'), type: 'success' });
-      setTimeout(() => { window.location.hash = '#/'; }, 1500);
+      setTimeout(() => { window.location.hash = '#/home'; }, 1500);
     } catch (err: any) {
       setMessage({ text: err?.message || t('common.updateError'), type: 'error' });
     } finally {
