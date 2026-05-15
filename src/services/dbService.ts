@@ -353,10 +353,19 @@ class DBService {
     const initialWorker = data[0]; 
 
     // SSOT Context & Repair logic for hydration
-    let { data: contexts } = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
+    let { data: contexts, error: ctxErr } = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
+    
+    // Fallback if parameter mismatch or first call failed
+    if (ctxErr || !contexts || contexts.length === 0) {
+      console.warn("[DBService] Primary context fetch failed/empty, trying fallback without parameters...", ctxErr);
+      const fallback = await supabase.rpc('get_user_session_context');
+      contexts = fallback.data;
+    }
+
     if (!contexts || contexts.length === 0) {
+      console.warn("[DBService] Context empty after fallback, attempting repair...");
       await supabase.rpc('repair_user_companies');
-      const retry = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
+      const retry = await supabase.rpc('get_user_session_context');
       contexts = retry.data;
     }
 
