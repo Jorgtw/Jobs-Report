@@ -132,8 +132,8 @@ const CompaniesView: React.FC = () => {
   const handlePrepareEmail = (c: any) => {
     const name = c.adminName || c.admin_name || 'Amministratore';
     const company = c.name || c.companyName || '';
-    const subject = encodeURIComponent(`Credenziali di accesso Jobs Report - ${company}`);
-    const body = encodeURIComponent(
+    const subjectText = `Credenziali di accesso Jobs Report - ${company}`;
+    const bodyText = 
       `Ciao ${name},\n\n` +
       `Ecco le tue credenziali di accesso per Jobs Report:\n\n` +
       `URL: https://jobs-report.vercel.app\n` +
@@ -141,8 +141,15 @@ const CompaniesView: React.FC = () => {
       `Password: ${c.password || '********'}\n\n` +
       `Ti consigliamo di cambiare la password al primo accesso.\n\n` +
       `Buon lavoro,\n` +
-      `Il team di JobsReport`
-    );
+      `Il team di JobsReport`;
+
+    // Copy to clipboard as fallback
+    navigator.clipboard.writeText(bodyText).then(() => {
+      alert("Il testo dell'email è stato copiato negli appunti.\nSe il tuo Outlook non si apre correttamente, puoi incollarlo (CTRL+V) manualmente.");
+    }).catch(err => console.error('Clipboard copy failed:', err));
+
+    const subject = encodeURIComponent(subjectText);
+    const body = encodeURIComponent(bodyText);
     window.location.href = `mailto:${c.email}?subject=${subject}&body=${body}`;
   };
 
