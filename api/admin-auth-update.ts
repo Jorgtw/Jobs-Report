@@ -239,14 +239,49 @@ export default async function handler(req: any, res: any) {
       const { targetUserId } = req.body;
       if (!targetUserId) return res.status(400).json({ error: 'Missing targetUserId' });
 
-      const { data: targetData, error: targetDbError } = await supabaseAdmin
+      // 1. Fetch worker data
+      const { data: worker, error: workerErr } = await supabaseAdmin
         .from('workers')
-        .select('auth_id, email, name')
+        .select('id, email, name, auth_id, username, password')
         .eq('id', targetUserId)
         .single();
 
-      if (targetDbError || !targetData || !targetData.auth_id) {
-        return res.status(404).json({ error: 'User not found in registry or missing auth_id' });
+      if (workerErr || !worker) {
+        return res.status(404).json({ error: 'User not found in database' });
+      }
+
+      if (!worker.email) {
+        return res.status(400).json({ error: 'User has no email address' });
+      }
+
+      let currentAuthId = worker.auth_id;
+
+      // 2. If no auth_id, check if user exists in Auth by email or create them
+      if (!currentAuthId) {
+        console.log(`API: Worker ${worker.email} has no auth_id. Checking Auth list...`);
+        const { data: authListData } = await supabaseAdmin.auth.admin.listUsers();
+        const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === worker.email.toLowerCase());
+
+        if (existingAuthUser) {
+          currentAuthId = existingAuthUser.id;
+        } else {
+          console.log(`API: Creating new Auth user for ${worker.email}`);
+          const { data: newAuth, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: worker.email,
+            password: worker.password || Math.random().toString(36).slice(-12),
+            email_confirm: true,
+            user_metadata: { name: worker.name }
+          });
+
+          if (createError) {
+            console.error('API: Auth creation failed:', createError);
+            return res.status(500).json({ error: `Failed to provision Auth account: ${createError.message}` });
+          }
+          currentAuthId = newAuth.user.id;
+        }
+
+        // Sync auth_id back to workers table
+        await supabaseAdmin.from('workers').update({ auth_id: currentAuthId }).eq('id', worker.id);
       }
 
       if (!isSuperAdmin) {
@@ -265,7 +300,7 @@ export default async function handler(req: any, res: any) {
         const { data: targetCompanies } = await supabaseAdmin
           .from('user_companies')
           .select('company_id')
-          .eq('auth_id', targetData.auth_id)
+          .eq('auth_id', currentAuthId)
           .in('company_id', reqCompanyIds);
 
         if (!targetCompanies || targetCompanies.length === 0) {
@@ -273,10 +308,10 @@ export default async function handler(req: any, res: any) {
         }
       }
 
-      console.log(`[API] Generating recovery link for worker ID: ${targetUserId} (${targetData.email})`);
+      console.log(`[API] Generating recovery link for worker ID: ${targetUserId} (${worker.email})`);
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
-        email: targetData.email,
+        email: worker.email,
         options: {
           redirectTo: `https://jobs-report.vercel.app/#/reset-password`
         }
@@ -295,14 +330,13 @@ export default async function handler(req: any, res: any) {
       }
 
       const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-      const { data: targetWorker } = await supabaseAdmin.from('workers').select('username, password').eq('id', targetUserId).single();
-      const username = targetWorker?.username || targetData.email;
-      const password = targetWorker?.password || '********';
+      const username = worker.username || worker.email;
+      const password = worker.password || '********';
 
       const emailHtml = `
         <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
           <h2 style="color:#1e293b;margin-bottom:16px;">Accesso a Jobs Report</h2>
-          <p style="color:#475569;font-size:15px;">Ciao <strong>${displayName}</strong>,</p>
+          <p style="color:#475569;font-size:15px;">Ciao <strong>${worker.name}</strong>,</p>
           <p style="color:#475569;font-size:15px;">Il tuo amministratore ti ha inviato le istruzioni per accedere a <strong>Jobs Report</strong>.</p>
           
           <div style="background-color:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #f1f5f9;">
@@ -325,7 +359,7 @@ export default async function handler(req: any, res: any) {
           </p>
         </div>`;
 
-      console.log(`[API] Attempting to send email via Resend to: ${targetData.email}`);
+      console.log(`[API] Attempting to send email via Resend to: ${worker.email}`);
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -334,7 +368,7 @@ export default async function handler(req: any, res: any) {
         },
         body: JSON.stringify({
           from: 'Jobs Report <noreply@jobs-report.app>',
-          to: [targetData.email],
+          to: [worker.email],
           subject: 'Le tue istruzioni di accesso – Jobs Report',
           html: emailHtml
         })
