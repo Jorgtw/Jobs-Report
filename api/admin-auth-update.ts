@@ -189,6 +189,30 @@ export default async function handler(req: any, res: any) {
         }
       }
 
+      let currentAuthId = targetData.auth_id;
+
+      // Provision Auth user if missing during update
+      if (!currentAuthId && (updates.email || updates.password)) {
+        console.log(`API: Update requested but auth_id missing for ${targetData.email}. Provisioning...`);
+        const { data: authListData } = await supabaseAdmin.auth.admin.listUsers();
+        const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === (updates.email || targetData.email).toLowerCase());
+
+        if (existingAuthUser) {
+          currentAuthId = existingAuthUser.id;
+        } else {
+          const { data: newAuth, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: updates.email || targetData.email,
+            password: updates.password || Math.random().toString(36).slice(-12),
+            email_confirm: true,
+            user_metadata: { name: updates.name || targetData.name }
+          });
+          if (createError) return res.status(500).json({ error: `Auth provisioning failed: ${createError.message}` });
+          currentAuthId = newAuth.user.id;
+        }
+        // Save the new auth_id immediately
+        await supabaseAdmin.from('workers').update({ auth_id: currentAuthId }).eq('id', targetUserId);
+      }
+
       const authUpdates: any = {};
       if (updates.email && updates.email !== targetData.email) {
         authUpdates.email = updates.email;
@@ -196,10 +220,10 @@ export default async function handler(req: any, res: any) {
       }
       if (updates.password) authUpdates.password = updates.password;
 
-      if ((authUpdates.email || authUpdates.password) && targetData.auth_id) {
-        console.log('API: Syncing with Supabase Auth for auth_id:', targetData.auth_id);
+      if ((authUpdates.email || authUpdates.password) && currentAuthId) {
+        console.log('API: Syncing with Supabase Auth for auth_id:', currentAuthId);
         const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
-          targetData.auth_id,
+          currentAuthId,
           authUpdates
         );
 
@@ -215,7 +239,11 @@ export default async function handler(req: any, res: any) {
       const dbUpdates: any = { ...updates };
       delete dbUpdates.password;
       delete dbUpdates.password_hash;
-      delete dbUpdates.companyId; // Remove frontend-only field
+      delete dbUpdates.companyId;
+
+      // Ensure status and role are never empty for company admins
+      if (!dbUpdates.status && !targetData.status) dbUpdates.status = 'active';
+      if (!dbUpdates.role && !targetData.role) dbUpdates.role = 'admin';
 
       const { error: finalDbError } = await supabaseAdmin
         .from('workers')
