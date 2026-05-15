@@ -350,7 +350,7 @@ export default async function handler(req: any, res: any) {
       const emailHtml = `
         <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
           <h2 style="color:#1e293b;margin-bottom:16px;">Accesso a Jobs Report</h2>
-          <p style="color:#475569;font-size:15px;">Ciao <strong>${worker.name}</strong>,</p>
+          <p style="color:#475569;font-size:15px;">Ciao <strong>${worker.name || 'Utente'}</strong>,</p>
           <p style="color:#475569;font-size:15px;">Il tuo amministratore ti ha inviato le istruzioni per accedere a <strong>Jobs Report</strong>.</p>
           
           <div style="background-color:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #f1f5f9;">
@@ -373,19 +373,24 @@ export default async function handler(req: any, res: any) {
           </p>
         </div>`;
 
+      const emailText = `Ciao ${worker.name},\n\nEcco le tue credenziali:\nUsername: ${username}\nPassword: ${password}\n\nAccedi qui: ${linkData.properties.action_link}`;
+
       console.log(`[API] Attempting to send email via Resend to: ${worker.email}`);
+      const resendPayload = {
+        from: 'Jobs Report <noreply@jobs-report.app>',
+        to: [worker.email],
+        subject: 'Le tue istruzioni di accesso – Jobs Report',
+        html: emailHtml,
+        text: emailText
+      };
+
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${RESEND_API_KEY}`
         },
-        body: JSON.stringify({
-          from: 'Jobs Report <noreply@jobs-report.app>',
-          to: [worker.email],
-          subject: 'Le tue istruzioni di accesso – Jobs Report',
-          html: emailHtml
-        })
+        body: JSON.stringify(resendPayload)
       });
 
       const resendData = await resendResponse.json();
