@@ -166,40 +166,40 @@ const CompaniesView: React.FC = () => {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyName')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyEmail')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.phone')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.premium')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">{t('dashboard.companyStatus')}</th>
-                <th className="px-5 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">{t('common.actions')}</th>
+                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[9px] tracking-wider">{t('dashboard.companyName')}</th>
+                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[9px] tracking-wider">{t('dashboard.companyEmail')}</th>
+                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[9px] tracking-wider">{t('dashboard.phone')}</th>
+                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[9px] tracking-wider">{t('dashboard.premium')}</th>
+                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[9px] tracking-wider">{t('dashboard.companyStatus')}</th>
+                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[9px] tracking-wider text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {companies.map(c => (
-                <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-4 font-bold text-slate-900">{c.name}</td>
-                  <td className="px-5 py-4 text-slate-500">{c.email || '-'}</td>
-                  <td className="px-5 py-4 text-slate-500">{c.phone || '-'}</td>
-                  <td className="px-5 py-4">
+                <tr key={c.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0">
+                  <td className="px-4 py-2 font-bold text-slate-900 text-xs">{c.name}</td>
+                  <td className="px-4 py-2 text-slate-500 text-[11px]">{c.email || '-'}</td>
+                  <td className="px-4 py-2 text-slate-500 text-[11px]">{c.phone || '-'}</td>
+                  <td className="px-4 py-2">
                     <button
                       onClick={() => handleTogglePremium(c.id, !!c.isPremium)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 shadow-sm hover:scale-105' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black transition-all ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' : 'bg-slate-100 text-slate-400'}`}
                     >
-                      <Building2 size={12} />
+                      <Building2 size={10} />
                       {c.isPremium ? 'PREMIUM' : 'BASE'}
                     </button>
                   </td>
-                  <td className="px-5 py-4">
-                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${c.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                  <td className="px-4 py-2">
+                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${c.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
                       {c.status === 'active' ? t('common.statusActive') : t('common.statusInactive')}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-right flex justify-end gap-2">
-                    <button onClick={() => handleToggleStatus(c.id, c.status)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('common.deactivate') : t('common.activate')}>
-                      {c.status === 'active' ? <><EyeOff size={16} /> {t('common.deactivate')}</> : <><Eye size={16} /> {t('common.activate')}</>}
+                  <td className="px-4 py-2 text-right flex justify-end gap-1.5">
+                    <button onClick={() => handleToggleStatus(c.id, c.status)} className={`p-1.5 rounded-lg transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('common.deactivate') : t('common.activate')}>
+                      {c.status === 'active' ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
-                    <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors" title={t('common.edit')}>
-                      <Pencil size={16} /> {t('common.edit')}
+                    <button onClick={() => handleEdit(c)} className="p-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('common.edit')}>
+                      <Pencil size={14} />
                     </button>
                     <button 
                       onClick={() => handlePrepareEmail({
@@ -209,31 +209,30 @@ const CompaniesView: React.FC = () => {
                         username: c.username,
                         password: c.password
                       })} 
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg font-medium transition-colors" 
+                      className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors" 
                       title="Prepara Email Manuale"
                     >
-                      <Mail size={16} /> Prepara
+                      <Mail size={14} />
                     </button>
                     <button 
                       disabled={sendingId === c.id || !c.email}
                       onClick={() => handleSendInstructions(c)} 
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${sendingId === c.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} 
+                      className={`p-1.5 rounded-lg transition-all ${sendingId === c.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} 
                       title="Invia Istruzioni Professionali (Auto)"
                     >
                       {sendingId === c.id ? (
-                        <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                        <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
                       ) : (
-                        <Mail size={16} />
+                        <Zap size={14} />
                       )}
-                      {t('auth.sendInstructions')}
                     </button>
                     {sendStatus[c.id] && (
-                      <span className={`flex items-center px-2 text-sm font-bold ${sendStatus[c.id] === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <span className={`flex items-center text-sm font-bold ${sendStatus[c.id] === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
                         {sendStatus[c.id] === 'success' ? '✓' : '✗'}
                       </span>
                     )}
-                    <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg font-medium transition-colors" title={t('common.delete')}>
-                      <Trash2 size={16} /> {t('common.delete')}
+                    <button onClick={() => handleDelete(c.id)} className="p-1.5 text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('common.delete')}>
+                      <Trash2 size={14} />
                     </button>
                   </td>
                 </tr>
