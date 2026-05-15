@@ -117,6 +117,8 @@ export default async function handler(req: any, res: any) {
           name,
           username,
           email,
+          phone: updates.phone || null,
+          company_id: targetCompanyId,
           auth_id: authId,
           role: role || 'worker',
           status: status || 'active',
@@ -280,8 +282,20 @@ export default async function handler(req: any, res: any) {
           currentAuthId = newAuth.user.id;
         }
 
-        // Sync auth_id back to workers table
-        await supabaseAdmin.from('workers').update({ auth_id: currentAuthId }).eq('id', worker.id);
+        // Sync auth_id and missing data back to workers table
+        const repairData: any = { auth_id: currentAuthId };
+        if (!worker.status) repairData.status = 'active';
+        if (!worker.role) repairData.role = 'admin'; // Assume admin for company creators
+        
+        await supabaseAdmin.from('workers').update(repairData).eq('id', worker.id);
+      } else {
+        // Even if auth_id exists, ensure status and role are populated
+        if (!worker.status || !worker.role) {
+           await supabaseAdmin.from('workers').update({ 
+             status: worker.status || 'active',
+             role: worker.role || 'admin'
+           }).eq('id', worker.id);
+        }
       }
 
       if (!isSuperAdmin) {
