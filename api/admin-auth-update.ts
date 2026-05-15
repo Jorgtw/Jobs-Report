@@ -277,7 +277,7 @@ export default async function handler(req: any, res: any) {
         type: 'recovery',
         email: targetData.email,
         options: {
-          redirectTo: `https://jobs-report.vercel.app`
+          redirectTo: `https://jobs-report.vercel.app/#/reset-password`
         }
       });
 
@@ -287,19 +287,33 @@ export default async function handler(req: any, res: any) {
       }
 
       const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-      const displayName = targetData.name || targetData.email;
+      const { data: targetWorker } = await supabaseAdmin.from('workers').select('username, password').eq('id', targetUserId).single();
+      const username = targetWorker?.username || targetData.email;
+      const password = targetWorker?.password || '********';
+
       const emailHtml = `
-        <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">
-          <h2 style="color:#1e293b">Accesso a Jobs Report</h2>
-          <p>Ciao <strong>${displayName}</strong>,</p>
-          <p>Il tuo amministratore ti ha inviato le istruzioni per accedere a <strong>Jobs Report</strong>.</p>
-          <p>Clicca il bottone qui sotto per impostare la tua password e accedere:</p>
-          <a href="${linkData.properties.action_link}"
-             style="display:inline-block;margin:16px 0;padding:12px 28px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">
-            Imposta password e accedi
-          </a>
-          <p style="color:#94a3b8;font-size:12px;margin-top:28px;">
-            Il link è valido per 24 ore. Se non hai richiesto questo accesso, ignora questa email.
+        <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
+          <h2 style="color:#1e293b;margin-bottom:16px;">Accesso a Jobs Report</h2>
+          <p style="color:#475569;font-size:15px;">Ciao <strong>${displayName}</strong>,</p>
+          <p style="color:#475569;font-size:15px;">Il tuo amministratore ti ha inviato le istruzioni per accedere a <strong>Jobs Report</strong>.</p>
+          
+          <div style="background-color:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #f1f5f9;">
+            <p style="margin:0 0 8px 0;font-size:13px;color:#64748b;font-weight:bold;text-transform:uppercase;letter-spacing:0.05em;">Credenziali Temporanee</p>
+            <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Username:</strong> ${username}</p>
+            <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Password:</strong> ${password}</p>
+          </div>
+
+          <p style="color:#475569;font-size:15px;">Clicca il bottone qui sotto per impostare la tua password definitiva e accedere al sistema:</p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${linkData.properties.action_link}"
+               style="display:inline-block;padding:14px 32px;background-color:#2563eb;color:#ffffff;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;box-shadow:0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+              Imposta password e accedi
+            </a>
+          </div>
+          
+          <p style="color:#94a3b8;font-size:11px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px;text-align:center;">
+            Il link è valido per 24 ore. Se non hai richiesto questo accesso, puoi ignorare questa email.<br>
+            © Jobs Report
           </p>
         </div>`;
 
