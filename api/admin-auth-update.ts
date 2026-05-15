@@ -273,6 +273,7 @@ export default async function handler(req: any, res: any) {
         }
       }
 
+      console.log(`[API] Generating recovery link for worker ID: ${targetUserId} (${targetData.email})`);
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: targetData.email,
@@ -280,6 +281,13 @@ export default async function handler(req: any, res: any) {
           redirectTo: `https://jobs-report.vercel.app/#/reset-password`
         }
       });
+      
+      if (linkError) {
+        console.error('[API] Supabase Link Generation Error:', linkError);
+        throw linkError;
+      }
+      
+      console.log(`[API] Link generated successfully. action_link: ${linkData.properties.action_link ? 'YES' : 'NO'}`);
 
       if (linkError || !linkData?.properties?.action_link) {
         console.error('RECOVERY_LINK_GENERATION_FAILED', linkError);
@@ -317,6 +325,7 @@ export default async function handler(req: any, res: any) {
           </p>
         </div>`;
 
+      console.log(`[API] Attempting to send email via Resend to: ${targetData.email}`);
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -331,8 +340,11 @@ export default async function handler(req: any, res: any) {
         })
       });
 
+      const resendData = await resendResponse.json();
+      console.log('[API] Resend Response:', { status: resendResponse.status, data: resendData });
+
       if (!resendResponse.ok) {
-        console.error('RESEND_SEND_FAILED');
+        console.error('RESEND_SEND_FAILED', resendData);
         return res.status(500).json({ error: 'Email sending failed.' });
       }
 

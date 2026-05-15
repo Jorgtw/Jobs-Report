@@ -130,9 +130,11 @@ const CompaniesView: React.FC = () => {
   };
 
   const handlePrepareEmail = (c: any) => {
-    const subject = encodeURIComponent(`Credenziali di accesso Jobs Report - ${c.name || c.companyName}`);
+    const name = c.adminName || c.admin_name || 'Amministratore';
+    const company = c.name || c.companyName || '';
+    const subject = encodeURIComponent(`Credenziali di accesso Jobs Report - ${company}`);
     const body = encodeURIComponent(
-      `Ciao ${c.adminName || 'Amministratore'},\n\n` +
+      `Ciao ${name},\n\n` +
       `Ecco le tue credenziali di accesso per Jobs Report:\n\n` +
       `URL: https://jobs-report.vercel.app\n` +
       `Username: ${c.username}\n` +
@@ -200,7 +202,13 @@ const CompaniesView: React.FC = () => {
                       <Pencil size={16} /> {t('common.edit')}
                     </button>
                     <button 
-                      onClick={() => handlePrepareEmail(c)} 
+                      onClick={() => handlePrepareEmail({
+                        adminName: c.admin_name,
+                        companyName: c.name,
+                        email: c.email,
+                        username: c.username,
+                        password: c.password
+                      })} 
                       className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg font-medium transition-colors" 
                       title="Prepara Email Manuale"
                     >
