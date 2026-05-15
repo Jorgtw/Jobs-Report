@@ -504,13 +504,13 @@ const App: React.FC = () => {
   };
 
   // --- Mount Gate ---
-  if (status === 'loading' || status === 'resolving') {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-            {status === 'loading' ? 'Inizializzazione...' : 'Risoluzione contesto...'}
+            Inizializzazione...
           </p>
         </div>
       </div>
@@ -530,7 +530,7 @@ const App: React.FC = () => {
           <Route
             path="/*"
             element={
-              !isReady || !user ? (
+              (!isReady && status !== 'resolving') || (!user && status !== 'resolving') ? (
                 <Navigate to="/" replace />
               ) : (
                 <AppLayout

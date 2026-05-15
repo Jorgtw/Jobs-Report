@@ -55,7 +55,9 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
         role: userData.role 
       });
 
-      if (activeCompId) {
+      const isSA = userData.role?.toLowerCase() === 'superadmin';
+
+      if (activeCompId || isSA) {
         // 1. Inject into infrastructure (Sincrono)
         db.setUserId(userData.id);
         db.setCompanyId(activeCompId);
@@ -66,7 +68,13 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
         
         // 3. Mark as READY (Gate open)
         setStatus('ready');
+        console.log("[CompanyContext] Context successfully set to READY");
       } else {
+        console.warn("[CompanyContext] Redirecting to unauthenticated: No active company and not a SuperAdmin.", { 
+          userName: userData.name, 
+          role: userData.role, 
+          companiesCount: userData.availableCompanies?.length 
+        });
         setStatus('unauthenticated');
       }
     } catch (err) {
