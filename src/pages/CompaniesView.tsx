@@ -11,6 +11,7 @@ const CompaniesView: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendStatus, setSendStatus] = useState<Record<string, 'success' | 'error'>>({});
+  const [emailPreview, setEmailPreview] = useState<{ to: string, subject: string, body: string } | null>(null);
 
   useEffect(() => {
     loadCompanies();
@@ -143,14 +144,11 @@ const CompaniesView: React.FC = () => {
       `Buon lavoro,\n` +
       `Il team di JobsReport`;
 
-    // Copy to clipboard as fallback
-    navigator.clipboard.writeText(bodyText).then(() => {
-      alert("Il testo dell'email è stato copiato negli appunti.\nSe il tuo Outlook non si apre correttamente, puoi incollarlo (CTRL+V) manualmente.");
-    }).catch(err => console.error('Clipboard copy failed:', err));
-
-    const subject = encodeURIComponent(subjectText);
-    const body = encodeURIComponent(bodyText);
-    window.location.href = `mailto:${c.email}?subject=${subject}&body=${body}`;
+    setEmailPreview({
+      to: c.email || '',
+      subject: subjectText,
+      body: bodyText
+    });
   };
 
   const resetForm = () => {
@@ -382,6 +380,70 @@ const CompaniesView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Email Preview Modal */}
+      {emailPreview && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setEmailPreview(null)}></div>
+          <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                  <Mail size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">Anteprima Email</h3>
+                  <p className="text-xs text-slate-500">Copia e incolla nel tuo Outlook</p>
+                </div>
+              </div>
+              <button onClick={() => setEmailPreview(null)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                <X size={20} className="text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Destinatario</label>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm font-medium text-slate-700">{emailPreview.to}</div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Oggetto</label>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm font-medium text-slate-700">{emailPreview.subject}</div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Corpo del messaggio</label>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm font-medium text-slate-700 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed italic">
+                  {emailPreview.body}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(emailPreview.body);
+                  alert("Testo copiato! Ora puoi incollarlo nel tuo Outlook.");
+                }}
+                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+              >
+                Copia Testo
+              </button>
+              <button
+                onClick={() => {
+                  const subject = encodeURIComponent(emailPreview.subject);
+                  const body = encodeURIComponent(emailPreview.body);
+                  window.location.href = `mailto:${emailPreview.to}?subject=${subject}&body=${body}`;
+                }}
+                className="px-4 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-100 transition-all"
+                title="Tenta di aprire il client predefinito"
+              >
+                Apri Client
+              </button>
+            </div>
           </div>
         </div>
       )}
