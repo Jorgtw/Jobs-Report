@@ -71,22 +71,20 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
       if (activeCompId || isSA) {
         // Enforce status gating via policy
         if (activeCompId && !isSA) {
-            const { data: compStatus } = await supabase.from('companies')
-              .select('status')
-             .eq('id', activeCompId)
-             .maybeSingle();
-           
-           console.log("[CompanyContext] Policy Check for company:", activeCompId, { 
-             compStatus, 
-             canAccess: canPerformAction(compStatus, 'access_app') 
-           });
+            const compDetails = await db.getCompanyDetails(activeCompId);
+            
+            console.log("[CompanyContext] Policy Check for company:", activeCompId, { 
+              compDetails, 
+              canAccess: canPerformAction(compDetails, 'access_app') 
+            });
 
-           if (!canPerformAction(compStatus, 'access_app')) {
-             console.warn("[CompanyContext] Redirecting to pending_setup screen: Company fails access_app policy.");
-             setStatus('pending_setup');
-             setUser(userData); // Keep user data so logout works
-             return;
-           }
+            if (!canPerformAction(compDetails, 'access_app')) {
+              console.warn("[CompanyContext] Redirecting to pending_setup screen: Company fails access_app policy.");
+              setStatus('pending_setup');
+              setUser(userData); // Keep user data so logout works
+              isResolvingRef.current = false;
+              return;
+            }
         }
 
         // 1. Inject into infrastructure (Sincrono)
