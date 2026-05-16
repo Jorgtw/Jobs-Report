@@ -64,8 +64,8 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
       if (activeCompId || isSA) {
         // Enforce status gating via policy
         if (activeCompId && !isSA) {
-           const { data: compStatus } = await supabase.from('companies')
-             .select('status, setup_step, setup_error')
+            const { data: compStatus } = await supabase.from('companies')
+              .select('status')
              .eq('id', activeCompId)
              .maybeSingle();
            if (!canPerformAction(compStatus, 'access_app')) {
