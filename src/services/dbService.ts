@@ -810,10 +810,14 @@ class DBService {
   async getCompanyDetails(companyId: string): Promise<any> {
     const { data, error } = await supabase
       .from('companies')
-      .select('*, company_subscriptions(*)')
+      .select('*')
       .eq('id', companyId)
       .maybeSingle();
-    if (error || !data) return null;
+    if (error) {
+       console.error('db.getCompanyDetails error:', error);
+       return null;
+    }
+    if (!data) return null;
     return this.mapSupabaseCompany(data);
   }
 
