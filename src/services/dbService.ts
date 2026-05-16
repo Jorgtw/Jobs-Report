@@ -1,6 +1,6 @@
 import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, User } from '../types';
 import { supabase } from './supabase';
-import { canPerformAction, CompanyStateInfo } from '../utils/companyStatePolicy';
+import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
 
 class DBService {
   private currentCompanyId: string | null = null;
@@ -599,7 +599,9 @@ class DBService {
       }).eq('id', newCompanyId);
       throw err;
     } finally {
-      this.setupLocks.delete(companyId);
+      if (newCompanyId) {
+        this.setupLocks.delete(newCompanyId);
+      }
     }
   }
 
@@ -876,6 +878,8 @@ class DBService {
           comp.username = admin.username;
           comp.password = '';
         }
+      }
+
       // Computed health check: active but missing worker
       let computedStatus = comp.status;
       let needsRepair = false;
@@ -1304,14 +1308,9 @@ class DBService {
     };
   }
 
-  private requireCompanyId() {
-    if (!this.currentCompanyId && !this.isSuperAdminRole) {
-      console.error('[DBService] Attempted operation without company_id context');
-      throw new Error('Permesso negato: contesto azienda non inizializzato');
-    }
-  }
+  
 
-  private async enforceActionPolicy(action: import('../utils/companyStatePolicy').CompanyAction) {
+  private async enforceActionPolicy(action: CompanyAction) {
     this.requireCompanyId();
     if (this.isSuperAdminRole && !this.currentCompanyId) return; // SuperAdmins managing global stuff
     
