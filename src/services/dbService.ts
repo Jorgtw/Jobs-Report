@@ -582,7 +582,6 @@ class DBService {
 
       // STEP 4 — FINALIZE (ACTIVE)
       await supabase.from('companies').update({ 
-        status: 'active',
         status: 'active'
       }).eq('id', newCompanyId);
 
@@ -700,7 +699,6 @@ class DBService {
 
       // STEP 4 — FINALIZE (ACTIVE)
       await supabase.from('companies').update({ 
-        status: 'active',
         status: 'active'
       }).eq('id', companyId);
 
@@ -718,7 +716,7 @@ class DBService {
       if (retryBlocks.length > 4) {
         prevErrorText = retryBlocks[0] + '--- [Truncated older retries] ---\n\n--- Retry at' + retryBlocks.slice(-3).join('--- Retry at');
       }
-      const prevError = prevErrorText ? `${prevErrorText}\n\n--- Retry at ${new Date().toISOString()} ---\n` : '';
+      
       
       /* setup_error update skipped */
       throw err;
