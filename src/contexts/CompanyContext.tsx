@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { db } from '../services/dbService';
 import { User } from '../types';
@@ -21,10 +21,17 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [status, setStatus] = useState<CompanyStatus>('loading');
   const [user, setUser] = useState<User | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const isResolvingRef = useRef(false);
 
   const resolveContext = async (force: boolean = false) => {
+    if (isResolvingRef.current && !force) return;
+    isResolvingRef.current = true;
+
     // Prevent unneeded re-evaluations and "flashes" if we are already locked in setup
-    if (status === 'pending_setup' && !force) return;
+    if (status === 'pending_setup' && !force) {
+      isResolvingRef.current = false;
+      return;
+    }
     
     console.log("[CompanyContext] Resolving context...");
     try {
@@ -68,6 +75,12 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
               .select('status')
              .eq('id', activeCompId)
              .maybeSingle();
+           
+           console.log("[CompanyContext] Policy Check for company:", activeCompId, { 
+             compStatus, 
+             canAccess: canPerformAction(compStatus, 'access_app') 
+           });
+
            if (!canPerformAction(compStatus, 'access_app')) {
              console.warn("[CompanyContext] Redirecting to pending_setup screen: Company fails access_app policy.");
              setStatus('pending_setup');
@@ -98,6 +111,8 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (err) {
       console.error('[CompanyContext] Critical Context Failure:', err);
       setStatus('error');
+    } finally {
+      isResolvingRef.current = false;
     }
   };
 

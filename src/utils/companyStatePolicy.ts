@@ -21,8 +21,9 @@ export function canPerformAction(company: CompanyStateInfo | null | undefined, a
 
   // DB TRUTH is the primary driver.
   const dbStatus = company.status;
-  // Computed flags are only for UI context and shouldn't block core domain actions
   const needsRepair = company.computed?.needsRepair || false;
+  
+  console.log("[Policy] Evaluating action:", action, "on company status:", dbStatus, "needsRepair:", needsRepair);
 
   switch (action) {
     case 'access_app':
