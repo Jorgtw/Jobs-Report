@@ -1003,6 +1003,7 @@ class DBService {
     await supabase.from('subcontractors').delete().eq('company_id', id);
     await supabase.from('projects').delete().eq('company_id', id);
     await supabase.from('clients').delete().eq('company_id', id);
+    await supabase.from('workers').delete().eq('company_id', id);
     
     // 5. Elimina la ditta
     const { error } = await supabase.from('companies').delete().eq('id', id);

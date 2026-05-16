@@ -65,16 +65,29 @@ export default async function handler(req: any, res: any) {
     if (companyError) throw companyError;
     const companyId = companyData[0].id;
 
-    // 3. Create Auth User
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: email || `${username.toLowerCase()}@jobsreport.it`,
-      password,
-      email_confirm: true,
-      user_metadata: { name: adminName }
-    });
+    // 3. Create or Link Auth User
+    const finalEmail = email || `${username.toLowerCase()}@jobsreport.it`;
+    let authId: string;
 
-    if (authError) throw authError;
-    const authId = authData.user.id;
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    if (listError) throw listError;
+    
+    const existingAuthUser = users.find(u => u.email?.toLowerCase() === finalEmail.toLowerCase());
+
+    if (existingAuthUser) {
+      authId = existingAuthUser.id;
+      // Update password for the existing user to match the new one
+      await supabaseAdmin.auth.admin.updateUserById(authId, { password });
+    } else {
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: finalEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { name: adminName }
+      });
+      if (authError) throw authError;
+      authId = authData.user.id;
+    }
 
     // 4. Create Worker
     const { error: workerError } = await supabaseAdmin.from('workers').insert({
