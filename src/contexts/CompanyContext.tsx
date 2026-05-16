@@ -138,11 +138,20 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
           resolveContext();
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log("[CompanyContext] Finalizing SIGNED_OUT cleanup...");
         setStatus('unauthenticated');
         setUser(null);
         setCompanyId(null);
         db.setCompanyId(null);
         localStorage.removeItem('ws_auth');
+        localStorage.removeItem('ws_auth_admin');
+        
+        // Final aggressive cleanup of any lingering supabase keys
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+            localStorage.removeItem(key);
+          }
+        });
       }
     });
 

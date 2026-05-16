@@ -179,12 +179,21 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
   const actions = getNavLinks(t, user, hasFeature('communications'));
   const isOperator = authService.isOperator(user);
 
-  const handleManualLogout = () => {
-    db.setCompanyId(null);
-    localStorage.removeItem('ws_auth');
-    supabase.auth.signOut();
-    localStorage.removeItem('ws_auth_admin');
-    window.location.reload();
+  const handleManualLogout = async () => {
+    try {
+      // 1. Set specific app status to prevent resolution loops during logout
+      db.setCompanyId(null);
+      localStorage.removeItem('ws_auth');
+      localStorage.removeItem('ws_auth_admin');
+      
+      // 2. Perform server-side sign out (await to ensure storage is cleared)
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn("SignOut error (ignoring to proceed with local cleanup):", err);
+    } finally {
+      // 3. Force full reload to clean memory state
+      window.location.href = '/';
+    }
   };
 
   return (

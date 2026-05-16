@@ -472,11 +472,17 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('ws_auth');
-    localStorage.removeItem('ws_auth_admin');
-    db.setCompanyId(null);
-    window.location.hash = '/';
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn("Logout error:", err);
+    } finally {
+      localStorage.removeItem('ws_auth');
+      localStorage.removeItem('ws_auth_admin');
+      db.setCompanyId(null);
+      // Force full reload to ensure no memory state persists
+      window.location.href = '/';
+    }
   };
 
   const handleImpersonate = (targetUser: User) => {
