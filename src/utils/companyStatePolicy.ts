@@ -23,7 +23,15 @@ export function canPerformAction(company: CompanyStateInfo | null | undefined, a
   const dbStatus = company.status;
   const needsRepair = company.computed?.needsRepair || false;
   
-  console.log("[Policy] Evaluating action:", action, "on company status:", dbStatus, "needsRepair:", needsRepair);
+  console.log("[Policy Debug]", {
+    action,
+    dbStatus,
+    needsRepair,
+    fullCompany: company,
+    isEqualActive: dbStatus === 'active',
+    isNotRepair: !needsRepair,
+    finalResult: dbStatus === 'active' && !needsRepair
+  });
 
   switch (action) {
     case 'access_app':

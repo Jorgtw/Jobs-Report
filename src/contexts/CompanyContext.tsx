@@ -73,12 +73,11 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (activeCompId && !isSA) {
             const compDetails = await db.getCompanyDetails(activeCompId);
             
-            console.log("[CompanyContext] Policy Check for company:", activeCompId, { 
-              compDetails, 
-              canAccess: canPerformAction(compDetails, 'access_app') 
-            });
+            console.log("[CompanyContext] Policy Check for company:", activeCompId, "Details:", compDetails);
+            const canAccess = canPerformAction(compDetails, 'access_app');
+            console.log("[CompanyContext] Result for", activeCompId, ":", canAccess);
 
-            if (!canPerformAction(compDetails, 'access_app')) {
+            if (!canAccess) {
               console.warn("[CompanyContext] Redirecting to pending_setup screen: Company fails access_app policy.");
               setStatus('pending_setup');
               setUser(userData); // Keep user data so logout works
