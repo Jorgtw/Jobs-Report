@@ -522,7 +522,7 @@ const App: React.FC = () => {
       <React.Suspense fallback={null}>
         <Routes>
           <Route path="/" element={user ? <Navigate to="/reports" replace /> : <LoginView onLogin={handleLogin} />} />
-          <Route path="/richiesta-registrazione" element={<RegistrationRequestView />} />
+          <Route path="/richiesta-registrazione" element={<RegistrationRequestView onLogin={handleLogin} />} />
           <Route path="/presentation" element={<PresentationView />} />
           <Route path="/privacy" element={<PrivacyView />} />
           <Route path="/terms" element={<TermsView />} />

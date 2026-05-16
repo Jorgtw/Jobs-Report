@@ -1,0 +1,124 @@
+import { createClient } from '@supabase/supabase-js';
+
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+
+  const { 
+    companyName, 
+    adminName, 
+    username, 
+    password, 
+    email, 
+    phone, 
+    address, 
+    city, 
+    country = 'Italia', 
+    vatNumber 
+  } = req.body;
+
+  try {
+    // 1. Pre-check: unique name, vat, username
+    const { data: existingComp } = await supabaseAdmin
+      .from('companies')
+      .select('id')
+      .or(`name.eq."${companyName}",vat_number.eq."${vatNumber}"`)
+      .maybeSingle();
+    
+    if (existingComp) return res.status(400).json({ error: 'Azienda o Partita IVA già registrata.' });
+
+    const { data: existingUser } = await supabaseAdmin
+      .from('workers')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle();
+
+    if (existingUser) return res.status(400).json({ error: 'Username già in uso.' });
+
+    // 2. Create Company
+    const { data: companyData, error: companyError } = await supabaseAdmin
+      .from('companies')
+      .insert([{ 
+        name: companyName, 
+        status: 'active',
+        email: email || null,
+        phone: phone || null,
+        address: address || null,
+        city: city || null,
+        country: country || null,
+        vat_number: vatNumber || null,
+        setup_step: 4
+      }])
+      .select();
+      
+    if (companyError) throw companyError;
+    const companyId = companyData[0].id;
+
+    // 3. Create Auth User
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email || `${username.toLowerCase()}@jobsreport.it`,
+      password,
+      email_confirm: true,
+      user_metadata: { name: adminName }
+    });
+
+    if (authError) throw authError;
+    const authId = authData.user.id;
+
+    // 4. Create Worker
+    const { error: workerError } = await supabaseAdmin.from('workers').insert({
+      name: adminName,
+      username,
+      email: email || `${username.toLowerCase()}@jobsreport.it`,
+      phone: phone || null,
+      company_id: companyId,
+      auth_id: authId,
+      role: 'admin',
+      status: 'active'
+    });
+
+    if (workerError) throw workerError;
+
+    // 5. Create Bridge
+    await supabaseAdmin.from('user_companies').insert({
+      auth_id: authId,
+      company_id: companyId,
+      role: 'admin'
+    });
+
+    // 6. Create Default Data
+    const { data: clientData } = await supabaseAdmin
+      .from('clients')
+      .insert([{ company_id: companyId, name: `${companyName} - Interno`, status: 'active' }])
+      .select();
+    
+    if (clientData?.[0]) {
+      await supabaseAdmin.from('projects').insert({
+        company_id: companyId,
+        client_id: clientData[0].id,
+        title: 'Rapportino interno',
+        status: 'active',
+        economic_type: 'hourly',
+        is_internal: true
+      });
+    }
+
+    return res.status(200).json({ success: true });
+
+  } catch (err: any) {
+    console.error('Self-Registration Error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}

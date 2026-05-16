@@ -60,4 +60,12 @@ export const auth = {
   privacyLink: "Privacy Policy",
   resetPassword: "Reset Password",
   passwordChangeHint: "Lascia vuoto per non modificare",
+  address: "Indirizzo Sede",
+  city: "Città",
+  vatNumber: "Partita IVA / CVR",
+  signupBtn: "Crea Azienda e Accedi",
+  signupTitle: "Registrazione Immediata",
+  signupDesc: "Configura la tua azienda in pochi secondi e inizia subito a lavorare.",
+  usernameLabel: "Scegli un Username",
+  passwordLabel: "Scegli una Password",
 };

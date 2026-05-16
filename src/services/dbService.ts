@@ -431,6 +431,17 @@ class DBService {
     return user;
   }
 
+  async selfRegister(data: any) {
+    const response = await fetch('/api/self-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const apiData = await response.json();
+    if (!response.ok) throw new Error(apiData.error || 'Errore durante la registrazione automatica');
+    return apiData;
+  }
+
   async registerCompany(data: {
     companyName: string;
     adminName: string;
