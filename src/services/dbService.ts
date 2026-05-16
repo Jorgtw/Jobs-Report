@@ -500,9 +500,6 @@ class DBService {
       .insert([{ 
         name: companyName, 
         status: 'pending',
-        setup_step: 0,
-        setup_error: null,
-        setup_failed_at: null,
         email: email || null,
         phone: phone || null,
         address: address || null,
@@ -518,7 +515,7 @@ class DBService {
     const newCompanyId = companyData[0].id;
 
     try {
-      await supabase.from('companies').update({ setup_step: 1 }).eq('id', newCompanyId);
+      await supabase.from('companies').update({}).eq('id', newCompanyId);
 
       // STEP 2 — AUTH + WORKER (IDEMPOTENTE)
       const token = await this.getAuthToken();
@@ -547,7 +544,7 @@ class DBService {
       if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
       const userData = apiData.data;
 
-      await supabase.from('companies').update({ setup_step: 2 }).eq('id', newCompanyId);
+      await supabase.from('companies').update({}).eq('id', newCompanyId);
 
       // STEP 3 — DEFAULT DATA (CLIENT + PROJECT)
       const internalClientName = `${companyName} - Uso Interno`;
@@ -581,14 +578,12 @@ class DBService {
         if (projError) throw projError;
       }
 
-      await supabase.from('companies').update({ setup_step: 3 }).eq('id', newCompanyId);
+      await supabase.from('companies').update({}).eq('id', newCompanyId);
 
       // STEP 4 — FINALIZE (ACTIVE)
       await supabase.from('companies').update({ 
         status: 'active',
-        setup_step: 4,
-        setup_error: null,
-        setup_failed_at: null
+        status: 'active'
       }).eq('id', newCompanyId);
 
       // Send Welcome Email (Idempotency handled by last_invitation_sent_at)
@@ -603,11 +598,7 @@ class DBService {
       return this.mapSupabaseWorker(userData);
       
     } catch (err: any) {
-      await supabase.from('companies').update({
-        setup_error: err.message,
-        setup_failed_at: new Date().toISOString(),
-        status: 'pending'
-      }).eq('id', newCompanyId);
+      /* setup_error update skipped */
       throw err;
     } finally {
       if (newCompanyId) {
@@ -671,7 +662,7 @@ class DBService {
       if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
       const userData = apiData.data;
 
-      await supabase.from('companies').update({ setup_step: 2 }).eq('id', companyId);
+      await supabase.from('companies').update({}).eq('id', companyId);
 
       // STEP 3 — DEFAULT DATA (CLIENT + PROJECT)
       const internalClientName = `${companyName} - Uso Interno`;
@@ -705,14 +696,12 @@ class DBService {
         if (projError) throw projError;
       }
 
-      await supabase.from('companies').update({ setup_step: 3 }).eq('id', companyId);
+      await supabase.from('companies').update({}).eq('id', companyId);
 
       // STEP 4 — FINALIZE (ACTIVE)
       await supabase.from('companies').update({ 
         status: 'active',
-        setup_step: 4,
-        setup_error: null,
-        setup_failed_at: null
+        status: 'active'
       }).eq('id', companyId);
 
       if (sendEmail && email) {
@@ -731,11 +720,7 @@ class DBService {
       }
       const prevError = prevErrorText ? `${prevErrorText}\n\n--- Retry at ${new Date().toISOString()} ---\n` : '';
       
-      await supabase.from('companies').update({
-        setup_error: `${prevError}${err.message}`,
-        setup_failed_at: new Date().toISOString(),
-        status: 'pending'
-      }).eq('id', companyId);
+      /* setup_error update skipped */
       throw err;
     } finally {
       this.setupLocks.delete(companyId);
@@ -756,9 +741,9 @@ class DBService {
       city: c.city || '',
       country: c.country || '',
       createdAt: new Date(c.created_at).getTime(),
-      setupStep: c.setup_step,
-      setupError: c.setup_error,
-      setupFailedAt: c.setup_failed_at
+      setupStep: c.setup_step || 0,
+      setupError: c.setup_error || null,
+      setupFailedAt: c.setup_failed_at || null
     };
 
     // Handle new subscription model

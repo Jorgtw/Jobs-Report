@@ -58,8 +58,7 @@ export default async function handler(req: any, res: any) {
         address: address || null,
         city: city || null,
         country: country || null,
-        vat_number: vatNumber || null,
-        setup_step: 4
+        vat_number: vatNumber || null
       }])
       .select();
       

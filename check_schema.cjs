@@ -1,35 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+
+function loadEnv() {
+  const env = fs.readFileSync('.env', 'utf8');
+  env.split('\n').forEach(line => {
+    const [key, value] = line.split('=');
+    if (key && value) process.env[key.trim()] = value.trim();
+  });
+}
+
+loadEnv();
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function test() {
-  console.log('Testing connection to Supabase...');
-  
-  // 1. Try to select a single report to see its keys
-  const { data: selectData, error: selectError } = await supabase.from('reports').select('*').limit(1);
-  if (selectError) {
-    console.error('Select error:', selectError.message);
+async function checkColumns() {
+  const { data, error } = await supabase.from('companies').select('*').limit(1);
+  if (error) {
+    console.error('Error fetching company:', error);
   } else {
-    console.log('Columns available in reports table:');
-    if (selectData && selectData.length > 0) {
-      console.log(Object.keys(selectData[0]));
-    } else {
-      console.log('No reports found.');
-    }
-  }
-
-  // 2. Try an empty update to see if the column is recognized
-  const { error: updateError } = await supabase.from('reports').update({ invoice_status: 'Pending' }).eq('id', '00000000-0000-0000-0000-000000000000');
-  if (updateError) {
-    console.error('Update invoice_status error:', updateError.message);
-  } else {
-    console.log('Update query with invoice_status succeeded (no rows affected).');
+    console.log('Columns in companies:', Object.keys(data[0] || {}));
   }
 }
 
-test();
+checkColumns();
