@@ -75,7 +75,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
             
             if (compDetails) {
               const canAccess = canPerformAction(compDetails, 'access_app');
-              console.log("[CompanyContext] Result for", activeCompId, ":", canAccess);
+              
 
               if (!canAccess) {
                 console.warn("[CompanyContext] Redirecting to pending_setup screen: Company fails access_app policy.");
@@ -87,7 +87,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
             } else {
               // Optimistic fallback: if we have a company ID from the profile (bridge), 
               // we trust the user has access even if the company table RLS is still propagating.
-              console.log("[CompanyContext] Optimistic access granted (Details were null but companyId present)");
+              
             }
         }
 
