@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '../services/supabase';
 import { db } from '../services/dbService';
 import { User } from '../types';
+import { canPerformAction } from '../utils/companyStatePolicy';
 
-export type CompanyStatus = 'loading' | 'resolving' | 'ready' | 'unauthenticated' | 'error';
+export type CompanyStatus = 'loading' | 'resolving' | 'ready' | 'unauthenticated' | 'error' | 'pending_setup';
 
 interface CompanyContextType {
   companyId: string | null;
@@ -21,7 +22,10 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [user, setUser] = useState<User | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
-  const resolveContext = async () => {
+  const resolveContext = async (force: boolean = false) => {
+    // Prevent unneeded re-evaluations and "flashes" if we are already locked in setup
+    if (status === 'pending_setup' && !force) return;
+    
     console.log("[CompanyContext] Resolving context...");
     try {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -58,6 +62,20 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
       const isSA = userData.role?.toLowerCase() === 'superadmin';
 
       if (activeCompId || isSA) {
+        // Enforce status gating via policy
+        if (activeCompId && !isSA) {
+           const { data: compStatus } = await supabase.from('companies')
+             .select('status, setup_step, setup_error')
+             .eq('id', activeCompId)
+             .maybeSingle();
+           if (!canPerformAction(compStatus, 'access_app')) {
+             console.warn("[CompanyContext] Redirecting to pending_setup screen: Company fails access_app policy.");
+             setStatus('pending_setup');
+             setUser(userData); // Keep user data so logout works
+             return;
+           }
+        }
+
         // 1. Inject into infrastructure (Sincrono)
         db.setUserId(userData.id);
         db.setCompanyId(activeCompId);
@@ -122,7 +140,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
       user, 
       status, 
       isReady: status === 'ready',
-      refreshContext: resolveContext,
+      refreshContext: () => resolveContext(true),
       updateUser
     }}>
       {children}

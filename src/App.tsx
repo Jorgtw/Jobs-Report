@@ -546,54 +546,70 @@ const App: React.FC = () => {
                   unreadCount={unreadCount}
                   setUser={updateUser}
                 >
-                  {adminUser && (
-                    <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
-                      <div className="flex items-center gap-2">
-                        <ShieldAlert size={16} />
-                        <span>{t('auth.impersonating')}: <span className="underline">{user.name}</span> ({user.username})</span>
+                  {/* Business Access Gate - Renders as an overlay to preserve React Component state underneath */}
+                  {status === 'pending_setup' && (
+                    <div className="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center py-20 px-4 text-center">
+                      <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mb-4 shadow-sm">
+                        <Building2 size={32} />
                       </div>
-                      <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
-                        <LogOut size={14} /> {t('auth.backToAdmin')}
-                      </button>
+                      <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Configurazione in Corso</h1>
+                      <p className="text-sm text-slate-500 max-w-md mt-2">
+                        La tua azienda è in fase di configurazione o l'operazione non è stata completata correttamente.
+                        Contatta l'amministratore di sistema o attendi il completamento del setup.
+                      </p>
                     </div>
                   )}
-                  <Routes>
-                    <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
-                    <Route path="/reports" element={<ReportsView user={user} />} />
-                    <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
-                    <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
-                    <Route path="/projects" element={<ProjectsView user={user} />} />
-                    <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
-                    <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
-                    <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
-                    <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
-                    <Route path="/profile" element={<ProfileView user={user} onUpdate={updateUser} t={t} />} />
-                    <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
-                    <Route path="*" element={<Navigate to="/reports" />} />
-                  </Routes>
-                  {showOnboarding && user && authService.canAccessAdmin(user) && (
-                    <OnboardingGuide
-                      userRole={user.role}
-                      onComplete={() => {
-                        localStorage.setItem('onboarding_v1', 'completed');
-                        setShowOnboarding(false);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      onStepChange={(step) => {
-                        if (step.requiresSidebar) {
-                          setIsMobileMenuOpen(true);
-                        } else {
-                          if (window.innerWidth < 1024) {
-                            setIsMobileMenuOpen(false);
+
+                  <div className={status === 'pending_setup' ? 'hidden' : 'block relative h-full w-full'}>
+                    {adminUser && (
+                      <div className="bg-amber-600 text-white px-4 py-2 flex justify-between items-center text-sm font-bold shadow-lg animate-in slide-in-from-top duration-300 relative z-[60]">
+                        <div className="flex items-center gap-2">
+                          <ShieldAlert size={16} />
+                          <span>{t('auth.impersonating')}: <span className="underline">{user.name}</span> ({user.username})</span>
+                        </div>
+                        <button onClick={handleBackToAdmin} className="bg-white text-amber-600 px-3 py-1 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1.5">
+                          <LogOut size={14} /> {t('auth.backToAdmin')}
+                        </button>
+                      </div>
+                    )}
+                    <Routes>
+                      <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
+                      <Route path="/reports" element={<ReportsView user={user} />} />
+                      <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
+                      <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
+                      <Route path="/projects" element={<ProjectsView user={user} />} />
+                      <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
+                      <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
+                      <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
+                      <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />
+                      <Route path="/profile" element={<ProfileView user={user} onUpdate={updateUser} t={t} />} />
+                      <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
+                      <Route path="*" element={<Navigate to="/reports" />} />
+                    </Routes>
+                    {showOnboarding && user && authService.canAccessAdmin(user) && (
+                      <OnboardingGuide
+                        userRole={user.role}
+                        onComplete={() => {
+                          localStorage.setItem('onboarding_v1', 'completed');
+                          setShowOnboarding(false);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        onStepChange={(step) => {
+                          if (step.requiresSidebar) {
+                            setIsMobileMenuOpen(true);
+                          } else {
+                            if (window.innerWidth < 1024) {
+                              setIsMobileMenuOpen(false);
+                            }
                           }
-                        }
-                      }}
-                    />
-                  )}
-                  <AIChatAssistant />
-                  {isCommsUpgradeOpen && (
-                    <UpgradeModal feature="communications" onClose={() => setIsCommsUpgradeOpen(false)} />
-                  )}
+                        }}
+                      />
+                    )}
+                    <AIChatAssistant />
+                    {isCommsUpgradeOpen && (
+                      <UpgradeModal feature="communications" onClose={() => setIsCommsUpgradeOpen(false)} />
+                    )}
+                  </div>
                   {/* Version Marker for Cache Debugging */}
                   <div className="fixed bottom-2 left-2 text-[8px] font-bold text-slate-300 pointer-events-none z-[9999]">
                     v1.2-FINAL-INFRA

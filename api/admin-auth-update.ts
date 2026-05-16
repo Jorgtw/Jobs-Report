@@ -113,7 +113,8 @@ export default async function handler(req: any, res: any) {
           authId = authData.user.id;
         }
 
-        await supabaseAdmin.from('workers').insert([{
+        // Use UPSERT for workers to be truly idempotent
+        await supabaseAdmin.from('workers').upsert([{
           name,
           username,
           email,
@@ -124,7 +125,7 @@ export default async function handler(req: any, res: any) {
           status: status || 'active',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }]);
+        }], { onConflict: 'auth_id, company_id' });
       }
 
       const { error: bridgeError } = await supabaseAdmin

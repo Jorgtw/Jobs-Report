@@ -1,10 +1,12 @@
 import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, User } from '../types';
 import { supabase } from './supabase';
+import { canPerformAction, CompanyStateInfo } from '../utils/companyStatePolicy';
 
 class DBService {
   private currentCompanyId: string | null = null;
   private currentUserId: string | null = null;
   private isSuperAdminRole: boolean = false;
+  private setupLocks: Set<string> = new Set();
 
   constructor() { }
 
@@ -180,6 +182,7 @@ class DBService {
   }
 
   async addUser(worker: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     
     // 1. Check if worker already exists within THIS company (Option A)
@@ -226,6 +229,7 @@ class DBService {
   }
 
   async updateUser(id: string, updates: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const mappedUpdates = this.mapAppWorkerToSupabase(updates);
     const worker = await this.getUserById(id);
     
@@ -275,6 +279,7 @@ class DBService {
   }
 
   async addSubcontractor(sub: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const sbObj = {
       ...this.mapAppSubcontractorToSupabase(sub),
       company_id: this.requireCompanyId(),
@@ -286,6 +291,7 @@ class DBService {
   }
 
   async updateSubcontractor(id: string, updates: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     const sbObj = this.mapAppSubcontractorToSupabase(updates);
     const { error } = await supabase.from('subcontractors')
@@ -296,6 +302,7 @@ class DBService {
   }
 
   async deleteSubcontractor(id: string) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     await supabase.from('workers').update({ subcontractor_id: null }).eq('subcontractor_id', id).eq('company_id', compId);
     const { error } = await supabase.from('subcontractors').delete().eq('id', id).eq('company_id', compId);
@@ -453,7 +460,18 @@ class DBService {
       sendEmail = true
     } = data;
 
-    // 1. Check if username already exists globally
+    // STEP 0 — PRECHECK
+    const { data: existingCompany, error: compCheckErr } = await supabase
+      .from('companies')
+      .select('id')
+      .or(`name.eq."${companyName}",vat_number.eq."${vatNumber}"`)
+      .maybeSingle();
+
+    if (compCheckErr) throw compCheckErr;
+    if (existingCompany) {
+      throw new Error(`Esiste già un'azienda con questo nome o Partita IVA.`);
+    }
+
     const { data: existingUser, error: checkErr } = await supabase
       .from('workers')
       .select('id')
@@ -465,12 +483,15 @@ class DBService {
       throw new Error(`L'username '${username}' è già in uso. Scegline un altro.`);
     }
 
-    // 2. Create company
+    // STEP 1 — CREATE COMPANY (PENDING)
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
       .insert([{ 
         name: companyName, 
-        status: 'active',
+        status: 'pending',
+        setup_step: 0,
+        setup_error: null,
+        setup_failed_at: null,
         email: email || null,
         phone: phone || null,
         address: address || null,
@@ -481,74 +502,231 @@ class DBService {
         premium_since: isPremium ? new Date().toISOString() : null
       }])
       .select();
+      
     if (companyError) throw companyError;
     const newCompanyId = companyData[0].id;
 
-    // 3. Create admin worker via Admin API (handles Supabase Auth and DB safely)
-    const token = await this.getAuthToken();
-    const response = await fetch('/api/admin-auth-update', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-         action: 'create',
-         updates: {
-           name: adminName,
-           username: username,
-           password: password,
-           email: email || `${username.toLowerCase()}@jobsreport.it`, // Use real email if provided
-           phone: phone || null,
-           role: 'admin',
-           status: 'active',
-           companyId: newCompanyId
-         }
-      })
-    });
+    try {
+      await supabase.from('companies').update({ setup_step: 1 }).eq('id', newCompanyId);
 
-    const apiData = await response.json();
-    if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
-    const userData = apiData.data;
+      // STEP 2 — AUTH + WORKER (IDEMPOTENTE)
+      const token = await this.getAuthToken();
+      const response = await fetch('/api/admin-auth-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+           action: 'create_idempotent',
+           updates: {
+             name: adminName,
+             username: username,
+             password: password,
+             email: email || `${username.toLowerCase()}@jobsreport.it`,
+             phone: phone || null,
+             role: 'admin',
+             status: 'active',
+             companyId: newCompanyId
+           }
+        })
+      });
 
-    // 4. Send Welcome Email with professional link (Supabase Recovery)
-    if (sendEmail && email) {
-       try {
-         await this.sendAccessInstructions(userData.id);
-       } catch (emailErr) {
-         console.error('DBService: Failed to send professional welcome email:', emailErr);
-       }
-    }
+      const apiData = await response.json();
+      if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
+      const userData = apiData.data;
 
-    // 5. Create an internal client and project for absences and internal notes
-    const internalClientName = `${companyName} - Uso Interno`;
-    const { data: clientData, error: clientError } = await supabase
-      .from('clients')
-      .insert([{
-        company_id: newCompanyId,
-        name: internalClientName,
-        status: 'active',
-        created_at: new Date().toISOString()
-      }])
-      .select();
-    
-    if (!clientError && clientData && clientData.length > 0) {
-      const internalClientId = clientData[0].id;
-      await supabase
-        .from('projects')
-        .insert([{
+      await supabase.from('companies').update({ setup_step: 2 }).eq('id', newCompanyId);
+
+      // STEP 3 — DEFAULT DATA (CLIENT + PROJECT)
+      const internalClientName = `${companyName} - Uso Interno`;
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .upsert([{
           company_id: newCompanyId,
-          client_id: internalClientId,
-          title: 'Rapportino interno',
+          name: internalClientName,
           status: 'active',
-          economic_type: 'hourly',
-          hourly_sale_price: 0,
-          is_internal: true,
           created_at: new Date().toISOString()
-        }]);
+        }], { onConflict: 'company_id, name' })
+        .select();
+      
+      if (clientError) throw clientError;
+
+      if (clientData && clientData.length > 0) {
+        const internalClientId = clientData[0].id;
+        const { error: projError } = await supabase
+          .from('projects')
+          .upsert([{
+            company_id: newCompanyId,
+            client_id: internalClientId,
+            title: 'Rapportino interno',
+            status: 'active',
+            economic_type: 'hourly',
+            hourly_sale_price: 0,
+            is_internal: true,
+            created_at: new Date().toISOString()
+          }], { onConflict: 'company_id, title' });
+          
+        if (projError) throw projError;
+      }
+
+      await supabase.from('companies').update({ setup_step: 3 }).eq('id', newCompanyId);
+
+      // STEP 4 — FINALIZE (ACTIVE)
+      await supabase.from('companies').update({ 
+        status: 'active',
+        setup_step: 4,
+        setup_error: null,
+        setup_failed_at: null
+      }).eq('id', newCompanyId);
+
+      // Send Welcome Email (Idempotency handled by last_invitation_sent_at)
+      if (sendEmail && email) {
+         try {
+           await this.sendAccessInstructions(userData.id);
+         } catch (emailErr) {
+           console.error('DBService: Failed to send professional welcome email:', emailErr);
+         }
+      }
+
+      return this.mapSupabaseWorker(userData);
+      
+    } catch (err: any) {
+      await supabase.from('companies').update({
+        setup_error: err.message,
+        setup_failed_at: new Date().toISOString(),
+        status: 'pending'
+      }).eq('id', newCompanyId);
+      throw err;
+    } finally {
+      this.setupLocks.delete(companyId);
+    }
+  }
+
+  async resumeCompanySetup(companyId: string, data: {
+    companyName: string;
+    adminName: string;
+    username: string;
+    password?: string;
+    email?: string;
+    phone?: string;
+    sendEmail?: boolean;
+  }) {
+    const { companyName, adminName, username, password, email, phone, sendEmail = true } = data;
+    let compCheckData: any = null;
+
+    if (this.setupLocks.has(companyId)) {
+      throw new Error('Operazione di setup già in corso per questa azienda. Attendi il completamento.');
+    }
+    this.setupLocks.add(companyId);
+
+    try {
+
+    // Single reconciliation rule: prevent retry if DB truth is already active
+    const { data: compCheck } = await supabase.from('companies').select('status, setup_error').eq('id', companyId).single();
+    compCheckData = compCheck;
+    if (!canPerformAction(compCheck, 'retry_setup')) {
+       throw new Error('Impossibile eseguire il retry: la ditta non è in uno stato idoneo o è già ACTIVE nel sistema.');
     }
 
-    return this.mapSupabaseWorker(userData);
+
+      // We assume step 1 (Company creation) is done since we have the ID.
+      // STEP 2 — AUTH + WORKER (IDEMPOTENTE)
+      const token = await this.getAuthToken();
+      const response = await fetch('/api/admin-auth-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+           action: 'create_idempotent',
+           updates: {
+             name: adminName,
+             username: username,
+             password: password,
+             email: email || `${username.toLowerCase()}@jobsreport.it`,
+             phone: phone || null,
+             role: 'admin',
+             status: 'active',
+             companyId: companyId
+           }
+        })
+      });
+
+      const apiData = await response.json();
+      if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
+      const userData = apiData.data;
+
+      await supabase.from('companies').update({ setup_step: 2 }).eq('id', companyId);
+
+      // STEP 3 — DEFAULT DATA (CLIENT + PROJECT)
+      const internalClientName = `${companyName} - Uso Interno`;
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .upsert([{
+          company_id: companyId,
+          name: internalClientName,
+          status: 'active',
+          created_at: new Date().toISOString()
+        }], { onConflict: 'company_id, name' })
+        .select();
+      
+      if (clientError) throw clientError;
+
+      if (clientData && clientData.length > 0) {
+        const internalClientId = clientData[0].id;
+        const { error: projError } = await supabase
+          .from('projects')
+          .upsert([{
+            company_id: companyId,
+            client_id: internalClientId,
+            title: 'Rapportino interno',
+            status: 'active',
+            economic_type: 'hourly',
+            hourly_sale_price: 0,
+            is_internal: true,
+            created_at: new Date().toISOString()
+          }], { onConflict: 'company_id, title' });
+          
+        if (projError) throw projError;
+      }
+
+      await supabase.from('companies').update({ setup_step: 3 }).eq('id', companyId);
+
+      // STEP 4 — FINALIZE (ACTIVE)
+      await supabase.from('companies').update({ 
+        status: 'active',
+        setup_step: 4,
+        setup_error: null,
+        setup_failed_at: null
+      }).eq('id', companyId);
+
+      if (sendEmail && email) {
+         try {
+           await this.sendAccessInstructions(userData.id);
+         } catch (emailErr) {
+           console.error('DBService: Failed to send professional welcome email:', emailErr);
+         }
+      }
+
+    } catch (err: any) {
+      let prevErrorText = compCheckData?.setup_error || '';
+      const retryBlocks = prevErrorText.split('--- Retry at');
+      if (retryBlocks.length > 4) {
+        prevErrorText = retryBlocks[0] + '--- [Truncated older retries] ---\n\n--- Retry at' + retryBlocks.slice(-3).join('--- Retry at');
+      }
+      const prevError = prevErrorText ? `${prevErrorText}\n\n--- Retry at ${new Date().toISOString()} ---\n` : '';
+      
+      await supabase.from('companies').update({
+        setup_error: `${prevError}${err.message}`,
+        setup_failed_at: new Date().toISOString(),
+        status: 'pending'
+      }).eq('id', companyId);
+      throw err;
+    } finally {
+      this.setupLocks.delete(companyId);
+    }
   }
 
   // --- Company Management Methods (SuperAdmin Only) ---
@@ -564,7 +742,10 @@ class DBService {
       vatNumber: c.vat_number || '',
       city: c.city || '',
       country: c.country || '',
-      createdAt: new Date(c.created_at).getTime()
+      createdAt: new Date(c.created_at).getTime(),
+      setupStep: c.setup_step,
+      setupError: c.setup_error,
+      setupFailedAt: c.setup_failed_at
     };
 
     // Handle new subscription model
@@ -695,8 +876,25 @@ class DBService {
           comp.username = admin.username;
           comp.password = '';
         }
+      // Computed health check: active but missing worker
+      let computedStatus = comp.status;
+      let needsRepair = false;
+      let computedError = comp.setupError;
+
+      if (comp.status === 'active' && !comp.adminId) {
+        needsRepair = true;
+        computedStatus = 'repair_pending';
+        computedError = 'Worker Admin mancante o incompleto (Repair Mode)';
       }
-      return comp;
+
+      return {
+        ...comp,
+        computed: {
+          status: computedStatus,
+          needsRepair,
+          error: computedError
+        }
+      };
     });
   }
 
@@ -1011,6 +1209,7 @@ class DBService {
   }
 
   async deleteUser(id: string) {
+    await this.enforceActionPolicy('write_domain_data');
     // 1. Remove references from rapportini_workers to avoid foreign key constraints
     await supabase.from('rapportini_workers').delete().eq('worker_id', id);
 
@@ -1105,6 +1304,23 @@ class DBService {
     };
   }
 
+  private requireCompanyId() {
+    if (!this.currentCompanyId && !this.isSuperAdminRole) {
+      console.error('[DBService] Attempted operation without company_id context');
+      throw new Error('Permesso negato: contesto azienda non inizializzato');
+    }
+  }
+
+  private async enforceActionPolicy(action: import('../utils/companyStatePolicy').CompanyAction) {
+    this.requireCompanyId();
+    if (this.isSuperAdminRole && !this.currentCompanyId) return; // SuperAdmins managing global stuff
+    
+    const { data: comp } = await supabase.from('companies').select('status, setup_step, setup_error').eq('id', this.currentCompanyId).single();
+    if (!canPerformAction(comp, action)) {
+       throw new Error(`Azione non consentita: l'azienda non è in uno stato idoneo per l'operazione (${action}).`);
+    }
+  }
+
   async getClients() {
     await this.checkAuthSession();
     const compId = this.requireCompanyId();
@@ -1123,6 +1339,7 @@ class DBService {
   }
 
   async addClient(client: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const sbClient = {
       ...this.mapAppClientToSupabase(client),
       company_id: this.requireCompanyId(),
@@ -1134,6 +1351,7 @@ class DBService {
   }
 
   async updateClient(id: string, updates: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     const sbClient = this.mapAppClientToSupabase(updates);
     const { error } = await supabase.from('clients')
@@ -1144,6 +1362,7 @@ class DBService {
   }
 
   async deleteClient(id: string) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     const { error } = await supabase.from('clients').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
@@ -1221,6 +1440,7 @@ class DBService {
   }
 
   async addProject(project: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
 
     // Handle internal project client resolution if not already set correctly
@@ -1253,6 +1473,7 @@ class DBService {
   }
 
   async updateProject(id: string, updates: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     const sbObj = this.mapAppProjectToSupabase(updates);
     const { error } = await supabase.from('projects')
@@ -1263,6 +1484,7 @@ class DBService {
   }
 
   async deleteProject(id: string) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     const { error } = await supabase.from('projects').delete().eq('id', id).eq('company_id', compId);
     if (error) throw error;
@@ -1812,6 +2034,7 @@ class DBService {
   }
 
   async updateReport(id: string, updates: any) {
+    await this.enforceActionPolicy('write_domain_data');
     const { additionalWorkers, expenses, ...updatesData } = updates;
     updatesData.totalHours = this.calculateTotalHours(updatesData.startTime, updatesData.endTime, updatesData.breakHours, updatesData.manualTotalHours);
 
@@ -1907,6 +2130,7 @@ class DBService {
   }
 
   async deleteReport(id: string) {
+    await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     // 1. Delete associated workers first to avoid foreign key constraints
     // We check company_id on reports to ensure it belongs to the tenant

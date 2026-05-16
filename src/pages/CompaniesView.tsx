@@ -3,6 +3,7 @@ import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, X, Mail, Zap } from 'luci
 import { useTranslation } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 import { inputClasses, modalClasses, FullWidthField } from '../App';
+import { canPerformAction } from '../utils/companyStatePolicy';
 
 const CompaniesView: React.FC = () => {
   const { t } = useTranslation();
@@ -84,16 +85,31 @@ const CompaniesView: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (editingId) {
-        await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password, formData.sendWelcomeEmail, formData.email);
-        await db.setPremiumStatus(editingId, formData.isPremium);
-        await db.updateCompanyDetails(editingId, {
-          address: formData.address,
-          city: formData.city,
-          country: formData.country,
-          phone: formData.phone,
-          email: formData.email,
-          vatNumber: formData.vatNumber,
-        });
+        // If the company is in pending status or needs repair, we should resume the setup flow
+        const existingCompany = companies.find(c => c.id === editingId);
+        if (canPerformAction(existingCompany, 'retry_setup')) {
+          await db.resumeCompanySetup(editingId, {
+            companyName: formData.companyName,
+            adminName: formData.adminName,
+            username: formData.username,
+            password: formData.password,
+            email: formData.email,
+            phone: formData.phone,
+            sendEmail: formData.sendWelcomeEmail
+          });
+        } else {
+          // Normal update for an already active company
+          await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password, formData.sendWelcomeEmail, formData.email);
+          await db.setPremiumStatus(editingId, formData.isPremium);
+          await db.updateCompanyDetails(editingId, {
+            address: formData.address,
+            city: formData.city,
+            country: formData.country,
+            phone: formData.phone,
+            email: formData.email,
+            vatNumber: formData.vatNumber,
+          });
+        }
       } else {
         await db.registerCompany({
           ...formData,
@@ -194,19 +210,30 @@ const CompaniesView: React.FC = () => {
                       {c.isPremium ? 'PREMIUM' : 'BASE'}
                     </button>
                   </td>
-                  <td className="px-4 py-2">
-                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${c.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                      {c.status === 'active' ? t('common.statusActive') : t('common.statusInactive')}
+                  <td className="px-4 py-2 flex items-center gap-2">
+                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                      c.computed?.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 
+                      (c.computed?.status === 'pending' || c.computed?.status === 'repair_pending') ? 'bg-amber-100 text-amber-700' : 
+                      'bg-slate-100 text-slate-600'
+                    }`}>
+                      {c.computed?.status === 'active' ? t('common.statusActive') : 
+                       (c.computed?.status === 'pending' || c.computed?.status === 'repair_pending') ? 'IN SETUP' : t('common.statusInactive')}
                     </span>
+                    {c.computed?.error && (
+                      <span className="text-red-500 cursor-help" title={`Error at step ${c.setupStep}: ${c.computed.error}`}>
+                        ⚠️
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-2 text-right flex justify-end gap-1.5">
-                    <button onClick={() => handleToggleStatus(c.id, c.status)} className={`p-1.5 rounded-lg transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} title={c.status === 'active' ? t('common.deactivate') : t('common.activate')}>
+                    <button disabled={!canPerformAction(c, 'toggle_status')} onClick={() => handleToggleStatus(c.id, c.status)} className={`p-1.5 rounded-lg transition-colors ${c.status === 'active' ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'} disabled:opacity-30 disabled:cursor-not-allowed`} title={c.status === 'active' ? t('common.deactivate') : t('common.activate')}>
                       {c.status === 'active' ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
-                    <button onClick={() => handleEdit(c)} className="p-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('common.edit')}>
+                    <button disabled={!canPerformAction(c, 'update_basic_settings')} onClick={() => handleEdit(c)} className="p-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title={t('common.edit')}>
                       <Pencil size={14} />
                     </button>
                     <button 
+                      disabled={!canPerformAction(c, 'send_instructions')}
                       onClick={() => handlePrepareEmail({
                         adminName: c.admin_name,
                         companyName: c.name,
@@ -214,16 +241,16 @@ const CompaniesView: React.FC = () => {
                         username: c.username,
                         password: c.password
                       })} 
-                      className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors" 
+                      className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed" 
                       title="Prepara Email Manuale"
                     >
                       <Mail size={14} />
                     </button>
                     <button 
-                      disabled={sendingId === c.id || !c.email}
+                      disabled={sendingId === c.id || !c.email || !canPerformAction(c, 'send_instructions')}
                       onClick={() => handleSendInstructions(c)} 
-                      className={`p-1.5 rounded-lg transition-all ${sendingId === c.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`} 
-                      title="Invia Istruzioni Professionali (Auto)"
+                      className={`p-1.5 rounded-lg transition-all ${sendingId === c.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'} disabled:opacity-30 disabled:cursor-not-allowed`} 
+                      title="Invia Credenziali"
                     >
                       {sendingId === c.id ? (
                         <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
