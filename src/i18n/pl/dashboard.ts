@@ -51,41 +51,41 @@ export const dashboard = {
     activateNow: "Aktywuj Teraz",
     securePayments: "Bezpieczne płatności przez Stripe",
     footerSupport: "JobsReport Professional Edition • Wsparcie 24/7",
-    checkoutError: "An error occurred while opening checkout. Please try again later.",
-    communicationsDesc: "Unlock real-time internal communications and track company messages."
+    checkoutError: "Wystąpił błąd podczas otwierania kasy. Spróbuj ponownie później.",
+    communicationsDesc: "Odblokuj wewnętrzną komunikację w czasie rzeczywistym i śledź wiadomości firmowe."
   },
-  missingEmailOrAdminId: "Email or Admin ID missing for this company.",
-  prepareManualEmail: "Prepare Manual Email",
-  sendCredentials: "Send Credentials",
-  activatePremiumDesc: "Activate premium features for this company immediately.",
-  sendCredentialsTitle: "Sending Credentials",
-  prepareManualEmailBtn: "PREPARE EMAIL (MANUAL)",
-  emailSubject: "Access Credentials Jobs Report - {company}",
-  emailBody: "Hello {name},\n\nHere are your access credentials for Jobs Report:\n\nURL: https://jobs-report.vercel.app\nUsername: {username}\nPassword: {password}\n\nWe recommend that you change your password upon your first access.\n\nBest regards,\nThe JobsReport Team",
-  sendCredentialsHintEdit: "Enter a password above to send it to the client.",
-  sendCredentialsHintCreate: "Automatically send username and password to the company's email address.",
-  sendingInProgress: "SENDING IN PROGRESS...",
-  autoSendActive: "AUTO-SEND ACTIVE",
-  sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)",
+  missingEmailOrAdminId: "Brak adresu e-mail lub identyfikatora administratora dla tej firmy.",
+  prepareManualEmail: "Przygotuj ręczny e-mail",
+  sendCredentials: "Wyślij dane logowania",
+  activatePremiumDesc: "Natychmiast aktywuj funkcje premium dla tej firmy.",
+  sendCredentialsTitle: "Wysyłanie danych logowania",
+  prepareManualEmailBtn: "PRZYGOTUJ E-MAIL (RĘCZNIE)",
+  emailSubject: "Dane dostępu do Jobs Report - {company}",
+  emailBody: "Witaj {name},\n\nOto Twoje dane dostępu do Jobs Report:\n\nURL: https://jobs-report.vercel.app\nNazwa użytkownika: {username}\nHasło: {password}\n\nZalecamy zmianę hasła przy pierwszym logowaniu.\n\nZ poważaniem,\nZespół JobsReport",
+  sendCredentialsHintEdit: "Wprowadź hasło powyżej, aby wysłać je do klienta.",
+  sendCredentialsHintCreate: "Automatycznie wyślij nazwę użytkownika i hasło na adres e-mail firmy.",
+  sendingInProgress: "WYSYŁANIE W TOKU...",
+  autoSendActive: "AUTO-WYSYŁKA AKTYWNA",
+  sendInstructionsAuto: "WYŚLIJ INSTRUKCJĘ (AUTO)",
   plans: {
     basic: {
-      name: "Basic Plan",
-      description: "Ideal for those who want unlimited reports without frills.",
+      name: "Plan Podstawowy",
+      description: "Idealny dla tych, którzy chcą nieograniczonych raportów bez zbędnych dodatków.",
       features: {
-        "0": "Unlimited reports",
-        "1": "Digital signature",
-        "2": "PDF and Excel export",
-        "3": "Secure cloud storage"
+        "0": "Nieograniczone raporty",
+        "1": "Podpis cyfrowy",
+        "2": "Eksport do PDF i Excel",
+        "3": "Bezpieczna chmura danych"
       }
     },
     premium: {
-      name: "Premium Plan",
-      description: "The complete package for maximum efficiency and control.",
+      name: "Plan Premium",
+      description: "Kompletny pakiet dla maksymalnej wydajności i kontroli.",
       features: {
-        "0": "Everything in Basic",
-        "1": "Internal communications",
-        "2": "Advanced compliance",
-        "3": "Priority support"
+        "0": "Wszystko w Basic",
+        "1": "Komunikacja wewnętrzna",
+        "2": "Zaawansowana zgodność (Compliance)",
+        "3": "Wsparcie priorytetowe"
       }
     }
   }

@@ -51,41 +51,41 @@ export const dashboard = {
     activateNow: "Aktiver Nu",
     securePayments: "Sikre betalinger via Stripe",
     footerSupport: "JobsReport Professional Edition • 24/7 Support",
-    checkoutError: "An error occurred while opening checkout. Please try again later.",
-    communicationsDesc: "Unlock real-time internal communications and track company messages."
+    checkoutError: "Der opstod en fejl under åbning af betalingen. Prøv venligst igen senere.",
+    communicationsDesc: "Lås op for interne kommunikationer i realtid og spor virksomhedsmeddelelser."
   },
-  missingEmailOrAdminId: "Email or Admin ID missing for this company.",
-  prepareManualEmail: "Prepare Manual Email",
-  sendCredentials: "Send Credentials",
-  activatePremiumDesc: "Activate premium features for this company immediately.",
-  sendCredentialsTitle: "Sending Credentials",
-  prepareManualEmailBtn: "PREPARE EMAIL (MANUAL)",
-  emailSubject: "Access Credentials Jobs Report - {company}",
-  emailBody: "Hello {name},\n\nHere are your access credentials for Jobs Report:\n\nURL: https://jobs-report.vercel.app\nUsername: {username}\nPassword: {password}\n\nWe recommend that you change your password upon your first access.\n\nBest regards,\nThe JobsReport Team",
-  sendCredentialsHintEdit: "Enter a password above to send it to the client.",
-  sendCredentialsHintCreate: "Automatically send username and password to the company's email address.",
-  sendingInProgress: "SENDING IN PROGRESS...",
-  autoSendActive: "AUTO-SEND ACTIVE",
-  sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)",
+  missingEmailOrAdminId: "E-mail eller administrator-id mangler for denne virksomhed.",
+  prepareManualEmail: "Forbered manuel e-mail",
+  sendCredentials: "Send loginoplysninger",
+  activatePremiumDesc: "Aktiver premium-funktioner for denne virksomhed med det samme.",
+  sendCredentialsTitle: "Sender loginoplysninger",
+  prepareManualEmailBtn: "FORBERED E-MAIL (MANUEL)",
+  emailSubject: "Adgangsoplysninger til Jobs Report - {company}",
+  emailBody: "Hej {name},\n\nHer er dine adgangsoplysninger til Jobs Report:\n\nURL: https://jobs-report.vercel.app\nBrugernavn: {username}\nAdgangskode: {password}\n\nVi anbefaler, at du ændrer din adgangskode ved dit første login.\n\nVenlig hilsen,\nJobsReport-teamet",
+  sendCredentialsHintEdit: "Indtast en adgangskode ovenfor for at sende den til kunden.",
+  sendCredentialsHintCreate: "Send automatisk brugernavn og adgangskode to virksomhedens e-mailadresse.",
+  sendingInProgress: "AFSENDELSE IGANG...",
+  autoSendActive: "AUTOMATISK AFSENDELSE AKTIV",
+  sendInstructionsAuto: "SEND VEJLEDNING (AUTO)",
   plans: {
     basic: {
-      name: "Basic Plan",
-      description: "Ideal for those who want unlimited reports without frills.",
+      name: "Basic-abonnement",
+      description: "Ideel til dem, der ønsker ubegrænsede rapporter uden dikkedarer.",
       features: {
-        "0": "Unlimited reports",
-        "1": "Digital signature",
-        "2": "PDF and Excel export",
-        "3": "Secure cloud storage"
+        "0": "Ubegrænsede rapporter",
+        "1": "Digital signatur",
+        "2": "PDF- og Excel-eksport",
+        "3": "Sikker lagerplads i skyen"
       }
     },
     premium: {
-      name: "Premium Plan",
-      description: "The complete package for maximum efficiency and control.",
+      name: "Premium-abonnement",
+      description: "Den komplette pakke for maksimal effektivitet og kontrol.",
       features: {
-        "0": "Everything in Basic",
-        "1": "Internal communications",
-        "2": "Advanced compliance",
-        "3": "Priority support"
+        "0": "Alt i Basic",
+        "1": "Interne kommunikationer",
+        "2": "Avanceret overholdelse (Compliance)",
+        "3": "Prioriteret support"
       }
     }
   }
