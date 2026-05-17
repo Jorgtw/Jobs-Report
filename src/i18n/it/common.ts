@@ -18,6 +18,7 @@ export const common = {
   delete: "Elimina",
   edit: "Modifica",
   cancel: "Annulla",
+  close: "Chiudi",
   loading: "Caricamento...",
   today: "Oggi",
   thisWeek: "Questa settimana",
@@ -74,4 +75,8 @@ export const common = {
   statusPendingAction: "In attesa",
   allStatuses: "Tutti gli stati",
   updateStatusTitle: "Aggiorna stato dei risultati filtrati",
+  initializing: "Inizializzazione...",
+  setupRequiredTitle: "Configurazione in Corso",
+  setupRequiredDesc: "La tua azienda è in fase di configurazione o l'operazione non è stata completata correttamente. Contatta l'amministratore di sistema o attendi il completamento del setup.",
+  back: "Indietro",
 };

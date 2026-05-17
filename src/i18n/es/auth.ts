@@ -60,4 +60,21 @@ export const auth = {
   privacyLink: "Política de Privacidad",
   resetPassword: "Restablecer Contraseña",
   passwordChangeHint: "Dejar vacío para no cambiar",
-};
+  address: "Company Address",
+  city: "City",
+  vatNumber: "VAT Number / Tax ID",
+  signupBtn: "Create Company & Login",
+  signupTitle: "Instant Registration",
+  signupDesc: "Set up your company in seconds and start working immediately.",
+  usernameLabel: "Choose a Username",
+  passwordLabel: "Choose a Password",
+  accountCreated: "Account Created!",
+  immediateLogin: "Immediate access in progress...",
+  companyDataSection: "Company Details",
+  contactAccessSection: "Contact & Access",
+  dataUsageWarning: "Data will be used for the immediate configuration of the operational environment.",
+  placeholderVatExample: "e.g. GB123456789",
+  placeholderContactExample: "John Doe",
+  placeholderEmailExample: "john@company.com",
+  placeholderUsernameExample: "Choose username"
+} as const;

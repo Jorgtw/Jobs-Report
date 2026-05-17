@@ -1,12 +1,8 @@
-// src/i18n/en/help.ts
 export const help = {
-  // --- HELP CENTER ---
   title: "Help Center",
   subtitle: "Guides and instructions for using the app",
   workerTab: "Operator Guide",
   adminTab: "Administrator Guide",
-  
-  // Articles
   newReportTitle: "Creating a Work Report",
   newReportBody: "To create a new report, go to the 'Reports' section and click '+'. Select the date, project, and enter the hours worked. Don't forget to briefly describe the activity performed!",
   additionalWorkersTitle: "Adding Collaborators",
@@ -21,15 +17,11 @@ export const help = {
   adminInternalBody: "To manage absences, use the new 'New Internal Activity' button in the Projects section. This will create a special project that doesn't generate revenue but correctly tracks personnel costs.",
   commTitle: "Internal Communications",
   commBody: "The messaging system is divided into two sections: 'INBOX' for messages received from others and 'SENT' for messages you have sent. Click on a message to open the full conversation and reply in real time. You can send messages to individual users or to the entire team.",
-  
-  // Support Contact
   supportContact: "Please check the User Guide first — you will find the answer to most questions. For technical problems, contact your account administrator.",
   contactHeader: "Need help?",
   guideTitle: "Complete User Guide",
   guideBody: "Consult the detailed manual with step-by-step instructions for each function.",
   guideBtn: "Open Guide →",
-
-  // --- ONBOARDING TOUR ---
   onboardingTitle: "Welcome to Jobs-Report! 👋",
   onboardingBody: "This guide will help you set up your account in seconds. Let's get started!",
   stepClientsTitle: "Clients Archive",
@@ -46,8 +38,6 @@ export const help = {
   skip: "Skip",
   finish: "Finish",
   restart: "Restart Tutorial",
-
-  // --- AI ASSISTANT ---
   aiName: "Jobs Report Assistant",
   aiSubtitle: "Speaking Manual",
   aiWelcome: "Hi! I'm the intelligent Jobs Report manual. Ask me how the app works!",
@@ -58,8 +48,6 @@ export const help = {
   aiUserLabel: "You",
   aiBotLabel: "AI Assistant",
   chatWithAI: "Chat with AI Assistant",
-  
-  // Onboarding Aliases (for migration)
   onboarding_welcome_title: "Welcome to Jobs-Report! 👋",
   onboarding_welcome_body: "This guide will help you set up your account in seconds. Let's get started!",
   onboarding_clients_title: "Clients Archive",
@@ -75,12 +63,29 @@ export const help = {
   onboarding_skip: "Skip",
   onboarding_next: "Next",
   onboarding_finish: "Finish",
-
-  // AI Assistant Aliases
   aiAssistantName: "Jobs Report Assistant",
   aiAssistantSubtitle: "Speaking Manual",
   aiWelcomeMessage: "Hello! I am the intelligent manual for Jobs Report. Ask me how the app works!",
   aiQuickTranslate: "Translate a text →",
   aiTranslatePrefix: "Translate into",
   aiLangName: "English",
+  helpTitle: "Help Center",
+  helpSubtitle: "Guides and instructions for using the app",
+  helpGuideTitle: "Complete User Guide",
+  helpGuideBody: "Consult the detailed manual with step-by-step instructions for each function.",
+  helpGuideBtn: "Open Guide →",
+  helpPwaTitle: "Installation on Phone",
+  helpPwaBody: "You can install Jobs Report as a real app to open it quickly from your home screen without going through the browser.",
+  helpNewReportTitle: "Creating a Work Report",
+  helpNewReportBody: "To create a new report, go to the 'Reports' section and click '+'. Select the date, project, and enter the hours worked. Don't forget to briefly describe the activity performed!",
+  helpAdditionalWorkersTitle: "Adding Collaborators",
+  helpAdditionalWorkersBody: "If you work in a team, you can add other colleagues to the same report by clicking 'Add Collaborator' at the bottom of the new report form.",
+  helpAdminSummaryTitle: "Monitoring and Billing",
+  helpAdminSummaryBody: "In the 'Work Summary' section, you can filter data by period, client, or collaborator. Here you can also update the billing status (Pending, Invoiced, Paid) and export data to Excel or PDF.",
+  helpAdminPersonnelTitle: "Personnel Management",
+  helpAdminPersonnelBody: "You can create new users in the 'Personnel' section. Remember to enter the correct email to be able to send them access instructions with a single click.",
+  helpAdminInternalTitle: "Internal Activities (Sickness/Holidays)",
+  helpAdminInternalBody: "To manage absences, use the new 'New Internal Activity' button in the Projects section. This will create a special project that doesn't generate revenue but correctly tracks personnel costs.",
+  helpCommTitle: "Internal Communications",
+  helpCommBody: "The messaging system is divided into two sections: 'INBOX' for messages received from others and 'SENT' for messages you have sent. Click on a message to open the full conversation and reply in real time. You can send messages to individual users or to the entire team."
 } as const;

@@ -74,4 +74,9 @@ export const common = {
   statusPendingAction: "Pendiente",
   allStatuses: "Todos los estados",
   updateStatusTitle: "Actualizar el estado de los resultados filtrados",
-};
+  close: "Close",
+  initializing: "Initializing...",
+  setupRequiredTitle: "Setup in Progress",
+  setupRequiredDesc: "Your company is currently being set up or the operation did not complete successfully. Please contact the system administrator or wait for the setup to complete.",
+  back: "Back"
+} as const;

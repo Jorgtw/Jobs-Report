@@ -133,4 +133,4 @@ export const reports = {
   expenseRimborso: "Zwrot osobisty",
   expenseKm: "Podróż (KM)",
   kmDistance: "Dystans (KM)"
-};
+} as const;

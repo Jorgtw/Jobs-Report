@@ -329,14 +329,14 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                   onClick={() => handleDeleteOperation('pdf')}
                   className="w-full py-3 px-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-red-500/20 disabled:opacity-50"
                 >
-                  <FileDown size={18} /> {t('reports.exportAndProceed')} (PDF)
+                  <FileDown size={18} /> {`${t('reports.exportAndProceed')} (PDF)`}
                 </button>
                 <button
                   disabled={isDeleting}
                   onClick={() => handleDeleteOperation('excel')}
                   className="w-full py-3 px-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50"
                 >
-                  <FileSpreadsheet size={18} /> {t('reports.exportAndProceed')} (Excel)
+                  <FileSpreadsheet size={18} /> {`${t('reports.exportAndProceed')} (Excel)`}
                 </button>
                 <button
                   disabled={isDeleting}

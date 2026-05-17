@@ -18,6 +18,7 @@ export const common = {
   delete: "Delete",
   edit: "Edit",
   cancel: "Cancel",
+  close: "Close",
   loading: "Loading...",
   today: "Today",
   thisWeek: "This Week",
@@ -74,4 +75,8 @@ export const common = {
   statusPendingAction: "Pending",
   allStatuses: "All statuses",
   updateStatusTitle: "Update status of filtered results",
-};
+  initializing: "Initializing...",
+  setupRequiredTitle: "Setup in Progress",
+  setupRequiredDesc: "Your company is currently being set up or the operation did not complete successfully. Please contact the system administrator or wait for the setup to complete.",
+  back: "Back"
+} as const;

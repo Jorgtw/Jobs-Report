@@ -68,4 +68,13 @@ export const auth = {
   signupDesc: "Configura la tua azienda in pochi secondi e inizia subito a lavorare.",
   usernameLabel: "Scegli un Username",
   passwordLabel: "Scegli una Password",
+  accountCreated: "Account Creato!",
+  immediateLogin: "Accesso immediato in corso...",
+  companyDataSection: "Dati Aziendali",
+  contactAccessSection: "Contatto & Accesso",
+  dataUsageWarning: "I dati verranno utilizzati per la configurazione immediata dell'ambiente operativo.",
+  placeholderVatExample: "Es. IT01234567890",
+  placeholderContactExample: "Mario Rossi",
+  placeholderEmailExample: "mario@azienda.it",
+  placeholderUsernameExample: "Scegli username",
 };

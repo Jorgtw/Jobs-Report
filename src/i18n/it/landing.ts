@@ -56,5 +56,19 @@ export const landing = {
   
   // Footer
   finalCTA: "Inizia Adesso - Richiedi Accesso",
-  finalLogin: "Hai già un account? Accedi ora"
+  finalLogin: "Hai già un account? Accedi ora",
+  sandbox: {
+    testVersionAlert: "Questa è la versione di test. In produzione qui si aprirebbe il modale per la registrazione/login.",
+    createFirstReport: "Crea il tuo primo rapportino",
+    noRegistrationRequired: "Nessuna registrazione richiesta per iniziare.",
+    debugStatus: "Status Interno (Debug)",
+    guestId: "Guest ID:",
+    generating: "Generazione...",
+    localStorageHint: "Apri F12 - Application - Local Storage per vedere `draft_report` aggiornarsi live.",
+    client: "Cliente",
+    date: "Data",
+    hoursWorked: "Ore Lavorate",
+    workDescription: "Descrizione Intervento",
+    generateFreePdf: "Genera PDF Gratuito"
+  }
 } as const;

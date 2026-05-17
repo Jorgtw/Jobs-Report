@@ -126,7 +126,7 @@ const PrivacyView: React.FC = () => {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <Link to="/" className="text-sm text-blue-600 hover:underline font-medium">
-            ← Jobs Report
+            ← {t('common.back')}
           </Link>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">

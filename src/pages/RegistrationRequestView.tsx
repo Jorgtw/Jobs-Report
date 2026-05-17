@@ -105,8 +105,8 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
               <div className="w-20 h-20 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-200 animate-bounce">
                 <CheckCircle2 size={40} />
               </div>
-              <h3 className="text-2xl font-black text-emerald-900 mb-2">Account Creato!</h3>
-              <p className="text-sm font-medium text-emerald-700">Accesso immediato in corso...</p>
+              <h3 className="text-2xl font-black text-emerald-900 mb-2">{t('auth.accountCreated')}</h3>
+              <p className="text-sm font-medium text-emerald-700">{t('auth.immediateLogin')}</p>
             </div>
           ) : (
             <form onSubmit={handleRegister} className="space-y-8">
@@ -114,12 +114,12 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black">1</div>
-                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Dati Aziendali</h3>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">{t('auth.companyDataSection')}</h3>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {inputGroup(Building2, t('auth.companyName'), 'companyName', 'text', t('auth.companyNamePlaceholder'))}
-                  {inputGroup(Hash, t('auth.vatNumber'), 'vatNumber', 'text', 'Es. IT01234567890')}
+                  {inputGroup(Hash, t('auth.vatNumber'), 'vatNumber', 'text', t('auth.placeholderVatExample'))}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,16 +132,16 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black">2</div>
-                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Contatto & Accesso</h3>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">{t('auth.contactAccessSection')}</h3>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {inputGroup(User, t('auth.contactNameLabel'), 'adminName', 'text', 'Mario Rossi')}
-                  {inputGroup(Mail, t('auth.email'), 'email', 'email', 'mario@azienda.it')}
+                  {inputGroup(User, t('auth.contactNameLabel'), 'adminName', 'text', t('auth.placeholderContactExample'))}
+                  {inputGroup(Mail, t('auth.email'), 'email', 'email', t('auth.placeholderEmailExample'))}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {inputGroup(Lock, t('auth.usernameLabel'), 'username', 'text', 'Scegli username')}
+                  {inputGroup(Lock, t('auth.usernameLabel'), 'username', 'text', t('auth.placeholderUsernameExample'))}
                   {inputGroup(Lock, t('auth.passwordLabel'), 'password', 'password', '••••••••')}
                 </div>
               </div>
@@ -164,7 +164,7 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
                     {' '}{t('auth.termsAcceptMiddle')}{' '}
                     <Link to="/privacy" target="_blank" className="text-blue-600 hover:underline">{t('auth.privacyLink')}</Link>.*
                     <br />
-                    <span className="text-slate-400 font-medium">I dati verranno utilizzati per la configurazione immediata dell'ambiente operativo.</span>
+                    <span className="text-slate-400 font-medium">{t('auth.dataUsageWarning')}</span>
                   </span>
                 </label>
               </div>

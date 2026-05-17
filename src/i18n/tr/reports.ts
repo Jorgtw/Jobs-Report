@@ -133,4 +133,4 @@ export const reports = {
   expenseRimborso: "Kişisel Geri Ödeme",
   expenseKm: "Seyahat (KM)",
   kmDistance: "Mesafe (KM)"
-};
+} as const;

@@ -516,7 +516,7 @@ const App: React.FC = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-            Inizializzazione...
+            {t('common.initializing')}
           </p>
         </div>
       </div>
@@ -558,10 +558,9 @@ const App: React.FC = () => {
                       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mb-4 shadow-sm">
                         <Building2 size={32} />
                       </div>
-                      <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Configurazione in Corso</h1>
+                      <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t('common.setupRequiredTitle')}</h1>
                       <p className="text-sm text-slate-500 max-w-md mt-2">
-                        La tua azienda è in fase di configurazione o l'operazione non è stata completata correttamente.
-                        Contatta l'amministratore di sistema o attendi il completamento del setup.
+                        {t('common.setupRequiredDesc')}
                       </p>
                     </div>
                   )}

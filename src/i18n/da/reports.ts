@@ -133,4 +133,4 @@ export const reports = {
   expenseRimborso: "Personlig Refusion",
   expenseKm: "Rejse (KM)",
   kmDistance: "Afstand (KM)"
-};
+} as const;

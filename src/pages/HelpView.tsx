@@ -223,7 +223,7 @@ const HelpView: React.FC<HelpViewProps> = ({ user, isMobile, t }) => {
               onClick={() => setIsGuideOpen(false)}
               className="p-2 hover:bg-slate-200 rounded-xl transition-colors flex items-center gap-2 group"
             >
-              <span className="text-sm font-bold text-slate-500 group-hover:text-slate-800">Chiudi</span>
+              <span className="text-sm font-bold text-slate-500 group-hover:text-slate-800">{t('common.close')}</span>
               <X size={24} className="text-slate-600 group-hover:text-slate-900" />
             </button>
           </div>

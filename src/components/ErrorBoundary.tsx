@@ -32,6 +32,41 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const activeLang = (localStorage.getItem('ws_lang') || 'it') as 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
+      const messages = {
+        it: {
+          title: "Oops! Qualcosa è andato storto",
+          desc: "Si è verificato un errore inaspettato nell'applicazione.",
+          button: "Ricarica l'App"
+        },
+        en: {
+          title: "Oops! Something went wrong",
+          desc: "An unexpected error occurred in the application.",
+          button: "Reload App"
+        },
+        es: {
+          title: "¡Oops! Algo salió mal",
+          desc: "Ocurrió un error inesperado en la aplicación.",
+          button: "Recargar Aplicación"
+        },
+        pl: {
+          title: "Oops! Coś poszło nie tak",
+          desc: "Wystąpił nieoczekiwany błąd w aplikacji.",
+          button: "Przeładuj aplikację"
+        },
+        tr: {
+          title: "Tüh! Bir şeyler yanlış gitti",
+          desc: "Uygulamada beklenmedik bir hata oluştu.",
+          button: "Uygulamayı Yeniden Yükle"
+        },
+        da: {
+          title: "Ups! Noget gik galt",
+          desc: "Der opstod en uventet fejl i applikationen.",
+          button: "Genindlæs appen"
+        }
+      };
+      const currentMsg = messages[activeLang] || messages.it;
+
       return (
         <div style={{
           minHeight: '100vh',
@@ -46,10 +81,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
         }}>
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
           <h1 style={{ fontSize: '1.875rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>
-            Oops! Qualcosa è andato storto
+            {currentMsg.title}
           </h1>
           <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
-            Si è verificato un errore inaspettato nell'applicazione.
+            {currentMsg.desc}
           </p>
           
           {this.state.error && (
@@ -82,7 +117,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               cursor: 'pointer'
             }}
           >
-            Ricarica l'App
+            {currentMsg.button}
           </button>
         </div>
       );

@@ -118,7 +118,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('common.monthlySummary')}</h3>
-                <p className="text-2xl font-black text-slate-900 mt-1">{monthlyHours.toFixed(1)} <span className="text-sm font-bold text-slate-400">ore</span></p>
+                <p className="text-2xl font-black text-slate-900 mt-1">{monthlyHours.toFixed(1)} <span className="text-sm font-bold text-slate-400">{t('common.hours').toLowerCase()}</span></p>
               </div>
               <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
                 <CheckCircle2 size={24} />

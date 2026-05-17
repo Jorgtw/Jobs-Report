@@ -1,11 +1,8 @@
-// src/i18n/en/landing.ts
 export const landing = {
   title: "Jobs-Report",
   subtitle: "The professional web management system for construction and services. Total traceability of hours, costs, revenues, and site margins.",
   heroCTA: "Discover the potential",
   backToLogin: "Access the Program",
-  
-  // Features
   featReportsTitle: "Smart Work Reports",
   featReportsDesc: "Rapid site-side entry with team management and extra expenses.",
   featProjTitle: "Margin Control",
@@ -14,13 +11,9 @@ export const landing = {
   featTeamDesc: "Manage internal workers and subcontracted companies in a single team.",
   featExportTitle: "Ready-to-Use Reports",
   featExportDesc: "Generate PDF and Excel for billing with a single click.",
-  
-  // Intro & Why
   introTitle: "What does the program do?",
   introDesc: "Jobs-Report is a web management system for companies working on sites or projects with their own and subcontracted personnel. It manages clients, projects, daily reports and produces precise economic-financial summaries.",
   whyTitle: "Real Benefits and Differentiators",
-  
-  // Differentiators
   diff1Title: "🏗️ Mixed Teams",
   diff1Desc: "Allows including internal workers and subcontractors in a single report, automatically separating costs in the summary.",
   diff2Title: "💰 Real Economic Logic",
@@ -35,8 +28,6 @@ export const landing = {
   diff6Desc: "PDF and Excel generated with dynamically translated headers, ready to be sent to the client or consultant.",
   diff7Title: "🔒 Differentiated Roles",
   diff7Desc: "Admin, Supervisor and Operators: everyone sees only what they are responsible for, ensuring security and privacy of sensitive data.",
-  
-  // Comparison
   compTitle: "Comparison with other Software",
   compFeature: "Functionality",
   compTeam: "Mixed internal/subcontracted teams",
@@ -44,8 +35,6 @@ export const landing = {
   compStatus: "Billing status",
   compLang: "Multi-language (6 languages)",
   compExcel: "Manual Excel",
-  
-  // Limits & Summary
   compLimitsTitle: "💡 Transparency on Limits",
   limit1: "No live clock-in (real-time punching)",
   limit2: "No automatic deadline notifications",
@@ -53,8 +42,20 @@ export const landing = {
   limit4: "PWA App (great from mobile, not in App Store)",
   summaryTitle: "In Summary",
   summaryDesc: "Ideal for small/medium construction companies, installers or service companies sending mixed teams to sites. All in a lightweight app, without monthly fees and customizable.",
-  
-  // Footer
   finalCTA: "Start Now - Request Access",
-  finalLogin: "Already have an account? Login now"
+  finalLogin: "Already have an account? Login now",
+  sandbox: {
+    testVersionAlert: "This is a test version. In production, this would open the registration/login modal.",
+    createFirstReport: "Create your first report",
+    noRegistrationRequired: "No registration required to start.",
+    debugStatus: "Internal Status (Debug)",
+    guestId: "Guest ID:",
+    generating: "Generating...",
+    localStorageHint: "Open F12 - Application - Local Storage to see `draft_report` update live.",
+    client: "Client",
+    date: "Date",
+    hoursWorked: "Hours Worked",
+    workDescription: "Work Description",
+    generateFreePdf: "Generate Free PDF"
+  }
 } as const;

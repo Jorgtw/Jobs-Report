@@ -74,4 +74,9 @@ export const common = {
   statusPendingAction: "Afventer",
   allStatuses: "Alle statusser",
   updateStatusTitle: "Opdater status for filtrerede resultater",
-};
+  close: "Close",
+  initializing: "Initializing...",
+  setupRequiredTitle: "Setup in Progress",
+  setupRequiredDesc: "Your company is currently being set up or the operation did not complete successfully. Please contact the system administrator or wait for the setup to complete.",
+  back: "Back"
+} as const;

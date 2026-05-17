@@ -1,7 +1,9 @@
 import React from 'react';
 import { useGuestReport } from '../hooks/useGuestReport';
+import { useTranslation } from '../contexts/LanguageContext';
 
 export default function TestGuestPage() {
+  const { t } = useTranslation();
   const { guestId, formData, saveDraft } = useGuestReport();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -9,25 +11,25 @@ export default function TestGuestPage() {
   };
 
   const handleGenerateClick = () => {
-    alert("Questa è la versione di test. In produzione qui si aprirebbe il modale per la registrazione/login.");
+    alert(t('landing.sandbox.testVersionAlert'));
   };
 
   return (
     <div className="max-w-xl mx-auto p-6 mt-10 space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight">Crea il tuo primo rapportino</h1>
-        <p className="text-slate-500 mt-2 text-sm">Nessuna registrazione richiesta per iniziare.</p>
+        <h1 className="text-3xl font-black text-slate-800 tracking-tight">{t('landing.sandbox.createFirstReport')}</h1>
+        <p className="text-slate-500 mt-2 text-sm">{t('landing.sandbox.noRegistrationRequired')}</p>
       </div>
       
       <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-        <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Status Interno (Debug)</p>
-        <p className="text-sm font-mono text-slate-700"><strong>Guest ID:</strong> {guestId || 'Generazione...'}</p>
-        <p className="text-xs text-slate-400 mt-1">Apri F12 - Application - Local Storage per vedere `draft_report` aggiornarsi live.</p>
+        <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">{t('landing.sandbox.debugStatus')}</p>
+        <p className="text-sm font-mono text-slate-700"><strong>{t('landing.sandbox.guestId')}</strong> {guestId || t('landing.sandbox.generating')}</p>
+        <p className="text-xs text-slate-400 mt-1">{t('landing.sandbox.localStorageHint')}</p>
       </div>
 
       <form className="space-y-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div>
-          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">Cliente</label>
+          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">{t('landing.sandbox.client')}</label>
           <input 
             type="text"
             name="cliente" 
@@ -38,7 +40,7 @@ export default function TestGuestPage() {
         </div>
         
         <div>
-          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">Data</label>
+          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">{t('landing.sandbox.date')}</label>
           <input 
             type="date"
             name="data" 
@@ -49,7 +51,7 @@ export default function TestGuestPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">Ore Lavorate</label>
+          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">{t('landing.sandbox.hoursWorked')}</label>
           <input 
             type="number"
             name="ore" 
@@ -60,7 +62,7 @@ export default function TestGuestPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">Descrizione Intervento</label>
+          <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-tight mb-1">{t('landing.sandbox.workDescription')}</label>
           <textarea 
             name="descrizione" 
             value={formData.descrizione} 
@@ -74,7 +76,7 @@ export default function TestGuestPage() {
           onClick={handleGenerateClick}
           className="w-full bg-blue-600 text-white font-black py-4 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 text-lg tracking-tight"
         >
-          Genera PDF Gratuito
+          {t('landing.sandbox.generateFreePdf')}
         </button>
       </form>
     </div>

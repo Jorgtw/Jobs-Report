@@ -72,7 +72,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      alert('Si è verificato un errore durante l\'apertura del checkout. Riprova più tardi.');
+      alert(t('dashboard.upgradeModal.checkoutError'));
       setLoadingPriceId(null);
     }
   };
@@ -87,14 +87,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
     compliance: {
       icon: <FileCheck size={32} />,
       iconBg: 'bg-emerald-100 text-emerald-600',
-      title: 'Modulo Compliance',
-      desc: 'Garantisci la conformità normativa con report avanzati e controlli di sicurezza automatizzati.',
+      title: t('dashboard.upgradeModal.complianceTitle'),
+      desc: t('dashboard.upgradeModal.complianceDesc'),
     },
     generic: {
       icon: <Trophy size={32} />,
       iconBg: 'bg-amber-100 text-amber-600',
-      title: 'Espandi il tuo business',
-      desc: 'Scegli il piano più adatto alle tue esigenze e porta Jobs-Report al livello successivo.',
+      title: t('dashboard.upgradeModal.genericTitle'),
+      desc: t('dashboard.upgradeModal.genericDesc'),
     },
   };
 
@@ -143,7 +143,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
           {loadingPlans ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="animate-spin text-blue-600" size={40} />
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Caricamento piani...</p>
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{t('dashboard.upgradeModal.loadingPlans')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -157,7 +157,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                   {plan.is_popular && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
                       <Sparkles size={12} />
-                      Consigliato
+                      {t('dashboard.upgradeModal.recommended')}
                     </div>
                   )}
 
@@ -169,7 +169,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                   <div className="mb-8">
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-black text-slate-900">{plan.price_label}</span>
-                      <span className="text-slate-400 font-bold">/mese</span>
+                      <span className="text-slate-400 font-bold">{t('dashboard.upgradeModal.perMonth')}</span>
                     </div>
                   </div>
 
@@ -194,7 +194,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                     ) : (
                       <>
                         <Zap size={18} fill="currentColor" />
-                        Attiva Ora
+                        {t('dashboard.upgradeModal.activateNow')}
                       </>
                     )}
                   </button>
@@ -205,7 +205,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
 
           <div className="mt-12 text-center">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-              Pagamenti sicuri tramite Stripe
+              {t('dashboard.upgradeModal.securePayments')}
             </p>
             <div className="flex justify-center items-center gap-4 opacity-40 grayscale">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-5" />
@@ -216,7 +216,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
         {/* Footer */}
         <div className="p-6 bg-slate-100 border-t border-slate-200 text-center">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-            JobsReport Professional Edition • Supporto 24/7
+            {t('dashboard.upgradeModal.footerSupport')}
           </p>
         </div>
       </div>

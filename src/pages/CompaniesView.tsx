@@ -127,7 +127,7 @@ const CompaniesView: React.FC = () => {
 
   const handleSendInstructions = async (c: any) => {
     if (!c.email || !c.adminId) {
-      alert("Email o Admin ID mancante per questa ditta.");
+      alert(t('dashboard.missingEmailOrAdminId'));
       return;
     }
 
@@ -146,18 +146,13 @@ const CompaniesView: React.FC = () => {
   };
 
   const handlePrepareEmail = (c: any) => {
-    const name = c.adminName || c.admin_name || 'Amministratore';
+    const name = c.adminName || c.admin_name || 'Admin';
     const company = c.name || c.companyName || '';
-    const subjectText = `Credenziali di accesso Jobs Report - ${company}`;
-    const bodyText = 
-      `Ciao ${name},\n\n` +
-      `Ecco le tue credenziali di accesso per Jobs Report:\n\n` +
-      `URL: https://jobs-report.vercel.app\n` +
-      `Username: ${c.username}\n` +
-      `Password: ${c.password || '********'}\n\n` +
-      `Ti consigliamo di cambiare la password al primo accesso.\n\n` +
-      `Buon lavoro,\n` +
-      `Il team di JobsReport`;
+    const subjectText = t('dashboard.emailSubject').replace('{company}', company);
+    const bodyText = t('dashboard.emailBody')
+      .replace('{name}', name)
+      .replace('{username}', c.username || '')
+      .replace('{password}', c.password || '********');
 
     // Copy to clipboard as fallback
     navigator.clipboard.writeText(bodyText).catch(err => console.error('Clipboard copy failed:', err));
@@ -242,7 +237,7 @@ const CompaniesView: React.FC = () => {
                         password: c.password
                       })} 
                       className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed" 
-                      title="Prepara Email Manuale"
+                      title={t('dashboard.prepareManualEmail')}
                     >
                       <Mail size={14} />
                     </button>
@@ -250,7 +245,7 @@ const CompaniesView: React.FC = () => {
                       disabled={sendingId === c.id || !c.email || !canPerformAction(c, 'send_instructions')}
                       onClick={() => handleSendInstructions(c)} 
                       className={`p-1.5 rounded-lg transition-all ${sendingId === c.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'} disabled:opacity-30 disabled:cursor-not-allowed`} 
-                      title="Invia Credenziali"
+                      title={t('dashboard.sendCredentials')}
                     >
                       {sendingId === c.id ? (
                         <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
@@ -348,7 +343,7 @@ const CompaniesView: React.FC = () => {
                   <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
                     <div>
                       <p className="text-sm font-bold text-blue-800">{t('dashboard.premiumPlan')}</p>
-                      <p className="text-xs text-blue-600">Attiva subito le funzionalità premium per questa ditta.</p>
+                      <p className="text-xs text-blue-600">{t('dashboard.activatePremiumDesc')}</p>
                     </div>
                     <button
                       type="button"
@@ -364,9 +359,9 @@ const CompaniesView: React.FC = () => {
 
                 <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-emerald-800">Invio Credenziali</p>
+                    <p className="text-sm font-bold text-emerald-800">{t('dashboard.sendCredentialsTitle')}</p>
                     <p className="text-xs text-emerald-600 mb-2">
-                      {editingId ? "Inserisci una password sopra per inviarla al cliente." : "Invia automaticamente username e password all'indirizzo email della ditta."}
+                      {editingId ? t('dashboard.sendCredentialsHintEdit') : t('dashboard.sendCredentialsHintCreate')}
                     </p>
                     <div className="flex gap-2">
                       <button
@@ -381,7 +376,7 @@ const CompaniesView: React.FC = () => {
                         }}
                         className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.sendWelcomeEmail || (editingId && sendStatus[editingId] === 'success') ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500'}`}
                       >
-                        {sendingId === editingId ? "INVIO IN CORSO..." : (formData.sendWelcomeEmail ? "AUTO-INVIO ATTIVO" : "INVIA ISTRUZIONI (AUTO)")}
+                        {sendingId === editingId ? t('dashboard.sendingInProgress') : (formData.sendWelcomeEmail ? t('dashboard.autoSendActive') : t('dashboard.sendInstructionsAuto'))}
                       </button>
                       <button
                         type="button"
@@ -394,7 +389,7 @@ const CompaniesView: React.FC = () => {
                         })}
                         className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 shadow-sm"
                       >
-                        PREPARA EMAIL (MANUALE)
+                        {t('dashboard.prepareManualEmailBtn')}
                       </button>
                     </div>
                   </div>
