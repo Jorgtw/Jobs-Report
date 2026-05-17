@@ -51,19 +51,42 @@ export const dashboard = {
     activateNow: "Şimdi Etkinleştir",
     securePayments: "Stripe ile güvenli ödemeler",
     footerSupport: "JobsReport Professional Edition • 7/24 Destek",
-    checkoutError: "An error occurred while opening checkout. Please try again later."
+    checkoutError: "Ödeme sayfası açılırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+    communicationsDesc: "Gerçek zamanlı dahili iletişimin kilidini açın ve şirket mesajlarını takip edin."
   },
-  missingEmailOrAdminId: "Email or Admin ID missing for this company.",
-  prepareManualEmail: "Prepare Manual Email",
-  sendCredentials: "Send Credentials",
-  activatePremiumDesc: "Activate premium features for this company immediately.",
-  sendCredentialsTitle: "Sending Credentials",
-  prepareManualEmailBtn: "PREPARE EMAIL (MANUAL)",
-  emailSubject: "Access Credentials Jobs Report - {company}",
-  emailBody: "Hello {name},\n\nHere are your access credentials for Jobs Report:\n\nURL: https://jobs-report.vercel.app\nUsername: {username}\nPassword: {password}\n\nWe recommend that you change your password upon your first access.\n\nBest regards,\nThe JobsReport Team",
-  sendCredentialsHintEdit: "Enter a password above to send it to the client.",
-  sendCredentialsHintCreate: "Automatically send username and password to the company's email address.",
-  sendingInProgress: "SENDING IN PROGRESS...",
-  autoSendActive: "AUTO-SEND ACTIVE",
-  sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)"
+  missingEmailOrAdminId: "Bu şirket için E-posta veya Yönetici Kimliği eksik.",
+  prepareManualEmail: "Manuel E-posta Hazırla",
+  sendCredentials: "Kimlik Bilgilerini Gönder",
+  activatePremiumDesc: "Bu şirket için premium özellikleri hemen etkinleştirin.",
+  sendCredentialsTitle: "Kimlik Bilgileri Gönderiliyor",
+  prepareManualEmailBtn: "MANUEL E-POSTA HAZIRLA",
+  emailSubject: "Jobs Report Giriş Bilgileri - {company}",
+  emailBody: "Merhaba {name},\n\nJobs Report için giriş bilgileriniz aşağıdadır:\n\nURL: https://jobs-report.vercel.app\nKullanıcı Adı: {username}\nŞifre: {password}\n\nİlk girişinizde şifrenizi değiştirmenizi öneririz.\n\nİyi çalışmalar,\nJobsReport Ekibi",
+  sendCredentialsHintEdit: "Müşteriye göndermek için yukarıya bir şifre girin.",
+  sendCredentialsHintCreate: "Kullanıcı adını ve şifreyi otomatik olarak şirketin e-posta adresine gönder.",
+  sendingInProgress: "GÖNDERİLİYOR...",
+  autoSendActive: "OTOMATİK GÖNDERİM AKTİF",
+  sendInstructionsAuto: "TALİMATLARI GÖNDER (OTOMATİK)",
+  plans: {
+    basic: {
+      name: "Basic Plan",
+      description: "Sınırsız rapor isteyenler için ideal temel paket.",
+      features: {
+        "0": "Sınırsız rapor",
+        "1": "Dijital imza",
+        "2": "PDF ve Excel dışa aktarma",
+        "3": "Güvenli bulut depolama"
+      }
+    },
+    premium: {
+      name: "Premium Plan",
+      description: "Maksimum verimlilik ve kontrol için eksiksiz paket.",
+      features: {
+        "0": "Basic planındaki her şey",
+        "1": "Dahili iletişim",
+        "2": "Gelişmiş uyumluluk (Compliance)",
+        "3": "Öncelikli destek"
+      }
+    }
+  }
 } as const;

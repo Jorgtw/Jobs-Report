@@ -62,6 +62,7 @@ export const dashboard = {
   upgradeModal: {
     complianceTitle: 'Modulo Compliance',
     complianceDesc: 'Garantisci la conformità normativa con report avanzati e controlli di sicurezza automatizzati.',
+    communicationsDesc: 'Sblocca le comunicazioni interne in tempo reale e tieni traccia dei messaggi aziendali.',
     genericTitle: 'Espandi il tuo business',
     genericDesc: 'Scegli il piano più adatto alle tue esigenze e porta Jobs-Report al livello successivo.',
     loadingPlans: 'Caricamento piani...',
@@ -71,5 +72,27 @@ export const dashboard = {
     securePayments: 'Pagamenti sicuri tramite Stripe',
     footerSupport: 'JobsReport Professional Edition • Supporto 24/7',
     checkoutError: "Si è verificato un errore durante l'apertura del checkout. Riprova più tardi."
+  },
+  plans: {
+    basic: {
+      name: "Piano Basic",
+      description: "Ideale per chi vuole report illimitati senza fronzoli.",
+      features: {
+        "0": "Report illimitati",
+        "1": "Firma digitale",
+        "2": "Export PDF ed Excel",
+        "3": "Storage sicuro cloud"
+      }
+    },
+    premium: {
+      name: "Piano Premium",
+      description: "Il pacchetto completo per la massima efficienza e controllo.",
+      features: {
+        "0": "Tutto quello che c'è in Basic",
+        "1": "Comunicazioni aziendali",
+        "2": "Compliance avanzata",
+        "3": "Supporto prioritario"
+      }
+    }
   }
 } as const;

@@ -51,7 +51,8 @@ export const dashboard = {
     activateNow: "Aktywuj Teraz",
     securePayments: "Bezpieczne płatności przez Stripe",
     footerSupport: "JobsReport Professional Edition • Wsparcie 24/7",
-    checkoutError: "An error occurred while opening checkout. Please try again later."
+    checkoutError: "An error occurred while opening checkout. Please try again later.",
+    communicationsDesc: "Unlock real-time internal communications and track company messages."
   },
   missingEmailOrAdminId: "Email or Admin ID missing for this company.",
   prepareManualEmail: "Prepare Manual Email",
@@ -65,5 +66,27 @@ export const dashboard = {
   sendCredentialsHintCreate: "Automatically send username and password to the company's email address.",
   sendingInProgress: "SENDING IN PROGRESS...",
   autoSendActive: "AUTO-SEND ACTIVE",
-  sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)"
+  sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)",
+  plans: {
+    basic: {
+      name: "Basic Plan",
+      description: "Ideal for those who want unlimited reports without frills.",
+      features: {
+        "0": "Unlimited reports",
+        "1": "Digital signature",
+        "2": "PDF and Excel export",
+        "3": "Secure cloud storage"
+      }
+    },
+    premium: {
+      name: "Premium Plan",
+      description: "The complete package for maximum efficiency and control.",
+      features: {
+        "0": "Everything in Basic",
+        "1": "Internal communications",
+        "2": "Advanced compliance",
+        "3": "Priority support"
+      }
+    }
+  }
 } as const;

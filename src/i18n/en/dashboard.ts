@@ -56,6 +56,7 @@ export const dashboard = {
   upgradeModal: {
     complianceTitle: "Compliance Module",
     complianceDesc: "Ensure regulatory compliance with advanced reports and automated security checks.",
+    communicationsDesc: "Unlock real-time internal communications and track company messages.",
     genericTitle: "Expand your business",
     genericDesc: "Choose the plan that best suits your needs and take Jobs-Report to the next level.",
     loadingPlans: "Loading plans...",
@@ -65,5 +66,27 @@ export const dashboard = {
     securePayments: "Secure payments via Stripe",
     footerSupport: "JobsReport Professional Edition • 24/7 Support",
     checkoutError: "An error occurred while opening checkout. Please try again later."
+  },
+  plans: {
+    basic: {
+      name: "Basic Plan",
+      description: "Ideal for those who want unlimited reports without frills.",
+      features: {
+        "0": "Unlimited reports",
+        "1": "Digital signature",
+        "2": "PDF and Excel export",
+        "3": "Secure cloud storage"
+      }
+    },
+    premium: {
+      name: "Premium Plan",
+      description: "The complete package for maximum efficiency and control.",
+      features: {
+        "0": "Everything in Basic",
+        "1": "Internal communications",
+        "2": "Advanced compliance",
+        "3": "Priority support"
+      }
+    }
   }
 } as const;

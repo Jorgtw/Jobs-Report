@@ -82,7 +82,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
       icon: <MessageSquare size={32} />,
       iconBg: 'bg-blue-100 text-blue-600',
       title: t('communications.premiumFeature'),
-      desc: 'Sblocca le comunicazioni interne in tempo reale e tieni traccia dei messaggi aziendali.',
+      desc: t('dashboard.upgradeModal.communicationsDesc'),
     },
     compliance: {
       icon: <FileCheck size={32} />,
@@ -147,42 +147,56 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {plans.map((plan) => (
-                <div 
-                  key={plan.code}
-                  className={`relative bg-white rounded-[1.5rem] p-8 border-2 transition-all duration-300 flex flex-col ${
-                    plan.is_popular ? 'border-emerald-500 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-lg hover:border-slate-200'
-                  }`}
-                >
-                  {plan.is_popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                      <Sparkles size={12} />
-                      {t('dashboard.upgradeModal.recommended')}
-                    </div>
-                  )}
+               {plans.map((plan) => {
+                 const planNameKey = `dashboard.plans.${plan.code}.name`;
+                 const planDescKey = `dashboard.plans.${plan.code}.description`;
+                 const translatedName = t(planNameKey);
+                 const translatedDesc = t(planDescKey);
+                 
+                 const displayName = translatedName !== planNameKey ? translatedName : plan.name;
+                 const displayDesc = translatedDesc !== planDescKey ? translatedDesc : plan.description;
 
-                  <div className="mb-6">
-                    <h3 className="text-xl font-black text-slate-900 mb-1">{plan.name}</h3>
-                    <p className="text-sm text-slate-500 leading-snug">{plan.description}</p>
-                  </div>
+                 return (
+                   <div 
+                     key={plan.code}
+                     className={`relative bg-white rounded-[1.5rem] p-8 border-2 transition-all duration-300 flex flex-col ${
+                       plan.is_popular ? 'border-emerald-500 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-lg hover:border-slate-200'
+                     }`}
+                   >
+                     {plan.is_popular && (
+                       <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                         <Sparkles size={12} />
+                         {t('dashboard.upgradeModal.recommended')}
+                       </div>
+                     )}
 
-                  <div className="mb-8">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-slate-900">{plan.price_label}</span>
-                      <span className="text-slate-400 font-bold">{t('dashboard.upgradeModal.perMonth')}</span>
-                    </div>
-                  </div>
+                     <div className="mb-6">
+                       <h3 className="text-xl font-black text-slate-900 mb-1">{displayName}</h3>
+                       <p className="text-sm text-slate-500 leading-snug">{displayDesc}</p>
+                     </div>
 
-                  <div className="flex-1 space-y-4 mb-10">
-                    {(plan.features_list || []).map((f, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${getIconColorClass(plan.color_theme)}`}>
-                          <Check size={12} strokeWidth={4} />
-                        </div>
-                        <span className="text-sm font-medium text-slate-600">{f}</span>
-                      </div>
-                    ))}
-                  </div>
+                     <div className="mb-8">
+                       <div className="flex items-baseline gap-1">
+                         <span className="text-4xl font-black text-slate-900">{plan.price_label}</span>
+                         <span className="text-slate-400 font-bold">{t('dashboard.upgradeModal.perMonth')}</span>
+                       </div>
+                     </div>
+
+                     <div className="flex-1 space-y-4 mb-10">
+                       {(plan.features_list || []).map((f, i) => {
+                         const featKey = `dashboard.plans.${plan.code}.features.${i}`;
+                         const translatedFeat = t(featKey);
+                         const displayFeat = translatedFeat !== featKey ? translatedFeat : f;
+                         return (
+                           <div key={i} className="flex items-start gap-3">
+                             <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${getIconColorClass(plan.color_theme)}`}>
+                               <Check size={12} strokeWidth={4} />
+                             </div>
+                             <span className="text-sm font-medium text-slate-600">{displayFeat}</span>
+                           </div>
+                         );
+                       })}
+                     </div>
 
                   <button
                     disabled={loadingPriceId !== null}
@@ -197,9 +211,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                         {t('dashboard.upgradeModal.activateNow')}
                       </>
                     )}
-                  </button>
-                </div>
-              ))}
+                   </button>
+                 </div>
+               );
+             })}
             </div>
           )}
 
