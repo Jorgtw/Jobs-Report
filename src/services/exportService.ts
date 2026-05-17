@@ -4,12 +4,22 @@ import { utils, writeFile } from 'xlsx';
 import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
 
+const localeMap: Record<string, string> = {
+  it: 'it-IT',
+  en: 'en-US',
+  es: 'es-ES',
+  pl: 'pl-PL',
+  tr: 'tr-TR',
+  da: 'da-DK'
+};
+
 const getT = (lang: Language) => (key: TranslationKey | string) => resolveKey(lang, key);
 
 export const exportToPDF = (exportRows: any[], lang: Language, userName: string) => {
   const t = getT(lang);
+  const locale = localeMap[lang] || 'it-IT';
   const doc = new jsPDF('l', 'mm', 'a4');
-  const now = new Date().toLocaleString();
+  const now = new Date().toLocaleString(locale);
 
   doc.setFontSize(18);
   doc.setTextColor(30, 64, 175);
@@ -20,7 +30,7 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
   doc.text(`${t('reports.operator')}: ${userName}`, 14, 28);
   doc.text(`${t('reports.generatedOn')}: ${now}`, 14, 33);
 
-  const NumberFormat = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   let totalHours = 0;
   let totalCost = 0;
@@ -91,7 +101,8 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
     }
   });
 
-  doc.save(`JobsReport_Dettaglio_${new Date().toISOString().split('T')[0]}.pdf`);
+  const cleanSummaryName = t('common.workSummary').replace(/\s+/g, '_');
+  doc.save(`JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
 export const exportToExcel = (exportRows: any[], lang: Language) => {
@@ -169,10 +180,17 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, t('common.workSummary'));
 
-    writeFile(workbook, `JobsReport_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const cleanSummaryName = t('common.workSummary').replace(/\s+/g, '_');
+    writeFile(workbook, `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.xlsx`);
   } catch (err: any) {
     console.error("Excel export error:", err);
-    alert("Errore scaricando l'Excel: " + err.message);
+    const alertMsg = lang === 'it' ? "Errore scaricando l'Excel: " :
+                    (lang === 'es' ? "Error al descargar el Excel: " :
+                    (lang === 'pl' ? "Błąd podczas pobierania programu Excel: " :
+                    (lang === 'tr' ? "Excel indirilirken hata oluştu: " :
+                    (lang === 'da' ? "Fejl under download af Excel: " :
+                    "Error downloading Excel: "))));
+    alert(alertMsg + err.message);
   }
 };
 
@@ -188,14 +206,18 @@ export const generateCompliancePDF = async (
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
   const contentW = pageW - margin * 2;
+  const locale = localeMap[lang] || 'it-IT';
   const now = new Date();
-  const dateStr = now.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
-  const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
   const formatDateEU = (isoDate: string) => {
     if (!isoDate) return '---';
     const parts = isoDate.split('-');
-    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    if (parts.length === 3) {
+      if (lang === 'en') return `${parts[1]}/${parts[2]}/${parts[0]}`;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
     return isoDate;
   };
   const reportDateEU = formatDateEU(report.date);
