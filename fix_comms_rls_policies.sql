@@ -68,4 +68,15 @@ CREATE POLICY "Users: manage own read receipts" ON public.communication_read_rec
         user_id::uuid = (SELECT id::uuid FROM public.workers WHERE auth_id = auth.uid() LIMIT 1)
     );
 
+DROP POLICY IF EXISTS "Senders: view read receipts for own communications" ON public.communication_read_receipts;
+
+CREATE POLICY "Senders: view read receipts for own communications" ON public.communication_read_receipts
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.internal_communications
+            WHERE id = communication_read_receipts.communication_id
+            AND sender_id = (SELECT id FROM public.workers WHERE auth_id = auth.uid() LIMIT 1)
+        )
+    );
+
 -- SUCCESS

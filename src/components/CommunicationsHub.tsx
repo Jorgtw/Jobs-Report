@@ -802,6 +802,41 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
                           </div>
                           <div className={`flex items-center gap-3 mt-1.5 text-[9px] font-bold text-slate-300 uppercase tracking-widest ${isMe ? 'justify-end mr-3' : 'justify-start ml-3'}`}>
                              <span>{formatDate(msg.createdAt, { hour: '2-digit', minute: '2-digit' })}</span>
+                             {isMe && (
+                               <div className="flex items-center gap-1 text-[9px] text-slate-400 font-bold group/receipt">
+                                 {msg.readReceipts && msg.readReceipts.length > 0 ? (
+                                   <div className="flex items-center gap-1 text-blue-500 hover:text-blue-600 cursor-help relative">
+                                     <span className="flex items-center">
+                                       <Check size={10} strokeWidth={3} className="text-blue-500" />
+                                       <Check size={10} strokeWidth={3} className="text-blue-500 -ml-1.5" />
+                                     </span>
+                                     <span>
+                                       {msg.targetType === 'user' 
+                                         ? t('communications.read_at' as any) || 'Letto' 
+                                         : `${msg.readReceipts.length} ${t('communications.read_by_count' as any) || 'letti'}`}
+                                     </span>
+                                     
+                                     {/* Elegant glassmorphism hover tooltip listing who read the message */}
+                                     <div className="absolute bottom-full right-0 mb-2 hidden group-hover/receipt:block bg-white/95 backdrop-blur-md border border-slate-100 rounded-2xl p-3.5 shadow-xl text-[10px] text-slate-700 w-52 z-[150] pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                       <p className="font-black text-slate-400 uppercase tracking-widest border-b border-slate-100/50 pb-1.5 mb-2 flex items-center justify-between">
+                                         <span>{t('communications.read_receipts_title' as any) || 'Letture'}</span>
+                                         <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full font-black">{msg.readReceipts.length}</span>
+                                       </p>
+                                       <ul className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                                         {msg.readReceipts.map((r, idx) => (
+                                           <li key={idx} className="flex justify-between gap-3 font-medium">
+                                             <span className="truncate text-slate-800 max-w-[110px]">{r.userName}</span>
+                                             <span className="text-slate-400 text-[9px] flex-shrink-0">{formatDate(r.readAt, { hour: '2-digit', minute: '2-digit' })}</span>
+                                           </li>
+                                         ))}
+                                       </ul>
+                                     </div>
+                                   </div>
+                                 ) : (
+                                   <Check size={10} strokeWidth={3} className="text-slate-300" />
+                                 )}
+                               </div>
+                             )}
                           </div>
                         </div>
                       </div>

@@ -190,5 +190,6 @@ export interface InternalCommunication {
   createdAt: number;
   isRead: boolean;
   needsAction?: boolean;
+  readReceipts?: { userName: string; readAt: string }[];
   replies?: InternalCommunication[];
 }

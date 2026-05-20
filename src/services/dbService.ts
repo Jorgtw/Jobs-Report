@@ -1669,8 +1669,40 @@ class DBService {
           .upsert(toMark.map(m => ({ communication_id: m.id, user_id: userId })), { onConflict: 'communication_id, user_id' });
       }
     }
+    // Fetch read receipts for my messages in this thread
+    const mySentMessageIds = messages.filter(m => m.sender_id === userId).map(m => m.id);
+    let receiptsMap: Record<string, { userName: string; readAt: string }[]> = {};
 
-    return messages.map(c => this.mapSupabaseComm(c, userId));
+    if (mySentMessageIds.length > 0) {
+      const { data: receiptsData } = await supabase
+        .from('communication_read_receipts')
+        .select(`
+          communication_id,
+          read_at,
+          worker:workers!user_id(name)
+        `)
+        .in('communication_id', mySentMessageIds);
+
+      if (receiptsData) {
+        receiptsData.forEach((r: any) => {
+          if (!receiptsMap[r.communication_id]) {
+            receiptsMap[r.communication_id] = [];
+          }
+          receiptsMap[r.communication_id].push({
+            userName: r.worker?.name || 'Utente',
+            readAt: r.read_at
+          });
+        });
+      }
+    }
+
+    return messages.map(c => {
+      const mapped = this.mapSupabaseComm(c, userId);
+      if (c.sender_id === userId) {
+        mapped.readReceipts = receiptsMap[c.id] || [];
+      }
+      return mapped;
+    });
   }
 
   async sendCommunication(data: {
