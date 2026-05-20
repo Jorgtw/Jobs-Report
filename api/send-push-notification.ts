@@ -1,9 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
+import { webcrypto } from 'crypto';
 
 // Helper per ottenere l'access token di Google (necessario per FCM HTTP v1)
-// In produzione, si consiglia di usare 'firebase-admin' o una libreria di gestione token JWT.
-// Per semplicità e leggerezza in una Vercel Function, useremo fetch verso l'API FCM.
-// RICHIESTO: FIREBASE_SERVICE_ACCOUNT_JSON nelle variabili d'ambiente.
+const base64url = (source: ArrayBuffer | string) => {
+  const encoded = typeof source === "string" ? btoa(source) : btoa(String.fromCharCode(...new Uint8Array(source)));
+  return encoded.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+};
+
+async function getAccessToken(serviceAccount: any) {
+  const iat = Math.floor(Date.now() / 1000);
+  const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+  const payload = base64url(JSON.stringify({
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token",
+    exp: iat + 3600, iat
+  }));
+
+  const pemContents = serviceAccount.private_key.replace(/-----(BEGIN|END) PRIVATE KEY-----/g, "").replace(/\s/g, "");
+  const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  const cryptoObj = globalThis.crypto || webcrypto;
+  const key = await cryptoObj.subtle.importKey("pkcs8", binaryKey, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const signature = await cryptoObj.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(`${header}.${payload}`));
+  
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${header}.${payload}.${base64url(signature)}`
+  });
+  
+  const data = await res.json();
+  if (!res.ok) throw new Error(`OAuth Error: ${JSON.stringify(data)}`);
+  return data.access_token;
+}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -27,7 +56,7 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({ message: 'Evento ignorato' });
   }
 
-  const { id: communicationId, title, sender_id, target_type, target_id, company_id } = record;
+  const { id: communicationId, content, sender_id, target_type, target_id, company_id, sender_name_snap } = record;
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -73,13 +102,21 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({ message: 'Nessun token push attivo per i destinatari' });
     }
 
-    if (subsError || !subscriptions || subscriptions.length === 0) {
-      return res.status(200).json({ message: 'Nessun token push trovato per i destinatari' });
+    // 4. Inizializzazione Firebase Service Account da Env
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!serviceAccountJson) {
+      return res.status(500).json({ error: 'Chiave del Service Account Firebase mancante' });
     }
 
-    // 4. Invio Notifiche (Deduplicato per token)
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    const accessToken = await getAccessToken(serviceAccount);
+
+    // Costruisci il titolo e il corpo notifica in modo dinamico
+    const notificationTitle = sender_name_snap ? `Messaggio da ${sender_name_snap.trim()}` : "Nuova comunicazione";
+    const notificationBody = content ? (content.length > 100 ? content.substring(0, 100) + '...' : content) : "Hai ricevuto una nuova comunicazione interna.";
+
+    // 5. Invio Notifiche (Deduplicato per token)
     const results = [];
-    const fcmServerKey = process.env.FCM_SERVER_KEY; // Nota: FCM HTTP v1 richiede OAuth2, qui usiamo legacy o v1 semplificata per l'esempio
 
     for (const sub of subscriptions) {
       // Controllo deduplica nel log
@@ -95,26 +132,32 @@ export default async function handler(req: any, res: any) {
         continue;
       }
 
-      // Preparazione invio a Firebase (Esempio via REST)
-      // Per un'implementazione reale, usate l'SDK di Firebase Admin per gestire i token OAuth2
       try {
-        const fcmResponse = await fetch(`https://fcm.googleapis.com/fcm/send`, {
+        const fcmResponse = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `key=${fcmServerKey}`,
+            'Authorization': `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
-            to: sub.fcm_token,
-            notification: {
-              title: `Nuovo messaggio: ${title}`,
-              body: "Hai ricevuto una nuova comunicazione interna.",
-              icon: "/icon-192x192.png",
-              click_action: "/communications"
-            },
-            data: {
-              communicationId: communicationId,
-              type: 'internal_communication'
+            message: {
+              token: sub.fcm_token,
+              notification: {
+                title: notificationTitle,
+                body: notificationBody,
+              },
+              webpush: {
+                notification: {
+                  title: notificationTitle,
+                  body: notificationBody,
+                  icon: "/icon-192.png",
+                  badge: "/icon-192.png",
+                  vibrate: [200, 100, 200]
+                },
+                fcm_options: {
+                  link: "https://jobs-report.vercel.app/#/communications"
+                }
+              }
             }
           }),
         });
@@ -130,7 +173,7 @@ export default async function handler(req: any, res: any) {
           const errText = await fcmResponse.text();
           
           // PULIZIA AUTOMATICA TOKEN INVALIDI (Hardening)
-          if (errText.includes('NotRegistered') || errText.includes('InvalidRegistration')) {
+          if (errText.includes('UNREGISTERED') || errText.includes('NotRegistered') || errText.includes('senderId mismatch')) {
             console.log(`[PUSH] Rilevato token invalido per worker ${sub.worker_id}. Rimozione...`);
             await supabase
               .from('user_push_subscriptions')

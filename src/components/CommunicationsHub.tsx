@@ -233,7 +233,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
           
           // 3. Playback Logic for Foreground Notifications - Only if I am the recipient or it's for everyone
           const newData = payload.new as any;
-          const isForMe = newData.target_id === currentUser.id || newData.target_type === 'all';
+          const isForMe = 
+            newData.target_type === 'all' || 
+            (newData.target_type === 'user' && newData.target_id === currentUser.id) ||
+            (newData.target_type === 'role' && newData.target_id === currentUser.role) ||
+            (newData.target_type === 'project' && projects.some(p => p.id === newData.target_id && p.assignedWorkerIds?.includes(currentUser.id)));
           if (payload.eventType === 'INSERT' && newData.sender_id !== currentUser.id && isForMe && soundEnabledRef.current) {
             console.log('[SOUND] Attempting notification playback...');
             playNotification()

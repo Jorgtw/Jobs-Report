@@ -21,10 +21,13 @@ try {
         // Gestione dei messaggi in background
         messaging.onBackgroundMessage((payload) => {
             console.log('[firebase-messaging-sw.js] Ricevuto messaggio in background: ', payload);
-            const notificationTitle = payload.notification.title;
+            const notificationTitle = payload.notification?.title || 'Nuovo messaggio';
             const notificationOptions = {
-                body: payload.notification.body,
-                icon: payload.notification.icon || '/icon-192.png',
+                body: payload.notification?.body || 'Hai ricevuto una nuova comunicazione interna.',
+                icon: payload.notification?.icon || '/icon-192.png',
+                badge: '/icon-192.png',
+                vibrate: [200, 100, 200],
+                sound: '/sounds/notification.mp3',
                 data: payload.data
             };
             self.registration.showNotification(notificationTitle, notificationOptions);
