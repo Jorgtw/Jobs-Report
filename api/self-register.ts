@@ -34,10 +34,20 @@ export default async function handler(req: any, res: any) {
     const { data: existingComp } = await supabaseAdmin
       .from('companies')
       .select('id')
-      .or(`name.eq."${companyName}",vat_number.eq."${vatNumber}"`)
+      .eq('name', companyName)
       .maybeSingle();
     
-    if (existingComp) return res.status(400).json({ error: 'Azienda o Partita IVA già registrata.' });
+    let existingByVat = null;
+    if (vatNumber) {
+      const { data: vatCheck } = await supabaseAdmin
+        .from('companies')
+        .select('id')
+        .eq('vat_number', vatNumber)
+        .maybeSingle();
+      existingByVat = vatCheck;
+    }
+    
+    if (existingComp || existingByVat) return res.status(400).json({ error: 'Azienda o Partita IVA già registrata.' });
 
     const { data: existingUser } = await supabaseAdmin
       .from('workers')

@@ -162,12 +162,62 @@ CREATE POLICY rapportini_workers_update ON public.rapportini_workers FOR UPDATE
 CREATE POLICY rapportini_workers_delete ON public.rapportini_workers FOR DELETE 
   USING (EXISTS (SELECT 1 FROM public.reports r WHERE r.id = rapportino_id AND (EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = r.company_id AND v.role IN ('admin', 'supervisor')))));
 
+-- [RAPPORTINI_EXPENSES]
+CREATE POLICY rapportini_expenses_select ON public.rapportini_expenses FOR SELECT 
+  USING (EXISTS (SELECT 1 FROM public.reports r WHERE r.id = rapportino_id AND (EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = r.company_id))));
+
+CREATE POLICY rapportini_expenses_insert ON public.rapportini_expenses FOR INSERT 
+  WITH CHECK (EXISTS (SELECT 1 FROM public.reports r WHERE r.id = rapportino_id AND (EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = r.company_id AND v.role IN ('admin', 'supervisor')))));
+CREATE POLICY rapportini_expenses_update ON public.rapportini_expenses FOR UPDATE 
+  USING (EXISTS (SELECT 1 FROM public.reports r WHERE r.id = rapportino_id AND (EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = r.company_id AND v.role IN ('admin', 'supervisor')))))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.reports r WHERE r.id = rapportino_id AND (EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = r.company_id AND v.role IN ('admin', 'supervisor')))));
+CREATE POLICY rapportini_expenses_delete ON public.rapportini_expenses FOR DELETE 
+  USING (EXISTS (SELECT 1 FROM public.reports r WHERE r.id = rapportino_id AND (EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = r.company_id AND v.role IN ('admin', 'supervisor')))));
+
+-- [INTERNAL_COMMUNICATIONS]
+CREATE POLICY internal_communications_select ON public.internal_communications FOR SELECT
+  USING (
+    EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR 
+    EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = internal_communications.company_id)
+  );
+
+CREATE POLICY internal_communications_insert ON public.internal_communications FOR INSERT
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = company_id) AND 
+    sender_id = (SELECT id FROM public.vw_auth_worker_id)
+  );
+
+CREATE POLICY internal_communications_update ON public.internal_communications FOR UPDATE
+  USING (
+    EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR 
+    EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = company_id AND v.role IN ('admin', 'supervisor')) OR 
+    sender_id = (SELECT id FROM public.vw_auth_worker_id)
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR 
+    EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = company_id AND v.role IN ('admin', 'supervisor')) OR 
+    sender_id = (SELECT id FROM public.vw_auth_worker_id)
+  );
+
+CREATE POLICY internal_communications_delete ON public.internal_communications FOR DELETE
+  USING (
+    EXISTS (SELECT 1 FROM public.vw_is_superadmin) OR 
+    EXISTS (SELECT 1 FROM public.vw_my_companies v WHERE v.company_id = company_id AND v.role IN ('admin', 'supervisor')) OR 
+    sender_id = (SELECT id FROM public.vw_auth_worker_id)
+  );
+
 -- [USER SCOPED]
 CREATE POLICY user_push_subs ON public.user_push_subscriptions FOR ALL 
   USING (worker_id = (SELECT id FROM public.vw_auth_worker_id)) WITH CHECK (worker_id = (SELECT id FROM public.vw_auth_worker_id));
 
 CREATE POLICY user_read_receipts ON public.communication_read_receipts FOR ALL 
-  USING (user_id = (SELECT id FROM public.vw_auth_worker_id)) WITH CHECK (user_id = (SELECT id FROM public.vw_auth_worker_id));
+  USING (
+    user_id = (SELECT id FROM public.vw_auth_worker_id) OR
+    EXISTS (SELECT 1 FROM public.internal_communications ic WHERE ic.id = communication_id AND ic.sender_id = (SELECT id FROM public.vw_auth_worker_id))
+  ) 
+  WITH CHECK (
+    user_id = (SELECT id FROM public.vw_auth_worker_id)
+  );
 
 -- 6. STORAGE (Precomputed evaluation)
 DROP POLICY IF EXISTS "Report Images Access" ON storage.objects;

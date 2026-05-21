@@ -1,4 +1,4 @@
-import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus, User } from '../types';
+import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus } from '../types';
 import { supabase } from './supabase';
 import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
 
@@ -176,10 +176,7 @@ class DBService {
     return data.map(s => this.mapSupabaseSubcontractor(s));
   }
 
-  private async getWorkerById(id: string): Promise<User | null> {
-    const { data } = await supabase.from('workers').select('*').eq('id', id).single();
-    return data ? this.mapSupabaseWorker(data) : null;
-  }
+  // getWorkerById removed — use getUserById instead
 
   async addUser(worker: any) {
     await this.enforceActionPolicy('write_domain_data');
@@ -471,15 +468,26 @@ class DBService {
       sendEmail = true
     } = data;
 
-    // STEP 0 — PRECHECK
-    const { data: existingCompany, error: compCheckErr } = await supabase
+    // STEP 0 — PRECHECK (SEC-1 FIX: Use separate .eq() calls to prevent SQL injection)
+    const { data: existingByName, error: compCheckErr } = await supabase
       .from('companies')
       .select('id')
-      .or(`name.eq."${companyName}",vat_number.eq."${vatNumber}"`)
+      .eq('name', companyName)
       .maybeSingle();
 
     if (compCheckErr) throw compCheckErr;
-    if (existingCompany) {
+
+    let existingByVat = null;
+    if (vatNumber) {
+      const { data: vatCheck } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('vat_number', vatNumber)
+        .maybeSingle();
+      existingByVat = vatCheck;
+    }
+
+    if (existingByName || existingByVat) {
       throw new Error(`Esiste già un'azienda con questo nome o Partita IVA.`);
     }
 
@@ -515,7 +523,7 @@ class DBService {
     const newCompanyId = companyData[0].id;
 
     try {
-      await supabase.from('companies').update({}).eq('id', newCompanyId);
+      // STAB-6 FIX: Removed no-op update({}) call
 
       // STEP 2 — AUTH + WORKER (IDEMPOTENTE)
       const token = await this.getAuthToken();
@@ -544,7 +552,7 @@ class DBService {
       if (!response.ok) throw new Error(apiData.error || 'Failed to create admin via API');
       const userData = apiData.data;
 
-      await supabase.from('companies').update({}).eq('id', newCompanyId);
+      // STAB-6 FIX: Removed no-op update({}) call
 
       // STEP 3 — DEFAULT DATA (CLIENT + PROJECT)
       const internalClientName = `${companyName} - Uso Interno`;
@@ -578,7 +586,7 @@ class DBService {
         if (projError) throw projError;
       }
 
-      await supabase.from('companies').update({}).eq('id', newCompanyId);
+      // STAB-6 FIX: Removed no-op update({}) call
 
       // STEP 4 — FINALIZE (ACTIVE)
       await supabase.from('companies').update({ 
@@ -1627,6 +1635,40 @@ class DBService {
     return (data || []).map(c => this.mapSupabaseComm(c, userId));
   }
 
+  async markThreadAsRead(rootId: string) {
+    const userId = this.requireUserId();
+    const compId = this.requireCompanyId();
+
+    const { data: messages } = await supabase
+      .from('internal_communications')
+      .select('id, target_id, target_type')
+      .eq('company_id', compId)
+      .or(`id.eq.${rootId},parent_id.eq.${rootId}`);
+
+    if (!messages) return;
+
+    const unreadInThread = messages.filter(m => 
+      (m.target_id === userId || m.target_type === 'all')
+    );
+
+    if (unreadInThread.length > 0) {
+      const { data: existing } = await supabase
+        .from('communication_read_receipts')
+        .select('communication_id')
+        .eq('user_id', userId)
+        .in('communication_id', unreadInThread.map(m => m.id));
+      
+      const existingIds = new Set(existing?.map(e => e.communication_id) || []);
+      const toMark = unreadInThread.filter(m => !existingIds.has(m.id));
+
+      if (toMark.length > 0) {
+        await supabase
+          .from('communication_read_receipts')
+          .upsert(toMark.map(m => ({ communication_id: m.id, user_id: userId })), { onConflict: 'communication_id, user_id' });
+      }
+    }
+  }
+
   async getThread(rootId: string): Promise<InternalCommunication[]> {
     const userId = this.requireUserId();
     const compId = this.requireCompanyId();
@@ -1646,29 +1688,7 @@ class DBService {
       return [];
     }
 
-    // Mark all unread messages in this thread as read
     const messages = data || [];
-    const unreadInThread = messages.filter(m => 
-      (m.target_id === userId || m.target_type === 'all')
-    );
-
-    if (unreadInThread.length > 0) {
-      // Get current receipts to avoid duplicates
-      const { data: existing } = await supabase
-        .from('communication_read_receipts')
-        .select('communication_id')
-        .eq('user_id', userId)
-        .in('communication_id', unreadInThread.map(m => m.id));
-      
-      const existingIds = new Set(existing?.map(e => e.communication_id) || []);
-      const toMark = unreadInThread.filter(m => !existingIds.has(m.id));
-
-      if (toMark.length > 0) {
-        await supabase
-          .from('communication_read_receipts')
-          .upsert(toMark.map(m => ({ communication_id: m.id, user_id: userId })), { onConflict: 'communication_id, user_id' });
-      }
-    }
     // Fetch read receipts for my messages in this thread
     const mySentMessageIds = messages.filter(m => m.sender_id === userId).map(m => m.id);
     let receiptsMap: Record<string, { userName: string; readAt: string }[]> = {};
@@ -1716,14 +1736,24 @@ class DBService {
     parentForwardId?: string;
     metadata?: any;
   }) {
+    const content = data.content?.trim();
+    if (!content) throw new Error('Il messaggio non può essere vuoto.');
+
     const compId = this.requireCompanyId();
     const userId = this.requireUserId();
 
-    // V2: Solve snapshots before insertion
-    const [sender, allWorkers] = await Promise.all([
-      this.getWorkerById(userId),
-      this.getUsers()
-    ]);
+    // PERF-2 FIX: Fetch only the workers we actually need, not the entire table
+    const idsToFetch = new Set<string>([userId]);
+    if (data.targetId) idsToFetch.add(data.targetId);
+    if (data.targetIds) data.targetIds.forEach(id => idsToFetch.add(id));
+
+    const { data: neededWorkers } = await supabase
+      .from('workers')
+      .select('id, name')
+      .in('id', Array.from(idsToFetch));
+
+    const allWorkers = neededWorkers || [];
+    const sender = allWorkers.find((w: any) => w.id === userId);
     const senderName = sender?.name || 'Utente';
 
     if (data.parentId) {
@@ -1731,7 +1761,7 @@ class DBService {
         company_id: compId,
         sender_id: userId,
         sender_name_snap: senderName,
-        content: data.content,
+        content: content,
         type: data.type || 'note',
         target_type: data.targetType,
         target_id: data.targetId,
@@ -1753,13 +1783,13 @@ class DBService {
     let payloads = [];
     if (data.targetType === 'user' && data.targetIds && data.targetIds.length > 0) {
       payloads = data.targetIds.map(tid => {
-        const target = allWorkers.find((w: User) => w.id === tid);
+        const target = allWorkers.find((w: any) => w.id === tid);
         return {
           company_id: compId,
           sender_id: userId,
           sender_name_snap: senderName,
           target_name_snap: target?.name,
-          content: data.content,
+          content: content,
           type: data.type || 'note',
           target_type: 'user',
           target_id: tid,
@@ -1772,7 +1802,7 @@ class DBService {
     } else {
       let targetName = null;
       if (data.targetType === 'user' && data.targetId) {
-        targetName = allWorkers.find((w: User) => w.id === data.targetId)?.name;
+        targetName = allWorkers.find((w: any) => w.id === data.targetId)?.name;
       }
 
       payloads = [{
@@ -1780,7 +1810,7 @@ class DBService {
         sender_id: userId,
         sender_name_snap: senderName,
         target_name_snap: targetName,
-        content: data.content,
+        content: content,
         type: data.type || 'note',
         target_type: data.targetType,
         target_id: data.targetId || null,
@@ -1891,7 +1921,9 @@ class DBService {
       .in('status', ['open', 'acknowledged'])
       .or(`target_type.eq.all,target_id.eq.${userId}`);
       
-    return error ? (function(){ throw error; }()) : (count || 0);
+    // STAB-2 FIX: Standard error handling instead of IIFE throw
+    if (error) throw error;
+    return count || 0;
   }
 
 
@@ -1943,14 +1975,19 @@ class DBService {
       createdAt: new Date(r.created_at).getTime()
     };
   }
-  async getReports() {
+  async getReports(dateFrom?: string, dateTo?: string) {
     await this.checkAuthSession();
     const compId = this.requireCompanyId();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('reports')
       .select(`*, additionalWorkers:rapportini_workers(*), expenses:rapportini_expenses(*)`)
       .eq('company_id', compId);
+
+    if (dateFrom) query = query.gte('date', dateFrom);
+    if (dateTo) query = query.lte('date', dateTo);
+
+    const { data, error } = await query;
 
     if (error) throw error;
     
@@ -1974,6 +2011,7 @@ class DBService {
       "Notes": reportData.notes,
       activity_type: reportData.activityType || 'work',
       overtime_hours: reportData.overtimeHours || 0,
+      invoice_status: reportData.invoiceStatus || 'Pending',
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
     };
@@ -1983,7 +2021,7 @@ class DBService {
 
     const createdReportId = data[0].id;
 
-    await supabase.from('reports').update({ invoice_status: reportData.invoiceStatus || 'Pending' }).eq('id', createdReportId);
+    // STAB-5 FIX: invoice_status is now included in the initial insert payload above
 
     // Salva le spese
     if (expenses && expenses.length > 0) {
@@ -2039,11 +2077,24 @@ class DBService {
     if (!ids || ids.length === 0) return;
     const compId = this.requireCompanyId();
     
+    // First verify all IDs belong to this company
+    const { data: validReports } = await supabase
+      .from('reports')
+      .select('id')
+      .in('id', ids)
+      .eq('company_id', compId);
+
+    const validIds = validReports?.map(r => r.id) || [];
+    if (validIds.length === 0) return;
+    if (validIds.length !== ids.length) {
+      throw new Error('Some reports do not belong to this company');
+    }
+
     // 1. First delete from rapportini_workers (using rapportino_id)
     const { error: workersError } = await supabase
       .from('rapportini_workers')
       .delete()
-      .in('rapportino_id', ids);
+      .in('rapportino_id', validIds);
     
     if (workersError) {
       console.error('Error deleting report workers:', workersError);
@@ -2054,7 +2105,7 @@ class DBService {
     const { error: reportsError } = await supabase
       .from('reports')
       .delete()
-      .in('id', ids)
+      .in('id', validIds)
       .eq('company_id', compId);
 
     if (reportsError) {
@@ -2080,20 +2131,17 @@ class DBService {
       description: updatesData.description,
       "Notes": updatesData.notes,
       activity_type: updatesData.activityType || 'work',
-      overtime_hours: updatesData.overtimeHours || 0
+      overtime_hours: updatesData.overtimeHours || 0,
+      invoice_status: updatesData.invoiceStatus || 'Pending'
     };
 
     const compId = this.requireCompanyId();
+    // STAB-4 FIX: Merged invoice_status into single update call
     const { error } = await supabase.from('reports')
       .update(sbObj)
       .eq('id', id)
       .eq('company_id', compId);
     if (error) throw error;
-
-    await supabase.from('reports')
-      .update({ invoice_status: updatesData.invoiceStatus || 'Pending' })
-      .eq('id', id)
-      .eq('company_id', compId);
 
     // Aggiorna le spese: la strada più sicura è ricrearle
     if (expenses !== undefined) {
@@ -2174,24 +2222,28 @@ class DBService {
     if (error) throw error;
   }
 
-  async getSummary(): Promise<ReportSummary[]> {
+  async getSummary(dateFrom?: string, dateTo?: string): Promise<ReportSummary[]> {
     await this.checkAuthSession();
     
     const [reports, projects, clients, workers] = await Promise.all([
-      this.getReports(),
+      this.getReports(dateFrom, dateTo),
       this.getProjects(),
       this.getClients(),
       this.getUsers()
     ]);
 
+    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
+    const clientMap = new Map(clients.map((c: any) => [c.id, c]));
+    const workerMap = new Map(workers.map((w: any) => [w.id, w]));
+
     return reports.flatMap((r: any) => {
-      const project = projects.find((p: any) => p.id === r.projectId);
-      const client = clients.find((c: any) => c.id === project?.clientId);
+      const project = projectMap.get(r.projectId);
+      const client = clientMap.get(project?.clientId);
       const sellingPrice = project?.sellingPrice || 0;
 
       const summaries = [];
 
-        const user = workers.find((u: any) => u.id === r.userId);
+        const user = workerMap.get(r.userId);
         const reportOvertimeHours = r.overtimeHours || 0;
         const workerCost = (r.totalHours * (user?.hourlyRate || 0)) + 
                            (reportOvertimeHours * (user?.overtimeHourlyRate || 0)) + 
@@ -2233,7 +2285,7 @@ class DBService {
 
         const additionalWorkers = r.additionalWorkers || [];
         additionalWorkers.forEach((aw: any, idx: number) => {
-          const awUser = workers.find((u: any) => u.id === aw.userId);
+          const awUser = workerMap.get(aw.userId);
           const awOvertimeHours = aw.overtimeHours || 0;
           const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + 
                          (awOvertimeHours * (awUser?.overtimeHourlyRate || 0)) + 

@@ -50,7 +50,15 @@ export default async function handler(req: any, res: any) {
       return res.status(403).json({ error: 'Requester not found in database' });
     }
 
-    const isSuperAdmin = requesterData.role === 'superadmin';
+    // SEC-4 FIX: Check superadmin via user_roles table (the SSOT for superadmin status)
+    const { data: saRoleData } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', requesterData.id)
+      .eq('role', 'superadmin')
+      .maybeSingle();
+
+    const isSuperAdmin = !!saRoleData;
 
     const { targetUserId, updates, action = 'update' } = req.body;
     const { companyId } = updates || {};
@@ -273,7 +281,7 @@ export default async function handler(req: any, res: any) {
       // 1. Fetch worker data
       const { data: worker, error: workerErr } = await supabaseAdmin
         .from('workers')
-        .select('id, email, name, auth_id, username, password')
+        .select('id, email, name, auth_id, username')
         .eq('id', targetUserId)
         .single();
 
@@ -374,7 +382,7 @@ export default async function handler(req: any, res: any) {
 
       const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
       const username = worker.username || worker.email;
-      const password = worker.password || '********';
+      const password = '(usa il bottone qui sotto)';
 
       const emailHtml = `
         <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">

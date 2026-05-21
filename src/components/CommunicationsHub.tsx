@@ -181,11 +181,16 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   const [projects, setProjects] = useState<Project[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const projectsRef = useRef<Project[]>([]);
   const selectedThreadRef = useRef<InternalCommunication | null>(null);
 
   useEffect(() => {
     selectedThreadRef.current = selectedThread;
   }, [selectedThread]);
+
+  useEffect(() => {
+    projectsRef.current = projects;
+  }, [projects]);
 
   const soundEnabledRef = useRef(true);
 
@@ -237,7 +242,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
             newData.target_type === 'all' || 
             (newData.target_type === 'user' && newData.target_id === currentUser.id) ||
             (newData.target_type === 'role' && newData.target_id === currentUser.role) ||
-            (newData.target_type === 'project' && projects.some(p => p.id === newData.target_id && p.assignedWorkerIds?.includes(currentUser.id)));
+            (newData.target_type === 'project' && projectsRef.current.some(p => p.id === newData.target_id && p.assignedWorkerIds?.includes(currentUser.id)));
           if (payload.eventType === 'INSERT' && newData.sender_id !== currentUser.id && isForMe && soundEnabledRef.current) {
             console.log('[SOUND] Attempting notification playback...');
             playNotification()
@@ -272,7 +277,11 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   }, [isPremium]);
 
-  if (!isPremium) return null;
+  useEffect(() => {
+    setSelectedThread(null);
+    setThreadMessages([]);
+    if (isMobile) setMobileView('list');
+  }, [currentUser.companyId, isMobile]);
 
   useEffect(() => {
     if (selectedThread) {
@@ -282,6 +291,8 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
       setForwardNote('');
     }
   }, [threadMessages]);
+
+  if (!isPremium) return null;
 
   const fetchMainData = async () => {
     try {
@@ -317,7 +328,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     try {
       const messages = await db.getThread(rootId);
       setThreadMessages(messages);
-      await db.markAsRead(rootId);
+      db.markThreadAsRead(rootId).catch(console.error);
     } catch (err) {
       console.error('Error fetching thread:', err);
     } finally {
