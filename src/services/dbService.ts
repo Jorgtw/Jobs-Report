@@ -1002,12 +1002,21 @@ class DBService {
     const { data: reports } = await supabase.from('reports').select('id').eq('company_id', id);
     if (reports && reports.length > 0) {
       const reportIds = reports.map((r: any) => r.id);
+      await supabase.from('rapportini_expenses').delete().in('rapportino_id', reportIds);
       await supabase.from('rapportini_workers').delete().in('rapportino_id', reportIds);
-      await supabase.from('rapportini_workers').delete().in('report_id', reportIds);
+      await supabase.from('rapportini_workers').delete().in('report_id', reportIds); // legacy
     }
     // 2. Elimina i report della ditta
     await supabase.from('reports').delete().eq('company_id', id);
     
+    // 2.5 Elimina le comunicazioni interne e le ricevute
+    const { data: comms } = await supabase.from('internal_communications').select('id').eq('company_id', id);
+    if (comms && comms.length > 0) {
+      const commIds = comms.map((c: any) => c.id);
+      await supabase.from('communication_read_receipts').delete().in('communication_id', commIds);
+      await supabase.from('internal_communications').delete().in('id', commIds);
+    }
+
     // 3. SSOT: Elimina le associazioni degli utenti, ma NON i profili worker globali
     await supabase.from('user_companies').delete().eq('company_id', id);
     
