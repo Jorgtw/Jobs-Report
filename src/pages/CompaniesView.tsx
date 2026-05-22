@@ -145,22 +145,7 @@ const CompaniesView: React.FC = () => {
     }
   };
 
-  const handlePrepareEmail = (c: any) => {
-    const name = c.adminName || c.admin_name || 'Admin';
-    const company = c.name || c.companyName || '';
-    const subjectText = t('dashboard.emailSubject').replace('{company}', company);
-    const bodyText = t('dashboard.emailBody')
-      .replace('{name}', name)
-      .replace('{username}', c.username || '')
-      .replace('{password}', c.password || '********');
 
-    // Copy to clipboard as fallback
-    navigator.clipboard.writeText(bodyText).catch(err => console.error('Clipboard copy failed:', err));
-
-    const subject = encodeURIComponent(subjectText);
-    const body = encodeURIComponent(bodyText);
-    window.location.href = `mailto:${c.email}?subject=${subject}&body=${body}`;
-  };
 
   const resetForm = () => {
     setEditingId(null);
@@ -227,20 +212,7 @@ const CompaniesView: React.FC = () => {
                     <button disabled={!canPerformAction(c, 'update_basic_settings')} onClick={() => handleEdit(c)} className="p-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title={t('common.edit')}>
                       <Pencil size={14} />
                     </button>
-                    <button 
-                      disabled={!canPerformAction(c, 'send_instructions')}
-                      onClick={() => handlePrepareEmail({
-                        adminName: c.admin_name,
-                        companyName: c.name,
-                        email: c.email,
-                        username: c.username,
-                        password: c.password
-                      })} 
-                      className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed" 
-                      title={t('dashboard.prepareManualEmail')}
-                    >
-                      <Mail size={14} />
-                    </button>
+
                     <button 
                       disabled={sendingId === c.id || !c.email || !canPerformAction(c, 'send_instructions')}
                       onClick={() => handleSendInstructions(c)} 
@@ -378,19 +350,7 @@ const CompaniesView: React.FC = () => {
                       >
                         {sendingId === editingId ? t('dashboard.sendingInProgress') : (formData.sendWelcomeEmail ? t('dashboard.autoSendActive') : t('dashboard.sendInstructionsAuto'))}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handlePrepareEmail({ 
-                          companyName: formData.companyName, 
-                          adminName: formData.adminName, 
-                          email: formData.email, 
-                          username: formData.username, 
-                          password: formData.password 
-                        })}
-                        className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 shadow-sm"
-                      >
-                        {t('dashboard.prepareManualEmailBtn')}
-                      </button>
+
                     </div>
                   </div>
                 </div>
