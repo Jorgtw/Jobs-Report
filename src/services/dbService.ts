@@ -634,7 +634,7 @@ class DBService {
     try {
 
     // Single reconciliation rule: prevent retry if DB truth is already active
-    const { data: compCheck } = await supabase.from('companies').select('status, setup_error').eq('id', companyId).single();
+    const { data: compCheck } = await supabase.from('companies').select('status').eq('id', companyId).single();
     compCheckData = compCheck;
     if (!canPerformAction(compCheck, 'retry_setup')) {
        throw new Error('Impossibile eseguire il retry: la ditta non è in uno stato idoneo o è già ACTIVE nel sistema.');
@@ -1330,7 +1330,11 @@ class DBService {
     this.requireCompanyId();
     if (this.isSuperAdminRole && !this.currentCompanyId) return; // SuperAdmins managing global stuff
     
-    const { data: comp } = await supabase.from('companies').select('status, setup_step, setup_error').eq('id', this.currentCompanyId).single();
+    const { data: comp, error } = await supabase.from('companies').select('status').eq('id', this.currentCompanyId).single();
+    if (error) {
+      console.error('Error fetching company status in enforceActionPolicy:', error);
+      throw new Error(`Azione non consentita: impossibile verificare lo stato dell'azienda.`);
+    }
     if (!canPerformAction(comp, action)) {
        throw new Error(`Azione non consentita: l'azienda non è in uno stato idoneo per l'operazione (${action}).`);
     }
