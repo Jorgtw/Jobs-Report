@@ -133,7 +133,10 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("[CompanyContext] Auth Event:", event, session?.user?.id ? "User Present" : "No User");
       
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.hash = '/reset-password';
+        if (session) resolveContext();
+      } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
         if (session) {
           resolveContext();
         }

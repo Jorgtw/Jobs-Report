@@ -364,7 +364,7 @@ export default async function handler(req: any, res: any) {
         type: 'recovery',
         email: worker.email,
         options: {
-          redirectTo: `https://jobs-report.vercel.app/#/reset-password`
+          redirectTo: `https://jobs-report.vercel.app/`
         }
       });
       
