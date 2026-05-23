@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs Report - Presentazione</title>
+    <meta name="description" content="Più controllo operativo, meno tempo perso nella gestione. Jobs Report digitalizza i rapportini di lavoro per cantiere e ufficio.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="light-mode">
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i data-lucide="clipboard-check" class="logo-icon"></i>
+                <span>Jobs Report</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-target="benvenuto">
+                    <i data-lucide="home"></i>
+                    <span data-i18n="nav.welcome">Benvenuto</span>
+                </button>
+                <button class="nav-item" data-target="problema">
+                    <i data-lucide="alert-triangle"></i>
+                    <span data-i18n="nav.problem">Il Problema</span>
+                </button>
+                <button class="nav-item" data-target="soluzione">
+                    <i data-lucide="lightbulb"></i>
+                    <span data-i18n="nav.solution">La Soluzione</span>
+                </button>
+                <button class="nav-item" data-target="funzionalita">
+                    <i data-lucide="layers"></i>
+                    <span data-i18n="nav.features">Funzionalità</span>
+                </button>
+                <button class="nav-item" data-target="benefici">
+                    <i data-lucide="trending-up"></i>
+                    <span data-i18n="nav.benefits">Benefici</span>
+                </button>
+                <button class="nav-item" data-target="target">
+                    <i data-lucide="users"></i>
+                    <span data-i18n="nav.target">A chi è rivolto</span>
+                </button>
+                <button class="nav-item" data-target="registrazione">
+                    <i data-lucide="user-plus"></i>
+                    <span data-i18n="nav.register">Registrazione</span>
+                </button>
+                <button class="nav-item" data-target="contatto">
+                    <i data-lucide="mail"></i>
+                    <span data-i18n="nav.contact">Contattaci</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="icon-btn theme-btn" aria-label="Toggle theme">
+                    <i data-lucide="moon" class="moon-icon"></i>
+                    <i data-lucide="sun" class="sun-icon"></i>
+                    <span class="theme-text" data-i18n="nav.theme">Tema Scuro</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <select id="lang-select" class="form-control" style="width: auto; padding: 0.5rem 1rem; background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; cursor: pointer; box-shadow: var(--shadow);">
+                    <option value="it">Italiano 🇮🇹</option>
+                    <option value="en">English 🇬🇧</option>
+                </select>
+                <a href="https://app.jobs-report.app" class="btn btn-primary" style="padding: 0.5rem 1.5rem; text-decoration: none;" data-i18n="nav.login">Accedi</a>
+            </div>
+
+            <!-- SECTION: Benvenuto -->
+            <section id="benvenuto" class="content-section active">
+                <div class="content-header">
+                    <h1><span data-i18n="hero.title1">Più controllo operativo,</span><br><span class="highlight" data-i18n="hero.title2">meno tempo perso</span> <span data-i18n="hero.title3">nella gestione</span></h1>
+                    <p class="subtitle" data-i18n="hero.subtitle">Jobs Report è la piattaforma progettata per semplificare la gestione dei rapportini di lavoro, delle attività operative e delle comunicazioni tra cantiere e ufficio.</p>
+                </div>
+                <div class="content-body split-layout">
+                    <div class="text-block">
+                        <p data-i18n="hero.desc1">Nasce da esigenze reali di imprese, installatori, manutentori e squadre operative che ogni giorno devono registrare ore, attività, costi e informazioni senza rallentare il lavoro.</p>
+                        <p class="highlight-box" data-i18n="hero.desc2">L’obiettivo di Jobs Report è semplice: ridurre il caos operativo, migliorare il controllo delle informazioni e rendere più veloce la gestione quotidiana del lavoro sul campo.</p>
+                        <button class="btn btn-primary" onclick="switchTab('problema')"><span data-i18n="hero.btn">Inizia la presentazione</span> <i data-lucide="arrow-right"></i></button>
+                    </div>
+                    <div class="image-block">
+                        <div class="mockup-ui">
+                            <div class="mockup-header">
+                                <h3 data-i18n="mockup.welcome">Benvenuto, Thomas</h3>
+                                <p data-i18n="mockup.sub">Gestione Attività</p>
+                            </div>
+                            <div class="mockup-stats">
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon"><i data-lucide="clock"></i> <span data-i18n="mockup.hours">Ore</span></div>
+                                    <div class="stat-value">120 <span class="stat-sub" data-i18n="mockup.hours_sub">ore</span></div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon"><i data-lucide="file-text"></i> <span data-i18n="mockup.reports">Rapportini</span></div>
+                                    <div class="stat-value">45 <span class="stat-sub" data-i18n="mockup.reports_sub">in sospeso</span></div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon"><i data-lucide="briefcase"></i> <span data-i18n="mockup.projects">Progetti</span></div>
+                                    <div class="stat-value">8 <span class="stat-sub" data-i18n="mockup.projects_sub">attivi</span></div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon text-green"><span class="badge-green">35%</span> <span data-i18n="mockup.margin">Margine</span></div>
+                                    <div class="stat-value">35% <i data-lucide="trending-up" class="text-green" style="width: 18px; height: 18px;"></i></div>
+                                </div>
+                            </div>
+                            <div class="mockup-grid">
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="users"></i></div> <span data-i18n="mockup.clients">Clienti</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="hard-hat"></i></div> <span data-i18n="mockup.staff">Personale</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="briefcase"></i></div> <span data-i18n="mockup.projects">Progetti</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="file-text"></i></div> <span data-i18n="mockup.reports">Rapportini</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="clipboard-list"></i></div> <span data-i18n="mockup.summary">Sommario</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="user"></i></div> <span data-i18n="mockup.profile">Profilo</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="help-circle"></i></div> <span data-i18n="mockup.support">Assistenza</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Il Problema -->
+            <section id="problema" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="prob.title">Il Problema</h2>
+                    <p class="subtitle" data-i18n="prob.sub">La gestione delle informazioni è il vero ostacolo, non il lavoro operativo.</p>
+                </div>
+                <div class="content-body split-layout">
+                    <div class="text-block">
+                        <p data-i18n="prob.desc">Molte aziende operative gestiscono ancora il lavoro tramite:</p>
+                        <ul class="bad-list">
+                            <li><i data-lucide="x"></i> <span data-i18n="prob.list1">Fogli cartacei e note sparse</span></li>
+                            <li><i data-lucide="x"></i> <span data-i18n="prob.list2">Messaggi WhatsApp disordinati</span></li>
+                            <li><i data-lucide="x"></i> <span data-i18n="prob.list3">Comunicazioni di fine settimana</span></li>
+                        </ul>
+                        
+                        <div class="impact-box">
+                            <h3 data-i18n="prob.impact">L'impatto sul business:</h3>
+                            <div class="impact-grid">
+                                <div class="impact-item">
+                                    <i data-lucide="clock"></i>
+                                    <span data-i18n="prob.imp1">Ore dimenticate o non fatturate</span>
+                                </div>
+                                <div class="impact-item">
+                                    <i data-lucide="alert-circle"></i>
+                                    <span data-i18n="prob.imp2">Contestazioni sui lavori</span>
+                                </div>
+                                <div class="impact-item">
+                                    <i data-lucide="trending-down"></i>
+                                    <span data-i18n="prob.imp3">Costi non controllati</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" onclick="switchTab('soluzione')"><span data-i18n="prob.btn">Scopri la soluzione</span> <i data-lucide="arrow-right"></i></button>
+                    </div>
+                    <div class="image-block">
+                        <img src="assets/caos_mockup.png" alt="Caos e confusione tra operai e amministrazione" class="mockup-img error-img">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: La Soluzione -->
+            <section id="soluzione" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="sol.title">La Soluzione: Jobs Report</h2>
+                    <p class="subtitle" data-i18n="sol.sub">Digitalizza e centralizza le informazioni in un unico sistema immediato.</p>
+                </div>
+                <div class="content-body split-layout">
+                    <div class="text-block">
+                        <p data-i18n="sol.desc">Le squadre possono registrare rapidamente:</p>
+                        <ul class="check-list">
+                            <li><i data-lucide="check-circle-2"></i> <span data-i18n="sol.list1">Ore lavorate e attività svolte</span></li>
+                            <li><i data-lucide="check-circle-2"></i> <span data-i18n="sol.list2">Note operative e comunicazioni</span></li>
+                            <li><i data-lucide="check-circle-2"></i> <span data-i18n="sol.list3">Materiali, spese e presenze</span></li>
+                        </ul>
+                        <div class="highlight-box success-box">
+                            <p data-i18n="sol.highlight">Le informazioni diventano <strong>immediatamente disponibili</strong> per ufficio, responsabili e gestione aziendale. L’obiettivo non è aggiungere complessità, ma semplificare il lavoro.</p>
+                        </div>
+                        <button class="btn btn-outline" onclick="switchTab('funzionalita')"><span data-i18n="sol.btn">Vedi le Funzionalità</span> <i data-lucide="arrow-right"></i></button>
+                    </div>
+                    <div class="image-block">
+                        <div class="mockup-ui">
+                            <div class="mockup-header">
+                                <h3 data-i18n="mockup.welcome">Benvenuto, Thomas</h3>
+                                <p data-i18n="mockup.sub">Gestione Attività</p>
+                            </div>
+                            <div class="mockup-stats">
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon"><i data-lucide="clock"></i> <span data-i18n="mockup.hours">Ore</span></div>
+                                    <div class="stat-value">120 <span class="stat-sub" data-i18n="mockup.hours_sub">ore</span></div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon"><i data-lucide="file-text"></i> <span data-i18n="mockup.reports">Rapportini</span></div>
+                                    <div class="stat-value">45 <span class="stat-sub" data-i18n="mockup.reports_sub">in sospeso</span></div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon"><i data-lucide="briefcase"></i> <span data-i18n="mockup.projects">Progetti</span></div>
+                                    <div class="stat-value">8 <span class="stat-sub" data-i18n="mockup.projects_sub">attivi</span></div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="stat-icon text-green"><span class="badge-green">35%</span> <span data-i18n="mockup.margin">Margine</span></div>
+                                    <div class="stat-value">35% <i data-lucide="trending-up" class="text-green" style="width: 18px; height: 18px;"></i></div>
+                                </div>
+                            </div>
+                            <div class="mockup-grid">
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="users"></i></div> <span data-i18n="mockup.clients">Clienti</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="hard-hat"></i></div> <span data-i18n="mockup.staff">Personale</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="briefcase"></i></div> <span data-i18n="mockup.projects">Progetti</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="file-text"></i></div> <span data-i18n="mockup.reports">Rapportini</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="clipboard-list"></i></div> <span data-i18n="mockup.summary">Sommario</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="user"></i></div> <span data-i18n="mockup.profile">Profilo</span></div>
+                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="help-circle"></i></div> <span data-i18n="mockup.support">Assistenza</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Funzionalità -->
+            <section id="funzionalita" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="feat.title">Funzionalità Principali</h2>
+                    <p class="subtitle" data-i18n="feat.sub">Tutto ciò che serve al cantiere e all'ufficio.</p>
+                </div>
+                <div class="content-body full-width">
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="icon-wrapper"><i data-lucide="file-text"></i></div>
+                            <h3 data-i18n="feat.1.title">Rapportini Digitali</h3>
+                            <p data-i18n="feat.1.desc">Giornate registrate in modo ordinato, leggibile e archiviate automaticamente.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-wrapper"><i data-lucide="users"></i></div>
+                            <h3 data-i18n="feat.2.title">Squadre e Subappaltatori</h3>
+                            <p data-i18n="feat.2.desc">Gestione del personale interno e supporto per aziende esterne.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-wrapper"><i data-lucide="globe"></i></div>
+                            <h3 data-i18n="feat.3.title">Supporto Multilingua</h3>
+                            <p data-i18n="feat.3.desc">Pensato per squadre internazionali (IT, EN, ES, PL, TR, DA).</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-wrapper"><i data-lucide="languages"></i></div>
+                            <h3 data-i18n="feat.4.title">Traduzioni Integrate</h3>
+                            <p data-i18n="feat.4.desc">Traduci comunicazioni e note direttamente nell'app.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-wrapper"><i data-lucide="bot"></i></div>
+                            <h3 data-i18n="feat.5.title">Assistente Operativo IA</h3>
+                            <p data-i18n="feat.5.desc">Un sistema intelligente per aiutare a compilare testi e comprendere l'app.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-wrapper"><i data-lucide="cloud-download"></i></div>
+                            <h3 data-i18n="feat.6.title">Cloud & Export</h3>
+                            <p data-i18n="feat.6.desc">Accesso da smartphone, export in PDF o Excel, e cloud sempre sicuro.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Benefici -->
+            <section id="benefici" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="ben.title">Perché Jobs Report</h2>
+                    <p class="subtitle" data-i18n="ben.sub">Progettato per l'uso sul campo, non solo per l'amministrazione.</p>
+                </div>
+                <div class="content-body full-width">
+                    <div class="benefits-list">
+                        <div class="benefit-row">
+                            <div class="benefit-number">1</div>
+                            <div class="benefit-text">
+                                <h4 data-i18n="ben.1.title">Migliore controllo economico</h4>
+                                <p data-i18n="ben.1.desc">Dati precisi e tempestivi aiutano a controllare costi e marginalità.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-row">
+                            <div class="benefit-number">2</div>
+                            <div class="benefit-text">
+                                <h4 data-i18n="ben.2.title">Riduzione del tempo amministrativo</h4>
+                                <p data-i18n="ben.2.desc">Cantiere e ufficio lavorano sulle stesse informazioni in tempo reale.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-row">
+                            <div class="benefit-number">3</div>
+                            <div class="benefit-text">
+                                <h4 data-i18n="ben.3.title">Collaborazione internazionale</h4>
+                                <p data-i18n="ben.3.desc">Traduzioni integrate migliorano la comunicazione tra team diversi.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Target -->
+            <section id="target" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="tgt.title">A chi è rivolto</h2>
+                    <p class="subtitle" data-i18n="tgt.sub">La soluzione perfetta per chi lavora sul territorio.</p>
+                </div>
+                <div class="content-body text-center">
+                    <div class="target-tags">
+                        <span class="tag" data-i18n="tgt.1">Imprese edili</span>
+                        <span class="tag" data-i18n="tgt.2">Installatori elettrici</span>
+                        <span class="tag" data-i18n="tgt.3">Idraulici</span>
+                        <span class="tag" data-i18n="tgt.4">Aziende HVAC</span>
+                        <span class="tag" data-i18n="tgt.5">Manutentori</span>
+                        <span class="tag" data-i18n="tgt.6">Artigiani</span>
+                    </div>
+                    <div class="cta-box mt-5">
+                        <h3 data-i18n="tgt.cta.title">Pronto a ridurre il caos operativo?</h3>
+                        <p data-i18n="tgt.cta.desc">Richiedi una demo o inizia a usare Jobs Report oggi stesso.</p>
+                        <button class="btn btn-primary btn-large mt-3" onclick="switchTab('contatto')" data-i18n="tgt.btn">Contattaci Ora</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Registrazione -->
+            <section id="registrazione" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="reg.title">Attiva la tua Azienda</h2>
+                    <p class="subtitle" data-i18n="reg.sub">Inizia subito a usare Jobs Report. Compila il modulo per richiedere l'attivazione della tua impresa.</p>
+                </div>
+                <div class="content-body">
+                    <div class="form-container">
+                        <form onsubmit="event.preventDefault(); alert('Richiesta inviata!');">
+                            <div class="form-group">
+                                <label for="reg-company" data-i18n="reg.company">Nome Azienda</label>
+                                <input type="text" id="reg-company" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-name" data-i18n="reg.name">Nome Amministratore</label>
+                                <input type="text" id="reg-name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-email" data-i18n="reg.email">Email aziendale</label>
+                                <input type="email" id="reg-email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-phone" data-i18n="reg.phone">Telefono (opzionale)</label>
+                                <input type="tel" id="reg-phone" class="form-control">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;" data-i18n="reg.btn">Invia Richiesta di Attivazione</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Contatto -->
+            <section id="contatto" class="content-section">
+                <div class="content-header">
+                    <h2 data-i18n="cont.title">Contattaci</h2>
+                    <p class="subtitle" data-i18n="cont.sub">Hai domande o vuoi prenotare una demo? Scrivici, ti risponderemo il prima possibile.</p>
+                </div>
+                <div class="content-body">
+                    <div class="form-container">
+                        <form onsubmit="event.preventDefault(); alert('Messaggio inviato!');">
+                            <div class="form-group">
+                                <label for="contact-name" data-i18n="cont.name">Nome e Cognome</label>
+                                <input type="text" id="contact-name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-email" data-i18n="cont.email">Email</label>
+                                <input type="email" id="contact-email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-message" data-i18n="cont.msg">Messaggio</label>
+                                <textarea id="contact-message" class="form-control" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;" data-i18n="cont.btn">Invia Messaggio</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="translations.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Inizializza le icone
+        lucide.createIcons();
+    </script>
+</body>
+</html>
