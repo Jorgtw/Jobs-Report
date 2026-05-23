@@ -1,0 +1,6 @@
+{
+  "buildCommand": "echo \"Static Site, skipping build\"",
+  "outputDirectory": ".",
+  "installCommand": "echo \"Static Site, skipping install\"",
+  "framework": null
+}
