@@ -486,6 +486,7 @@ body.dark-mode .mockup-img {
     font-family: 'Inter', sans-serif;
     transform: none;
     transition: box-shadow 0.5s ease;
+    overflow: hidden;
 }
 
 .mockup-ui:hover {
@@ -529,9 +530,9 @@ body.dark-mode .mockup-header h3 { color: #f8fafc; }
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 1rem;
+    padding: 0.6rem;
     flex: 1;
-    min-width: 110px;
+    min-width: 80px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
@@ -557,7 +558,7 @@ body.dark-mode .mockup-stat-card {
 }
 
 .stat-value {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: #0f172a;
     display: flex;
@@ -580,21 +581,21 @@ body.dark-mode .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d39
 
 .mockup-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
 }
 
 .mockup-btn {
     background: #ffffff;
     border: none;
-    border-radius: 1.2rem;
-    padding: 1rem 0.5rem;
+    border-radius: 1rem;
+    padding: 0.6rem 0.3rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    font-size: 0.75rem;
+    gap: 0.5rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: #0f172a;
     box-shadow: 0 8px 25px rgba(0,0,0,0.06);
