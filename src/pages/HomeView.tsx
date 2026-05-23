@@ -87,7 +87,7 @@ const CompactDashboard: React.FC = () => {
       {isLoading ? (
         <span className="inline-block w-16 h-6 bg-slate-100 animate-pulse rounded mt-1" />
       ) : (
-        <span className={`text-xl sm:text-2xl font-black tracking-tight truncate ${valueColor}`}>{value}</span>
+        <span className={`text-lg sm:text-xl font-bold tracking-tight truncate ${valueColor}`} title={String(value)}>{value}</span>
       )}
     </Link>
   );
@@ -246,12 +246,12 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
 
-        <nav className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <nav className="flex flex-wrap gap-4 sm:gap-6 mt-4">
           {actions.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className="flex flex-col items-center justify-center p-4 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98] aspect-square"
+              className="flex flex-col items-center justify-center w-28 h-28 sm:w-36 sm:h-36 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.05)] rounded-[1.5rem] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98]"
             >
               <div className={`${link.color.replace('bg-', 'text-')} mb-3 group-hover:-translate-y-1 transition-transform`}>
                 <link.icon size={36} strokeWidth={2} />
@@ -263,7 +263,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           {!isOperator && (
             <button
               onClick={handleManualLogout}
-              className="flex flex-col items-center justify-center p-4 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98] aspect-square"
+              className="flex flex-col items-center justify-center w-28 h-28 sm:w-36 sm:h-36 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.05)] rounded-[1.5rem] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98]"
             >
               <div className="text-slate-400 mb-3 group-hover:-translate-y-1 group-hover:text-red-500 transition-all">
                 <LogOut size={36} strokeWidth={2} />
