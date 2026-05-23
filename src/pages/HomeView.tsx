@@ -256,7 +256,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
               <div className={`${link.color.replace('bg-', 'text-')} mb-3 group-hover:-translate-y-1 transition-transform`}>
                 <link.icon size={36} strokeWidth={2} />
               </div>
-              <span className="text-[12px] font-semibold text-slate-700 capitalize tracking-tight text-center group-hover:text-blue-600 transition-colors">{link.name}</span>
+              <span className="text-[13px] sm:text-sm font-semibold text-slate-700 capitalize tracking-tight text-center leading-tight group-hover:text-blue-600 transition-colors">{link.name}</span>
             </Link>
           ))}
 
@@ -268,7 +268,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
               <div className="text-slate-400 mb-3 group-hover:-translate-y-1 group-hover:text-red-500 transition-all">
                 <LogOut size={36} strokeWidth={2} />
               </div>
-              <span className="text-[12px] font-semibold text-slate-700 capitalize tracking-tight text-center group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
+              <span className="text-[13px] sm:text-sm font-semibold text-slate-700 capitalize tracking-tight text-center leading-tight group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
             </button>
           )}
         </nav>
