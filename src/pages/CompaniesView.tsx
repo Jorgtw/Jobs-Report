@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, X, Mail, Zap } from 'lucide-react';
+import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, X, Zap } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 import { inputClasses, modalClasses, FullWidthField } from '../App';
