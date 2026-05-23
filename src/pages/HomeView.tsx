@@ -12,7 +12,7 @@ import {
   Briefcase,
   Building2, 
   Users, 
-  ShieldAlert, 
+  HardHat, 
   Mail, 
   ClipboardList, 
   User as UserIcon, 
@@ -167,7 +167,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
     const links = [
       { name: t('dashboard.companiesManagement'), path: '/companies', icon: Building2, show: isSA, color: 'bg-blue-600' },
       { name: t('common.clients'), path: '/clients', icon: Users, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-emerald-500' },
-      { name: t('common.personnel'), path: '/personnel', icon: ShieldAlert, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-rose-500' },
+      { name: t('common.personnel'), path: '/personnel', icon: HardHat, show: !isSA && (user?.role === 'admin' || user?.role === 'supervisor'), color: 'bg-rose-500' },
       { name: t('common.projects'), path: '/projects', icon: Briefcase, show: !isSA && authService.can(user, 'read', 'projects'), color: 'bg-amber-500' },
       { 
         name: t('common.internalCommMenu'), 
@@ -251,24 +251,24 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
             <Link
               key={link.path}
               to={link.path}
-              className="flex flex-col items-center justify-center p-5 bg-white border border-slate-200 rounded-2xl hover:border-blue-400 hover:shadow-md transition-all group active:scale-[0.98]"
+              className="flex flex-col items-center justify-center p-4 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98] aspect-square"
             >
-              <div className={`${link.color.replace('bg-', 'text-')} bg-slate-50 p-3 rounded-xl group-hover:bg-blue-50 transition-colors mb-3`}>
-                <link.icon size={26} className="group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+              <div className={`${link.color.replace('bg-', 'text-')} mb-3 group-hover:-translate-y-1 transition-transform`}>
+                <link.icon size={36} strokeWidth={2} />
               </div>
-              <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight text-center group-hover:text-blue-600 transition-colors">{link.name}</span>
+              <span className="text-[12px] font-semibold text-slate-700 capitalize tracking-tight text-center group-hover:text-blue-600 transition-colors">{link.name}</span>
             </Link>
           ))}
 
           {!isOperator && (
             <button
               onClick={handleManualLogout}
-              className="flex flex-col items-center justify-center p-5 bg-white border border-slate-200 rounded-2xl hover:border-red-400 hover:bg-red-50 transition-all group active:scale-[0.98]"
+              className="flex flex-col items-center justify-center p-4 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98] aspect-square"
             >
-              <div className="text-slate-400 bg-slate-50 p-3 rounded-xl group-hover:bg-red-50 group-hover:text-red-500 transition-colors mb-3">
-                <LogOut size={26} className="group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+              <div className="text-slate-400 mb-3 group-hover:-translate-y-1 group-hover:text-red-500 transition-all">
+                <LogOut size={36} strokeWidth={2} />
               </div>
-              <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight text-center group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
+              <span className="text-[12px] font-semibold text-slate-700 capitalize tracking-tight text-center group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
             </button>
           )}
         </nav>
