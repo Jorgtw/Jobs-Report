@@ -1,0 +1,85 @@
+/* docs_style.css - Premium documentation styling */
+:root {
+  /* Color palette */
+  --primary: hsl(220, 90%, 56%); /* a vibrant blue */
+  --primary-light: hsl(220, 90%, 66%);
+  --primary-dark: hsl(220, 90%, 46%);
+  --background: hsl(0, 0%, 99%);
+  --background-dark: hsl(0, 0%, 10%);
+  --text: hsl(210, 10%, 15%);
+  --text-light: hsl(0, 0%, 100%);
+  --card-bg: hsl(0, 0%, 100%);
+  --card-bg-dark: hsl(0, 0%, 15%);
+  --border: hsl(0, 0%, 90%);
+  --border-dark: hsl(0, 0%, 30%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--background-dark);
+    --text: var(--text-light);
+    --card-bg: var(--card-bg-dark);
+    --border: var(--border-dark);
+  }
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--text);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: var(--text-light);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+header h1 {font-size: 1.8rem; margin: 0;}
+header p {font-size: 0.95rem; margin-top: 0.5rem;}
+
+section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+h2 {color: var(--primary); margin-top: 0;}
+h3 {color: var(--primary-dark); margin-top: 0;}
+
+ul {list-style: disc; margin-left: 1.5rem;}
+
+.img-box {margin: 1.5rem 0; overflow: hidden; border-radius: 0.5rem; border: 1px solid var(--border);}
+.img-box img {width: 100%; height: auto; display: block;}
+.caption {font-size: 0.85rem; color: var(--text); text-align: center; padding: 0.5rem; background: var(--background);}
+
+.table-responsive {overflow-x: auto;}
+
+table {width: 100%; border-collapse: collapse; margin: 1rem 0;}
+th, td {padding: 0.75rem; border: 1px solid var(--border); text-align: left;}
+th {background: var(--background-dark); color: var(--text-light);}
+
+footer {text-align: center; font-size: 0.85rem; color: var(--text); margin-top: 3rem;}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  header {padding: 1rem;}
+  h2 {font-size: 1.4rem;}
+}

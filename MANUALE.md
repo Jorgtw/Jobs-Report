@@ -1,7 +1,7 @@
 # Manuale d'Uso - Jobs Report
 
 ## Introduzione
-Jobs Report è un'applicazione PWA progettata per la gestione e il monitoraggio dei lavori di cantiere, dei costi del personale e dei rapporti con i subappaltatori. 
+Jobs Report è un'applicazione PWA progettata per la gestione e il monitoraggio dei lavori di cantiere, dei costi del personale e dei rapporti con i subappaltatori.
 
 ## 1. Accesso e Autenticazione
 
@@ -11,8 +11,8 @@ Accedi con le tue credenziali (username e password). L'applicazione supporta div
 - **Incaricato (Supervisor)**
 - **Amministratore**
 
-![Schermata di Login](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/initial_load_page_1773835119390.png)
-*Pagana di accesso — Inserisci le tue credenziali per iniziare*
+![Schermata di Login](assets/manual_images/login.png)
+*Pagina di accesso — Inserisci le tue credenziali per iniziare*
 
 ### Recupero Password
 In caso di smarrimento della password, contatta l'amministratore del sistema.
@@ -25,8 +25,8 @@ Dopo il login, verrai indirizzato alla Dashboard principale. Da qui puoi acceder
 
 Per gli **Operatori** e gli **Incaricati**, in questa pagina è ora visibile anche il **Riepilogo Ore del Mese** corrente, per avere sempre sott'occhio il proprio monte ore lavorate.
 
-![Dashboard Home](file:///C:/Users/jtw/.gemini/antigravity/brain/07ba6648-f6f7-4d07-b419-c3a357a3490b/dashboard_home_new_jobsreport_png_1773835256583.png)
-*Launcher — Accesso rapido a Rapportini, Progetti e Riepiloghi*
+![Home Operaio](assets/manual_images/home_operaio.png)
+*Dashboard operaio — Ore in attesa di approvazione, accesso rapido a Progetti, Comunicazioni e Rapportini*
 
 ---
 
@@ -38,8 +38,8 @@ Visualizza tutti i rapportini caricati. Puoi filtrare per data o per progetto.
 - **Incaricati**: Vedono i propri e quelli dei collaboratori assegnati ai propri progetti.
 - **Admin**: Vedono tutti i rapportini dell'azienda.
 
-![Lista Rapportini](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportini_1772699081545.png)
-*Esempio di lista rapportini con filtri attivi*
+![Lista Rapportini](assets/manual_images/rapportini_list.png)
+*Lista rapportini con filtri attivi — progetto, collaboratore, intervallo date*
 
 ### Creazione/Modifica Rapportino
 Clicca su "**Nuovo Rapportino**" (o l'icona della matita per modificare):
@@ -49,7 +49,7 @@ Clicca su "**Nuovo Rapportino**" (o l'icona della matita per modificare):
 - Inserisci le **Spese**: materiali, pasti, trasporti, ecc.
 - Definisci lo **Stato Fatturazione** (solo per Admin).
 
-![Schermata form rapportino](C:\Users\jtw\.gemini\antigravity\brain\426e76eb-c620-4b8d-8aaf-dad9ce6ee541\screen_rapportino_1772699103453.png)
+![Form Rapportino](assets/manual_images/rapportino_form.png)
 *Form rapportino — orari, squadra, spese e stato fatturazione in un'unica schermata*
 
 Permette l'inserimento e la modifica dei lavori svolti.
@@ -67,9 +67,18 @@ Permette l'inserimento e la modifica dei lavori svolti.
 
 ---
 
-## 4. Gestione Progetti (Solo Admin)
+## 4. Gestione Progetti
 
-### Progetti e Clienti
+### Dettaglio Progetto (Vista Operaio)
+Ogni progetto mostra tutte le informazioni operative rilevanti direttamente dalla scheda:
+- **Indirizzo cantiere** con collegamento diretto a **Google Maps** per la navigazione.
+- **Contatto di riferimento** con numero di telefono **cliccabile** per chiamare direttamente.
+- **Descrizione del lavoro** e **personale assegnato**, ognuno con pulsante di chiamata rapida.
+
+![Dettaglio Progetto Operaio](assets/manual_images/project_operaio.png)
+*Scheda progetto — indirizzo con mappa, telefono diretto e personale assegnato*
+
+### Progetti e Clienti (Solo Admin)
 L'amministratore può creare nuovi progetti, associarli a un cliente e assegnare i lavoratori o gli incaricati.
 - **Progetti Attivi**: Visibili per l'inserimento ore.
 - **Progetti Chiusi**: Archivio storico, non più selezionabili per nuovi rapportini.
@@ -80,8 +89,8 @@ L'amministratore può creare nuovi progetti, associarli a un cliente e assegnare
 
 Visualizzazione analitica dei costi e ricavi. Riservato agli **Admin**, permette di monitorare ore, costi (personale, subappalti, spese) e ricavi, con calcolo automatico del margine.
 
-![Sommario Amministrativo](file:///C:/Users/jtw/.gemini/antigravity/brain/a6039416-7035-42c8-bf9f-c819cbaa18e2/admin_dashboard_new_1772984669516.png)
-*Torre di controllo — Analisi economica per progetto e cliente*
+![Dashboard Amministrativa](assets/manual_images/admin_dashboard.png)
+*Analisi economica per progetto e cliente*
 
 ---
 
@@ -91,7 +100,7 @@ Visualizzazione analitica dei costi e ricavi. Riservato agli **Admin**, permette
 Ogni utente può aggiornare i propri dati di contatto e visualizzare il riepilogo delle proprie ore mensili.
 
 ### Lingua
-L'applicazione supporta Italiano, Inglese, Francese, Tedesco e Spagnolo. Cambia la lingua dall'icona del mondo nella testata.
+L'applicazione supporta Italiano, Inglese, Spagnolo, Polacco, Turco e Danese. Cambia la lingua dall'icona del mondo nella testata.
 
 ---
 
