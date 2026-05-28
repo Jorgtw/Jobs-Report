@@ -79,4 +79,5 @@ export const common = {
   setupRequiredTitle: "Configurazione in Corso",
   setupRequiredDesc: "La tua azienda è in fase di configurazione o l'operazione non è stata completata correttamente. Contatta l'amministratore di sistema o attendi il completamento del setup.",
   back: "Indietro",
+  quickMenu: "Scelte rapide",
 };

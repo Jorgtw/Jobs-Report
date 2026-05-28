@@ -128,7 +128,7 @@ export const reports = {
   workTeam: "Zespół roboczy",
   complianceSatisfactionRequired: "Przed kontynuowaniem wymagane jest potwierdzenie satysfakcji klienta.",
   complianceNoDescription: "Brak opisu.",
-  complianceSatisfactionDeclaration: "Klient oświadcza, że prace zostały wykonane zgodnie ze sztuką i potwierdza swoje zadowolenie z wykonanej usługi.",
+  complianceSatisfactionDeclaration: "Zadowolony z wykonanej usługi",
   expenseCantiere: "Wydatek na budowie",
   expenseRimborso: "Zwrot osobisty",
   expenseKm: "Podróż (KM)",

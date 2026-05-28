@@ -20,7 +20,7 @@ export const help = {
   adminInternalTitle: "Attività Interne (Malattia/Ferie)",
   adminInternalBody: "Per gestire le assenze, usa il nuovo tasto 'Nuova Attività Interna' nella sezione Progetti. Questo creerà un progetto speciale che non genera fatturato ma traccia correttamente i costi del personale.",
   commTitle: "Comunicazioni Interne",
-  commBody: "Il sistema di messaggistica è diviso in due sezioni: 'INBOX' per i messaggi ricevuti e 'INVIATI' per quelli che hai inviato tu. Clicca su un messaggio per aprire la conversazione completa e rispondere in tempo reale. Puoi inviare messaggi a singoli utenti o a tutto il team.",
+  commBody: "Il sistema di messaggistica è diviso in due sezioni: 'INBOX' per i messaggi ricevuti e 'INVIATI' per quelli che hai inviato tu. Clicca su un messaggio per aprire la conversazione completa e rispondere in tempo reale. Puoi inviare messaggi a singoli utenti o a tutto il team. Questa funzionalità è disponibile solo per le aziende con abbonamento Premium.",
   
   // Support Contact
   supportContact: "Consulta prima la Guida all'Uso — trovi la risposta alla maggior parte delle domande. Per problemi tecnici contatta l'amministratore del tuo account.",

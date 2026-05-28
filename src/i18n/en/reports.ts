@@ -128,7 +128,7 @@ export const reports = {
   workTeam: "Work Team",
   complianceSatisfactionRequired: "Customer satisfaction confirmation is required before proceeding.",
   complianceNoDescription: "No description provided.",
-  complianceSatisfactionDeclaration: "The client declares that the work has been performed to industry standards and confirms their satisfaction with the service.",
+  complianceSatisfactionDeclaration: "Satisfied with the service provided",
   expenseCantiere: "Site Expense",
   expenseRimborso: "Personal Reimbursement",
   expenseKm: "Travel (KM)",

@@ -25,7 +25,7 @@ export function useComplianceReportController(
     setComplianceReportToSign(null);
   };
 
-  const handleGenerateCompliance = async (photos: string[], signature: string) => {
+  const handleGenerateCompliance = async (photos: string[], signature: string, satisfaction?: 'yes' | 'no' | null) => {
     if (!complianceReportToSign) return;
     
     await complianceReportService.processAndGenerate(
@@ -36,7 +36,8 @@ export function useComplianceReportController(
       personnel,
       photos,
       signature,
-      lang
+      lang,
+      satisfaction
     );
   };
 

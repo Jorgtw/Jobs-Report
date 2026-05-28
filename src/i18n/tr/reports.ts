@@ -128,7 +128,7 @@ export const reports = {
   workTeam: "Çalışma Ekibi",
   complianceSatisfactionRequired: "Devam etmeden önce müşteri memnuniyeti onayı gereklidir.",
   complianceNoDescription: "Açıklama girilmedi.",
-  complianceSatisfactionDeclaration: "Müşteri, işin standartlara uygun olarak yapıldığını beyan eder ve verilen hizmetten memnuniyetini onaylar.",
+  complianceSatisfactionDeclaration: "Yapılan hizmetten memnun kaldı",
   expenseCantiere: "Şantiye Gideri",
   expenseRimborso: "Kişisel Geri Ödeme",
   expenseKm: "Seyahat (KM)",

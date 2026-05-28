@@ -134,19 +134,19 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
   if (hours === null) return null;
 
   return (
-    <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-4 flex items-center justify-between group hover:shadow-md transition-all">
+    <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-100/50 mb-4 flex items-center justify-between group hover:bg-slate-50 transition-all">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-amber-50 rounded-md flex items-center justify-center text-amber-600">
-          <Clock size={16} />
+        <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-600 transition-transform group-hover:scale-105">
+          <Clock size={18} />
         </div>
         <div>
-          <h3 className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{t('common.pendingHoursSummary')}</h3>
-          <p className="text-[10px] font-medium text-slate-400 mt-0.5">{t('reports.pendingStatusSubtitle')}</p>
+          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.pendingHoursSummary')}</h3>
+          <p className="text-[11px] font-medium text-slate-400 mt-0.5 leading-tight">{t('reports.pendingStatusSubtitle')}</p>
         </div>
       </div>
-      <div className="text-xl font-black text-amber-600">
+      <div className="text-2xl font-black text-amber-600">
         {hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        <span className="text-[10px] font-bold ml-0.5 text-slate-400">h</span>
+        <span className="text-[11px] font-bold ml-0.5 text-slate-400 uppercase">h</span>
       </div>
     </div>
   );
@@ -225,50 +225,50 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           <PendingHoursCard user={user} />
           <Link 
             to="/reports" 
-            className="bg-blue-600 p-4 rounded-2xl text-white shadow-lg shadow-blue-200 flex items-center justify-between group hover:scale-[1.01] transition-all active:scale-[0.99] mb-6"
+            className="bg-blue-600 p-4 rounded-2xl text-white shadow-md shadow-blue-500/5 flex items-center justify-between group hover:bg-blue-700 transition-all mb-6 active:scale-[0.99]"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <Plus size={24} />
+            <div className="flex items-center gap-4.5">
+              <div className="w-11 h-11 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform group-hover:scale-105">
+                <Plus size={22} />
               </div>
               <div className="flex flex-col">
-                <h3 className="text-sm font-black uppercase tracking-tight leading-tight">{t('reports.new')}</h3>
-                <p className="text-[10px] font-bold text-blue-100 opacity-80 leading-tight mt-0.5">{t('reports.activityManagement')}</p>
+                <h3 className="text-[13px] font-extrabold uppercase tracking-wider leading-tight">{t('reports.new')}</h3>
+                <p className="text-[9px] font-bold text-blue-100/80 uppercase tracking-widest leading-none mt-1">{t('reports.activityManagement')}</p>
               </div>
             </div>
-            <ChevronRight size={20} className="text-blue-200 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight size={18} className="text-blue-200/80 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
       ))}
 
-      <div className="mt-6">
-        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
+      <div className="mt-8">
+        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">
           {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
 
-        <nav className="flex flex-wrap gap-4 sm:gap-6 mt-4">
+        <nav className="grid grid-cols-3 sm:flex sm:flex-wrap gap-3 sm:gap-6 mt-4">
           {actions.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className="flex flex-col items-center justify-center w-28 h-28 sm:w-36 sm:h-36 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.05)] rounded-[1.5rem] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98]"
+              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-slate-50/50 border border-slate-100/50 rounded-2xl hover:bg-white hover:shadow-[0_12px_24px_rgba(0,0,0,0.04)] hover:border-slate-100 transition-all group active:scale-[0.98] p-2"
             >
-              <div className={`${link.color.replace('bg-', 'text-')} mb-3 group-hover:-translate-y-1 transition-transform`}>
-                <link.icon size={36} strokeWidth={2} />
+              <div className={`w-12 h-12 ${link.color.replace('bg-', 'bg-').replace('500', '50').replace('600', '50')} ${link.color.replace('bg-', 'text-')} rounded-full flex items-center justify-center mb-2.5 transition-transform group-hover:scale-105`}>
+                <link.icon size={22} strokeWidth={2.5} />
               </div>
-              <span className="text-[13px] sm:text-sm font-semibold text-slate-700 capitalize tracking-tight text-center leading-tight group-hover:text-blue-600 transition-colors">{link.name}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider text-center leading-tight group-hover:text-blue-600 transition-colors px-1 truncate w-full mt-1">{link.name}</span>
             </Link>
           ))}
 
           {!isOperator && (
             <button
               onClick={handleManualLogout}
-              className="flex flex-col items-center justify-center w-28 h-28 sm:w-36 sm:h-36 bg-white border-0 shadow-[0_8px_30px_rgb(0,0,0,0.05)] rounded-[1.5rem] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all group active:scale-[0.98]"
+              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-slate-50/50 border border-slate-100/50 rounded-2xl hover:bg-white hover:shadow-[0_12px_24px_rgba(0,0,0,0.04)] hover:border-slate-100 transition-all group active:scale-[0.98] p-2"
             >
-              <div className="text-slate-400 mb-3 group-hover:-translate-y-1 group-hover:text-red-500 transition-all">
-                <LogOut size={36} strokeWidth={2} />
+              <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center mb-2.5 transition-transform group-hover:scale-105 group-hover:text-red-500 group-hover:bg-red-50">
+                <LogOut size={22} strokeWidth={2.5} />
               </div>
-              <span className="text-[13px] sm:text-sm font-semibold text-slate-700 capitalize tracking-tight text-center leading-tight group-hover:text-red-600 transition-colors">{t('common.logout')}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider text-center leading-tight group-hover:text-red-600 transition-colors px-1 truncate w-full mt-1">{t('common.logout')}</span>
             </button>
           )}
         </nav>

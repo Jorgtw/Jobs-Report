@@ -128,7 +128,7 @@ export const reports = {
   workTeam: "Squadra di Lavoro",
   complianceSatisfactionRequired: "È necessario confermare la soddisfazione del cliente prima di procedere.",
   complianceNoDescription: "Nessuna descrizione inserita.",
-  complianceSatisfactionDeclaration: "Il cliente dichiara che i lavori sono stati eseguiti a regola d'arte e conferma la propria soddisfazione per l'intervento effettuato.",
+  complianceSatisfactionDeclaration: "Soddisfatto del servizio svolto",
   expenseCantiere: "Spesa Cantiere",
   expenseRimborso: "Rimborso Personale",
   expenseKm: "Trasferta (KM)",

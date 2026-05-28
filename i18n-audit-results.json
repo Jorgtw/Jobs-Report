@@ -355,7 +355,8 @@
     "reports.signaturePlaceholder",
     "reports.signatureRequired",
     "reports.upgradeRequired",
-    "reports.personalHours"
+    "reports.personalHours",
+    "reports.complianceSatisfactionRequired"
   ],
   "hardcoded": []
 }

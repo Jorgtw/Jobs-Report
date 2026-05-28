@@ -7,7 +7,7 @@ import { WorkReport } from '../types';
 interface ComplianceReportModalProps {
   report: WorkReport;
   onClose: () => void;
-  onGenerate: (photos: string[], signature: string) => void;
+  onGenerate: (photos: string[], signature: string, satisfaction: 'yes' | 'no' | null) => void;
 }
 
 export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ report, onClose, onGenerate }) => {
@@ -16,7 +16,7 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
   const [photos, setPhotos] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
-  const [isSatisfied, setIsSatisfied] = useState(false);
+  const [satisfaction, setSatisfaction] = useState<'yes' | 'no' | null>(null);
 
   const { t } = useTranslation();
 
@@ -75,16 +75,12 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
       alert('⚠️ ' + t('reports.complianceSignatureRequired'));
       return;
     }
-    if (!isSatisfied) {
-      alert('⚠️ ' + t('reports.complianceSatisfactionRequired'));
-      return;
-    }
 
     setIsGenerating(true);
     try {
       const signatureBase64 = sigCanvas.current?.getCanvas().toDataURL('image/png') || '';
 
-      await onGenerate(photos, signatureBase64);
+      await onGenerate(photos, signatureBase64, satisfaction);
       onClose();
     } catch (err) {
       console.error('PDF generation error:', err);
@@ -160,11 +156,55 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
             </div>
           </section>
 
+          {/* Satisfaction Selection */}
+          <section className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <span className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">
+                2. {t('reports.complianceSatisfactionDeclaration')}
+              </span>
+              <div className="flex items-center gap-6">
+                {/* SI Button */}
+                <button
+                  type="button"
+                  onClick={() => setSatisfaction(satisfaction === 'yes' ? null : 'yes')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
+                  style={{
+                    borderColor: satisfaction === 'yes' ? '#10b981' : '#cbd5e1',
+                    backgroundColor: satisfaction === 'yes' ? '#ecfdf5' : 'white',
+                    color: satisfaction === 'yes' ? '#047857' : '#64748b'
+                  }}
+                >
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${satisfaction === 'yes' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-300'}`}>
+                    {satisfaction === 'yes' && <CheckCircle2 size={12} />}
+                  </div>
+                  {t('common.yes')}
+                </button>
+
+                {/* NO Button */}
+                <button
+                  type="button"
+                  onClick={() => setSatisfaction(satisfaction === 'no' ? null : 'no')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
+                  style={{
+                    borderColor: satisfaction === 'no' ? '#ef4444' : '#cbd5e1',
+                    backgroundColor: satisfaction === 'no' ? '#fef2f2' : 'white',
+                    color: satisfaction === 'no' ? '#b91c1c' : '#64748b'
+                  }}
+                >
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${satisfaction === 'no' ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-slate-300'}`}>
+                    {satisfaction === 'no' && <X size={12} />}
+                  </div>
+                  {t('common.no')}
+                </button>
+              </div>
+            </div>
+          </section>
+
           {/* Signature Section */}
           <section>
             <div className="flex justify-between items-end mb-4">
               <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] block">
-                2. {t('reports.complianceSignature')}
+                3. {t('reports.complianceSignature')}
                 {hasSigned && <span className="ml-2 text-emerald-500">✓</span>}
               </label>
               <button
@@ -191,24 +231,15 @@ export const ComplianceReportModal: React.FC<ComplianceReportModalProps> = ({ re
                 </p>
               </div>
             </div>
-
-            <div className="mt-4 flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl cursor-pointer" onClick={() => setIsSatisfied(!isSatisfied)}>
-              <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${isSatisfied ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-300'}`}>
-                {isSatisfied && <CheckCircle2 size={14} />}
-              </div>
-              <p className="text-xs text-slate-700 font-medium leading-tight">
-                {t('reports.complianceSatisfactionDeclaration')}
-              </p>
-            </div>
           </section>
 
           {/* Action Button */}
           <div className="pt-6 border-t">
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || !isSatisfied || !hasSigned}
+              disabled={isGenerating || !hasSigned}
               className={`w-full py-4 rounded-2xl font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 ${
-                hasSigned && isSatisfied
+                hasSigned
                   ? 'bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700 active:scale-[0.98]'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}

@@ -12,7 +12,8 @@ export const complianceReportService = {
     personnel: User[],
     photos: string[],
     signature: string,
-    lang: Language
+    lang: Language,
+    satisfaction?: 'yes' | 'no' | null
   ) {
     const project = projects.find(p => p.id === report.projectId);
     const client = clients.find(c => c.id === project?.clientId);
@@ -29,6 +30,7 @@ export const complianceReportService = {
 
     const reportData = {
       ...report,
+      satisfaction,
       additionalWorkers: resolvedAdditionalWorkers,
       clientName: client?.name || '---',
       projectName: project?.name || '---',

@@ -343,6 +343,45 @@ export const generateCompliancePDF = async (
   doc.line(margin, y, pageW - margin, y);
   y += 6;
 
+  // Render satisfaction question (Soddisfatto del servizio svolto)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30, 64, 175);
+  doc.text(t('reports.complianceSatisfactionDeclaration').toUpperCase(), margin, y);
+
+  // Draw Yes / No checkboxes
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(15, 23, 42);
+
+  // Yes checkbox
+  const yesBoxX = margin + 85;
+  doc.setDrawColor(100, 116, 139);
+  doc.setLineWidth(0.3);
+  doc.rect(yesBoxX, y - 3, 3.5, 3.5); // box
+  if (report.satisfaction === 'yes') {
+    doc.setFont('helvetica', 'bold');
+    doc.text('X', yesBoxX + 0.8, y - 0.3);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text(t('common.yes').toUpperCase(), yesBoxX + 5.5, y);
+
+  // No checkbox
+  const noBoxX = yesBoxX + 25;
+  doc.rect(noBoxX, y - 3, 3.5, 3.5); // box
+  if (report.satisfaction === 'no') {
+    doc.setFont('helvetica', 'bold');
+    doc.text('X', noBoxX + 0.8, y - 0.3);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text(t('common.no').toUpperCase(), noBoxX + 5.5, y);
+
+  y += 8;
+
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+
   const sigW = contentW * 0.6;
   const sigH = 34;
 
