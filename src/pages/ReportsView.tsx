@@ -281,18 +281,92 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const handleDuplicate = (r: WorkReport) => {
     setEditingId(null);
+
+    // Check if the current logged-in user is one of the additional workers in the copied report
+    const awIndex = (r.additionalWorkers || []).findIndex(aw => aw.userId === user.id);
+
+    let newUserId = user.id; // Default to current user
+    let newStartTime = r.startTime;
+    let newEndTime = r.endTime;
+    let newBreakHours = r.breakHours;
+    let newManualTotalHours = r.manualTotalHours;
+    let newOvertimeHours = r.overtimeHours || 0;
+    let newAdditionalWorkers: AdditionalWorker[] = [];
+
+    if (awIndex !== -1) {
+      // The current user was a helper in the original report.
+      // Swap the current user to be the main worker, and move the original main worker to additional workers.
+      const myOriginalDetails = r.additionalWorkers[awIndex];
+      newStartTime = myOriginalDetails.startTime;
+      newEndTime = myOriginalDetails.endTime;
+      newBreakHours = myOriginalDetails.breakHours;
+      newManualTotalHours = myOriginalDetails.manualTotalHours;
+      newOvertimeHours = myOriginalDetails.overtimeHours || 0;
+
+      // Filter out current user from helpers
+      const otherHelpers = r.additionalWorkers.filter((_, idx) => idx !== awIndex);
+
+      // Add the original main worker as a helper
+      const originalMainUser = personnel.find(u => u.id === r.userId);
+      const originalMainAsHelper: AdditionalWorker = {
+        userId: r.userId,
+        startTime: r.startTime,
+        endTime: r.endTime,
+        breakHours: r.breakHours,
+        manualTotalHours: r.manualTotalHours,
+        totalHours: r.totalHours,
+        hourlyRate: originalMainUser?.hourlyRate || 0,
+        totalCost: r.totalHours * (originalMainUser?.hourlyRate || 0),
+        personName: originalMainUser?.name || '',
+        personRole: originalMainUser?.role || '',
+        membershipType: originalMainUser?.subcontractorId ? 'Subappalto' : 'Interno',
+        subcontractorId: originalMainUser?.subcontractorId,
+        isManualOverride: r.manualTotalHours !== undefined,
+        overtimeHours: r.overtimeHours || 0
+      };
+
+      newAdditionalWorkers = [originalMainAsHelper, ...otherHelpers];
+    } else if (r.userId !== user.id) {
+      // The current user was not in the report at all, and is not the original main worker.
+      // Make current user the main worker (with the original main worker's hours),
+      // and move the original main worker to additional workers.
+      const originalMainUser = personnel.find(u => u.id === r.userId);
+      const originalMainAsHelper: AdditionalWorker = {
+        userId: r.userId,
+        startTime: r.startTime,
+        endTime: r.endTime,
+        breakHours: r.breakHours,
+        manualTotalHours: r.manualTotalHours,
+        totalHours: r.totalHours,
+        hourlyRate: originalMainUser?.hourlyRate || 0,
+        totalCost: r.totalHours * (originalMainUser?.hourlyRate || 0),
+        personName: originalMainUser?.name || '',
+        personRole: originalMainUser?.role || '',
+        membershipType: originalMainUser?.subcontractorId ? 'Subappalto' : 'Interno',
+        subcontractorId: originalMainUser?.subcontractorId,
+        isManualOverride: r.manualTotalHours !== undefined,
+        overtimeHours: r.overtimeHours || 0
+      };
+
+      newAdditionalWorkers = [originalMainAsHelper, ...(r.additionalWorkers || [])];
+    } else {
+      // The current user was already the main worker of the original report.
+      // Keep everything as is.
+      newAdditionalWorkers = [...(r.additionalWorkers || [])];
+    }
+
     setFormData({
       projectId: r.projectId,
-      userId: r.userId,
+      userId: newUserId,
       date: new Date().toISOString().split('T')[0],
-      startTime: r.startTime,
-      endTime: r.endTime,
-      breakHours: r.breakHours,
-      manualTotalHours: r.manualTotalHours,
-      overtimeHours: r.overtimeHours || 0,
+      startTime: newStartTime,
+      endTime: newEndTime,
+      breakHours: newBreakHours,
+      manualTotalHours: newManualTotalHours,
+      overtimeHours: newOvertimeHours,
       description: r.description,
       expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
-      additionalWorkers: [...(r.additionalWorkers || [])],
+      additionalWorkers: newAdditionalWorkers,
       activityType: r.activityType || 'work',
       invoiceStatus: 'Pending'
     });
@@ -430,6 +504,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
             const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(r.date));
             const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
             const teamTotalHours = (r.teamTotalHours || (r.totalHours + (r.additionalWorkers?.reduce((sum: number, aw: any) => sum + (aw.totalHours || 0), 0) || 0))).toFixed(2);
+            const personalHours = r.userId === user.id
+              ? (r.totalHours || 0)
+              : (r.additionalWorkers?.find((aw: any) => aw.userId === user.id)?.totalHours || 0);
             return (
               <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
                 <div className="flex justify-between items-start">
@@ -447,9 +524,12 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
                   <div className="flex items-center gap-1.5 text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100"><Users size={12} /> <span className="font-bold">{totalWorkersCount}</span></div>
                   <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100"><Clock size={12} /> <span className="font-bold">{teamTotalHours}h</span></div>
+                  {personalHours > 0 && (
+                    <div className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100" title={t('reports.personalHours')}><Clock size={12} /> <span className="font-bold">{t('reports.personalHours')}: {personalHours.toFixed(2)}h</span></div>
+                  )}
                   {r.invoiceStatus && <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${r.invoiceStatus === 'Pagato' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>{r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'))}</div>}
                 </div>
               </div>
@@ -477,6 +557,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                 const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(r.date));
                 const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
                 const teamTotalHours = (r.teamTotalHours || (r.totalHours + (r.additionalWorkers?.reduce((sum: number, aw: any) => sum + (aw.totalHours || 0), 0) || 0))).toFixed(2);
+                const personalHours = r.userId === user.id
+                  ? (r.totalHours || 0)
+                  : (r.additionalWorkers?.find((aw: any) => aw.userId === user.id)?.totalHours || 0);
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
@@ -484,7 +567,14 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                     <td className="px-3 py-1.5 text-xs text-slate-700 truncate max-w-[120px]">{personnel.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}{totalWorkersCount > 1 && <span className="ml-1 text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}</td>
                     <td className="px-3 py-1.5 text-xs text-slate-600 truncate max-w-[150px] hidden lg:table-cell" title={r.description}>{r.description || '---'}</td>
                     <td className="px-3 py-1.5 text-center"><span className="inline-flex items-center justify-center bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md text-[10px]">{totalWorkersCount}</span></td>
-                    <td className="px-3 py-1.5 text-center"><span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100">{teamTotalHours}h</span></td>
+                    <td className="px-3 py-1.5 text-center">
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100" title={t('reports.teamTotalLabel')}>{teamTotalHours}h</span>
+                        {personalHours > 0 && (
+                          <span className="inline-flex items-center justify-center bg-indigo-50 text-indigo-700 font-medium px-1.5 py-0.25 rounded-md text-[9px] border border-indigo-100" title={t('reports.personalHours')}>{personalHours.toFixed(2)}h ({t('reports.personalHours')})</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-3 py-1.5 text-right whitespace-nowrap">
                       <div className="flex gap-1.5 justify-end">
                         <button onClick={() => handleComplianceClick(r)} className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title={t('reports.complianceReport')}><CheckCircle2 size={14} /></button>
