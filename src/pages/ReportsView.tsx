@@ -571,7 +571,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                       <div className="flex flex-col items-center justify-center gap-1">
                         <span className="inline-flex items-center justify-center bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-md text-[10px] border border-blue-100" title={t('reports.teamTotalLabel')}>{teamTotalHours}h</span>
                         {personalHours > 0 && (
-                          <span className="inline-flex items-center justify-center bg-indigo-50 text-indigo-700 font-medium px-1.5 py-0.25 rounded-md text-[9px] border border-indigo-100" title={t('reports.personalHours')}>{personalHours.toFixed(2)}h ({t('reports.personalHours')})</span>
+                          <span className="inline-flex items-center justify-center bg-indigo-50 text-indigo-700 font-medium px-1.5 py-0.25 rounded-md text-[9px] border border-indigo-100" title={t('reports.personalHours')}>
+                            {`${personalHours.toFixed(2)}h (${t('reports.personalHours')})`}
+                          </span>
                         )}
                       </div>
                     </td>
