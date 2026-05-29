@@ -1,24 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { SubscriptionStatus, Feature, PlanFeature, Permission } from '../types/features';
 import { useCompany } from '../contexts/CompanyContext';
+import { getPlanConfig, PlanCode } from '../utils/pricingConfig';
+import { analyticsService } from '../services/analyticsService';
 
 /**
  * V2 Enterprise hook for subscription and feature gating.
  * 
  * Architecture:
  *   - STATE: Read from vw_access_control (pure aggregation, no logic)
- *   - PERMISSIONS: Read from policy RPC (can_company_create_report)
- *   - PLAN FEATURES: Derived from view data (static plan metadata)
- *   - ENFORCEMENT: Handled by RLS on the reports table (database-level)
+ *   - PERMISSIONS: Derived from pricingConfig.ts (config-driven, soft-gating)
+ *   - PLAN FEATURES: Enriched from pricingConfig.ts (static plan metadata)
  * 
- * The frontend is a pure consumer — zero business logic here.
+ * This frontend is fully config-driven for Phase 1.
  */
 export const useSubscription = (manualCompanyId?: string | null) => {
   const { companyId: contextCompanyId, isReady } = useCompany();
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const prevPlanCodeRef = useRef<PlanCode | null>(null);
 
   const refreshStatus = useCallback(async () => {
     // 1. Get company context: manual override or current context state
@@ -46,24 +48,48 @@ export const useSubscription = (manualCompanyId?: string | null) => {
         return;
       }
 
-      // 3. PERMISSION: Only the runtime policy decision (single RPC)
-      const { data: canCreate } = await supabase
-        .rpc('can_company_create_report', { p_company_id: companyId });
+      // 3. ENRICH: Resolve plan limits and features from the config file
+      const dbPlanCode = viewData.plan_code;
+      const planConfig = getPlanConfig(dbPlanCode);
+      const currentUsage = viewData.current_usage || 0;
+
+      // 4. OBSERVE: Detect plan transitions and downgrades dynamically
+      const previousPlanCode = prevPlanCodeRef.current;
+      if (previousPlanCode !== null && previousPlanCode !== dbPlanCode) {
+        const pricingPlansList = ['free', 'starter', 'business', 'growth', 'enterprise'];
+        const oldIndex = pricingPlansList.indexOf(
+          previousPlanCode === 'pro' || previousPlanCode === 'premium' ? 'business' : (previousPlanCode === 'basic' ? 'starter' : previousPlanCode)
+        );
+        const newIndex = pricingPlansList.indexOf(
+          dbPlanCode === 'pro' || dbPlanCode === 'premium' ? 'business' : (dbPlanCode === 'basic' ? 'starter' : dbPlanCode)
+        );
+        
+        const isDowngrade = oldIndex > newIndex;
+        
+        analyticsService.trackPricingEvent(isDowngrade ? 'downgrade' : 'plan_change', {
+          current_plan: dbPlanCode,
+          previous_plan: previousPlanCode,
+          source: 'database_sync'
+        });
+      }
+      prevPlanCodeRef.current = dbPlanCode as PlanCode;
 
       setStatus({
-        planCode: viewData.plan_code,
+        planCode: dbPlanCode as PlanCode,
         billingStatus: viewData.billing_status,
         isBillingActive: viewData.is_billing_active,
         currentPeriodEnd: viewData.current_period_end,
-        currentUsage: viewData.current_usage,
-        reportsLimit: viewData.reports_limit,
+        currentUsage: currentUsage,
+        reportsLimit: planConfig.maxReports !== null ? planConfig.maxReports : 0,
         planFeatures: {
-          compliance: viewData.has_compliance ?? false,
-          communications: viewData.has_communications ?? false,
-          multiworker: viewData.has_multiworker ?? false,
+          compliance: planConfig.features.compliance,
+          communications: planConfig.features.communications,
+          multiworker: planConfig.features.multiworker,
+          ai_insights: planConfig.features.ai_insights,
+          advanced_roles: planConfig.features.advanced_roles,
         },
         permissions: {
-          can_create_reports: canCreate ?? false,
+          can_create_reports: planConfig.maxReports === null || currentUsage < planConfig.maxReports,
         },
       });
       setError(null);
@@ -74,6 +100,7 @@ export const useSubscription = (manualCompanyId?: string | null) => {
       setLoading(false);
     }
   }, [manualCompanyId, contextCompanyId, isReady]);
+
 
   useEffect(() => {
     if (isReady) {

@@ -4,6 +4,8 @@ import { useTranslation } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabase';
 import { db } from '../services/dbService';
 import { useSubscription } from '../hooks/useSubscription';
+import { PRICING_PLANS } from '../utils/pricingConfig';
+import { analyticsService } from '../services/analyticsService';
 
 interface UpgradeModalProps {
   onClose: () => void;
@@ -29,32 +31,41 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('vw_plans_catalog')
-          .select('*')
-          .neq('code', 'free') // Don't show free as an upgrade option
-          .order('sort_order', { ascending: true });
+    // 1. Get current plan and resolve config-driven plans catalog
+    const currentCode = status?.planCode || 'free';
+    
+    const mappedPlans = Object.values(PRICING_PLANS)
+      .filter(p => p.code !== 'free' && p.code !== currentCode)
+      .map(p => ({
+        code: p.code,
+        name: p.name,
+        price_label: p.code === 'enterprise' ? 'Custom' : `€${p.priceMonthly}`,
+        stripe_price_id: p.stripePriceIdMonthly || '',
+        description: p.description,
+        features_list: p.features_list,
+        color_theme: p.color_theme,
+        is_popular: p.is_popular
+      }));
 
-        if (error) throw error;
-        
-        // Filter out current plan if applicable
-        const currentCode = status?.planCode || 'free';
-        const filtered = (data || []).filter(p => p.code !== currentCode);
-        
-        setPlans(filtered);
-      } catch (err) {
-        console.error('Error fetching plans:', err);
-      } finally {
-        setLoadingPlans(false);
-      }
-    };
-
-    fetchPlans();
+    setPlans(mappedPlans);
+    setLoadingPlans(false);
   }, [status?.planCode]);
 
-  const handleUpgrade = async (priceId: string) => {
+  const handleUpgrade = async (priceId: string, planCode?: string) => {
+    // Track click event for business observability
+    analyticsService.trackPricingEvent('upgrade_click', {
+      current_plan: status?.planCode || 'free',
+      target_plan: planCode || 'unknown',
+      button_source: feature
+    });
+
+    // 2. Enterprise plans redirect to direct sales/support email
+    if (planCode === 'enterprise') {
+      window.location.href = 'mailto:assistenza@jobs-report.it?subject=Richiesta%20Informazioni%20Piano%20Enterprise%20-%20JobsReport';
+      return;
+    }
+
+
     setLoadingPriceId(priceId);
     try {
       const companyId = db.requireCompanyId();
@@ -76,6 +87,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
       setLoadingPriceId(null);
     }
   };
+
 
   const featureConfig = {
     communications: {
@@ -200,7 +212,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
 
                   <button
                     disabled={loadingPriceId !== null}
-                    onClick={() => handleUpgrade(plan.stripe_price_id)}
+                    onClick={() => handleUpgrade(plan.stripe_price_id, plan.code)}
                     className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${getButtonClass(plan.color_theme)}`}
                   >
                     {loadingPriceId === plan.stripe_price_id ? (

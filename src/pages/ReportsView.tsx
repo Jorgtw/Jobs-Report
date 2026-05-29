@@ -36,6 +36,7 @@ import {
   canUserAccessProject 
 } from '../App';
 import { UpgradeModal } from '../components/UpgradeModal';
+import { analyticsService } from '../services/analyticsService';
 import { ComplianceReportModal } from '../components/ComplianceReportModal';
 
 interface ReportsViewProps {
@@ -54,7 +55,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
-  const { isLimitReached } = useSubscription();
+  const { status, isLimitReached } = useSubscription();
 
   const [formData, setFormData] = useState({
     projectId: '',
@@ -76,6 +77,13 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     if (isLimitReached) {
       setUpgradeFeature('generic');
       setIsUpgradeModalOpen(true);
+      // Track that the user hit a pricing limit warning
+      analyticsService.trackPricingEvent('limit_reached', {
+        limit_name: 'reports_limit',
+        current_usage: status?.currentUsage,
+        limit_value: status?.reportsLimit,
+        current_plan: status?.planCode || 'free'
+      });
       return;
     }
     setEditingId(null);
