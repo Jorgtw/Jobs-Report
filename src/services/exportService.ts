@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { utils, writeFile } from 'xlsx';
 import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
+import { supabase } from './supabase';
 
 const localeMap: Record<string, string> = {
   it: 'it-IT',
@@ -488,5 +489,54 @@ export const generateCompliancePDF = async (
         console.warn('Storage upload or Email notification failed:', e);
       }
     }
+  }
+};
+
+export const exportReportExcel = async (companyId: string, filters: any, lang: Language) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) {
+      throw new Error("Sessione non valida o scaduta. Per favore effettua nuovamente il login.");
+    }
+
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+    );
+
+    const queryParams = new URLSearchParams({
+      companyId,
+      token,
+      lang,
+      ...cleanedFilters
+    });
+
+    const response = await fetch(`/api/export-excel?${queryParams.toString()}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({ error: 'Errore generico del server' }));
+      throw new Error(errData.error || `Errore HTTP: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `JobsReport_Direzionale_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (err: any) {
+    console.error("Backend Excel export error:", err);
+    const alertMsg = lang === 'it' ? "Errore scaricando il report Excel: " :
+                    (lang === 'es' ? "Error al descargar el Excel: " :
+                    (lang === 'pl' ? "Błąd podczas pobierania programu Excel: " :
+                    (lang === 'tr' ? "Excel indirilirken hata oluştu: " :
+                    (lang === 'da' ? "Fejl under download af Excel: " :
+                    "Error downloading Excel: "))));
+    alert(alertMsg + err.message);
   }
 };

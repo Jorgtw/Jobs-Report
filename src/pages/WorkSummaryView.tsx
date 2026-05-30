@@ -15,7 +15,7 @@ import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
 import { useUsers } from '../hooks/useUsers';
 import { useSubcontractors } from '../hooks/useSubcontractors';
-import { exportToPDF, exportToExcel } from '../services/exportService';
+import { exportToPDF, exportReportExcel } from '../services/exportService';
 import { filterInputClasses, canUserAccessProject } from '../App';
 
 interface WorkSummaryViewProps {
@@ -132,20 +132,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         }));
         exportToPDF(rows, lang, user.name);
       } else if (exportType === 'excel') {
-        const rows = filteredData.map(s => ({
-          date: new Date(s.date).toLocaleDateString(localeMap[lang]),
-          projectName: s.projectName,
-          clientName: s.clientName,
-          workerName: s.userName,
-          description: s.description || '',
-          hours: s.totalHours,
-          hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-          hourlyRevenue: 0, revenue: s.revenue || 0,
-          paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
-                s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
-                t('common.statusPending')
-        }));
-        exportToExcel(rows, lang);
+        await exportReportExcel(user.companyId || '', filters, lang);
       }
       
       const idsToDelete = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
@@ -187,20 +174,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
           </button>
           <button
             onClick={() => {
-              const rows = filteredData.map(s => ({
-                date: new Date(s.date).toLocaleDateString(localeMap[lang]),
-                projectName: s.projectName,
-                clientName: s.clientName,
-                workerName: s.userName,
-                description: s.description || '',
-                hours: s.totalHours,
-                hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-                hourlyRevenue: 0, revenue: s.revenue || 0, 
-                paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
-                      s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
-                      t('common.statusPending')
-              }));
-              exportToExcel(rows, lang);
+              exportReportExcel(user.companyId || '', filters, lang);
             }}
             className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-emerald-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >

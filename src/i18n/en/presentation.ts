@@ -140,7 +140,7 @@ export const presentation = {
             },
               {
               name: "Filters and Export",
-              desc: "Filter and download data in Excel or PDF."
+              desc: "Filter and download data in PDF or business-oriented aggregated Excel reports (Payroll, Subcontracts, Billing, Summary)."
             }
             ]
         }

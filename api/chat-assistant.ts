@@ -46,6 +46,7 @@ CONOSCENZA APP:
 - PREMIUM: Include Compliance Report (Firme/Foto).
 - COMUNICAZIONI: Nuovo sistema semplificato a due sezioni: INBOX (ricevuti) e INVIATI (mandati). Supporta thread e messaggi a tutto il team.
 - SPESE: Gestione professionale in 3 tipi: Cantiere (materiali/noleggi), Rimborso (spese personali operaio), Trasferta (KM). I KM tracciano la distanza.
+- EXPORT EXCEL DIREZIONALE: Nuovo export Excel report-based intelligente per amministratori. Include 4 fogli aggregati (Payroll dipendenti, Subappalti ditte esterne, Fatturazione vendite, e una Sintesi finanziaria automatica con formule dinamiche Excel). Disponibile nei piani Business e superiore.
 - RUOLI: Admin vede KPI finanziari, margini e ditta; Operaio vede i propri lavori e rimborsi.
 - VERSIONI / PIANI:
   * FREE: fino a 5 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.

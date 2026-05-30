@@ -102,7 +102,7 @@ export const presentation = {
           title: "Analisi",
           items: [
             { name: "Real-Time", desc: "Margini netti e costi calcolati all'istante." },
-            { name: "Filtri ed Export", desc: "Filtra e scarica dati in Excel o PDF." }
+            { name: "Filtri ed Export", desc: "Filtra e scarica dati in PDF o Excel direzionali aggregati per business (Payroll, Subappalti, Fatturazione, Sintesi)." }
           ]
         }
       ]
