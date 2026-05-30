@@ -74,24 +74,65 @@ export const dashboard = {
     checkoutError: "Si è verificato un errore durante l'apertura del checkout. Riprova più tardi."
   },
   plans: {
-    basic: {
-      name: "Piano Basic",
-      description: "Ideale per chi vuole report illimitati senza fronzoli.",
+    free: {
+      name: "Free",
+      description: "Entry test per valutare il prodotto in cantiere",
       features: {
-        "0": "Report illimitati",
-        "1": "Firma digitale",
-        "2": "Export PDF ed Excel",
-        "3": "Storage sicuro cloud"
+        "0": "Fino a 5 utenti inclusi",
+        "1": "Progetti e rapportini base",
+        "2": "Nessuna funzionalità AI",
+        "3": "Non include Rapportino con Foto/Firma",
+        "4": "Non include Comunicazioni interne"
       }
     },
-    premium: {
-      name: "Piano Premium",
-      description: "Il pacchetto completo per la massima efficienza e controllo.",
+    starter: {
+      name: "Starter",
+      description: "Ideale per micro-imprese e artigiani in crescita",
       features: {
-        "0": "Tutto quello che c'è in Basic",
-        "1": "Comunicazioni aziendali",
-        "2": "Compliance avanzata",
-        "3": "Supporto prioritario"
+        "0": "Fino a 10 utenti inclusi",
+        "1": "Progetti e rapportini illimitati",
+        "2": "Tracking ore e spese completo",
+        "3": "Esportazioni base PDF/Excel",
+        "4": "App mobile PWA + Web",
+        "5": "Non include Rapportino con Foto/Firma",
+        "6": "Non include Comunicazioni interne"
+      }
+    },
+    business: {
+      name: "Business",
+      description: "Il cuore di Jobs-Report per PMI strutturate edili e di servizi",
+      features: {
+        "0": "Fino a 50 utenti inclusi",
+        "1": "Tutto quello presente in Starter",
+        "2": "Include Rapportino con Foto e Firma",
+        "3": "Include Comunicazioni interne",
+        "4": "AI insights e report automatici",
+        "5": "Analisi avanzata costi e ricavi"
+      }
+    },
+    growth: {
+      name: "Growth",
+      description: "Per aziende strutturate che necessitano di controllo totale",
+      features: {
+        "0": "Fino a 150 utenti inclusi",
+        "1": "Tutto quello presente in Business",
+        "2": "Include Rapportino con Foto e Firma",
+        "3": "Include Comunicazioni interne",
+        "4": "Ruoli avanzati (Admin / Supervisor / Worker)",
+        "5": "Performance analytics di cantiere"
+      }
+    },
+    enterprise: {
+      name: "Enterprise",
+      description: "Soluzione personalizzata senza limiti di crescita",
+      features: {
+        "0": "Utenti illimitati",
+        "1": "Personalizzazione avanzata",
+        "2": "Calendario",
+        "3": "Avanzamento dei lavori",
+        "4": "Accesso API (Prossima versione)",
+        "5": "Single Sign-On (SSO / SAML)",
+        "6": "Opzione White-Label (tuo logo e dominio)"
       }
     }
   }

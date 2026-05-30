@@ -35,16 +35,16 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     priceYearly: 0,
     stripePriceIdMonthly: null,
     stripePriceIdYearly: null,
-    maxUsers: 3,
+    maxUsers: 5,
     maxProjects: 1,
     maxReports: 50, // standard free limit
     description: 'Entry test per valutare il prodotto in cantiere',
     features_list: [
-      'Fino a 3 utenti',
-      '1 Progetto attivo',
-      'Fino a 50 rapportini/mese',
-      'Export base in CSV',
-      'Nessuna funzionalità AI'
+      'Fino a 5 utenti inclusi',
+      'Progetti e rapportini base',
+      'Nessuna funzionalità AI',
+      'Non include Rapportino con Foto/Firma',
+      'Non include Comunicazioni interne'
     ],
     color_theme: 'slate',
     is_popular: false,
@@ -71,16 +71,18 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     description: 'Ideale per micro-imprese e artigiani in crescita',
     features_list: [
       'Fino a 10 utenti inclusi',
-      'Progetti illimitati',
+      'Progetti e rapportini illimitati',
       'Tracking ore e spese completo',
       'Esportazioni base PDF/Excel',
-      'App mobile PWA + Web'
+      'App mobile PWA + Web',
+      'Non include Rapportino con Foto/Firma',
+      'Non include Comunicazioni interne'
     ],
     color_theme: 'blue',
     is_popular: false,
     features: {
       compliance: false,
-      communications: true, // basic comms
+      communications: false,
       multiworker: true,
       ai_insights: false,
       advanced_roles: false,
@@ -102,10 +104,10 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     features_list: [
       'Fino a 50 utenti inclusi',
       'Tutto quello presente in Starter',
+      'Include Rapportino con Foto e Firma',
+      'Include Comunicazioni interne',
       'AI insights e report automatici',
-      'Analisi avanzata costi e ricavi',
-      'Verbali di Conformità Premium (Firma/Foto)',
-      'Backup storico avanzato'
+      'Analisi avanzata costi e ricavi'
     ],
     color_theme: 'emerald',
     is_popular: true,
@@ -133,10 +135,10 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     features_list: [
       'Fino a 150 utenti inclusi',
       'Tutto quello presente in Business',
+      'Include Rapportino con Foto e Firma',
+      'Include Comunicazioni interne',
       'Ruoli avanzati (Admin / Supervisor / Worker)',
-      'Performance analytics di cantiere',
-      'Audit log delle modifiche',
-      'Accesso API base'
+      'Performance analytics di cantiere'
     ],
     color_theme: 'purple',
     is_popular: false,
@@ -153,8 +155,8 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
   enterprise: {
     code: 'enterprise',
     name: 'Enterprise',
-    priceMonthly: 600, // starting from
-    priceYearly: 480,
+    priceMonthly: 0, // precio su richiesta, handled visually as custom text
+    priceYearly: 0,
     stripePriceIdMonthly: 'price_enterprise_monthly_placeholder',
     stripePriceIdYearly: 'price_enterprise_yearly_placeholder',
     maxUsers: 9999, // unlimited
@@ -162,12 +164,13 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     maxReports: null,
     description: 'Soluzione personalizzata senza limiti di crescita',
     features_list: [
-      'Utenti e progetti illimitati',
+      'Utenti illimitati',
+      'Personalizzazione avanzata',
+      'Calendario',
+      'Avanzamento dei lavori',
+      'Accesso API (Prossima versione)',
       'Single Sign-On (SSO / SAML)',
-      'Opzione White-Label (tuo logo e dominio)',
-      'Setup e onboarding dedicato delle squadre',
-      'SLA garantito + Supporto prioritario 24/7',
-      'Integrazioni API custom'
+      'Opzione White-Label (tuo logo e dominio)'
     ],
     color_theme: 'slate',
     is_popular: false,

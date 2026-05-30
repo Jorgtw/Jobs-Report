@@ -39,7 +39,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
       .map(p => ({
         code: p.code,
         name: p.name,
-        price_label: p.code === 'enterprise' ? 'Custom' : `€${p.priceMonthly}`,
+        price_label: p.code === 'enterprise' ? 'Su Richiesta' : `€${p.priceMonthly}`,
         stripe_price_id: p.stripePriceIdMonthly || '',
         description: p.description,
         features_list: p.features_list,
@@ -91,19 +91,19 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
 
   const featureConfig = {
     communications: {
-      icon: <MessageSquare size={32} />,
+      icon: <MessageSquare size={24} />,
       iconBg: 'bg-blue-100 text-blue-600',
       title: t('communications.premiumFeature'),
       desc: t('dashboard.upgradeModal.communicationsDesc'),
     },
     compliance: {
-      icon: <FileCheck size={32} />,
+      icon: <FileCheck size={24} />,
       iconBg: 'bg-emerald-100 text-emerald-600',
       title: t('dashboard.upgradeModal.complianceTitle'),
       desc: t('dashboard.upgradeModal.complianceDesc'),
     },
     generic: {
-      icon: <Trophy size={32} />,
+      icon: <Trophy size={24} />,
       iconBg: 'bg-amber-100 text-amber-600',
       title: t('dashboard.upgradeModal.genericTitle'),
       desc: t('dashboard.upgradeModal.genericDesc'),
@@ -131,34 +131,36 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-2 sm:p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-slate-50 sm:rounded-[2rem] w-full h-full sm:h-auto sm:max-w-4xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 flex flex-col overflow-hidden">
+      <div className="bg-slate-50 sm:rounded-[2rem] w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-6xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 flex flex-col overflow-hidden">
         
         {/* Header */}
-        <div className="p-6 sm:p-8 bg-white border-b border-slate-200 relative">
+        <div className="p-4 sm:p-6 bg-white border-b border-slate-200 relative flex-shrink-0">
           <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-600 transition-colors z-20">
-            <X size={24} />
+            <X size={22} />
           </button>
 
           <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-            <div className={`w-16 h-16 ${cfg.iconBg} rounded-2xl flex items-center justify-center mb-4 shadow-sm`}>
+            <div className={`w-12 h-12 ${cfg.iconBg} rounded-xl flex items-center justify-center mb-2 shadow-sm`}>
               {cfg.icon}
             </div>
-            <h2 className="text-3xl font-black text-slate-900 mb-2">{cfg.title}</h2>
-            <p className="text-slate-500 leading-relaxed">{cfg.desc}</p>
+            <h2 className="text-2xl font-black text-slate-900 mb-1">{cfg.title}</h2>
+            <p className="text-xs text-slate-500 max-w-md leading-relaxed">{cfg.desc}</p>
           </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {loadingPlans ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="animate-spin text-blue-600" size={40} />
               <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{t('dashboard.upgradeModal.loadingPlans')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto items-stretch ${
+              plans.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'
+            }`}>
                {plans.map((plan) => {
                  const planNameKey = `dashboard.plans.${plan.code}.name`;
                  const planDescKey = `dashboard.plans.${plan.code}.description`;
@@ -171,78 +173,90 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                  return (
                    <div 
                      key={plan.code}
-                     className={`relative bg-white rounded-[1.5rem] p-8 border-2 transition-all duration-300 flex flex-col ${
-                       plan.is_popular ? 'border-emerald-500 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-lg hover:border-slate-200'
+                     className={`relative bg-white rounded-[1.25rem] p-5 border-2 transition-all duration-300 flex flex-col justify-between ${
+                       plan.is_popular ? 'border-emerald-500 shadow-xl scale-[1.02] z-10' : 'border-slate-100 shadow-md hover:border-slate-200 hover:scale-[1.01]'
                      }`}
                    >
                      {plan.is_popular && (
-                       <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                         <Sparkles size={12} />
+                       <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-20">
+                         <Sparkles size={10} />
                          {t('dashboard.upgradeModal.recommended')}
                        </div>
                      )}
 
-                     <div className="mb-6">
-                       <h3 className="text-xl font-black text-slate-900 mb-1">{displayName}</h3>
-                       <p className="text-sm text-slate-500 leading-snug">{displayDesc}</p>
-                     </div>
+                     <div>
+                       <div className="mb-4 min-h-[50px]">
+                         <h3 className="text-lg font-black text-slate-900 mb-1">{displayName}</h3>
+                         <p className="text-xs text-slate-500 leading-snug">{displayDesc}</p>
+                       </div>
 
-                     <div className="mb-8">
-                       <div className="flex items-baseline gap-1">
-                         <span className="text-4xl font-black text-slate-900">{plan.price_label}</span>
-                         <span className="text-slate-400 font-bold">{t('dashboard.upgradeModal.perMonth')}</span>
+                       <div className="mb-4">
+                         <div className="flex items-baseline gap-1">
+                           <span className={`${plan.code === 'enterprise' ? 'text-2xl' : 'text-3xl'} font-black text-slate-900`}>{plan.price_label}</span>
+                           {plan.code !== 'enterprise' && (
+                             <span className="text-slate-400 font-bold text-[10px]">{t('dashboard.upgradeModal.perMonth')}</span>
+                           )}
+                         </div>
+                       </div>
+
+                       <div className="space-y-2.5 mb-6">
+                         {(plan.features_list || []).map((f, i) => {
+                           const featKey = `dashboard.plans.${plan.code}.features.${i}`;
+                           const translatedFeat = t(featKey);
+                           const displayFeat = translatedFeat !== featKey ? translatedFeat : f;
+                           const isExcluded = displayFeat.toLowerCase().startsWith('non ');
+                           
+                           return (
+                             <div key={i} className="flex items-start gap-2.5">
+                               <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                 isExcluded 
+                                   ? 'bg-rose-50 text-rose-500' 
+                                   : getIconColorClass(plan.color_theme)
+                               }`}>
+                                 {isExcluded ? <X size={10} strokeWidth={4} /> : <Check size={10} strokeWidth={4} />}
+                               </div>
+                               <span className={`text-[11px] font-medium leading-tight ${isExcluded ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-600'}`}>
+                                 {displayFeat}
+                               </span>
+                             </div>
+                           );
+                         })}
                        </div>
                      </div>
 
-                     <div className="flex-1 space-y-4 mb-10">
-                       {(plan.features_list || []).map((f, i) => {
-                         const featKey = `dashboard.plans.${plan.code}.features.${i}`;
-                         const translatedFeat = t(featKey);
-                         const displayFeat = translatedFeat !== featKey ? translatedFeat : f;
-                         return (
-                           <div key={i} className="flex items-start gap-3">
-                             <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${getIconColorClass(plan.color_theme)}`}>
-                               <Check size={12} strokeWidth={4} />
-                             </div>
-                             <span className="text-sm font-medium text-slate-600">{displayFeat}</span>
-                           </div>
-                         );
-                       })}
-                     </div>
-
-                  <button
-                    disabled={loadingPriceId !== null}
-                    onClick={() => handleUpgrade(plan.stripe_price_id, plan.code)}
-                    className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${getButtonClass(plan.color_theme)}`}
-                  >
-                    {loadingPriceId === plan.stripe_price_id ? (
-                      <Loader2 className="animate-spin" size={20} />
-                    ) : (
-                      <>
-                        <Zap size={18} fill="currentColor" />
-                        {t('dashboard.upgradeModal.activateNow')}
-                      </>
-                    )}
-                   </button>
-                 </div>
-               );
-             })}
+                     <button
+                       disabled={loadingPriceId !== null}
+                       onClick={() => handleUpgrade(plan.stripe_price_id, plan.code)}
+                       className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${getButtonClass(plan.color_theme)}`}
+                     >
+                       {loadingPriceId === plan.stripe_price_id ? (
+                         <Loader2 className="animate-spin" size={16} />
+                       ) : (
+                         <>
+                           <Zap size={14} fill="currentColor" />
+                           {t('dashboard.upgradeModal.activateNow')}
+                         </>
+                       )}
+                     </button>
+                   </div>
+                 );
+               })}
             </div>
           )}
 
-          <div className="mt-12 text-center">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+          <div className="mt-8 text-center flex-shrink-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
               {t('dashboard.upgradeModal.securePayments')}
             </p>
-            <div className="flex justify-center items-center gap-4 opacity-40 grayscale">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-5" />
+            <div className="flex justify-center items-center gap-4 opacity-40 grayscale scale-90">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-4" />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-slate-100 border-t border-slate-200 text-center">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+        <div className="py-3 px-6 bg-slate-100 border-t border-slate-200 text-center flex-shrink-0">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
             {t('dashboard.upgradeModal.footerSupport')}
           </p>
         </div>
