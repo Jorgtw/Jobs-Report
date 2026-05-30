@@ -46,7 +46,13 @@ CONOSCENZA APP:
 - PREMIUM: Include Compliance Report (Firme/Foto).
 - COMUNICAZIONI: Nuovo sistema semplificato a due sezioni: INBOX (ricevuti) e INVIATI (mandati). Supporta thread e messaggi a tutto il team.
 - SPESE: Gestione professionale in 3 tipi: Cantiere (materiali/noleggi), Rimborso (spese personali operaio), Trasferta (KM). I KM tracciano la distanza.
-- RUOLI: Admin vede KPI finanziari, margini e ditta; Operaio vede i propri lavori e rimborsi.`,
+- RUOLI: Admin vede KPI finanziari, margini e ditta; Operaio vede i propri lavori e rimborsi.
+- VERSIONI / PIANI:
+  * FREE: fino a 5 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.
+  * STARTER (€39/mese): fino a 10 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.
+  * BUSINESS (€119/mese): fino a 50 utenti. Include Rapportino con Foto/Firma e Comunicazioni interne. Offre AI insights e report automatici.
+  * GROWTH (€299/mese): fino a 150 utenti. Include Rapportino con Foto/Firma e Comunicazioni interne. Offre ruoli avanzati (Admin/Supervisor/Worker) e performance analytics.
+  * ENTERPRISE (prezzo su richiesta): utenti illimitati. Include Personalizzazione avanzata, Calendario, Avanzamento dei lavori, API (Prossima versione), Single Sign-On (SSO) e White-Label.`,
         generationConfig: {
           responseMimeType: "application/json",
         }
