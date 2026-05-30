@@ -68,24 +68,65 @@ export const dashboard = {
   autoSendActive: "ENVÍO AUTOMÁTICO ACTIVO",
   sendInstructionsAuto: "ENVIAR INSTRUCCIONES (AUTO)",
   plans: {
-    basic: {
-      name: "Plan Básico",
-      description: "Ideal para quienes desean informes ilimitados sin complicaciones.",
+    free: {
+      name: "Free",
+      description: "Prueba inicial para evaluar el producto en la obra",
       features: {
-        "0": "Informes ilimitados",
-        "1": "Firma digital",
-        "2": "Exportación PDF y Excel",
-        "3": "Almacenamiento seguro en la nube"
+        "0": "Hasta 5 usuarios incluidos",
+        "1": "Proyectos y partes básicos",
+        "2": "Sin funcionalidades de IA",
+        "3": "No incluye Foto/Firma en parte",
+        "4": "No incluye Comunicaciones internas"
       }
     },
-    premium: {
-      name: "Plan Premium",
-      description: "El paquete completo para una máxima eficiencia y control.",
+    starter: {
+      name: "Starter",
+      description: "Ideal para microempresas y artesanos en crecimiento",
       features: {
-        "0": "Todo lo de Básico",
-        "1": "Comunicaciones internas",
-        "2": "Cumplimiento avanzado",
-        "3": "Soporte prioritario"
+        "0": "Hasta 10 usuarios incluidos",
+        "1": "Proyectos y partes ilimitados",
+        "2": "Seguimiento completo de horas y gastos",
+        "3": "Exportaciones básicas en PDF/Excel",
+        "4": "Aplicación móvil PWA + Web",
+        "5": "No incluye Foto/Firma en parte",
+        "6": "No incluye Comunicaciones internas"
+      }
+    },
+    business: {
+      name: "Business",
+      description: "El corazón de Jobs-Report para PYMEs estructuradas",
+      features: {
+        "0": "Hasta 50 usuarios incluidos",
+        "1": "Todo lo presente en Starter",
+        "2": "Incluye Foto y Firma en parte",
+        "3": "Incluye Comunicaciones internas",
+        "4": "AI insights e informes automáticos",
+        "5": "Análisis avanzado de costes e ingresos"
+      }
+    },
+    growth: {
+      name: "Growth",
+      description: "Para empresas estructuradas que necesitan un control total",
+      features: {
+        "0": "Hasta 150 usuarios incluidos",
+        "1": "Todo lo presente en Business",
+        "2": "Incluye Foto y Firma en parte",
+        "3": "Incluye Comunicaciones internas",
+        "4": "Roles avanzados (Admin / Supervisor / Worker)",
+        "5": "Analítica de rendimiento en obra"
+      }
+    },
+    enterprise: {
+      name: "Enterprise",
+      description: "Solución personalizada para un crecimiento sin límites",
+      features: {
+        "0": "Usuarios ilimitados",
+        "1": "Personalización avanzada",
+        "2": "Calendario",
+        "3": "Avance de los trabajos",
+        "4": "Acceso API (Próxima versión)",
+        "5": "Single Sign-On (SSO / SAML)",
+        "6": "Opción White-Label (su logo y dominio)"
       }
     }
   }

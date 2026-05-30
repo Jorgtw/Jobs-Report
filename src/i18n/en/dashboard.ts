@@ -68,24 +68,65 @@ export const dashboard = {
     checkoutError: "An error occurred while opening checkout. Please try again later."
   },
   plans: {
-    basic: {
-      name: "Basic Plan",
-      description: "Ideal for those who want unlimited reports without frills.",
+    free: {
+      name: "Free",
+      description: "Entry level test to evaluate the product on site",
       features: {
-        "0": "Unlimited reports",
-        "1": "Digital signature",
-        "2": "PDF and Excel export",
-        "3": "Secure cloud storage"
+        "0": "Up to 5 users included",
+        "1": "Basic projects and reports",
+        "2": "No AI capabilities",
+        "3": "Does not include Photos/Signature",
+        "4": "Does not include Internal Communications"
       }
     },
-    premium: {
-      name: "Premium Plan",
-      description: "The complete package for maximum efficiency and control.",
+    starter: {
+      name: "Starter",
+      description: "Ideal for micro-businesses and growing craftsmen",
       features: {
-        "0": "Everything in Basic",
-        "1": "Internal communications",
-        "2": "Advanced compliance",
-        "3": "Priority support"
+        "0": "Up to 10 users included",
+        "1": "Unlimited projects and reports",
+        "2": "Complete time and expense tracking",
+        "3": "Basic PDF/Excel exports",
+        "4": "PWA mobile app + Web",
+        "5": "Does not include Photos/Signature",
+        "6": "Does not include Internal Communications"
+      }
+    },
+    business: {
+      name: "Business",
+      description: "The heart of Jobs-Report for structured SMEs",
+      features: {
+        "0": "Up to 50 users included",
+        "1": "Everything in Starter Plan",
+        "2": "Includes Photos and Signature",
+        "3": "Includes Internal Communications",
+        "4": "AI insights and automated reports",
+        "5": "Advanced cost and revenue analysis"
+      }
+    },
+    growth: {
+      name: "Growth",
+      description: "For structured companies that need total control",
+      features: {
+        "0": "Up to 150 users included",
+        "1": "Everything in Business Plan",
+        "2": "Includes Photos and Signature",
+        "3": "Includes Internal Communications",
+        "4": "Advanced roles (Admin/Supervisor/Worker)",
+        "5": "On-site performance analytics"
+      }
+    },
+    enterprise: {
+      name: "Enterprise",
+      description: "Custom solution for unlimited growth",
+      features: {
+        "0": "Unlimited users",
+        "1": "Advanced customization",
+        "2": "Calendar",
+        "3": "Work progress tracking",
+        "4": "API access (Next version)",
+        "5": "Single Sign-On (SSO / SAML)",
+        "6": "White-Label option (your logo and domain)"
       }
     }
   }

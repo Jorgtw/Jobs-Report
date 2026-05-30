@@ -204,7 +204,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                            const featKey = `dashboard.plans.${plan.code}.features.${i}`;
                            const translatedFeat = t(featKey);
                            const displayFeat = translatedFeat !== featKey ? translatedFeat : f;
-                           const isExcluded = displayFeat.toLowerCase().startsWith('non ');
+                           const isExcluded = 
+                             displayFeat.toLowerCase().startsWith('non ') ||
+                             displayFeat.toLowerCase().startsWith('no ') ||
+                             displayFeat.toLowerCase().startsWith('does not ') ||
+                             displayFeat.toLowerCase().startsWith('nie ') ||
+                             displayFeat.toLowerCase().startsWith('inkluderer ikke') ||
+                             displayFeat.toLowerCase().includes('değil') ||
+                             displayFeat.toLowerCase().includes('içermez');
                            
                            return (
                              <div key={i} className="flex items-start gap-2.5">

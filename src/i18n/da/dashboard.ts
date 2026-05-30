@@ -68,24 +68,65 @@ export const dashboard = {
   autoSendActive: "AUTOMATISK AFSENDELSE AKTIV",
   sendInstructionsAuto: "SEND VEJLEDNING (AUTO)",
   plans: {
-    basic: {
-      name: "Basic-abonnement",
-      description: "Ideel til dem, der ønsker ubegrænsede rapporter uden dikkedarer.",
+    free: {
+      name: "Free",
+      description: "Indledende test for at evaluere produktet på byggepladsen",
       features: {
-        "0": "Ubegrænsede rapporter",
-        "1": "Digital signatur",
-        "2": "PDF- og Excel-eksport",
-        "3": "Sikker lagerplads i skyen"
+        "0": "Op til 5 brugere inkluderet",
+        "1": "Grundlæggende projekter og rapporter",
+        "2": "Ingen AI-funktioner",
+        "3": "Inkluderer ikke rapport med foto/underskrift",
+        "4": "Inkluderer ikke interne kommunikationer"
       }
     },
-    premium: {
-      name: "Premium-abonnement",
-      description: "Den komplette pakke for maksimal effektivitet og kontrol.",
+    starter: {
+      name: "Starter",
+      description: "Ideel til mikrovirksomheder og voksende håndværkere",
       features: {
-        "0": "Alt i Basic",
-        "1": "Interne kommunikationer",
-        "2": "Avanceret overholdelse (Compliance)",
-        "3": "Prioriteret support"
+        "0": "Op til 10 brugere inkluderet",
+        "1": "Ubegrænsede projekter og rapporter",
+        "2": "Komplet tids- og udgiftsregistrering",
+        "3": "Grundlæggende PDF/Excel-eksport",
+        "4": "PWA mobilapp + web",
+        "5": "Inkluderer ikke rapport med foto/underskrift",
+        "6": "Inkluderer ikke interne kommunikationer"
+      }
+    },
+    business: {
+      name: "Business",
+      description: "Hjertet i Jobs-Report for strukturerede SMV'er",
+      features: {
+        "0": "Op til 50 brugere inkluderet",
+        "1": "Alt indhold i Starter-planen",
+        "2": "Inkluderer rapport med foto og underskrift",
+        "3": "Inkluderer interne kommunikationer",
+        "4": "AI-indsigt og automatiske rapporter",
+        "5": "Avanceret omkostnings- og indtægtsanalyse"
+      }
+    },
+    growth: {
+      name: "Growth",
+      description: "For strukturerede virksomheder, der har brug for fuld kontrol",
+      features: {
+        "0": "Op til 150 brugere inkluderet",
+        "1": "Alt indhold i Business-planen",
+        "2": "Inkluderer rapport med foto og underskrift",
+        "3": "Inkluderer interne kommunikationer",
+        "4": "Avancerede roller (Admin / Supervisor / Medarbejder)",
+        "5": "Prestationsanalyse på pladsen"
+      }
+    },
+    enterprise: {
+      name: "Enterprise",
+      description: "Skræddersyet løsning til ubegrænset vækst",
+      features: {
+        "0": "Ubegrænsede brugere",
+        "1": "Avanceret tilpasning",
+        "2": "Kalender",
+        "3": "Arbejdets fremskridt",
+        "4": "API-adgang (Næste version)",
+        "5": "Single Sign-On (SSO / SAML)",
+        "6": "White-label mulighed (dit logo og domæne)"
       }
     }
   }

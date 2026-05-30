@@ -68,24 +68,65 @@ export const dashboard = {
   autoSendActive: "AUTO-WYSYŁKA AKTYWNA",
   sendInstructionsAuto: "WYŚLIJ INSTRUKCJĘ (AUTO)",
   plans: {
-    basic: {
-      name: "Plan Podstawowy",
-      description: "Idealny dla tych, którzy chcą nieograniczonych raportów bez zbędnych dodatków.",
+    free: {
+      name: "Free",
+      description: "Wstępny test w celu oceny produktu na budowie",
       features: {
-        "0": "Nieograniczone raporty",
-        "1": "Podpis cyfrowy",
-        "2": "Eksport do PDF i Excel",
-        "3": "Bezpieczna chmura danych"
+        "0": "Do 5 użytkowników w pakiecie",
+        "1": "Podstawowe projekty i raporty",
+        "2": "Brak funkcji sztucznej inteligencji (AI)",
+        "3": "Nie obejmuje raportu ze zdjęciem/podpisem",
+        "4": "Nie obejmuje komunikacji wewnętrznej"
       }
     },
-    premium: {
-      name: "Plan Premium",
-      description: "Kompletny pakiet dla maksymalnej wydajności i kontroli.",
+    starter: {
+      name: "Starter",
+      description: "Idealny dla mikroprzedsiębiorstw i rozwijających się rzemieślników",
       features: {
-        "0": "Wszystko w Basic",
-        "1": "Komunikacja wewnętrzna",
-        "2": "Zaawansowana zgodność (Compliance)",
-        "3": "Wsparcie priorytetowe"
+        "0": "Do 10 użytkowników w pakiecie",
+        "1": "Nielimitowane projekty i raporty",
+        "2": "Pełne rejestrowanie czasu pracy i wydatków",
+        "3": "Podstawowy eksport PDF/Excel",
+        "4": "Aplikacja mobilna PWA + strona WWW",
+        "5": "Nie obejmuje raportu ze zdjęciem/podpisem",
+        "6": "Nie obejmuje komunikacji wewnętrznej"
+      }
+    },
+    business: {
+      name: "Business",
+      description: "Serce Jobs-Report dla ustrukturyzowanych małych i średnich firm (MŚP)",
+      features: {
+        "0": "Do 50 użytkowników w pakiecie",
+        "1": "Wszystko, co jest dostępne w planie Starter",
+        "2": "Obejmuje raport ze zdjęciem i podpisem cyfrowym",
+        "3": "Obejmuje komunikację wewnętrzną",
+        "4": "Analizy AI i automatyczne raporty",
+        "5": "Zaawansowana analiza kosztów i przychodów"
+      }
+    },
+    growth: {
+      name: "Growth",
+      description: "Dla ustrukturyzowanych firm potrzebujących pełnej kontroli",
+      features: {
+        "0": "Do 150 użytkowników w pakiecie",
+        "1": "Wszystko, co jest dostępne w planie Business",
+        "2": "Obejmuje raport ze zdjęciem i podpisem cyfrowym",
+        "3": "Obejmuje komunikację wewnętrzną",
+        "4": "Zaawansowane role (Admin / Supervisor / Pracownik)",
+        "5": "Analiza wydajności na budowie"
+      }
+    },
+    enterprise: {
+      name: "Enterprise",
+      description: "Rozwiązanie szyte na miarę dla nieograniczonego wzrostu",
+      features: {
+        "0": "Nielimitowana liczba użytkowników",
+        "1": "Zaawansowana personalizacja",
+        "2": "Kalendarz",
+        "3": "Postęp prac budowlanych",
+        "4": "Dostęp do API (W następnej wersji)",
+        "5": "Single Sign-On (SSO / SAML)",
+        "6": "Opcja White-Label (Własne logo i domena)"
       }
     }
   }

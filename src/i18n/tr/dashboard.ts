@@ -68,24 +68,65 @@ export const dashboard = {
   autoSendActive: "OTOMATİK GÖNDERİM AKTİF",
   sendInstructionsAuto: "TALİMATLARI GÖNDER (OTOMATİK)",
   plans: {
-    basic: {
-      name: "Basic Plan",
-      description: "Sınırsız rapor isteyenler için ideal temel paket.",
+    free: {
+      name: "Free",
+      description: "Ürünü şantiyede değerlendirmek için giriş seviyesi test paketi",
       features: {
-        "0": "Sınırsız rapor",
-        "1": "Dijital imza",
-        "2": "PDF ve Excel dışa aktarma",
-        "3": "Güvenli bulut depolama"
+        "0": "5 kullanıcıya kadar dahil",
+        "1": "Temel projeler ve raporlar",
+        "2": "Yapay zeka (AI) özellikleri yok",
+        "3": "Fotoğraflı/İmzalı rapor dahil değildir",
+        "4": "Dahili iletişim dahil değildir"
       }
     },
-    premium: {
-      name: "Premium Plan",
-      description: "Maksimum verimlilik ve kontrol için eksiksiz paket.",
+    starter: {
+      name: "Starter",
+      description: "Mikro işletmeler ve büyüyen zanaatkarlar için ideal",
       features: {
-        "0": "Basic planındaki her şey",
-        "1": "Dahili iletişim",
-        "2": "Gelişmiş uyumluluk (Compliance)",
-        "3": "Öncelikli destek"
+        "0": "10 kullanıcıya kadar dahil",
+        "1": "Sınırsız proje ve raporlar",
+        "2": "Eksiksiz zaman ve masraf takibi",
+        "3": "Temel PDF/Excel çıktıları",
+        "4": "PWA mobil uygulaması + Web",
+        "5": "Fotoğraflı/İmzalı rapor dahil değildir",
+        "6": "Dahili iletişim dahil değildir"
+      }
+    },
+    business: {
+      name: "Business",
+      description: "Yapılandırılmış KOBİ'ler için Jobs-Report'un kalbi",
+      features: {
+        "0": "50 kullanıcıya kadar dahil",
+        "1": "Starter planındaki her şey",
+        "2": "Fotoğraflı ve imzalı rapor dahildir",
+        "3": "Dahili iletişimi içerir",
+        "4": "Yapay zeka analizleri ve otomatik raporlar",
+        "5": "Gelişmiş maliyet ve gelir analizi"
+      }
+    },
+    growth: {
+      name: "Growth",
+      description: "Tam kontrole ihtiyaç duyan yapılandırılmış şirketler için",
+      features: {
+        "0": "150 kullanıcıya kadar dahil",
+        "1": "Business planındaki her şey",
+        "2": "Fotoğraflı ve imzalı rapor dahildir",
+        "3": "Dahili iletişimi içerir",
+        "4": "Gelişmiş roller (Yönetici / Supervisor / Çalışan)",
+        "5": "Şantiye içi performans analitiği"
+      }
+    },
+    enterprise: {
+      name: "Enterprise",
+      description: "Sınırsız büyüme için özel çözümler",
+      features: {
+        "0": "Sınırsız kullanıcı",
+        "1": "Gelişmiş özelleştirme",
+        "2": "Takvim",
+        "3": "İş ilerleme takibi",
+        "4": "API erişimi (Sonraki sürüm)",
+        "5": "Single Sign-On (SSO / SAML)",
+        "6": "White-Label seçeneği (Logonuz ve alan adınız)"
       }
     }
   }
