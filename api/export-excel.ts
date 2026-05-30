@@ -33,6 +33,17 @@ const SintesiCols = {
   unit: 2           // Column C
 };
 
+const RawDataCols = {
+  date: 0,          // Column A
+  workerName: 1,    // Column B
+  projectName: 2,   // Column C
+  ordinaryHours: 3, // Column D
+  overtimeHours: 4, // Column E
+  additionalHours: 5,// Column F
+  totalHours: 6,    // Column G
+  activityType: 7   // Column H
+};
+
 // Helper per convertire un indice di colonna 0-based in lettera Excel (es. 0 -> A, 1 -> B, 26 -> AA)
 function getColLetter(colIdx: number): string {
   let temp = colIdx;
@@ -72,7 +83,16 @@ const translations: Record<string, Record<string, string>> = {
     totalSubCost: 'Costi subappalti',
     totalRevenue: 'Ricavi totali',
     finalMargin: 'Margine finale',
-    hoursUnit: 'Ore'
+    hoursUnit: 'Ore',
+    rawDataSheetName: 'Dati Completi',
+    rawDate: 'Data',
+    rawWorker: 'Dipendente / Operaio',
+    rawProject: 'Progetto',
+    rawOrdinaryHours: 'Ore ordinarie',
+    rawOvertimeHours: 'Ore straordinarie',
+    rawAdditionalHours: 'Ore aggiuntive (team)',
+    rawTotalHours: 'Totale ore',
+    rawActivityType: 'Tipo attività'
   },
   en: {
     payrollTitle: 'Employee',
@@ -100,7 +120,16 @@ const translations: Record<string, Record<string, string>> = {
     totalSubCost: 'Subcontractor costs',
     totalRevenue: 'Total revenues',
     finalMargin: 'Final margin',
-    hoursUnit: 'Hours'
+    hoursUnit: 'Hours',
+    rawDataSheetName: 'Full Data',
+    rawDate: 'Date',
+    rawWorker: 'Employee / Worker',
+    rawProject: 'Project',
+    rawOrdinaryHours: 'Ordinary hours',
+    rawOvertimeHours: 'Overtime hours',
+    rawAdditionalHours: 'Additional hours (team)',
+    rawTotalHours: 'Total hours',
+    rawActivityType: 'Activity type'
   },
   es: {
     payrollTitle: 'Empleado',
@@ -128,7 +157,16 @@ const translations: Record<string, Record<string, string>> = {
     totalSubCost: 'Costes subcontratos',
     totalRevenue: 'Ingresos totales',
     finalMargin: 'Margen final',
-    hoursUnit: 'Horas'
+    hoursUnit: 'Horas',
+    rawDataSheetName: 'Datos Completos',
+    rawDate: 'Fecha',
+    rawWorker: 'Empleado / Operario',
+    rawProject: 'Proyecto',
+    rawOrdinaryHours: 'Horas ordinarias',
+    rawOvertimeHours: 'Horas extraordinarias',
+    rawAdditionalHours: 'Horas adicionales (equipo)',
+    rawTotalHours: 'Horas totales',
+    rawActivityType: 'Tipo de actividad'
   },
   pl: {
     payrollTitle: 'Pracownik',
@@ -156,7 +194,16 @@ const translations: Record<string, Record<string, string>> = {
     totalSubCost: 'Koszty podwykonawców',
     totalRevenue: 'Przychody całkowite',
     finalMargin: 'Marża końcowa',
-    hoursUnit: 'Godzin'
+    hoursUnit: 'Godzin',
+    rawDataSheetName: 'Pełne Dane',
+    rawDate: 'Data',
+    rawWorker: 'Pracownik / Operator',
+    rawProject: 'Projekt',
+    rawOrdinaryHours: 'Godziny zwykłe',
+    rawOvertimeHours: 'Nadgodziny',
+    rawAdditionalHours: 'Dodatkowe godziny (zespół)',
+    rawTotalHours: 'Suma godzin',
+    rawActivityType: 'Rodzaj aktywności'
   },
   tr: {
     payrollTitle: 'Çalışan',
@@ -184,7 +231,16 @@ const translations: Record<string, Record<string, string>> = {
     totalSubCost: 'Alt yüklenici maliyetleri',
     totalRevenue: 'Toplam gelirler',
     finalMargin: 'Final marj',
-    hoursUnit: 'Saat'
+    hoursUnit: 'Saat',
+    rawDataSheetName: 'Tüm Veriler',
+    rawDate: 'Tarih',
+    rawWorker: 'Çalışan / İşçi',
+    rawProject: 'Proje',
+    rawOrdinaryHours: 'Normal saatler',
+    rawOvertimeHours: 'Fazla mesai',
+    rawAdditionalHours: 'Ek saatler (ekip)',
+    rawTotalHours: 'Toplam saat',
+    rawActivityType: 'Faaliyet türü'
   },
   da: {
     payrollTitle: 'Medarbejder',
@@ -212,7 +268,16 @@ const translations: Record<string, Record<string, string>> = {
     totalSubCost: 'Underentreprenøromkostninger',
     totalRevenue: 'Samlede indtægter',
     finalMargin: 'Endelig margen',
-    hoursUnit: 'Timer'
+    hoursUnit: 'Timer',
+    rawDataSheetName: 'Alle Data',
+    rawDate: 'Dato',
+    rawWorker: 'Medarbejder / Arbejder',
+    rawProject: 'Projekt',
+    rawOrdinaryHours: 'Normale timer',
+    rawOvertimeHours: 'Overtidstimer',
+    rawAdditionalHours: 'Ekstra timer (team)',
+    rawTotalHours: 'Samlet antal timer',
+    rawActivityType: 'Aktivitetstype'
   }
 };
 
@@ -583,7 +648,45 @@ export default async function handler(req: any, res: any) {
     wsFat['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 18 }];
     utils.book_append_sheet(wb, wsFat, 'Fatturazione');
 
-    // --- SHEET 4: Sintesi (Dashboard Direzionale) ---
+    // --- SHEET 4: Dati Completi (Raw Timesheet) ---
+    const workerMapRaw = new Map((workersRes.data || []).map((w: any) => [w.id, w]));
+    const rawDataRows: any[] = [
+      [
+        t.rawDate,
+        t.rawWorker,
+        t.rawProject,
+        t.rawOrdinaryHours,
+        t.rawOvertimeHours,
+        t.rawAdditionalHours,
+        t.rawTotalHours,
+        t.rawActivityType
+      ]
+    ];
+    for (const r of mappedReports) {
+      const mainWorker = workerMapRaw.get(r.created_by);
+      const workerName = mainWorker?.name || r.created_by || 'N/A';
+      const additionalHours = (r.additionalWorkers || []).reduce(
+        (acc: number, aw: any) => acc + (Number(aw.hours) || 0), 0
+      );
+      const overtimeHours = Number(r.overtime_hours) || 0;
+      const totalHours = Number(r.total_hours) || 0;
+      const ordinaryHours = Math.max(0, totalHours - overtimeHours);
+      rawDataRows.push([
+        { v: r.date, t: 's' },
+        { v: workerName, t: 's' },
+        { v: r.projectName || 'N/A', t: 's' },
+        { v: ordinaryHours, t: 'n', z: '#,##0.00' },
+        { v: overtimeHours, t: 'n', z: '#,##0.00' },
+        { v: additionalHours, t: 'n', z: '#,##0.00' },
+        { v: totalHours + additionalHours, t: 'n', z: '#,##0.00' },
+        { v: r.activity_type || '', t: 's' }
+      ]);
+    }
+    const wsRaw = utils.aoa_to_sheet(rawDataRows);
+    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 14 }, { wch: 18 }];
+    utils.book_append_sheet(wb, wsRaw, t.rawDataSheetName);
+
+    // --- SHEET 5: Sintesi (Dashboard Direzionale) ---
     const valCol = getColLetter(SintesiCols.value);
     const sintesiRows: any[] = [
       [t.dashboardTitle],
