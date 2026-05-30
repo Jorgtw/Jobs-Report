@@ -44,24 +44,23 @@ function getColLetter(colIdx: number): string {
   return letter;
 }
 
-// --- DIZIONARIO DI TRADUZIONE MULTILINGUA CON SIMBOLI VALUTA DIVERSIFICATI ---
+// --- DIZIONARIO DI TRADUZIONE MULTILINGUA (VALUTA AGNOSTICA) ---
 const translations: Record<string, Record<string, string>> = {
   it: {
-    currencySymbol: '€',
     payrollTitle: 'Dipendente',
     ordinaryHours: 'Ore ordinarie',
     overtimeHours: 'Ore straordinarie',
     totalHours: 'Totale ore',
-    hourlyRate: 'Costo orario ({currency})',
-    totalCost: 'Totale costo ({currency})',
+    hourlyRate: 'Costo orario',
+    totalCost: 'Totale costo',
     subcontractor: 'Subappaltatore',
     project: 'Progetto',
     hoursWorked: 'Ore lavorate',
-    agreedRate: 'Tariffa concordata ({currency})',
+    agreedRate: 'Tariffa concordata',
     client: 'Cliente',
     billableHours: 'Ore fatturabili',
-    hourlySaleRate: 'Tariffa oraria ({currency})',
-    totalInvoice: 'Totale fattura ({currency})',
+    hourlySaleRate: 'Tariffa oraria',
+    totalInvoice: 'Totale fattura',
     dashboardTitle: 'CRUSCOTTO FINANZIARIO DIREZIONALE',
     itemHeader: 'Voce di Bilancio',
     valHeader: 'Valore',
@@ -76,21 +75,20 @@ const translations: Record<string, Record<string, string>> = {
     hoursUnit: 'Ore'
   },
   en: {
-    currencySymbol: '€',
     payrollTitle: 'Employee',
     ordinaryHours: 'Ordinary hours',
     overtimeHours: 'Overtime hours',
     totalHours: 'Total hours',
-    hourlyRate: 'Hourly rate ({currency})',
-    totalCost: 'Total cost ({currency})',
+    hourlyRate: 'Hourly rate',
+    totalCost: 'Total cost',
     subcontractor: 'Subcontractor',
     project: 'Project',
     hoursWorked: 'Hours worked',
-    agreedRate: 'Agreed rate ({currency})',
+    agreedRate: 'Agreed rate',
     client: 'Client',
     billableHours: 'Billable hours',
-    hourlySaleRate: 'Hourly rate ({currency})',
-    totalInvoice: 'Total invoice ({currency})',
+    hourlySaleRate: 'Hourly rate',
+    totalInvoice: 'Total invoice',
     dashboardTitle: 'EXECUTIVE FINANCIAL DASHBOARD',
     itemHeader: 'Financial Item',
     valHeader: 'Value',
@@ -105,21 +103,20 @@ const translations: Record<string, Record<string, string>> = {
     hoursUnit: 'Hours'
   },
   es: {
-    currencySymbol: '€',
     payrollTitle: 'Empleado',
     ordinaryHours: 'Horas ordinarias',
     overtimeHours: 'Horas extraordinarias',
     totalHours: 'Horas totales',
-    hourlyRate: 'Tarifa horaria ({currency})',
-    totalCost: 'Coste total ({currency})',
+    hourlyRate: 'Tarifa horaria',
+    totalCost: 'Coste total',
     subcontractor: 'Subcontratista',
     project: 'Proyecto',
     hoursWorked: 'Horas trabajadas',
-    agreedRate: 'Tarifa acordada ({currency})',
+    agreedRate: 'Tarifa acordada',
     client: 'Cliente',
     billableHours: 'Horas facturables',
-    hourlySaleRate: 'Tarifa horaria ({currency})',
-    totalInvoice: 'Total factura ({currency})',
+    hourlySaleRate: 'Tarifa horaria',
+    totalInvoice: 'Total factura',
     dashboardTitle: 'CUADRO DE MANDO FINANCIERO DIRECCIONAL',
     itemHeader: 'Partida de balance',
     valHeader: 'Valor',
@@ -134,21 +131,20 @@ const translations: Record<string, Record<string, string>> = {
     hoursUnit: 'Horas'
   },
   pl: {
-    currencySymbol: 'zł',
     payrollTitle: 'Pracownik',
     ordinaryHours: 'Godziny zwykłe',
     overtimeHours: 'Nadgodziny',
     totalHours: 'Suma godzin',
-    hourlyRate: 'Stawka godzinowa ({currency})',
-    totalCost: 'Koszt całkowity ({currency})',
+    hourlyRate: 'Stawka godzinowa',
+    totalCost: 'Koszt całkowity',
     subcontractor: 'Podwykonawca',
     project: 'Projekt',
     hoursWorked: 'Przepracowane godziny',
-    agreedRate: 'Uzgodniona stawka ({currency})',
+    agreedRate: 'Uzgodniona stawka',
     client: 'Klient',
     billableHours: 'Godziny fakturowane',
-    hourlySaleRate: 'Stawka godzinowa ({currency})',
-    totalInvoice: 'Suma faktury ({currency})',
+    hourlySaleRate: 'Stawka godzinowa',
+    totalInvoice: 'Suma faktury',
     dashboardTitle: 'PANEL FINANSOWY DYREKCJI',
     itemHeader: 'Pozycja bilansowa',
     valHeader: 'Wartość',
@@ -163,21 +159,20 @@ const translations: Record<string, Record<string, string>> = {
     hoursUnit: 'Godzin'
   },
   tr: {
-    currencySymbol: 'TL',
     payrollTitle: 'Çalışan',
     ordinaryHours: 'Normal çalışma saatleri',
     overtimeHours: 'Fazla mesai saatleri',
     totalHours: 'Toplam saat',
-    hourlyRate: 'Saatlik ücret ({currency})',
-    totalCost: 'Toplam maliyet ({currency})',
+    hourlyRate: 'Saatlik ücret',
+    totalCost: 'Toplam maliyet',
     subcontractor: 'Alt yüklenici',
     project: 'Proje',
     hoursWorked: 'Çalışılan saatler',
-    agreedRate: 'Anlaşılan ücret ({currency})',
+    agreedRate: 'Anlaşılan ücret',
     client: 'Müşteri',
     billableHours: 'Faturalandırılabilir saatler',
-    hourlySaleRate: 'Saatlik ücret ({currency})',
-    totalInvoice: 'Toplam fatura ({currency})',
+    hourlySaleRate: 'Saatlik ücret',
+    totalInvoice: 'Toplam fatura',
     dashboardTitle: 'YÖNETİCİ FİNANSAL PANELİ',
     itemHeader: 'Bilanço kalemi',
     valHeader: 'Değer',
@@ -192,21 +187,20 @@ const translations: Record<string, Record<string, string>> = {
     hoursUnit: 'Saat'
   },
   da: {
-    currencySymbol: 'kr.',
     payrollTitle: 'Medarbejder',
     ordinaryHours: 'Normale timer',
     overtimeHours: 'Overtidstimer',
     totalHours: 'Samlet antal timer',
-    hourlyRate: 'Timeløn ({currency})',
-    totalCost: 'Samlet omkostning ({currency})',
+    hourlyRate: 'Timeløn',
+    totalCost: 'Samlet omkostning',
     subcontractor: 'Underentreprenør',
     project: 'Projekt',
     hoursWorked: 'Arbejdstimer',
-    agreedRate: 'Aftalt sats ({currency})',
+    agreedRate: 'Aftalt sats',
     client: 'Kunde',
     billableHours: 'Fakturerbare timer',
-    hourlySaleRate: 'Timeløn ({currency})',
-    totalInvoice: 'Samlet fakturabeløb ({currency})',
+    hourlySaleRate: 'Timeløn',
+    totalInvoice: 'Samlet fakturabeløb',
     dashboardTitle: 'FINANSIELT LEDELSESDASHBOARD',
     itemHeader: 'Finanspost',
     valHeader: 'Værdi',
@@ -429,8 +423,7 @@ export default async function handler(req: any, res: any) {
 
   // Risolvi il dizionario di traduzione
   const t = translations[lang] || translations.it;
-  const currSym = t.currencySymbol;
-  const numFormat = `"${currSym}"#,##0.00`;
+  const numFormat = '#,##0.00'; // Formattazione numerica universale e valuta-agnostica
 
   if (!companyId) {
     return res.status(400).json({ error: 'Missing companyId' });
@@ -523,8 +516,8 @@ export default async function handler(req: any, res: any) {
         t.ordinaryHours,
         t.overtimeHours,
         t.totalHours,
-        t.hourlyRate.replace('{currency}', currSym),
-        t.totalCost.replace('{currency}', currSym)
+        t.hourlyRate,
+        t.totalCost
       ]
     ];
     payroll.forEach((p, idx) => {
@@ -548,8 +541,8 @@ export default async function handler(req: any, res: any) {
         t.subcontractor,
         t.project,
         t.hoursWorked,
-        t.agreedRate.replace('{currency}', currSym),
-        t.totalCost.replace('{currency}', currSym)
+        t.agreedRate,
+        t.totalCost
       ]
     ];
     subappalti.forEach((s, idx) => {
@@ -572,8 +565,8 @@ export default async function handler(req: any, res: any) {
         t.client,
         t.project,
         t.billableHours,
-        t.hourlySaleRate.replace('{currency}', currSym),
-        t.totalInvoice.replace('{currency}', currSym)
+        t.hourlySaleRate,
+        t.totalInvoice
       ]
     ];
     fatturazione.forEach((f, idx) => {
@@ -599,10 +592,10 @@ export default async function handler(req: any, res: any) {
       [t.totalEmpHours, { f: `SUM(Payroll!${getColLetter(PayrollCols.totalHours)}:${getColLetter(PayrollCols.totalHours)})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
       [t.totalSubHours, { f: `SUM(Subappalti!${getColLetter(SubappaltiCols.hours)}:${getColLetter(SubappaltiCols.hours)})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
       [t.totalBillableHours, { f: `SUM(Fatturazione!${getColLetter(FatturazioneCols.hours)}:${getColLetter(FatturazioneCols.hours)})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalPersCost, { f: `SUM(Payroll!${getColLetter(PayrollCols.totalCost)}:${getColLetter(PayrollCols.totalCost)})`, t: 'n', z: numFormat }, currSym],
-      [t.totalSubCost, { f: `SUM(Subappalti!${getColLetter(SubappaltiCols.totalCost)}:${getColLetter(SubappaltiCols.totalCost)})`, t: 'n', z: numFormat }, currSym],
-      [t.totalRevenue, { f: `SUM(Fatturazione!${getColLetter(FatturazioneCols.totalInvoice)}:${getColLetter(FatturazioneCols.totalInvoice)})`, t: 'n', z: numFormat }, currSym],
-      [t.finalMargin, { f: `${valCol}9-(${valCol}7+${valCol}8)`, t: 'n', z: numFormat }, currSym]
+      [t.totalPersCost, { f: `SUM(Payroll!${getColLetter(PayrollCols.totalCost)}:${getColLetter(PayrollCols.totalCost)})`, t: 'n', z: numFormat }, ''],
+      [t.totalSubCost, { f: `SUM(Subappalti!${getColLetter(SubappaltiCols.totalCost)}:${getColLetter(SubappaltiCols.totalCost)})`, t: 'n', z: numFormat }, ''],
+      [t.totalRevenue, { f: `SUM(Fatturazione!${getColLetter(FatturazioneCols.totalInvoice)}:${getColLetter(FatturazioneCols.totalInvoice)})`, t: 'n', z: numFormat }, ''],
+      [t.finalMargin, { f: `${valCol}9-(${valCol}7+${valCol}8)`, t: 'n', z: numFormat }, '']
     ];
     const wsSintesi = utils.aoa_to_sheet(sintesiRows);
     wsSintesi['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 10 }];
