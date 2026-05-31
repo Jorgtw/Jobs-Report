@@ -430,7 +430,7 @@ class SubcontractorService {
         if (awWorker && (!filters.userId || awWorker.id === filters.userId)) {
           const subId = awWorker.subcontractor_id || aw.subcontractor_id;
           const isSub = !!subId || aw.membership_type !== 'Interno';
-          if (isSub && subId && (!filters.subcontractorId || subId === subcontractorId)) {
+          if (isSub && subId && (!filters.subcontractorId || subId === filters.subcontractorId)) {
             const subDetails = subMap.get(subId);
             const sKey = `${subId}_${r.project_id}`;
             if (!subappaltiMap.has(sKey)) {
