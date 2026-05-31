@@ -90,6 +90,8 @@ export const reports = {
   headerBreak: "PAUSA",
   headerTotal: "TOT",
   headerExtra: "EXTRA",
+  headerFestive: "FESTIVAS",
+  headerNight: "NOCTURNAS",
   people: "Personas",
   personalHours: "Tus Horas",
   teamLabel: "Equipo y Colaboradores",

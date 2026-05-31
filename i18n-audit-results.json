@@ -33,7 +33,8 @@
       "landing.sandbox.guestId",
       "projects.personPassword",
       "reports.headerTotal",
-      "reports.headerExtra"
+      "reports.headerExtra",
+      "reports.headerFestive"
     ],
     "es": [
       "auth.phonePlaceholder",

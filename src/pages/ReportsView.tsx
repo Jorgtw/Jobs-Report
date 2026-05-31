@@ -66,6 +66,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     breakHours: 1,
     manualTotalHours: undefined as number | undefined,
     overtimeHours: 0,
+    festiveHours: 0,
+    nightHours: 0,
     description: '',
     expenses: [] as Expense[],
     additionalWorkers: [] as AdditionalWorker[],
@@ -96,6 +98,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       breakHours: 1,
       manualTotalHours: undefined,
       overtimeHours: 0,
+      festiveHours: 0,
+      nightHours: 0,
       description: '',
       expenses: [],
       additionalWorkers: [],
@@ -185,6 +189,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
         breakHours: formData.breakHours,
         totalHours: 0,
         overtimeHours: 0,
+        festiveHours: 0,
+        nightHours: 0,
         hourlyRate: 0,
         totalCost: 0,
         personName: '',
@@ -260,6 +266,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       breakHours: r.breakHours,
       manualTotalHours: r.manualTotalHours,
       overtimeHours: r.overtimeHours || 0,
+      festiveHours: r.festiveHours || 0,
+      nightHours: r.nightHours || 0,
       description: r.description,
       expenses: [...(r.expenses || [])],
       additionalWorkers: [...(r.additionalWorkers || [])],
@@ -291,6 +299,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     let newBreakHours = r.breakHours;
     let newManualTotalHours = r.manualTotalHours;
     let newOvertimeHours = r.overtimeHours || 0;
+    let newFestiveHours = r.festiveHours || 0;
+    let newNightHours = r.nightHours || 0;
     let newAdditionalWorkers: AdditionalWorker[] = [];
 
     if (awIndex !== -1) {
@@ -302,6 +312,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       newBreakHours = myOriginalDetails.breakHours;
       newManualTotalHours = myOriginalDetails.manualTotalHours;
       newOvertimeHours = myOriginalDetails.overtimeHours || 0;
+      newFestiveHours = myOriginalDetails.festiveHours || 0;
+      newNightHours = myOriginalDetails.nightHours || 0;
 
       // Filter out current user from helpers
       const otherHelpers = r.additionalWorkers.filter((_, idx) => idx !== awIndex);
@@ -322,7 +334,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
         membershipType: originalMainUser?.subcontractorId ? 'Subappalto' : 'Interno',
         subcontractorId: originalMainUser?.subcontractorId,
         isManualOverride: r.manualTotalHours !== undefined,
-        overtimeHours: r.overtimeHours || 0
+        overtimeHours: r.overtimeHours || 0,
+        festiveHours: r.festiveHours || 0,
+        nightHours: r.nightHours || 0
       };
 
       newAdditionalWorkers = [originalMainAsHelper, ...otherHelpers];
@@ -345,7 +359,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
         membershipType: originalMainUser?.subcontractorId ? 'Subappalto' : 'Interno',
         subcontractorId: originalMainUser?.subcontractorId,
         isManualOverride: r.manualTotalHours !== undefined,
-        overtimeHours: r.overtimeHours || 0
+        overtimeHours: r.overtimeHours || 0,
+        festiveHours: r.festiveHours || 0,
+        nightHours: r.nightHours || 0
       };
 
       newAdditionalWorkers = [originalMainAsHelper, ...(r.additionalWorkers || [])];
@@ -364,6 +380,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       breakHours: newBreakHours,
       manualTotalHours: newManualTotalHours,
       overtimeHours: newOvertimeHours,
+      festiveHours: newFestiveHours,
+      nightHours: newNightHours,
       description: r.description,
       expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
       additionalWorkers: newAdditionalWorkers,
@@ -639,31 +657,37 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                     </div>
                   )}
                   <div className="hidden sm:grid grid-cols-12 gap-2 px-2 mb-1 pr-10 sm:pr-0">
-                    <div className="col-span-3"></div>
+                    <div className="col-span-2"></div>
                     <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('reports.headerStart')}</div>
                     <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('reports.headerEnd')}</div>
                     <div className="col-span-1 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center">{t('reports.headerBreak')}</div>
-                    <div className="col-span-2 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">{t('reports.headerExtra')}</div>
+                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-amber-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">{t('reports.headerExtra')}</div>
+                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-red-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">{t('reports.headerFestive')}</div>
+                    <div className="col-span-1 px-1 text-[10px] font-extrabold text-indigo-500 uppercase text-center sm:border-l sm:border-transparent sm:pl-2">{t('reports.headerNight')}</div>
                     <div className="col-span-2 px-1 text-[10px] font-extrabold text-slate-400 uppercase text-center sm:border-l sm:border-transparent sm:pl-2 pr-8">{t('reports.headerTotal')}</div>
                   </div>
                   {user.role !== 'operator' && formData.additionalWorkers.map((aw, idx) => (
                     <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                      <div className="col-span-12 sm:col-span-3"><select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}><option value="">{t('reports.worker')}...</option>{availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
+                      <div className="col-span-12 sm:col-span-2"><select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}><option value="">{t('reports.worker')}...</option>{availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label><input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label><input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
                       <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label><input type="number" step="0.25" value={aw.breakHours || ''} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label><input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} /></div>
-                      <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label><input type="number" step="0.01" value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''} onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })} placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)} className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px] text-[11px] sm:text-sm" /></div>
+                      <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label><input type="number" step="0.25" value={aw.overtimeHours || ''} onChange={e => updateWorker(idx, { overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} /></div>
+                      <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-red-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerFestive')}</label><input type="number" step="0.25" value={aw.festiveHours || ''} onChange={e => updateWorker(idx, { festiveHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-red-600 font-bold bg-red-50 border-red-200 px-1 text-[11px] sm:text-sm`} /></div>
+                      <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-indigo-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerNight')}</label><input type="number" step="0.25" value={aw.nightHours || ''} onChange={e => updateWorker(idx, { nightHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-indigo-600 font-bold bg-indigo-50 border-indigo-200 px-1 text-[11px] sm:text-sm`} /></div>
+                      <div className="col-span-12 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label><input type="number" step="0.01" value={aw.manualTotalHours !== undefined ? aw.manualTotalHours : ''} onChange={e => updateWorker(idx, { manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })} placeholder={db.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours).toFixed(2)} className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px] text-[11px] sm:text-sm" /></div>
                       <button type="button" onClick={() => removeWorker(idx)} className="absolute right-2 top-2 sm:top-1/2 sm:-translate-y-1/2 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
                     </div>
                   ))}
                   <div className="bg-white p-2 rounded-xl border border-blue-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                    <div className="col-span-12 sm:col-span-3"><div className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">{personnel.find(u => u.id === formData.userId)?.name || t('reports.mainWorker')}</div></div>
+                    <div className="col-span-12 sm:col-span-2"><div className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 truncate">{personnel.find(u => u.id === formData.userId)?.name || t('reports.mainWorker')}</div></div>
                     <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label><input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
                     <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label><input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
                     <div className="col-span-4 sm:col-span-1 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label><input type="number" step="0.25" value={formData.breakHours || ''} onChange={e => setFormData({ ...formData, breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
-                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label><input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} /></div>
-                    <div className="col-span-4 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label><input type="number" step="0.01" value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''} onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })} placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)} className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px] text-[11px] sm:text-sm" /></div>
+                    <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-amber-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerExtra')}</label><input type="number" step="0.25" value={formData.overtimeHours || ''} onChange={e => setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-amber-600 font-bold bg-amber-50 border-amber-200 px-1 text-[11px] sm:text-sm`} /></div>
+                    <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-red-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerFestive')}</label><input type="number" step="0.25" value={formData.festiveHours || ''} onChange={e => setFormData({ ...formData, festiveHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-red-600 font-bold bg-red-50 border-red-200 px-1 text-[11px] sm:text-sm`} /></div>
+                    <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-indigo-500 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerNight')}</label><input type="number" step="0.25" value={formData.nightHours || ''} onChange={e => setFormData({ ...formData, nightHours: parseFloat(e.target.value) || 0 })} placeholder="0" className={`${inputClasses} w-full text-center text-indigo-600 font-bold bg-indigo-50 border-indigo-200 px-1 text-[11px] sm:text-sm`} /></div>
+                    <div className="col-span-12 sm:col-span-2 flex flex-col gap-0.5 sm:border-l sm:border-slate-200 sm:pl-2"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerTotal')}</label><input type="number" step="0.01" value={formData.manualTotalHours !== undefined ? formData.manualTotalHours : ''} onChange={e => setFormData({ ...formData, manualTotalHours: e.target.value === "" ? undefined : parseFloat(e.target.value) })} placeholder={db.calculateTotalHours(formData.startTime, formData.endTime, formData.breakHours).toFixed(2)} className="w-full px-1 py-1 bg-white border border-slate-200 rounded-lg text-center font-black text-blue-600 outline-none h-[30px] text-[11px] sm:text-sm" /></div>
                   </div>
                 </div>
                 <div className="md:col-span-2 bg-slate-100 border border-slate-200 text-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-sm">

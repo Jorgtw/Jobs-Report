@@ -90,6 +90,8 @@ export const reports = {
   headerBreak: "MOLA",
   headerTotal: "TOPLAM",
   headerExtra: "EKSTRA",
+  headerFestive: "RESMİ",
+  headerNight: "GECE",
   people: "Kişiler",
   personalHours: "Saatleriniz",
   teamLabel: "Ekip ve İş Ortakları",

@@ -113,6 +113,8 @@ export interface AdditionalWorker {
   subcontractorId?: string;
   isManualOverride?: boolean;
   overtimeHours?: number;
+  festiveHours?: number;
+  nightHours?: number;
 }
 
 export interface WorkReport {
@@ -133,6 +135,8 @@ export interface WorkReport {
   activityType?: 'work' | 'sickness' | 'holiday' | 'internal';
   invoiceStatus?: string;
   overtimeHours?: number;
+  festiveHours?: number;
+  nightHours?: number;
   createdAt: number;
 }
 
