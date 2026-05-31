@@ -47,3 +47,15 @@ body:has(.fixed.inset-0.backdrop-blur-sm) {
     50% { opacity: 0.85; transform: scale(1.03); }
   }
 }
+
+/* Chrome, Safari, Edge, Opera: nasconde gli spinner nativi sui campi numerici */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox: nasconde gli spinner nativi sui campi numerici */
+input[type=number] {
+  -moz-appearance: textfield;
+}
