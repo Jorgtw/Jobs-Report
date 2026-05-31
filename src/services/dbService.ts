@@ -1953,6 +1953,22 @@ class DBService {
           createdBy: e.created_by
         }))
       : [];
+
+    // Calcolo robusto delle ore totali basato sulle 4 categorie del modello V3 flat-rate
+    const oHours = r.ordinary_hours !== null && r.ordinary_hours !== undefined ? Number(r.ordinary_hours) : null;
+    const exHours = Number(r.overtime_hours) || 0;
+    const fHours = Number(r.festive_hours) || 0;
+    const nHours = Number(r.night_hours) || 0;
+    
+    // Se ordinary_hours è NULL (dati legacy), usiamo total_hours e deduciamo le ordinarie
+    const computedTotal = oHours !== null 
+      ? (oHours + exHours + fHours + nHours) 
+      : (Number(r.total_hours) || 0);
+      
+    const computedOrdinary = oHours !== null 
+      ? oHours 
+      : Math.max(0, computedTotal - exHours - fHours - nHours);
+
     return {
       id: r.id,
       projectId: r.project_id,
@@ -1961,30 +1977,52 @@ class DBService {
       startTime: this.extractTimeOnly(r.start_time),
       endTime: this.extractTimeOnly(r.end_time),
       breakHours: Number(r.break_hours) || 0,
-      totalHours: Number(r.total_hours) || 0,
+      totalHours: computedTotal,
+      ordinaryHours: computedOrdinary,
+      overtimeHours: exHours,
+      festiveHours: fHours,
+      nightHours: nHours,
       manualTotalHours: r.manual_total_hours != null ? Number(r.manual_total_hours) : undefined,
       description: r.description || '',
-      notes: r.Notes || '',
+      notes: r.travel_notes || r.Notes || '',
+      travelNotes: r.travel_notes || '',
       expenses: expensesList,
-      additionalWorkers: (r.additionalWorkers || []).map((aw: any) => ({
-        userId: aw.worker_id,
-        startTime: aw.startTime ? (aw.startTime.includes('T') ? aw.startTime.split('T')[1].substring(0, 5) : aw.startTime) : '',
-        endTime: aw.endTime ? (aw.endTime.includes('T') ? aw.endTime.split('T')[1].substring(0, 5) : aw.endTime) : '',
-        breakHours: Number(aw.breakHours),
-        totalHours: Number(aw.hours),
-        manualTotalHours: aw.manual_total_hours != null ? Number(aw.manual_total_hours) : undefined,
-        hourlyRate: Number(aw.hourly_rate) || 0,
-        totalCost: Number(aw.total_cost) || 0,
-        personName: aw.person_name || '',
-        personRole: aw.person_role || '',
-        membershipType: aw.membership_type || 'Interno',
-        subcontractorId: aw.subcontractor_id,
-        isManualOverride: aw.is_manual_override || false,
-        overtimeHours: Number(aw.overtime_hours) || 0
-      })),
+      additionalWorkers: (r.additionalWorkers || []).map((aw: any) => {
+        const awOHours = aw.ordinary_hours !== null && aw.ordinary_hours !== undefined ? Number(aw.ordinary_hours) : null;
+        const awExHours = Number(aw.overtime_hours) || 0;
+        const awFHours = Number(aw.festive_hours) || 0;
+        const awNHours = Number(aw.night_hours) || 0;
+        
+        const awTotal = awOHours !== null 
+          ? (awOHours + awExHours + awFHours + awNHours) 
+          : (Number(aw.hours) || 0);
+          
+        const awOrdinary = awOHours !== null 
+          ? awOHours 
+          : Math.max(0, awTotal - awExHours - awFHours - awNHours);
+
+        return {
+          userId: aw.worker_id,
+          startTime: aw.startTime ? (aw.startTime.includes('T') ? aw.startTime.split('T')[1].substring(0, 5) : aw.startTime) : '',
+          endTime: aw.endTime ? (aw.endTime.includes('T') ? aw.endTime.split('T')[1].substring(0, 5) : aw.endTime) : '',
+          breakHours: Number(aw.breakHours),
+          totalHours: awTotal,
+          ordinaryHours: awOrdinary,
+          overtimeHours: awExHours,
+          festiveHours: awFHours,
+          nightHours: awNHours,
+          manualTotalHours: aw.manual_total_hours != null ? Number(aw.manual_total_hours) : undefined,
+          hourlyRate: 0,
+          totalCost: 0,
+          personName: aw.person_name || '',
+          personRole: aw.person_role || '',
+          membershipType: aw.membership_type || 'Interno',
+          subcontractorId: aw.subcontractor_id,
+          isManualOverride: aw.is_manual_override || false
+        };
+      }),
       activityType: r.activity_type || 'work',
       invoiceStatus: r.invoice_status || 'Pending',
-      overtimeHours: Number(r.overtime_hours) || 0,
       createdAt: new Date(r.created_at).getTime()
     };
   }
@@ -2011,6 +2049,11 @@ class DBService {
     const { additionalWorkers = [], expenses = [], ...reportData } = report;
     const totalHours = this.calculateTotalHours(reportData.startTime, reportData.endTime, reportData.breakHours, reportData.manualTotalHours);
 
+    // Mappatura robusta per le 4 categorie orarie del modello V3 flat-rate
+    const oHours = reportData.ordinaryHours !== undefined 
+      ? Number(reportData.ordinaryHours) 
+      : Math.max(0, totalHours - (reportData.overtimeHours || 0) - (reportData.festiveHours || 0) - (reportData.nightHours || 0));
+
     const newReport: any = {
       project_id: reportData.projectId,
       created_by: reportData.userId,
@@ -2022,8 +2065,12 @@ class DBService {
       manual_total_hours: reportData.manualTotalHours !== undefined ? reportData.manualTotalHours : null,
       description: reportData.description,
       "Notes": reportData.notes,
+      travel_notes: reportData.travelNotes || reportData.notes || null,
       activity_type: reportData.activityType || 'work',
+      ordinary_hours: oHours,
       overtime_hours: reportData.overtimeHours || 0,
+      festive_hours: reportData.festiveHours || 0,
+      night_hours: reportData.nightHours || 0,
       invoice_status: reportData.invoiceStatus || 'Pending',
       company_id: this.requireCompanyId(),
       created_at: new Date().toISOString()
@@ -2033,8 +2080,6 @@ class DBService {
     if (error) throw error;
 
     const createdReportId = data[0].id;
-
-    // STAB-5 FIX: invoice_status is now included in the initial insert payload above
 
     // Salva le spese
     if (expenses && expenses.length > 0) {
@@ -2055,8 +2100,9 @@ class DBService {
     if (additionalWorkers.length > 0) {
       const workersToAdd = additionalWorkers.map((aw: any) => {
         const hours = this.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours, aw.manualTotalHours);
-        const hourlyRate = aw.hourlyRate || 0;
-        const totalCost = hours * hourlyRate;
+        const awOHours = aw.ordinaryHours !== undefined 
+          ? Number(aw.ordinaryHours) 
+          : Math.max(0, hours - (aw.overtimeHours || 0) - (aw.festiveHours || 0) - (aw.nightHours || 0));
 
         return {
           rapportino_id: createdReportId,
@@ -2066,14 +2112,17 @@ class DBService {
           breakHours: aw.breakHours,
           hours: hours,
           manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
-          hourly_rate: hourlyRate,
-          total_cost: totalCost,
+          ordinary_hours: awOHours,
+          overtime_hours: aw.overtimeHours || 0,
+          festive_hours: aw.festiveHours || 0,
+          night_hours: aw.nightHours || 0,
+          hourly_rate: 0,
+          total_cost: 0,
           person_name: aw.personName || '',
           person_role: aw.personRole || '',
           membership_type: aw.membershipType || 'Interno',
           subcontractor_id: aw.subcontractorId || null,
-          is_manual_override: aw.isManualOverride || false,
-          overtime_hours: aw.overtimeHours || 0
+          is_manual_override: aw.isManualOverride || false
         };
       });
       const { error: insErr } = await supabase.from('rapportini_workers').insert(workersToAdd);
@@ -2132,6 +2181,11 @@ class DBService {
     const { additionalWorkers, expenses, ...updatesData } = updates;
     updatesData.totalHours = this.calculateTotalHours(updatesData.startTime, updatesData.endTime, updatesData.breakHours, updatesData.manualTotalHours);
 
+    // Mappatura robusta per le 4 categorie orarie del modello V3 flat-rate
+    const oHours = updatesData.ordinaryHours !== undefined 
+      ? Number(updatesData.ordinaryHours) 
+      : Math.max(0, updatesData.totalHours - (updatesData.overtimeHours || 0) - (updatesData.festiveHours || 0) - (updatesData.nightHours || 0));
+
     const sbObj = {
       project_id: updatesData.projectId,
       created_by: updatesData.userId,
@@ -2143,8 +2197,12 @@ class DBService {
       manual_total_hours: updatesData.manualTotalHours !== undefined ? updatesData.manualTotalHours : null,
       description: updatesData.description,
       "Notes": updatesData.notes,
+      travel_notes: updatesData.travelNotes || updatesData.notes || null,
       activity_type: updatesData.activityType || 'work',
+      ordinary_hours: oHours,
       overtime_hours: updatesData.overtimeHours || 0,
+      festive_hours: updatesData.festiveHours || 0,
+      night_hours: updatesData.nightHours || 0,
       invoice_status: updatesData.invoiceStatus || 'Pending'
     };
 
@@ -2183,8 +2241,9 @@ class DBService {
       if (additionalWorkers.length > 0) {
         const workersToAdd = additionalWorkers.map((aw: any) => {
           const hours = this.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours, aw.manualTotalHours);
-          const hourlyRate = aw.hourlyRate || 0;
-          const totalCost = hours * hourlyRate;
+          const awOHours = aw.ordinaryHours !== undefined 
+            ? Number(aw.ordinaryHours) 
+            : Math.max(0, hours - (aw.overtimeHours || 0) - (aw.festiveHours || 0) - (aw.nightHours || 0));
 
           return {
             rapportino_id: id,
@@ -2194,14 +2253,17 @@ class DBService {
             breakHours: aw.breakHours,
             hours: hours,
             manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
-            hourly_rate: hourlyRate,
-            total_cost: totalCost,
+            ordinary_hours: awOHours,
+            overtime_hours: aw.overtimeHours || 0,
+            festive_hours: aw.festiveHours || 0,
+            night_hours: aw.nightHours || 0,
+            hourly_rate: 0,
+            total_cost: 0,
             person_name: aw.personName || '',
             person_role: aw.personRole || '',
             membership_type: aw.membershipType || 'Interno',
             subcontractor_id: aw.subcontractorId || null,
-            is_manual_override: aw.isManualOverride || false,
-            overtime_hours: aw.overtimeHours || 0
+            is_manual_override: aw.isManualOverride || false
           };
         });
         const { error: updInsErr } = await supabase.from('rapportini_workers').insert(workersToAdd);
@@ -2235,32 +2297,103 @@ class DBService {
     if (error) throw error;
   }
 
-  async getSummary(dateFrom?: string, dateTo?: string): Promise<ReportSummary[]> {
+  async getProjectBillingSummary(
+    startDate?: string, 
+    endDate?: string,
+    clientId?: string,
+    projectId?: string
+  ): Promise<any[]> {
     await this.checkAuthSession();
-    
-    const [reports, projects, clients, workers] = await Promise.all([
-      this.getReports(dateFrom, dateTo),
-      this.getProjects(),
-      this.getClients(),
-      this.getUsers()
-    ]);
+    const compId = this.requireCompanyId();
 
-    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
-    const clientMap = new Map(clients.map((c: any) => [c.id, c]));
-    const workerMap = new Map(workers.map((w: any) => [w.id, w]));
+    const sDate = startDate || '1970-01-01';
+    const eDate = endDate || '2099-12-31';
 
-    return reports.flatMap((r: any) => {
-      const project = projectMap.get(r.projectId);
-      const client = clientMap.get(project?.clientId);
-      const sellingPrice = project?.sellingPrice || 0;
+    const { data, error } = await supabase.rpc('get_project_billing_summary', {
+      p_company_id: compId,
+      p_start_date: sDate,
+      p_end_date: eDate,
+      p_client_id: clientId || null,
+      p_project_id: projectId || null
+    });
 
-      const summaries = [];
+    if (error) {
+      console.error('Error in get_project_billing_summary RPC:', error);
+      throw error;
+    }
+
+    return (data || []).map((row: any) => ({
+      projectId: row.project_id,
+      projectTitle: row.project_title,
+      hourlyRate: Number(row.hourly_rate) || 0,
+      totalOrdinaryHours: Number(row.total_ordinary_hours) || 0,
+      totalOvertimeHours: Number(row.total_overtime_hours) || 0,
+      totalFestiveHours: Number(row.total_festive_hours) || 0,
+      totalNightHours: Number(row.total_night_hours) || 0,
+      totalHours: Number(row.total_hours) || 0,
+      totalBilledAmount: Number(row.total_billed_amount) || 0
+    }));
+  }
+
+  async getProjectBillingTotals(
+    startDate?: string, 
+    endDate?: string,
+    clientId?: string,
+    projectId?: string
+  ): Promise<any> {
+    await this.checkAuthSession();
+    const compId = this.requireCompanyId();
+
+    const sDate = startDate || '1970-01-01';
+    const eDate = endDate || '2099-12-31';
+
+    const { data, error } = await supabase.rpc('get_project_billing_totals', {
+      p_company_id: compId,
+      p_start_date: sDate,
+      p_end_date: eDate,
+      p_client_id: clientId || null,
+      p_project_id: projectId || null
+    });
+
+    if (error) {
+      console.error('Error in get_project_billing_totals RPC:', error);
+      throw error;
+    }
+
+    const row = (data && data[0]) || {};
+    return {
+      totalOrdinaryHours: Number(row.total_ordinary_hours) || 0,
+      totalOvertimeHours: Number(row.total_overtime_hours) || 0,
+      totalFestiveHours: Number(row.total_festive_hours) || 0,
+      totalNightHours: Number(row.total_night_hours) || 0,
+      totalHours: Number(row.total_hours) || 0,
+      totalBilledAmount: Number(row.total_billed_amount) || 0
+    };
+  }
+
+    async getSummary(dateFrom?: string, dateTo?: string): Promise<ReportSummary[]> {
+      await this.checkAuthSession();
+      
+      const [reports, projects, clients, workers] = await Promise.all([
+        this.getReports(dateFrom, dateTo),
+        this.getProjects(),
+        this.getClients(),
+        this.getUsers()
+      ]);
+
+      const projectMap = new Map(projects.map((p: any) => [p.id, p]));
+      const clientMap = new Map(clients.map((c: any) => [c.id, c]));
+      const workerMap = new Map(workers.map((w: any) => [w.id, w]));
+
+      return reports.flatMap((r: any) => {
+        const project = projectMap.get(r.projectId);
+        const client = clientMap.get(project?.clientId);
+        const sellingPrice = Number(project?.sellingPrice) || Number(project?.hourlyRate) || 0;
+
+        const summaries = [];
 
         const user = workerMap.get(r.userId);
         const reportOvertimeHours = r.overtimeHours || 0;
-        const workerCost = (r.totalHours * (user?.hourlyRate || 0)) + 
-                           (reportOvertimeHours * (user?.overtimeHourlyRate || 0)) + 
-                           (user?.extraCost || 0);
         
         const reportExpenses = Array.isArray(r.expenses)
           ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
@@ -2285,11 +2418,11 @@ class DBService {
           description: r.description,
           revenue: revenue,
           hourlyRevenue: isReportInternal ? 0 : sellingPrice,
-          cost: workerCost,
-          overtimeCost: reportOvertimeHours * (user?.overtimeHourlyRate || 0),
-          hourlyCost: user?.hourlyRate || 0,
-          personnelCost: user?.subcontractorId ? 0 : workerCost,
-          subcontractorCost: user?.subcontractorId ? workerCost : 0,
+          cost: 0,
+          overtimeCost: 0,
+          hourlyCost: 0,
+          personnelCost: 0,
+          subcontractorCost: 0,
           invoiceStatus: r.invoiceStatus || 'Pending',
           activityType: r.activityType || 'work',
           isInternal: project?.isInternal || false,
@@ -2300,9 +2433,6 @@ class DBService {
         additionalWorkers.forEach((aw: any, idx: number) => {
           const awUser = workerMap.get(aw.userId);
           const awOvertimeHours = aw.overtimeHours || 0;
-          const awCost = (aw.totalHours * (awUser?.hourlyRate || 0)) + 
-                         (awOvertimeHours * (awUser?.overtimeHourlyRate || 0)) + 
-                         (awUser?.extraCost || 0);
           const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
 
           summaries.push({
@@ -2321,11 +2451,11 @@ class DBService {
             description: r.description,
             revenue: awRevenue,
             hourlyRevenue: isReportInternal ? 0 : sellingPrice,
-            cost: awCost,
-            overtimeCost: awOvertimeHours * (awUser?.overtimeHourlyRate || 0),
-            hourlyCost: awUser?.hourlyRate || 0,
-            personnelCost: awUser?.subcontractorId ? 0 : awCost,
-            subcontractorCost: awUser?.subcontractorId ? awCost : 0,
+            cost: 0,
+            overtimeCost: 0,
+            hourlyCost: 0,
+            personnelCost: 0,
+            subcontractorCost: 0,
             invoiceStatus: r.invoiceStatus || 'Pending',
             activityType: r.activityType || 'work',
             isInternal: project?.isInternal || false,
@@ -2333,9 +2463,9 @@ class DBService {
           });
         });
 
-      return summaries;
-    }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return summaries;
+      }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
   }
-}
 
-export const db = new DBService();
+  export const db = new DBService();

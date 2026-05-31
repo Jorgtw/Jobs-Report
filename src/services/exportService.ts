@@ -16,7 +16,12 @@ const localeMap: Record<string, string> = {
 
 const getT = (lang: Language) => (key: TranslationKey | string) => resolveKey(lang, key);
 
-export const exportToPDF = (exportRows: any[], lang: Language, userName: string) => {
+export const exportToPDF = (
+  exportRows: any[], 
+  lang: Language, 
+  userName: string,
+  totals?: { hours: number; cost: number; revenue: number; expenses: number }
+) => {
   const t = getT(lang);
   const locale = localeMap[lang] || 'it-IT';
   const doc = new jsPDF('l', 'mm', 'a4');
@@ -33,32 +38,25 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
 
   const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  let totalHours = 0;
-  let totalCost = 0;
-  let totalRevenue = 0;
-  let totalExpenses = 0;
+  const tableData = exportRows.map(r => [
+    r.date,
+    r.clientName,
+    r.projectName,
+    r.workerName,
+    r.description,
+    NumberFormat.format(r.hours),
+    NumberFormat.format(r.hourlyCost || 0),
+    NumberFormat.format(r.cost || 0),
+    NumberFormat.format(r.expenses || 0),
+    NumberFormat.format(r.hourlyRevenue || 0),
+    NumberFormat.format(r.revenue || 0),
+    r.paid
+  ]);
 
-  const tableData = exportRows.map(r => {
-    totalHours += r.hours;
-    totalCost += r.cost || 0;
-    totalRevenue += r.revenue || 0;
-    totalExpenses += r.expenses || 0;
-
-    return [
-      r.date,
-      r.clientName,
-      r.projectName,
-      r.workerName,
-      r.description,
-      NumberFormat.format(r.hours),
-      NumberFormat.format(r.hourlyCost || 0),
-      NumberFormat.format(r.cost || 0),
-      NumberFormat.format(r.expenses || 0),
-      NumberFormat.format(r.hourlyRevenue || 0),
-      NumberFormat.format(r.revenue || 0),
-      r.paid
-    ];
-  });
+  const finalHours = totals ? totals.hours : exportRows.reduce((sum, r) => Math.round((sum + r.hours) * 100) / 100, 0);
+  const finalCost = totals ? totals.cost : exportRows.reduce((sum, r) => Math.round((sum + (r.cost || 0)) * 100) / 100, 0);
+  const finalRevenue = totals ? totals.revenue : exportRows.reduce((sum, r) => Math.round((sum + (r.revenue || 0)) * 100) / 100, 0);
+  const finalExpenses = totals ? totals.expenses : exportRows.reduce((sum, r) => Math.round((sum + (r.expenses || 0)) * 100) / 100, 0);
 
   tableData.push([
     '',
@@ -66,12 +64,12 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
     '',
     t('reports.grandTotal').toUpperCase(),
     '',
-    NumberFormat.format(totalHours),
+    NumberFormat.format(finalHours),
     '',
-    NumberFormat.format(totalCost),
-    NumberFormat.format(totalExpenses),
+    NumberFormat.format(finalCost),
+    NumberFormat.format(finalExpenses),
     '',
-    NumberFormat.format(totalRevenue),
+    NumberFormat.format(finalRevenue),
     ''
   ]);
 
@@ -106,6 +104,66 @@ export const exportToPDF = (exportRows: any[], lang: Language, userName: string)
   doc.save(`JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
+export const exportProjectSummaryToPDF = (
+  summaryRows: any[],
+  totals: { hours: number; revenue: number },
+  lang: Language,
+  userName: string
+) => {
+  const t = getT(lang);
+  const locale = localeMap[lang] || 'it-IT';
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const now = new Date().toLocaleString(locale);
+
+  doc.setFontSize(18);
+  doc.setTextColor(30, 64, 175);
+  doc.text(t('reports.summaryByProject').toUpperCase(), 14, 20);
+
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${t('reports.operator')}: ${userName}`, 14, 28);
+  doc.text(`${t('reports.generatedOn')}: ${now}`, 14, 33);
+
+  const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const tableData = summaryRows.map(r => [
+    r.clientName,
+    r.name,
+    NumberFormat.format(r.hours) + ' h',
+    NumberFormat.format(r.revenue)
+  ]);
+
+  tableData.push([
+    '',
+    t('reports.grandTotal').toUpperCase(),
+    NumberFormat.format(totals.hours) + ' h',
+    NumberFormat.format(totals.revenue)
+  ]);
+
+  autoTable(doc, {
+    startY: 40,
+    head: [[
+      t('reports.headerClient'),
+      t('reports.summaryProjectName'),
+      t('reports.totalHoursLabel'),
+      t('reports.totalRevenue')
+    ]],
+    body: tableData,
+    theme: 'grid',
+    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    didParseCell: function (data) {
+      if (data.row.index === tableData.length - 1) {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [240, 240, 240];
+      }
+    }
+  });
+
+  const cleanSummaryName = t('reports.summaryByProject').replace(/\s+/g, '_');
+  doc.save(`JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+
 export const exportToExcel = (exportRows: any[], lang: Language) => {
   try {
     const t = getT(lang);
@@ -116,10 +174,10 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     let totalExpenses = 0;
 
     const worksheetData = exportRows.map(r => {
-      totalHours += r.hours;
-      totalCost += r.cost || 0;
-      totalRevenue += r.revenue || 0;
-      totalExpenses += r.expenses || 0;
+      totalHours = Math.round((totalHours + r.hours) * 100) / 100;
+      totalCost = Math.round((totalCost + (r.cost || 0)) * 100) / 100;
+      totalRevenue = Math.round((totalRevenue + (r.revenue || 0)) * 100) / 100;
+      totalExpenses = Math.round((totalExpenses + (r.expenses || 0)) * 100) / 100;
 
       return {
         [t('reports.date')]: r.date,

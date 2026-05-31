@@ -6,7 +6,7 @@ import {
   FileSpreadsheet, 
   Filter 
 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 import { User } from '../types';
@@ -15,7 +15,7 @@ import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
 import { useUsers } from '../hooks/useUsers';
 import { useSubcontractors } from '../hooks/useSubcontractors';
-import { exportToPDF, exportReportExcel } from '../services/exportService';
+import { exportToPDF, exportReportExcel, exportProjectSummaryToPDF } from '../services/exportService';
 import { filterInputClasses, canUserAccessProject } from '../App';
 
 interface WorkSummaryViewProps {
@@ -67,49 +67,51 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
     });
   }, [summary, filters, projects, adminStatus]);
 
-  const totals = useMemo(() => {
-    const baseTotals = filteredData.reduce((acc, s) => {
-      return {
-        hours: acc.hours + s.totalHours,
-        personnelCost: acc.personnelCost + (s.subcontractorId ? 0 : s.cost),
-        subcontractCost: acc.subcontractCost + (s.subcontractorId ? s.cost : 0),
-        totalExpenses: acc.totalExpenses + (s.totalExpenses || 0),
-        totalCost: acc.totalCost + s.cost + (s.totalExpenses || 0),
-        revenue: acc.revenue + (s.revenue || 0)
-      };
-    }, { hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0 });
-    return { ...baseTotals, margin: baseTotals.revenue - baseTotals.totalCost };
-  }, [filteredData]);
+  // Call standard database RPC to get pre-aggregated project-level billing data (SSOT)
+  const { data: projectBillingSummary = [] } = useQuery<any[], Error>({
+    queryKey: ['projectBillingSummary', user.companyId, filters.dateFrom, filters.dateTo, filters.clientId, filters.projectId],
+    queryFn: () => db.getProjectBillingSummary(filters.dateFrom, filters.dateTo, filters.clientId || undefined, filters.projectId || undefined),
+    staleTime: 1000 * 30, // 30 seconds
+    enabled: !!user.companyId
+  });
+
+  // Call separate database RPC to get pre-aggregated global totals (SSOT)
+  const { data: dbTotals } = useQuery<any, Error>({
+    queryKey: ['projectBillingTotals', user.companyId, filters.dateFrom, filters.dateTo, filters.clientId, filters.projectId],
+    queryFn: () => db.getProjectBillingTotals(filters.dateFrom, filters.dateTo, filters.clientId || undefined, filters.projectId || undefined),
+    staleTime: 1000 * 30, // 30 seconds
+    enabled: !!user.companyId
+  });
 
   const groupedByProject = useMemo(() => {
-    const map = new Map();
-    filteredData.forEach(s => {
-      const key = s.projectId;
-      if (!map.has(key)) map.set(key, {
-        id: key,
-        name: s.projectName,
-        clientName: s.clientName,
-        hours: 0,
+    return projectBillingSummary.map(row => {
+      const proj = projects.find(p => p.id === row.projectId);
+      const client = clients.find(c => c.id === proj?.clientId);
+      return {
+        id: row.projectId,
+        name: row.projectTitle,
+        clientName: client?.name || t('common.unknown') || 'Sconosciuto',
+        hours: row.totalHours,
         totalCost: 0,
         totalExpenses: 0,
-        revenue: 0,
-        dates: new Set<string>()
-      });
-      const proj = map.get(key);
-
-      proj.hours += s.totalHours;
-      proj.totalCost += (s.cost || 0) + (s.totalExpenses || 0);
-      proj.totalExpenses += (s.totalExpenses || 0);
-      proj.revenue += (s.revenue || 0);
-      proj.dates.add(s.date);
+        revenue: row.totalBilledAmount,
+        margin: row.totalBilledAmount,
+        dateDisplay: 'Periodo'
+      };
     });
+  }, [projectBillingSummary, projects, clients, t]);
 
-    return Array.from(map.values()).map(p => ({
-      ...p,
-      margin: p.revenue - p.totalCost,
-      dateDisplay: p.dates.size === 1 ? Array.from(p.dates)[0] : 'Periodo'
-    }));
-  }, [filteredData]);
+  const totals = useMemo(() => {
+    return {
+      hours: dbTotals?.totalHours || 0,
+      personnelCost: 0,
+      subcontractCost: 0,
+      totalExpenses: 0,
+      totalCost: 0,
+      revenue: dbTotals?.totalBilledAmount || 0,
+      margin: dbTotals?.totalBilledAmount || 0
+    };
+  }, [dbTotals]);
 
   const formatCurrency = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -130,7 +132,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                 s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
                 t('common.statusPending')
         }));
-        exportToPDF(rows, lang, user.name);
+        exportToPDF(rows, lang, user.name, { hours: totals.hours, cost: 0, revenue: totals.revenue, expenses: 0 });
       } else if (exportType === 'excel') {
         await exportReportExcel(user.companyId || '', filters, lang);
       }
@@ -153,20 +155,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         <div className="flex gap-2">
           <button
             onClick={() => {
-              const rows = filteredData.map(s => ({
-                date: new Date(s.date).toLocaleDateString(localeMap[lang]),
-                projectName: s.projectName,
-                clientName: s.clientName,
-                workerName: s.userName,
-                description: s.description || '',
-                hours: s.totalHours,
-                hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-                hourlyRevenue: 0, revenue: s.revenue || 0, 
-                paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
-                      s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
-                      t('common.statusPending')
-              }));
-              exportToPDF(rows, lang, user.name);
+              exportProjectSummaryToPDF(groupedByProject, totals, lang, user.name);
             }}
             className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-indigo-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >
