@@ -703,22 +703,21 @@ export default async function handler(req: any, res: any) {
         t.rawOvertimeHours,
         t.rawFestiveHours,
         t.rawNightHours,
-        t.rawAdditionalHours,
         t.rawTotalHours,
         t.rawActivityType
       ]
     ];
     for (const r of mappedReports) {
+      // Main worker row
       const mainWorker = workerMapRaw.get(r.created_by);
       const workerName = mainWorker?.name || r.created_by || 'N/A';
-      const additionalHours = (r.additionalWorkers || []).reduce(
-        (acc: number, aw: any) => acc + (Number(aw.hours) || 0), 0
-      );
+      
       const overtimeHours = Number(r.overtime_hours) || 0;
       const totalHours = Number(r.total_hours) || 0;
       const festiveHours = Number(r.festive_hours) || 0;
       const nightHours = Number(r.night_hours) || 0;
       const ordinaryHours = Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
+      
       rawDataRows.push([
         { v: r.date, t: 's' },
         { v: workerName, t: 's' },
@@ -727,13 +726,38 @@ export default async function handler(req: any, res: any) {
         { v: overtimeHours, t: 'n', z: '#,##0.00' },
         { v: festiveHours, t: 'n', z: '#,##0.00' },
         { v: nightHours, t: 'n', z: '#,##0.00' },
-        { v: additionalHours, t: 'n', z: '#,##0.00' },
-        { v: totalHours + additionalHours, t: 'n', z: '#,##0.00' },
+        { v: totalHours, t: 'n', z: '#,##0.00' },
         { v: r.activity_type || '', t: 's' }
       ]);
+
+      // Additional workers rows
+      if (r.additionalWorkers && r.additionalWorkers.length > 0) {
+        for (const aw of r.additionalWorkers) {
+          const awWorker = workerMapRaw.get(aw.worker_id);
+          const awName = awWorker?.name || aw.worker_id || 'N/A';
+          
+          const awTot = Number(aw.hours) || 0;
+          const awExt = Number(aw.overtime_hours) || 0;
+          const awFst = Number(aw.festive_hours) || 0;
+          const awNgt = Number(aw.night_hours) || 0;
+          const awOrd = Math.max(0, awTot - awExt - awFst - awNgt);
+
+          rawDataRows.push([
+            { v: r.date, t: 's' },
+            { v: awName, t: 's' },
+            { v: r.projectName || 'N/A', t: 's' },
+            { v: awOrd, t: 'n', z: '#,##0.00' },
+            { v: awExt, t: 'n', z: '#,##0.00' },
+            { v: awFst, t: 'n', z: '#,##0.00' },
+            { v: awNgt, t: 'n', z: '#,##0.00' },
+            { v: awTot, t: 'n', z: '#,##0.00' },
+            { v: r.activity_type || '', t: 's' }
+          ]);
+        }
+      }
     }
     const wsRaw = utils.aoa_to_sheet(rawDataRows);
-    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 14 }, { wch: 18 }];
+    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }];
     utils.book_append_sheet(wb, wsRaw, t.rawDataSheetName);
 
     // --- SHEET 5: Sintesi (Dashboard Direzionale) ---
