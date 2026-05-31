@@ -3,12 +3,14 @@ import { utils, write } from 'xlsx';
 
 // --- CONFIGURAZIONE LAYOUT EXCEL (COLONNE E MAPPING) ---
 const PayrollCols = {
-  workerName: 0,    // Column A
-  ordinaryHours: 1, // Column B
-  overtimeHours: 2, // Column C
-  totalHours: 3,    // Column D
-  hourlyRate: 4,    // Column E
-  totalCost: 5      // Column F
+  workerName: 0,
+  ordinaryHours: 1,
+  overtimeHours: 2,
+  festiveHours: 3,
+  nightHours: 4,
+  totalHours: 5,
+  hourlyRate: 6,
+  totalCost: 7
 };
 
 const SubappaltiCols = {
@@ -37,11 +39,13 @@ const RawDataCols = {
   date: 0,          // Column A
   workerName: 1,    // Column B
   projectName: 2,   // Column C
-  ordinaryHours: 3, // Column D
-  overtimeHours: 4, // Column E
-  additionalHours: 5,// Column F
-  totalHours: 6,    // Column G
-  activityType: 7   // Column H
+  ordinaryHours: 3,
+  overtimeHours: 4,
+  festiveHours: 5,
+  nightHours: 6,
+  additionalHours: 7,
+  totalHours: 8,
+  activityType: 9
 };
 
 // Helper per convertire un indice di colonna 0-based in lettera Excel (es. 0 -> A, 1 -> B, 26 -> AA)
@@ -61,6 +65,8 @@ const translations: Record<string, Record<string, string>> = {
     payrollTitle: 'Dipendente',
     ordinaryHours: 'Ore ordinarie',
     overtimeHours: 'Ore straordinarie',
+    festiveHours: 'Ore festive',
+    nightHours: 'Ore notturne',
     totalHours: 'Totale ore',
     hourlyRate: 'Costo orario',
     totalCost: 'Totale costo',
@@ -90,6 +96,8 @@ const translations: Record<string, Record<string, string>> = {
     rawProject: 'Progetto',
     rawOrdinaryHours: 'Ore ordinarie',
     rawOvertimeHours: 'Ore straordinarie',
+    rawFestiveHours: 'Ore festive',
+    rawNightHours: 'Ore notturne',
     rawAdditionalHours: 'Ore aggiuntive (team)',
     rawTotalHours: 'Totale ore',
     rawActivityType: 'Tipo attività'
@@ -98,6 +106,8 @@ const translations: Record<string, Record<string, string>> = {
     payrollTitle: 'Employee',
     ordinaryHours: 'Ordinary hours',
     overtimeHours: 'Overtime hours',
+    festiveHours: 'Festive hours',
+    nightHours: 'Night hours',
     totalHours: 'Total hours',
     hourlyRate: 'Hourly rate',
     totalCost: 'Total cost',
@@ -127,6 +137,8 @@ const translations: Record<string, Record<string, string>> = {
     rawProject: 'Project',
     rawOrdinaryHours: 'Ordinary hours',
     rawOvertimeHours: 'Overtime hours',
+    rawFestiveHours: 'Festive hours',
+    rawNightHours: 'Night hours',
     rawAdditionalHours: 'Additional hours (team)',
     rawTotalHours: 'Total hours',
     rawActivityType: 'Activity type'
@@ -135,6 +147,8 @@ const translations: Record<string, Record<string, string>> = {
     payrollTitle: 'Empleado',
     ordinaryHours: 'Horas ordinarias',
     overtimeHours: 'Horas extraordinarias',
+    festiveHours: 'Horas festivas',
+    nightHours: 'Horas nocturnas',
     totalHours: 'Horas totales',
     hourlyRate: 'Tarifa horaria',
     totalCost: 'Coste total',
@@ -164,6 +178,8 @@ const translations: Record<string, Record<string, string>> = {
     rawProject: 'Proyecto',
     rawOrdinaryHours: 'Horas ordinarias',
     rawOvertimeHours: 'Horas extraordinarias',
+    rawFestiveHours: 'Horas festivas',
+    rawNightHours: 'Horas nocturnas',
     rawAdditionalHours: 'Horas adicionales (equipo)',
     rawTotalHours: 'Horas totales',
     rawActivityType: 'Tipo de actividad'
@@ -172,6 +188,8 @@ const translations: Record<string, Record<string, string>> = {
     payrollTitle: 'Pracownik',
     ordinaryHours: 'Godziny zwykłe',
     overtimeHours: 'Nadgodziny',
+    festiveHours: 'Godziny świąteczne',
+    nightHours: 'Godziny nocne',
     totalHours: 'Suma godzin',
     hourlyRate: 'Stawka godzinowa',
     totalCost: 'Koszt całkowity',
@@ -201,6 +219,8 @@ const translations: Record<string, Record<string, string>> = {
     rawProject: 'Projekt',
     rawOrdinaryHours: 'Godziny zwykłe',
     rawOvertimeHours: 'Nadgodziny',
+    rawFestiveHours: 'Godziny świąteczne',
+    rawNightHours: 'Godziny nocne',
     rawAdditionalHours: 'Dodatkowe godziny (zespół)',
     rawTotalHours: 'Suma godzin',
     rawActivityType: 'Rodzaj aktywności'
@@ -209,6 +229,8 @@ const translations: Record<string, Record<string, string>> = {
     payrollTitle: 'Çalışan',
     ordinaryHours: 'Normal çalışma saatleri',
     overtimeHours: 'Fazla mesai saatleri',
+    festiveHours: 'Tatil saatleri',
+    nightHours: 'Gece saatleri',
     totalHours: 'Toplam saat',
     hourlyRate: 'Saatlik ücret',
     totalCost: 'Toplam maliyet',
@@ -238,6 +260,8 @@ const translations: Record<string, Record<string, string>> = {
     rawProject: 'Proje',
     rawOrdinaryHours: 'Normal saatler',
     rawOvertimeHours: 'Fazla mesai',
+    rawFestiveHours: 'Tatil saatleri',
+    rawNightHours: 'Gece saatleri',
     rawAdditionalHours: 'Ek saatler (ekip)',
     rawTotalHours: 'Toplam saat',
     rawActivityType: 'Faaliyet türü'
@@ -246,6 +270,8 @@ const translations: Record<string, Record<string, string>> = {
     payrollTitle: 'Medarbejder',
     ordinaryHours: 'Normale timer',
     overtimeHours: 'Overtidstimer',
+    festiveHours: 'Helligdagstimer',
+    nightHours: 'Nattetimer',
     totalHours: 'Samlet antal timer',
     hourlyRate: 'Timeløn',
     totalCost: 'Samlet omkostning',
@@ -275,6 +301,8 @@ const translations: Record<string, Record<string, string>> = {
     rawProject: 'Projekt',
     rawOrdinaryHours: 'Normale timer',
     rawOvertimeHours: 'Overtidstimer',
+    rawFestiveHours: 'Helligdagstimer',
+    rawNightHours: 'Nattetimer',
     rawAdditionalHours: 'Ekstra timer (team)',
     rawTotalHours: 'Samlet antal timer',
     rawActivityType: 'Aktivitetstype'
@@ -316,14 +344,20 @@ class PayrollService {
               workerName: mainWorker.name,
               ordinaryHours: 0,
               overtimeHours: 0,
+              festiveHours: 0,
+              nightHours: 0,
               hourlyRate: Number(mainWorker.hourly_rate) || 0
             });
           }
           const pData = payrollMap.get(pKey);
           const hours = Number(r.total_hours) || 0;
           const overtime = Number(r.overtime_hours) || 0;
-          pData.ordinaryHours += Math.max(0, hours - overtime);
+          const festive = Number(r.festive_hours) || 0;
+          const night = Number(r.night_hours) || 0;
+          pData.ordinaryHours += Math.max(0, hours - overtime - festive - night);
           pData.overtimeHours += overtime;
+          pData.festiveHours += festive;
+          pData.nightHours += night;
         }
       }
 
@@ -338,15 +372,21 @@ class PayrollService {
               payrollMap.set(pKey, {
                 workerName: awWorker.name,
                 ordinaryHours: 0,
-                overtimeHours: 0,
+              overtimeHours: 0,
+              festiveHours: 0,
+              nightHours: 0,
                 hourlyRate: Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0
               });
             }
             const pData = payrollMap.get(pKey);
             const hours = Number(aw.hours) || 0;
             const overtime = Number(aw.overtime_hours) || 0;
-            pData.ordinaryHours += Math.max(0, hours - overtime);
+            const festive = Number(aw.festive_hours) || 0;
+            const night = Number(aw.night_hours) || 0;
+            pData.ordinaryHours += Math.max(0, hours - overtime - festive - night);
             pData.overtimeHours += overtime;
+            pData.festiveHours += festive;
+            pData.nightHours += night;
           }
         }
       }
@@ -525,8 +565,8 @@ export default async function handler(req: any, res: any) {
     let reportQuery = supabaseAdmin
       .from('reports')
       .select(`
-        id, date, total_hours, overtime_hours, activity_type, created_by, project_id,
-        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, hourly_rate, person_name, membership_type, subcontractor_id)
+        id, date, total_hours, overtime_hours, festive_hours, night_hours, activity_type, created_by, project_id,
+        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, hourly_rate, person_name, membership_type, subcontractor_id)
       `)
       .eq('company_id', companyId);
 
@@ -580,6 +620,8 @@ export default async function handler(req: any, res: any) {
         t.payrollTitle,
         t.ordinaryHours,
         t.overtimeHours,
+        t.festiveHours,
+        t.nightHours,
         t.totalHours,
         t.hourlyRate,
         t.totalCost
@@ -591,13 +633,15 @@ export default async function handler(req: any, res: any) {
         { v: p.workerName, t: 's' },
         { v: p.ordinaryHours, t: 'n', z: '#,##0.00' },
         { v: p.overtimeHours, t: 'n', z: '#,##0.00' },
-        { f: `${getColLetter(PayrollCols.ordinaryHours)}${R}+${getColLetter(PayrollCols.overtimeHours)}${R}`, t: 'n', z: '#,##0.00' },
+        { v: p.festiveHours, t: 'n', z: '#,##0.00' },
+        { v: p.nightHours, t: 'n', z: '#,##0.00' },
+        { f: `${getColLetter(PayrollCols.ordinaryHours)}${R}+${getColLetter(PayrollCols.overtimeHours)}${R}+${getColLetter(PayrollCols.festiveHours)}${R}+${getColLetter(PayrollCols.nightHours)}${R}`, t: 'n', z: '#,##0.00' },
         { v: p.hourlyRate, t: 'n', z: numFormat },
         { f: `(${getColLetter(PayrollCols.ordinaryHours)}${R}*${getColLetter(PayrollCols.hourlyRate)}${R})+(${getColLetter(PayrollCols.overtimeHours)}${R}*(${getColLetter(PayrollCols.hourlyRate)}${R}*1.2))`, t: 'n', z: numFormat }
       ]);
     });
     const wsPayroll = utils.aoa_to_sheet(payrollRows);
-    wsPayroll['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
+    wsPayroll['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
     utils.book_append_sheet(wb, wsPayroll, 'Payroll');
 
     // --- SHEET 2: Subappalti ---
@@ -657,6 +701,8 @@ export default async function handler(req: any, res: any) {
         t.rawProject,
         t.rawOrdinaryHours,
         t.rawOvertimeHours,
+        t.rawFestiveHours,
+        t.rawNightHours,
         t.rawAdditionalHours,
         t.rawTotalHours,
         t.rawActivityType
@@ -670,20 +716,24 @@ export default async function handler(req: any, res: any) {
       );
       const overtimeHours = Number(r.overtime_hours) || 0;
       const totalHours = Number(r.total_hours) || 0;
-      const ordinaryHours = Math.max(0, totalHours - overtimeHours);
+      const festiveHours = Number(r.festive_hours) || 0;
+      const nightHours = Number(r.night_hours) || 0;
+      const ordinaryHours = Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
       rawDataRows.push([
         { v: r.date, t: 's' },
         { v: workerName, t: 's' },
         { v: r.projectName || 'N/A', t: 's' },
         { v: ordinaryHours, t: 'n', z: '#,##0.00' },
         { v: overtimeHours, t: 'n', z: '#,##0.00' },
+        { v: festiveHours, t: 'n', z: '#,##0.00' },
+        { v: nightHours, t: 'n', z: '#,##0.00' },
         { v: additionalHours, t: 'n', z: '#,##0.00' },
         { v: totalHours + additionalHours, t: 'n', z: '#,##0.00' },
         { v: r.activity_type || '', t: 's' }
       ]);
     }
     const wsRaw = utils.aoa_to_sheet(rawDataRows);
-    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 14 }, { wch: 18 }];
+    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 14 }, { wch: 18 }];
     utils.book_append_sheet(wb, wsRaw, t.rawDataSheetName);
 
     // --- SHEET 5: Sintesi (Dashboard Direzionale) ---
