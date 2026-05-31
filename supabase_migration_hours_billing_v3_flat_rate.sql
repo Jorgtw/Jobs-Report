@@ -19,6 +19,14 @@ ADD COLUMN IF NOT EXISTS overtime_hours NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
 ADD COLUMN IF NOT EXISTS festive_hours  NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
 ADD COLUMN IF NOT EXISTS night_hours    NUMERIC(5, 2) NOT NULL DEFAULT 0.00;
 
+-- 2b. Ensure all 4 categories of hours exist on rapportini_workers (additional workers)
+ALTER TABLE public.rapportini_workers 
+ADD COLUMN IF NOT EXISTS ordinary_hours NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+ADD COLUMN IF NOT EXISTS overtime_hours NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+ADD COLUMN IF NOT EXISTS festive_hours  NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+ADD COLUMN IF NOT EXISTS night_hours    NUMERIC(5, 2) NOT NULL DEFAULT 0.00;
+
+
 -- 3. Add CHECK constraints to prevent negative hours
 DO $$
 BEGIN
