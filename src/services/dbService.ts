@@ -1955,19 +1955,15 @@ class DBService {
       : [];
 
     // Calcolo robusto delle ore totali basato sulle 4 categorie del modello V3 flat-rate
-    const oHours = r.ordinary_hours !== null && r.ordinary_hours !== undefined ? Number(r.ordinary_hours) : null;
     const exHours = Number(r.overtime_hours) || 0;
     const fHours = Number(r.festive_hours) || 0;
     const nHours = Number(r.night_hours) || 0;
     
-    // Se ordinary_hours è NULL (dati legacy), usiamo total_hours e deduciamo le ordinarie
-    const computedTotal = oHours !== null 
-      ? (oHours + exHours + fHours + nHours) 
-      : (Number(r.total_hours) || 0);
+    // total_hours è la source of truth dal DB (inserito manualmente o calcolato)
+    const computedTotal = Number(r.total_hours) || 0;
       
-    const computedOrdinary = oHours !== null 
-      ? oHours 
-      : Math.max(0, computedTotal - exHours - fHours - nHours);
+    // Le ordinarie sono sempre ricavate per sottrazione per garantire la congruenza matematica
+    const computedOrdinary = Math.max(0, computedTotal - exHours - fHours - nHours);
 
     return {
       id: r.id,
@@ -1988,18 +1984,14 @@ class DBService {
       travelNotes: r.travel_notes || '',
       expenses: expensesList,
       additionalWorkers: (r.additionalWorkers || []).map((aw: any) => {
-        const awOHours = aw.ordinary_hours !== null && aw.ordinary_hours !== undefined ? Number(aw.ordinary_hours) : null;
         const awExHours = Number(aw.overtime_hours) || 0;
         const awFHours = Number(aw.festive_hours) || 0;
         const awNHours = Number(aw.night_hours) || 0;
         
-        const awTotal = awOHours !== null 
-          ? (awOHours + awExHours + awFHours + awNHours) 
-          : (Number(aw.hours) || 0);
+        // aw.hours è la source of truth dal DB per le ore totali del worker
+        const awTotal = Number(aw.hours) || 0;
           
-        const awOrdinary = awOHours !== null 
-          ? awOHours 
-          : Math.max(0, awTotal - awExHours - awFHours - awNHours);
+        const awOrdinary = Math.max(0, awTotal - awExHours - awFHours - awNHours);
 
         return {
           userId: aw.worker_id,
