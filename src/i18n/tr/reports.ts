@@ -105,6 +105,7 @@ export const reports = {
   addExpense: "Gider ekle",
   amount: "Tutar",
   placeholderExpenseType: "Örn. Akşam Yemeği, Seyahat...",
+  placeholderExpenseNotes: "Gider notları...",
   adminStatusLabel: "İdari Durum",
   complianceReport: "Uygunluk Raporu",
   compliancePhotos: "Fotoğraf Dokümantasyonu",

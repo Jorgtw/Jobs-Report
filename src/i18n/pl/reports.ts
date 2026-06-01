@@ -105,6 +105,7 @@ export const reports = {
   addExpense: "Dodaj wydatek",
   amount: "Kwota",
   placeholderExpenseType: "np. Kolacja, Podróż...",
+  placeholderExpenseNotes: "Notatki do wydatku...",
   adminStatusLabel: "Status administracyjny",
   complianceReport: "Raport zgodności",
   compliancePhotos: "Dokumentacja fotograficzna",

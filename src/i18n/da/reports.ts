@@ -105,6 +105,7 @@ export const reports = {
   addExpense: "Tilføj udgift",
   amount: "Beløb",
   placeholderExpenseType: "f.eks. Middag, rejse...",
+  placeholderExpenseNotes: "Udgiftsnoter...",
   adminStatusLabel: "Administrativ status",
   complianceReport: "Overensstemmelsesrapport",
   compliancePhotos: "Fotodokumentation",
