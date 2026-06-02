@@ -5,6 +5,13 @@ import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
 import { supabase } from './supabase';
 
+const getApiUrl = (url: string) => {
+  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+    return 'https://jobs-report.vercel.app' + url;
+  }
+  return url;
+};
+
 const localeMap: Record<string, string> = {
   it: 'it-IT',
   en: 'en-US',
@@ -515,20 +522,49 @@ export const generateCompliancePDF = async (
   }
 
   const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
-  window.open(doc.output('bloburl'), '_blank');
-  doc.save(fileName);
+
+  const isCapacitor = typeof (window as any).Capacitor !== 'undefined';
+  let uploadedSignedUrl = '';
+
+  if (isCapacitor) {
+    try {
+      const pdfBlob = doc.output('blob');
+      const compId = report.companyId || (report as any).company_id;
+      if (!compId) throw new Error("Missing companyId for storage upload");
+      const storagePath = `${compId}/reports/${fileName}`;
+      await db.uploadFile('compliance-reports', storagePath, pdfBlob);
+      uploadedSignedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
+      window.open(uploadedSignedUrl, '_blank');
+    } catch (e) {
+      console.error('Failed to upload/open PDF on Capacitor:', e);
+      // Fallback: try doc.save as last resort
+      try {
+        doc.save(fileName);
+      } catch (_) {}
+    }
+  } else {
+    // Normal web behavior
+    try {
+      window.open(doc.output('bloburl'), '_blank');
+    } catch (_) {}
+    doc.save(fileName);
+  }
 
   if (adminEmails.length > 0) {
     const emailsToNotify = adminEmails.filter(Boolean);
     if (emailsToNotify.length > 0) {
       try {
-        const pdfBlob = doc.output('blob');
-        const compId = report.companyId || (report as any).company_id;
-        if (!compId) throw new Error("Missing companyId for storage upload");
-        const storagePath = `${compId}/reports/${fileName}`;
-        await db.uploadFile('compliance-reports', storagePath, pdfBlob);
-        const signedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
-        await fetch('/api/sendComplianceEmail', {
+        let signedUrl = uploadedSignedUrl;
+        if (!signedUrl) {
+          const pdfBlob = doc.output('blob');
+          const compId = report.companyId || (report as any).company_id;
+          if (!compId) throw new Error("Missing companyId for storage upload");
+          const storagePath = `${compId}/reports/${fileName}`;
+          await db.uploadFile('compliance-reports', storagePath, pdfBlob);
+          signedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
+        }
+        
+        await fetch(getApiUrl('/api/sendComplianceEmail'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -569,7 +605,7 @@ export const exportReportExcel = async (companyId: string, filters: any, lang: L
       ...cleanedFilters
     });
 
-    const response = await fetch(`/api/export-excel?${queryParams.toString()}`, {
+    const response = await fetch(getApiUrl(`/api/export-excel?${queryParams.toString()}`), {
       method: 'GET',
     });
 

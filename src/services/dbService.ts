@@ -2,6 +2,13 @@ import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType,
 import { supabase } from './supabase';
 import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
 
+const getApiUrl = (url: string) => {
+  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+    return 'https://jobs-report.vercel.app' + url;
+  }
+  return url;
+};
+
 class DBService {
   private currentCompanyId: string | null = null;
   private currentUserId: string | null = null;
@@ -242,7 +249,7 @@ class DBService {
     const isSensitiveUpdate = !!(updates.email || updates.password);
     if (isSensitiveUpdate) {
       const token = await this.getAuthToken();
-      const response = await fetch('/api/admin-auth-update', {
+      const response = await fetch(getApiUrl('/api/admin-auth-update'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -429,7 +436,7 @@ class DBService {
   }
 
   async selfRegister(data: any) {
-    const response = await fetch('/api/self-register', {
+    const response = await fetch(getApiUrl('/api/self-register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -527,7 +534,7 @@ class DBService {
 
       // STEP 2 — AUTH + WORKER (IDEMPOTENTE)
       const token = await this.getAuthToken();
-      const response = await fetch('/api/admin-auth-update', {
+      const response = await fetch(getApiUrl('/api/admin-auth-update'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -644,7 +651,7 @@ class DBService {
       // We assume step 1 (Company creation) is done since we have the ID.
       // STEP 2 — AUTH + WORKER (IDEMPOTENTE)
       const token = await this.getAuthToken();
-      const response = await fetch('/api/admin-auth-update', {
+      const response = await fetch(getApiUrl('/api/admin-auth-update'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -960,7 +967,7 @@ class DBService {
 
       if (Object.keys(userUpdates).length > 0) {
         const token = await this.getAuthToken();
-        const response = await fetch('/api/admin-auth-update', {
+        const response = await fetch(getApiUrl('/api/admin-auth-update'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1203,7 +1210,7 @@ class DBService {
 
   async sendAccessInstructions(id: string): Promise<void> {
     const token = await this.getAuthToken();
-    const response = await fetch('/api/admin-auth-update', {
+    const response = await fetch(getApiUrl('/api/admin-auth-update'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

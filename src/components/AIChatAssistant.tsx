@@ -7,6 +7,13 @@ interface Message {
   parts: { text: string }[];
 }
 
+const getApiUrl = (url: string) => {
+  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+    return 'https://jobs-report.vercel.app' + url;
+  }
+  return url;
+};
+
 const AIChatAssistant: React.FC = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -103,7 +110,7 @@ const AIChatAssistant: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat-assistant', {
+      const response = await fetch(getApiUrl('/api/chat-assistant'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -5,7 +5,7 @@ import { requestForToken } from '../services/firebase';
 
 export const usePushNotifications = (user: User | null) => {
   const [permission, setPermission] = useState<NotificationPermission>(
-    typeof window !== 'undefined' ? Notification.permission : 'default'
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   );
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export const usePushNotifications = (user: User | null) => {
 
     const handleStatusChange = () => {
       // Sincronizziamo sia il permesso browser che lo stato DB
-      const currentPermission = Notification.permission;
+      const currentPermission = typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default';
       setPermission(prev => {
         if (prev !== currentPermission) return currentPermission;
         return prev;
