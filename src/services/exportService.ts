@@ -529,7 +529,7 @@ export const generateCompliancePDF = async (
   if (isCapacitor) {
     try {
       const pdfBlob = doc.output('blob');
-      const compId = report.companyId || (report as any).company_id;
+      const compId = report.companyId || (report as any).company_id || db.getCompanyIdSafe();
       if (!compId) throw new Error("Missing companyId for storage upload");
       const storagePath = `${compId}/reports/${fileName}`;
       await db.uploadFile('compliance-reports', storagePath, pdfBlob);
@@ -557,7 +557,7 @@ export const generateCompliancePDF = async (
         let signedUrl = uploadedSignedUrl;
         if (!signedUrl) {
           const pdfBlob = doc.output('blob');
-          const compId = report.companyId || (report as any).company_id;
+          const compId = report.companyId || (report as any).company_id || db.getCompanyIdSafe();
           if (!compId) throw new Error("Missing companyId for storage upload");
           const storagePath = `${compId}/reports/${fileName}`;
           await db.uploadFile('compliance-reports', storagePath, pdfBlob);
