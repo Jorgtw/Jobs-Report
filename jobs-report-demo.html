@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jobs-Report — Piattaforma Interattiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;overflow:hidden}
+
+/* ─── LAYOUT ────────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;min-width:240px;background:#0f172a;display:flex;flex-direction:column;overflow:hidden;z-index:10}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:52px;min-height:52px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;gap:12px;z-index:5}
+.content-area{flex:1;overflow-y:auto;padding:28px 32px}
+
+/* ─── SIDEBAR ───────────────────────────────────────────── */
+.sidebar-brand{padding:16px 16px 12px;border-bottom:1px solid #1e293b}
+.sidebar-brand .logo{font-size:18px;font-weight:900;color:#fff;letter-spacing:-0.5px}
+.sidebar-brand .logo span{color:#3b82f6}
+.sidebar-brand .tagline{font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+
+.nav-section-label{font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.12em;padding:14px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;border-radius:8px;margin:1px 8px;transition:all 0.15s;position:relative}
+.nav-item:hover{background:#1e293b}
+.nav-item.active{background:#1d4ed8;box-shadow:0 0 0 1px #2563eb inset}
+.nav-item .nav-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:rgba(255,255,255,0.06)}
+.nav-item.active .nav-icon{background:rgba(255,255,255,0.2)}
+.nav-item .nav-label{font-size:12px;font-weight:600;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-item.active .nav-label{color:#fff}
+.nav-item:hover .nav-label{color:#e2e8f0}
+.nav-badge{position:absolute;right:12px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:99px}
+.nav-badge.green{background:#10b981}
+.nav-badge.amber{background:#f59e0b}
+.nav-badge.premium{background:linear-gradient(135deg,#8b5cf6,#3b82f6);font-size:8px;padding:1px 5px}
+
+.sidebar-footer{margin-top:auto;border-top:1px solid #1e293b;padding:12px 8px}
+.mode-toggle{display:flex;background:#1e293b;border-radius:10px;padding:3px;gap:2px}
+.mode-btn{flex:1;padding:7px 6px;border:none;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;transition:all 0.2s;color:#64748b;background:transparent;text-transform:uppercase;letter-spacing:0.05em}
+.mode-btn.active{background:#1d4ed8;color:#fff;box-shadow:0 2px 8px rgba(29,78,216,0.4)}
+.mode-btn:hover:not(.active){color:#94a3b8;background:rgba(255,255,255,0.05)}
+
+/* ─── TOPBAR ────────────────────────────────────────────── */
+.topbar-breadcrumb{font-size:13px;font-weight:700;color:#1e293b}
+.topbar-breadcrumb span{color:#94a3b8;font-weight:400}
+.topbar-spacer{flex:1}
+.topbar-role-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700}
+.role-admin{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.role-worker{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.role-supervisor{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.topbar-path-pill{display:flex;align-items:center;gap:4px;padding:4px 10px;background:#f1f5f9;border-radius:99px;font-size:10px;font-weight:700;color:#64748b;border:1px solid #e2e8f0;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.05em}
+.topbar-path-pill:hover{background:#e2e8f0;color:#334155}
+.topbar-path-pill.active-path{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+
+/* ─── SECTION VIEWS ─────────────────────────────────────── */
+.section-view{display:none;animation:fadeSlide 0.25s ease}
+.section-view.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.section-header{margin-bottom:24px}
+.section-title{font-size:22px;font-weight:900;color:#0f172a;letter-spacing:-0.5px}
+.section-subtitle{font-size:13px;color:#64748b;margin-top:4px;font-weight:500}
+
+/* ─── CARDS ─────────────────────────────────────────────── */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px;transition:all 0.2s}
+.card-sm{padding:14px 16px}
+.card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+.card-label{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px}
+.card-value{font-size:22px;font-weight:900;color:#0f172a}
+.card-value.blue{color:#1d4ed8}
+.card-value.green{color:#059669}
+.card-value.amber{color:#d97706}
+.card-value.red{color:#dc2626}
+.card-sub{font-size:11px;color:#94a3b8;margin-top:2px;font-weight:500}
+
+/* ─── GRID HELPERS ──────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.flex-gap{display:flex;gap:12px;align-items:center}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.mt-4{margin-top:16px}
+.mt-6{margin-top:24px}
+.space-y{display:flex;flex-direction:column;gap:10px}
+
+/* ─── MOCK DATA ROWS ─────────────────────────────────────── */
+.list-row{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;transition:all 0.15s}
+.list-row:hover{border-color:#bfdbfe;box-shadow:0 2px 12px rgba(29,78,216,0.08)}
+.row-title{font-size:13px;font-weight:700;color:#0f172a}
+.row-sub{font-size:11px;color:#64748b;margin-top:1px;font-weight:500}
+.row-actions{display:flex;gap:6px}
+.btn-icon{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s}
+.btn-edit{background:#eff6ff;color:#1d4ed8}
+.btn-edit:hover{background:#dbeafe}
+.btn-del{background:#fef2f2;color:#dc2626}
+.btn-del:hover{background:#fee2e2}
+.btn-mail{background:#f0fdf4;color:#059669}
+.btn-mail:hover{background:#dcfce7}
+
+/* ─── BADGES ────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-red{background:#fee2e2;color:#dc2626}
+.badge-amber{background:#fef3c7;color:#d97706}
+.badge-indigo{background:#e0e7ff;color:#4338ca}
+.badge-slate{background:#f1f5f9;color:#475569}
+.badge-purple{background:#f3e8ff;color:#7e22ce}
+
+/* ─── INFO PANELS ────────────────────────────────────────── */
+.info-panel{border-radius:14px;padding:16px;margin-bottom:16px;border-left:4px solid}
+.info-blue{background:#eff6ff;border-color:#3b82f6}
+.info-green{background:#f0fdf4;border-color:#22c55e}
+.info-amber{background:#fffbeb;border-color:#f59e0b}
+.info-purple{background:#faf5ff;border-color:#a855f7}
+.info-panel .info-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.info-blue .info-title{color:#1d4ed8}
+.info-green .info-title{color:#15803d}
+.info-amber .info-title{color:#d97706}
+.info-purple .info-title{color:#7e22ce}
+.info-panel p{font-size:12px;color:#374151;line-height:1.6}
+.info-panel p+p{margin-top:4px}
+.info-panel strong{font-weight:700}
+
+/* ─── COMMERCIAL MODE ────────────────────────────────────── */
+.commercial-strip{display:none;background:linear-gradient(135deg,#1e1b4b,#1e3a8a);border-radius:16px;padding:20px;margin-bottom:20px}
+.commercial-strip.visible{display:block;animation:fadeSlide 0.3s ease}
+.comm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
+.comm-block{background:rgba(255,255,255,0.08);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.1)}
+.comm-block-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px}
+.comm-block-label.prob{color:#fca5a5}
+.comm-block-label.sol{color:#86efac}
+.comm-block-label.ben{color:#93c5fd}
+.comm-block p{font-size:11px;color:rgba(255,255,255,0.85);line-height:1.55}
+
+/* ─── FORM MOCK ──────────────────────────────────────────── */
+.form-field{margin-bottom:14px}
+.form-label{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;display:block}
+.form-input{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-family:inherit;color:#0f172a;background:#f8fafc;outline:none}
+.form-input:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.toggle-group{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:2px}
+.toggle-btn{flex:1;padding:6px 12px;border:none;border-radius:8px;font-size:10px;font-weight:800;cursor:pointer;transition:all 0.15s;color:#64748b;background:transparent;text-transform:uppercase;letter-spacing:0.06em}
+.toggle-btn.on{background:#fff;color:#1d4ed8;box-shadow:0 1px 4px rgba(0,0,0,0.12)}
+
+/* ─── BUTTONS ────────────────────────────────────────────── */
+.btn{padding:9px 18px;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-primary{background:#1d4ed8;color:#fff;box-shadow:0 2px 10px rgba(29,78,216,0.3)}
+.btn-primary:hover{background:#1e40af;transform:translateY(-1px)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px}
+.btn-outline{background:#fff;border:1px solid #e2e8f0;color:#475569}
+.btn-outline:hover{border-color:#94a3b8;color:#0f172a}
+.btn-success{background:#059669;color:#fff}
+.btn-amber{background:#d97706;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+
+/* ─── REPORT TABLE ───────────────────────────────────────── */
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid #e2e8f0}
+table{width:100%;border-collapse:collapse;background:#fff}
+th{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;padding:11px 14px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap;background:#f8fafc}
+td{padding:11px 14px;font-size:12px;color:#334155;border-bottom:1px solid #f1f5f9;font-weight:500}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+
+/* ─── COMPLIANCE MOCK ────────────────────────────────────── */
+.compliance-step{display:flex;align-items:flex-start;gap:12px;padding:14px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:10px}
+.compliance-num{width:28px;height:28px;border-radius:50%;background:#1d4ed8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.compliance-content .ct{font-size:12px;font-weight:700;color:#0f172a;margin-bottom:2px}
+.compliance-content .cd{font-size:11px;color:#64748b}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.photo-thumb{aspect-ratio:16/9;border-radius:10px;background:linear-gradient(135deg,#dbeafe,#e0e7ff);border:1px solid #c7d2fe;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}
+.photo-badge{position:absolute;bottom:4px;left:6px;background:rgba(0,0,0,0.5);color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:99px}
+.sig-area{background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;margin-top:10px}
+.sig-area p{font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.sig-mock{font-family:'Dancing Script','Segoe Script',cursive;font-size:24px;color:#1e3a8a;margin-bottom:-4px}
+
+/* ─── COMMS HUB MOCK ─────────────────────────────────────── */
+.comms-layout{display:flex;height:340px;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;background:#fff}
+.comms-left{width:220px;min-width:220px;background:#f5f4f0;border-right:1px solid #e2e8f0;display:flex;flex-direction:column}
+.comms-left-header{padding:12px;border-bottom:1px solid #e2e8f0;font-size:11px;font-weight:800;color:#0f172a;display:flex;justify-content:space-between;align-items:center}
+.comms-section-btn{width:100%;text-align:left;padding:8px 12px;font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;gap:6px}
+.comms-msg-row{padding:10px 12px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s}
+.comms-msg-row.selected{background:#eff6ff;border-left-color:#1d4ed8}
+.comms-msg-row:hover:not(.selected){background:#f0f0ed}
+.comms-msg-type{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8}
+.comms-msg-text{font-size:11px;color:#0f172a;font-weight:700;margin-top:1px;line-height:1.4}
+.comms-right{flex:1;display:flex;flex-direction:column}
+.comms-right-header{padding:12px 14px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+.comms-avatar{width:28px;height:28px;border-radius:50%;background:#1d4ed8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.comms-thread{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fafaf9}
+.comms-bubble{max-width:75%;padding:10px 12px;border-radius:12px;font-size:11px;line-height:1.5}
+.comms-bubble.sent{background:#1d4ed8;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.comms-bubble.recv{background:#fff;color:#0f172a;border:1px solid #e2e8f0;align-self:flex-start;border-bottom-left-radius:4px}
+.comms-bubble-meta{font-size:9px;opacity:0.7;margin-top:2px;font-weight:600}
+.comms-reply{padding:10px 12px;border-top:1px solid #e2e8f0;display:flex;gap:8px;align-items:center;background:#fff}
+.comms-reply-input{flex:1;padding:8px 12px;border:1px solid #e2e8f0;border-radius:20px;font-size:12px;background:#f8fafc;font-family:inherit}
+
+/* ─── DASHBOARD KPI ──────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kpi-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.k-blue::before{background:linear-gradient(90deg,#3b82f6,#1d4ed8)}
+.kpi-card.k-green::before{background:linear-gradient(90deg,#22c55e,#15803d)}
+.kpi-card.k-amber::before{background:linear-gradient(90deg,#f59e0b,#d97706)}
+.kpi-card.k-red::before{background:linear-gradient(90deg,#f87171,#dc2626)}
+.kpi-card.k-indigo::before{background:linear-gradient(90deg,#818cf8,#4338ca)}
+.kpi-card:hover{border-color:#bfdbfe;box-shadow:0 4px 20px rgba(29,78,216,0.1);transform:translateY(-2px)}
+.kpi-label{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin-top:10px}
+.kpi-value{font-size:24px;font-weight:900;margin-top:2px;letter-spacing:-1px}
+
+/* ─── GUIDED PATHS ───────────────────────────────────────── */
+.path-card{border:2px solid #e2e8f0;border-radius:16px;padding:18px;cursor:pointer;transition:all 0.2s}
+.path-card:hover,.path-card.active-path-card{border-color:#1d4ed8;background:#eff6ff}
+.path-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}
+.path-title{font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px}
+.path-desc{font-size:11px;color:#64748b;line-height:1.5}
+.path-steps{margin-top:12px;display:flex;flex-direction:column;gap:4px}
+.path-step-item{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#475569;padding:5px 8px;border-radius:8px;cursor:pointer;transition:all 0.15s}
+.path-step-item:hover{background:#dbeafe;color:#1d4ed8}
+.path-step-num{width:18px;height:18px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.path-step-item:hover .path-step-num{background:#1d4ed8;color:#fff}
+
+/* ─── FAQ / TIPS ─────────────────────────────────────────── */
+.faq-item{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:8px}
+.faq-q{padding:12px 16px;font-size:12px;font-weight:700;color:#0f172a;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:background 0.15s}
+.faq-q:hover{background:#f8fafc}
+.faq-q .arrow{transition:transform 0.2s;color:#94a3b8;font-size:14px}
+.faq-q.open .arrow{transform:rotate(180deg)}
+.faq-a{padding:0 16px;font-size:12px;color:#475569;line-height:1.7;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.2s}
+.faq-a.open{max-height:200px;padding:10px 16px;border-top:1px solid #f1f5f9}
+
+/* ─── ROADMAP ────────────────────────────────────────────── */
+.roadmap-card{border-radius:16px;padding:18px;border:1px solid;margin-bottom:12px}
+.roadmap-card.rm-soon{background:#fffbeb;border-color:#fde68a}
+.roadmap-card.rm-later{background:#f0fdf4;border-color:#bbf7d0}
+.roadmap-card.rm-future{background:#f5f3ff;border-color:#ddd6fe}
+.rm-tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;display:inline-block;padding:2px 8px;border-radius:99px}
+.rm-soon .rm-tag{background:#fef3c7;color:#d97706}
+.rm-later .rm-tag{background:#dcfce7;color:#15803d}
+.rm-future .rm-tag{background:#ede9fe;color:#7c3aed}
+.rm-title{font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px}
+.rm-desc{font-size:12px;color:#475569;line-height:1.6}
+.rm-features{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.rm-feat{font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,0.6);color:#374151;border:1px solid rgba(0,0,0,0.08)}
+
+/* ─── REPORT FORM TABS ───────────────────────────────────── */
+.form-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#1d4ed8;margin:16px 0 8px;padding-left:2px;display:flex;align-items:center;gap:6px}
+.form-section-title::before{content:'';display:inline-block;width:3px;height:12px;background:#1d4ed8;border-radius:2px}
+
+/* ─── SCROLLBAR ──────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+
+/* ─── COLLAPSIBLE INFO BUTTON ────────────────────────────── */
+.info-btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.info-btn{padding:6px 14px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px}
+.info-btn:hover{background:#dbeafe;border-color:#93c5fd}
+.info-btn.active-btn{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.collapsible-box{overflow:hidden;max-height:0;transition:max-height 0.35s ease,opacity 0.25s;opacity:0;margin-bottom:0}
+.collapsible-box.open{max-height:800px;opacity:1;margin-bottom:16px}
+
+/* ─── AVATAR ─────────────────────────────────────────────── */
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.avatar-blue{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.avatar-green{background:linear-gradient(135deg,#22c55e,#15803d)}
+.avatar-amber{background:linear-gradient(135deg,#f59e0b,#d97706)}
+
+/* ─── STATUS TAG ─────────────────────────────────────────── */
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+.dot-green{background:#22c55e}
+.dot-amber{background:#f59e0b}
+.dot-red{background:#ef4444}
+.dot-blue{background:#3b82f6}
+
+/* ─── SUMMARY SCREEN ─────────────────────────────────────── */
+.learn-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px}
+.learn-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px;color:#374151}
+.learn-item:last-child{border-bottom:none}
+.learn-check{color:#059669;font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* ─── UTIL ───────────────────────────────────────────────── */
+.text-xs{font-size:11px}
+.text-sm{font-size:12px}
+.font-bold{font-weight:700}
+.text-slate{color:#64748b}
+.text-blue{color:#1d4ed8}
+.text-green{color:#059669}
+.text-red{color:#dc2626}
+.text-amber{color:#d97706}
+.mt-1{margin-top:4px}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mt-5{margin-top:20px}
+.mb-2{margin-bottom:8px}
+.mb-4{margin-bottom:16px}
+.hidden{display:none!important}
+.divider{height:1px;background:#f1f5f9;margin:16px 0}
+.w-full{width:100%}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ═══════════════════════════════════════════════════════ SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">Jobs<span>Report</span></div>
+      <div class="tagline">Gestione cantieri digitale</div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding-bottom:8px">
+      <div class="nav-section-label">Dashboard</div>
+      <div class="nav-item active" data-section="dashboard">
+        <div class="nav-icon">🏠</div>
+        <span class="nav-label">Dashboard</span>
+      </div>
+
+      <div class="nav-section-label">Anagrafiche</div>
+      <div class="nav-item" data-section="clients" data-role="admin">
+        <div class="nav-icon">🏢</div>
+        <span class="nav-label">Clienti</span>
+      </div>
+      <div class="nav-item" data-section="personnel" data-role="admin">
+        <div class="nav-icon">👥</div>
+        <span class="nav-label">Personale</span>
+      </div>
+      <div class="nav-item" data-section="projects">
+        <div class="nav-icon">📋</div>
+        <span class="nav-label">Progetti</span>
+      </div>
+
+      <div class="nav-section-label">Operatività</div>
+      <div class="nav-item" data-section="reports">
+        <div class="nav-icon">📝</div>
+        <span class="nav-label">Rapportini</span>
+        <span class="nav-badge amber">3</span>
+      </div>
+      <div class="nav-item" data-section="worksummary" data-role="admin">
+        <div class="nav-icon">📊</div>
+        <span class="nav-label">Work Summary</span>
+      </div>
+
+      <div class="nav-section-label">Premium</div>
+      <div class="nav-item" data-section="compliance">
+        <div class="nav-icon">✅</div>
+        <span class="nav-label">Compliance Report</span>
+      </div>
+      <div class="nav-item" data-section="comms">
+        <div class="nav-icon">💬</div>
+        <span class="nav-label">Comunicazioni Interne</span>
+        <span class="nav-badge premium">PRO</span>
+      </div>
+
+      <div class="nav-section-label">Percorsi Guidati</div>
+      <div class="nav-item" data-section="paths">
+        <div class="nav-icon">🗺️</div>
+        <span class="nav-label">Percorsi Guidati</span>
+      </div>
+      <div class="nav-item" data-section="roadmap">
+        <div class="nav-icon">🚀</div>
+        <span class="nav-label">Roadmap</span>
+        <span class="nav-badge green">NEW</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div style="font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;padding-left:2px">Modalità</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeUser" onclick="setMode('user')">👤 Utente</button>
+        <button class="mode-btn" id="modeComm" onclick="setMode('commercial')">💼 Presentazione</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════ MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-breadcrumb" id="breadcrumb">🏠 <span>Dashboard</span></div>
+      <div class="topbar-spacer"></div>
+      <!-- Role switcher pills -->
+      <div class="flex-gap" style="gap:6px">
+        <button class="topbar-path-pill active-path" onclick="setRole('admin')" id="pillAdmin">👑 Admin</button>
+        <button class="topbar-path-pill" onclick="setRole('supervisor')" id="pillSuper">🔧 Supervisore</button>
+        <button class="topbar-path-pill" onclick="setRole('worker')" id="pillWorker">👷 Operaio</button>
+      </div>
+      <div class="topbar-role-badge role-admin" id="roleBadge">👑 Amministratore</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area" id="contentArea">
+
+      <!-- ═══════ SECTION: DASHBOARD ═══════ -->
+      <div class="section-view active" id="sec-dashboard">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Dashboard</div>
+            <div class="section-subtitle">Panoramica attività cantieri — aggiornato oggi</div>
+          </div>
+          <div id="dashRoleBanner"></div>
+        </div>
+
+        <!-- Commercial strip (hidden in user mode) -->
+        <div class="commercial-strip" id="comm-dashboard">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione Commerciale — Dashboard</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>L'imprenditore non sa in tempo reale quante ore ha lavorato la squadra né quanto costa ogni cantiere.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>La Dashboard mostra in un colpo d'occhio: ore lavorate, costi, ricavi e margine per ogni progetto.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Decisioni più rapide. Zero sorprese a fine mese. Controllo totale senza aspettare il contabile.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-dashboard')">💡 Perché questa schermata?</button>
+          <button class="info-btn" onclick="toggleInfo('tips-dashboard')">🎯 Suggerimenti operativi</button>
+        </div>
+        <div class="collapsible-box" id="why-dashboard">
+          <div class="info-panel info-blue"><div class="info-title">📊 La Dashboard è il punto di controllo centrale</div><p>L'Admin vede subito lo stato di salute dell'azienda: quanti progetti sono attivi e lo stato finanziario. Il Supervisore e l'Operaio vedono solo le loro ore pendenti o informazioni operative del cantiere.</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-dashboard">
+          <div class="info-panel info-green"><div class="info-title">🎯 Buone pratiche</div><p><strong>Mattina:</strong> verifica che non ci siano rapportini non approvati nei giorni precedenti.</p><p><strong>Venerdì:</strong> assicurati che tutti i lavoratori abbiano inserito correttamente le ore per avere le statistiche pronte.</p></div>
+        </div>
+
+        <!-- KPI Admin -->
+        <div id="kpiAdmin">
+          <div class="kpi-grid">
+            <div class="kpi-card k-blue" onclick="navigate('projects')">
+              <div style="font-size:26px">📋</div>
+              <div class="kpi-label">Progetti Attivi</div>
+              <div class="kpi-value" style="color:#1d4ed8">7</div>
+              <div class="card-sub">Cantieri aperti</div>
+            </div>
+            <div class="kpi-card k-amber" onclick="navigate('reports')">
+              <div style="font-size:26px">⏳</div>
+              <div class="kpi-label">Report Pendenti</div>
+              <div class="kpi-value" style="color:#d97706">12</div>
+              <div class="card-sub">Vai a Rapportini per approvare</div>
+            </div>
+            <div class="kpi-card k-amber" onclick="navigate('reports')">
+              <div style="font-size:26px">🕐</div>
+              <div class="kpi-label">Ore Pendenti</div>
+              <div class="kpi-value" style="color:#d97706">84h</div>
+              <div class="card-sub">Vai a Rapportini per gestire</div>
+            </div>
+            <div class="kpi-card k-red admin-only" onclick="navigate('worksummary')">
+              <div style="font-size:26px">💸</div>
+              <div class="kpi-label">Spese Stimate</div>
+              <div class="kpi-value" style="color:#dc2626">€ 1.840</div>
+              <div class="card-sub">Materiali + rimborsi</div>
+            </div>
+            <div class="kpi-card k-blue admin-only" onclick="navigate('worksummary')">
+              <div style="font-size:26px">📤</div>
+              <div class="kpi-label">Da Fatturare</div>
+              <div class="kpi-value" style="color:#1d4ed8">€ 18.300</div>
+              <div class="card-sub">Cantieri aperti</div>
+            </div>
+            <div class="kpi-card k-green admin-only" onclick="navigate('worksummary')">
+              <div style="font-size:26px">📈</div>
+              <div class="kpi-label">Margine Medio</div>
+              <div class="kpi-value" style="color:#059669">32%</div>
+              <div class="card-sub">Redditività cantieri</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Worker (hidden initially) -->
+        <div id="kpiWorker" class="hidden">
+          <div class="info-panel info-amber"><div class="info-title">⏳ Le tue ore questa settimana</div><p>Hai <strong>18 ore</strong> in stato Pending da confermare. Inserisci il rapportino di oggi prima delle 18:00.</p></div>
+          <div class="mt-4">
+            <div class="card card-sm flex-between mt-2">
+              <div>
+                <div class="card-label">Ore questa settimana</div>
+                <div class="card-value blue">42h 30min</div>
+              </div>
+              <span class="badge badge-amber">Pending</span>
+            </div>
+            <div class="card card-sm flex-between mt-2">
+              <div>
+                <div class="card-label">Progetto attivo oggi</div>
+                <div class="card-value" style="font-size:15px">Cantiere Via Roma 42</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="navigate('reports')">+ Rapportino</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strumenti Rapidi (Quick Menu) -->
+        <div class="mt-6 mb-4">
+          <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;padding-left:4px">Strumenti Rapidi</div>
+          <div class="grid-4" id="quickMenu">
+            <div class="kpi-card" onclick="navigate('clients')" data-role="admin" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">🏢</div>
+              <div style="font-size:11px;font-weight:700">Clienti</div>
+            </div>
+            <div class="kpi-card" onclick="navigate('personnel')" data-role="admin" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">👥</div>
+              <div style="font-size:11px;font-weight:700">Personale</div>
+            </div>
+            <div class="kpi-card" onclick="navigate('projects')" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">📋</div>
+              <div style="font-size:11px;font-weight:700">Progetti</div>
+            </div>
+            <div class="kpi-card" onclick="navigate('reports')" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">📝</div>
+              <div style="font-size:11px;font-weight:700">Rapportini</div>
+            </div>
+            <div class="kpi-card admin-only" onclick="navigate('worksummary')" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">📊</div>
+              <div style="font-size:11px;font-weight:700">Work Summary</div>
+            </div>
+            <div class="kpi-card" onclick="navigate('compliance')" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">✅</div>
+              <div style="font-size:11px;font-weight:700">Compliance</div>
+            </div>
+            <div class="kpi-card" onclick="navigate('comms')" style="text-align:center;padding:16px 12px;background:#f8fafc">
+              <div style="font-size:26px;margin-bottom:8px">💬</div>
+              <div style="font-size:11px;font-weight:700">Comunicazioni</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: CLIENTS ═══════ -->
+      <div class="section-view" id="sec-clients">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Clienti</div>
+            <div class="section-subtitle">Anagrafica committenti — visibile ad Admin e Supervisore</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="alert('Simulazione: Apertura form per un nuovo inserimento')">+ Nuovo Cliente</button>
+        </div>
+
+        <div class="commercial-strip" id="comm-clients">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Gestione Clienti</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>I dati dei clienti sono sparsi tra email, agenda cartacea e memoria del titolare. Quando l'operaio ha bisogno del contatto, chiama in ufficio.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Ogni cliente ha la sua scheda: P.IVA, contatto, indirizzo fatturazione, telefono, note — accessibile ovunque dal telefono.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Meno chiamate in ufficio. Fatturazione corretta. Nessun dato perso se cambia il responsabile.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-clients')">💡 Chi usa questa sezione?</button>
+          <button class="info-btn" onclick="toggleInfo('faq-clients')">❓ Domande frequenti</button>
+        </div>
+        <div class="collapsible-box" id="why-clients">
+          <div class="info-panel info-blue"><div class="info-title">👥 Admin e Supervisore</div><p>Solo Admin e Supervisore vedono l'anagrafica clienti. L'Operaio accede ai dati del cantiere tramite la scheda Progetto.</p><p><strong>Campi disponibili:</strong> Nome, P.IVA, Persona di contatto, Telefono, Email, Indirizzo fatturazione, Note interne, Stato (Attivo/Inattivo).</p></div>
+        </div>
+        <div class="collapsible-box" id="faq-clients">
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Posso avere più contatti per lo stesso cliente? <span class="arrow">▾</span></div><div class="faq-a">Al momento la scheda cliente prevede un contatto principale. Per più referenti usa il campo Note interne o crea un progetto per reparto.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Cosa succede se imposto un cliente come "Inattivo"? <span class="arrow">▾</span></div><div class="faq-a">Il cliente resta nell'archivio ma non appare nelle selezioni quando crei nuovi progetti. I progetti esistenti rimangono invariati.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Posso eliminare un cliente? <span class="arrow">▾</span></div><div class="faq-a">Sì, ma attenzione: l'eliminazione è definitiva. Se il cliente ha progetti associati, consigliamo di impostarlo come "Inattivo" invece di eliminarlo.</div></div>
+        </div>
+
+        <div class="space-y">
+          <div class="list-row">
+            <div class="flex-gap" style="gap:10px">
+              <div class="avatar avatar-blue">E</div>
+              <div>
+                <div class="row-title">Edilcasa Srl</div>
+                <div class="row-sub">Marco Bianchi · +39 02 1234567 · <span class="badge badge-green">Attivo</span></div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+              <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+            </div>
+          </div>
+          <div class="list-row">
+            <div class="flex-gap" style="gap:10px">
+              <div class="avatar avatar-amber">R</div>
+              <div>
+                <div class="row-title">Rossi Costruzioni SpA</div>
+                <div class="row-sub">Laura Rossi · +39 06 9876543 · <span class="badge badge-green">Attivo</span></div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+              <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+            </div>
+          </div>
+          <div class="list-row" style="opacity:0.6">
+            <div class="flex-gap" style="gap:10px">
+              <div class="avatar" style="background:#94a3b8">M</div>
+              <div>
+                <div class="row-title">Muro & Pietra snc</div>
+                <div class="row-sub">— · <span class="badge badge-slate">Inattivo</span></div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+              <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:10px">Form Nuovo/Modifica Cliente</div>
+          <div class="card">
+            <div class="grid-2">
+              <div class="form-field"><label class="form-label">Nome Cliente *</label><input class="form-input" value="Edilcasa Srl" /></div>
+              <div class="form-field"><label class="form-label">Partita IVA</label><input class="form-input" value="IT01234567890" /></div>
+              <div class="form-field"><label class="form-label">Persona di Contatto</label><input class="form-input" value="Marco Bianchi" /></div>
+              <div class="form-field"><label class="form-label">Telefono</label><input class="form-input" value="+39 02 1234567" /></div>
+              <div class="form-field"><label class="form-label">Email</label><input class="form-input" value="m.bianchi@edilcasa.it" /></div>
+              <div class="form-field"><label class="form-label">Indirizzo Fatturazione</label><input class="form-input" value="Via Roma 10, 20100 Milano" /></div>
+            </div>
+            <div class="form-field"><label class="form-label">Note Interne</label><textarea class="form-input" rows="2">Cliente storico. Pagamenti puntuali. Preferisce contatto WhatsApp.</textarea></div>
+            <div class="flex-between mt-4">
+              <div class="toggle-group" style="width:180px">
+                <button class="toggle-btn on">Attivo</button>
+                <button class="toggle-btn">Inattivo</button>
+              </div>
+              <div class="flex-gap">
+                <button class="btn btn-outline btn-sm">Annulla</button>
+                <button class="btn btn-primary btn-sm">Salva Cliente</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: PROJECTS ═══════ -->
+      <div class="section-view" id="sec-projects">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Progetti</div>
+            <div class="section-subtitle">Cantieri e attività — tutti i ruoli (con visibilità differenziata)</div>
+          </div>
+          <button class="btn btn-primary btn-sm admin-only-btn" id="btnNewProject" onclick="alert('Simulazione: Scorri in basso per visualizzare il form Nuovo Progetto')">+ Nuovo Progetto</button>
+        </div>
+
+        <div class="commercial-strip" id="comm-projects">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Gestione Progetti</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>Ogni cantiere ha personale diverso, accordi economici diversi, un referente diverso. Gestirli tutti a memoria causa errori e contestazioni.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Ogni progetto ha: cliente, indirizzo (con link Google Maps), accordo economico (orario o forfait), operai assegnati, contatto cantiere con telefono clickabile.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>L'operaio sa dove andare, chi chiamare, cosa fare. Il titolare sa quanto vale ogni cantiere. Zero chiamate inutili.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-projects')">💡 Come funziona la visibilità?</button>
+          <button class="info-btn" onclick="toggleInfo('tips-projects')">🎯 Campi disponibili (Admin)</button>
+          <button class="info-btn" onclick="toggleInfo('faq-projects')">❓ FAQ</button>
+        </div>
+        <div class="collapsible-box" id="why-projects">
+          <div class="info-panel info-blue"><div class="info-title">🔐 Visibilità per ruolo</div>
+          <p><strong>Admin:</strong> vede tutti i progetti, può creare/modificare/eliminare (vede anche importi e accordi economici).</p>
+          <p><strong>Supervisore e Operaio:</strong> vedono i cantieri in sola lettura: descrizione dei lavori, indirizzo (con link Google Maps) e contatti clickabili per chiamare direttamente.</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-projects">
+          <div class="info-panel info-green"><div class="info-title">📋 Campi del form Progetto (visibili ad Admin)</div>
+          <p>✅ <strong>Tipo:</strong> Esterno (con cliente) o Interno (non fatturabile)</p>
+          <p>✅ <strong>Cliente</strong> (obbligatorio se esterno)</p>
+          <p>✅ <strong>Nome progetto</strong> (obbligatorio) · <strong>Descrizione</strong> (obbligatoria)</p>
+          <p>✅ <strong>Indirizzo cantiere</strong> (con link Google Maps per operaio)</p>
+          <p>✅ <strong>Accordo economico:</strong> Orario a consumo / Forfait</p>
+          <p>✅ <strong>Importo/Budget</strong> (solo se esterno)</p>
+          <p>✅ <strong>Contatto cantiere:</strong> Nome + Telefono</p>
+          <p>✅ <strong>Note interne</strong> · <strong>Operai assegnati</strong> (checkbox multipla)</p>
+          <p>✅ <strong>Stato:</strong> Attivo / Chiuso</p>
+          <p>❌ <strong>Non esistono:</strong> date inizio/fine, allegati, fasi di avanzamento</p></div>
+        </div>
+        <div class="collapsible-box" id="faq-projects">
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Cos'è un progetto "Interno"? <span class="arrow">▾</span></div><div class="faq-a">Un'attività non fatturabile al cliente: manutenzione attrezzature, formazione, riunioni interne. Le ore registrate su un progetto interno vengono comunque tracciate e inserite nel costo aziendale.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Cosa vedono Supervisore e Operaio? <span class="arrow">▾</span></div><div class="faq-a">Vedono le schede cantiere in sola lettura: nome, descrizione lavori, indirizzo con link a Google Maps, e contatto del cliente con un comodo pulsante per chiamare. Non possono né creare né modificare progetti.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Posso riaprire un progetto chiuso? <span class="arrow">▾</span></div><div class="faq-a">Sì (solo l'Admin). Basta rientrare nel form e impostare lo stato su "Attivo". Il progetto riappare nelle selezioni dei rapportini.</div></div>
+        </div>
+
+        <div id="projectsAdminView">
+          <div class="space-y">
+            <div class="list-row">
+              <div>
+                <div class="flex-gap" style="gap:6px;margin-bottom:2px">
+                  <div class="row-title">Ristrutturazione Via Roma 42</div>
+                  <span class="badge badge-green">Attivo</span>
+                  <span class="badge badge-blue">Orario</span>
+                </div>
+                <div class="row-sub">EDILCASA SRL · Via Roma 42, Milano</div>
+              </div>
+              <div class="row-actions">
+                <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+                <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+              </div>
+            </div>
+            <div class="list-row">
+              <div>
+                <div class="flex-gap" style="gap:6px;margin-bottom:2px">
+                  <div class="row-title">Impianto Elettrico Corso Italia</div>
+                  <span class="badge badge-green">Attivo</span>
+                  <span class="badge badge-purple">Forfait</span>
+                </div>
+                <div class="row-sub">ROSSI COSTRUZIONI SPA · Corso Italia 15, Roma</div>
+              </div>
+              <div class="row-actions">
+                <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+                <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+              </div>
+            </div>
+            <div class="list-row" style="opacity:0.55">
+              <div>
+                <div class="flex-gap" style="gap:6px;margin-bottom:2px">
+                  <div class="row-title">Manutenzione Uffici Q3</div>
+                  <span class="badge badge-slate">Chiuso</span>
+                  <span class="badge badge-indigo">Interno</span>
+                </div>
+                <div class="row-sub">ATTIVITÀ INTERNA · Non fatturabile</div>
+              </div>
+              <div class="row-actions">
+                <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+                <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+              </div>
+            </div>
+          </div>
+
+        <div class="mt-6">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:10px">Form Nuovo Progetto</div>
+          <div class="card">
+            <div class="form-field">
+              <label class="form-label">Tipo Attività</label>
+              <div class="toggle-group" style="max-width:240px">
+                <button class="toggle-btn on">Esterna (cliente)</button>
+                <button class="toggle-btn">Interna</button>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-field"><label class="form-label">Cliente *</label><select class="form-input form-select"><option>Edilcasa Srl</option><option>Rossi Costruzioni SpA</option></select></div>
+              <div class="form-field"><label class="form-label">Nome Progetto *</label><input class="form-input" value="Ristrutturazione Via Roma 42" /></div>
+              <div class="form-field" style="grid-column:1/-1"><label class="form-label">Descrizione *</label><textarea class="form-input" rows="2">Rifacimento completo appartamento 3 vani. Opere murarie, idraulica e impianto elettrico.</textarea></div>
+              <div class="form-field"><label class="form-label">Indirizzo Cantiere</label><input class="form-input" value="Via Roma 42, 20100 Milano" /></div>
+              <div class="form-field">
+                <label class="form-label">Accordo Economico</label>
+                <div class="toggle-group">
+                  <button class="toggle-btn on">Orario</button>
+                  <button class="toggle-btn">Forfait</button>
+                </div>
+              </div>
+              <div class="form-field"><label class="form-label">Importo / Budget (€)</label><input class="form-input" value="24500.00" type="number" /></div>
+              <div class="form-field"><label class="form-label">Contatto Cantiere</label><input class="form-input" value="Mario Verdi" /></div>
+              <div class="form-field"><label class="form-label">Telefono Contatto</label><input class="form-input" value="+39 333 1234567" /></div>
+              <div class="form-field" style="grid-column:1/-1"><label class="form-label">Note Interne</label><textarea class="form-input" rows="2">Accesso cantiere dalle 8:00. Citofono "Verdi".</textarea></div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Operai Assegnati</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px">
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#374151;cursor:pointer"><input type="checkbox" checked /> Giuseppe Ferrara</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#374151;cursor:pointer"><input type="checkbox" checked /> Antonio Marino</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#374151;cursor:pointer"><input type="checkbox" /> Luigi Conti</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#374151;cursor:pointer"><input type="checkbox" /> Sergio Ricci</label>
+              </div>
+            </div>
+            <div class="flex-between mt-4">
+              <div class="toggle-group" style="width:180px">
+                <button class="toggle-btn on">Attivo</button>
+                <button class="toggle-btn">Chiuso</button>
+              </div>
+              <div class="flex-gap">
+                <button class="btn btn-outline btn-sm">Annulla</button>
+                <button class="btn btn-primary btn-sm">Salva Progetto</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div> <!-- chiusura projectsAdminView -->
+
+        <!-- READ ONLY VIEW (Supervisor / Worker) -->
+        <div id="projectsReadOnlyView" class="hidden">
+          <div class="grid-2">
+            <!-- Card 1 -->
+            <div class="card">
+              <div class="flex-between mb-2">
+                <div style="font-weight:900;font-size:15px">Ristrutturazione Via Roma 42</div>
+                <span class="badge badge-green">Attivo</span>
+              </div>
+              <div style="font-size:12px;color:#475569;margin-bottom:12px">Rifacimento completo appartamento 3 vani. Opere murarie, idraulica e impianto elettrico.</div>
+              
+              <div class="divider"></div>
+              
+              <div class="flex-gap mb-3" style="align-items:flex-start">
+                <div style="font-size:16px">📍</div>
+                <div>
+                  <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase">Indirizzo Cantiere</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:2px">Via Roma 42, Milano</div>
+                  <a href="https://maps.google.com" target="_blank" style="font-size:11px;color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin-top:2px">Apri in Google Maps ↗</a>
+                </div>
+              </div>
+              
+              <div class="flex-gap" style="align-items:flex-start">
+                <div style="font-size:16px">📞</div>
+                <div>
+                  <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase">Contatto Cantiere</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:2px">Mario Verdi</div>
+                  <button class="btn btn-sm mt-2" style="background:#f0fdf4;color:#059669;border:1px solid #bbf7d0">📞 Chiama +39 333 1234567</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card">
+              <div class="flex-between mb-2">
+                <div style="font-weight:900;font-size:15px">Impianto Elettrico Corso Italia</div>
+                <span class="badge badge-green">Attivo</span>
+              </div>
+              <div style="font-size:12px;color:#475569;margin-bottom:12px">Posa e collaudo impianto elettrico piano 2 uffici.</div>
+              
+              <div class="divider"></div>
+              
+              <div class="flex-gap mb-3" style="align-items:flex-start">
+                <div style="font-size:16px">📍</div>
+                <div>
+                  <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase">Indirizzo Cantiere</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:2px">Corso Italia 15, Roma</div>
+                  <a href="https://maps.google.com" target="_blank" style="font-size:11px;color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin-top:2px">Apri in Google Maps ↗</a>
+                </div>
+              </div>
+              
+              <div class="flex-gap" style="align-items:flex-start">
+                <div style="font-size:16px">📞</div>
+                <div>
+                  <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase">Contatto Cantiere</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:2px">Laura Rossi</div>
+                  <button class="btn btn-sm mt-2" style="background:#f0fdf4;color:#059669;border:1px solid #bbf7d0">📞 Chiama +39 06 9876543</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: PERSONNEL ═══════ -->
+      <div class="section-view" id="sec-personnel">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Personale</div>
+            <div class="section-subtitle">Gestione utenti, ruoli, tariffe — Admin e Supervisore</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="alert('Simulazione: Apertura form per un nuovo inserimento')">+ Nuovo Operatore</button>
+        </div>
+
+        <div class="commercial-strip" id="comm-personnel">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Gestione Personale</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>Dipendenti, subappaltatori, stagisti: tariffe orarie diverse, livelli di accesso diversi. Gestirli tutti allo stesso modo è sbagliato e rischioso.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>3 ruoli (Admin/Supervisore/Operaio), tariffa oraria base e straordinari, sezione accesso con username e password, invio automatico credenziali via email.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Ogni persona accede solo a ciò che le compete. Il calcolo dei costi è automatico e preciso. L'onboarding di un nuovo operaio richiede 2 minuti.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-personnel')">💡 I 3 ruoli del sistema</button>
+          <button class="info-btn" onclick="toggleInfo('tips-personnel')">🎯 Campi disponibili</button>
+        </div>
+        <div class="collapsible-box" id="why-personnel">
+          <div class="info-panel info-blue"><div class="info-title">🔐 I tre ruoli di Jobs-Report</div>
+          <p><strong>👑 Admin:</strong> accesso completo. Vede tutti i dati, tutti i costi, tutti i report. Unico che può archiviare e cambiare stato fatturazione.</p>
+          <p><strong>🔧 Supervisore:</strong> gestisce i propri cantieri. Può creare progetti, inserire report per il team, vedere il Work Summary dei suoi cantieri.</p>
+          <p><strong>👷 Operaio:</strong> inserisce solo i propri rapportini, vede solo i cantieri assegnati. Non ha accesso a dati economici.</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-personnel">
+          <div class="info-panel info-green"><div class="info-title">📋 Campi disponibili nella scheda operatore</div>
+          <p>✅ Nome · Tipo (Interno / Subappaltatore) · Ruolo · Telefono · Email</p>
+          <p>✅ Tariffa oraria base · Tariffa straordinari</p>
+          <p>✅ Indirizzo · Note interne · Stato (Attivo/Inattivo)</p>
+          <p>✅ <strong>Sezione Accesso</strong> (solo personale interno): Username · Password</p>
+          <p>✅ Pulsante "Invia istruzioni accesso" via email (se email presente)</p></div>
+        </div>
+
+        <div class="space-y">
+          <div class="list-row">
+            <div class="flex-gap" style="gap:10px">
+              <div class="avatar avatar-blue">G</div>
+              <div>
+                <div class="row-title">Giuseppe Ferrara <span style="font-size:11px;color:#64748b;font-weight:500">• +39 340 1234567</span></div>
+                <div class="row-sub">Operaio · Interno · <span class="badge badge-green">Attivo</span></div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-icon btn-mail" onclick="alert('Simulazione: Invio email con credenziali di accesso')" title="Invia credenziali">✉️</button>
+              <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+              <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+            </div>
+          </div>
+          <div class="list-row">
+            <div class="flex-gap" style="gap:10px">
+              <div class="avatar avatar-amber">A</div>
+              <div>
+                <div class="row-title">Antonio Marino</div>
+                <div class="row-sub">Supervisore · Interno · <span class="badge badge-green">Attivo</span></div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-icon btn-mail" onclick="alert('Simulazione: Invio email con credenziali di accesso')" title="Invia credenziali">✉️</button>
+              <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+              <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+            </div>
+          </div>
+          <div class="list-row">
+            <div class="flex-gap" style="gap:10px">
+              <div class="avatar" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">S</div>
+              <div>
+                <div class="row-title">Edil Subappalti srl</div>
+                <div class="row-sub">Operaio · Subappaltatore · <span class="badge badge-green">Attivo</span></div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+              <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:10px">Form Nuovo Operatore</div>
+          <div class="card">
+            <div class="grid-2">
+              <div class="form-field"><label class="form-label">Nome Completo *</label><input class="form-input" value="Giuseppe Ferrara" /></div>
+              <div class="form-field"><label class="form-label">Tipo</label><select class="form-input form-select"><option>Interno</option><option>Subappaltatore</option></select></div>
+              <div class="form-field"><label class="form-label">Ruolo *</label><select class="form-input form-select"><option>Operaio</option><option>Supervisore</option><option>Admin</option></select></div>
+              <div class="form-field"><label class="form-label">Telefono</label><input class="form-input" value="+39 340 1234567" /></div>
+              <div class="form-field"><label class="form-label">Email</label><input class="form-input" value="g.ferrara@email.it" /></div>
+              <div class="form-field"><label class="form-label">Tariffa Oraria (€/h)</label><input class="form-input" type="number" value="18.50" /></div>
+              <div class="form-field"><label class="form-label">Tariffa Straordinari (€/h)</label><input class="form-input" type="number" value="27.75" /></div>
+              <div class="form-field"><label class="form-label">Indirizzo</label><input class="form-input" value="Via Dante 8, Bergamo" /></div>
+            </div>
+            <div class="divider"></div>
+            <div class="form-section-title">🔐 Accesso e Sicurezza</div>
+            <div class="grid-2">
+              <div class="form-field"><label class="form-label">Username *</label><input class="form-input" value="g.ferrara" /></div>
+              <div class="form-field"><label class="form-label">Password temporanea</label><input class="form-input" value="password123" /></div>
+            </div>
+            <div class="flex-between mt-4">
+              <div class="toggle-group" style="width:180px">
+                <button class="toggle-btn on">Attivo</button>
+                <button class="toggle-btn">Inattivo</button>
+              </div>
+              <div class="flex-gap">
+                <button class="btn btn-outline btn-sm">Annulla</button>
+                <button class="btn btn-primary btn-sm">Salva Operatore</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: REPORTS ═══════ -->
+      <div class="section-view" id="sec-reports">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Rapportini</div>
+            <div class="section-subtitle">Registro giornaliero ore lavorate — tutti i ruoli</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="alert('Simulazione: Apertura form per un nuovo inserimento')">+ Nuovo Rapportino</button>
+        </div>
+
+        <div class="commercial-strip" id="comm-reports">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Rapportini</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>Il foglio presenze cartaceo viene perso, illeggibile o compilato a memoria il venerdì. Il titolare non sa mai veramente quante ore sono state lavorate su ogni cantiere.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Ogni operaio compila il rapportino dal telefono: progetto, ore (inizio/fine), pause, straordinari, festivi, notturni. L'admin approva e il costo è calcolato automaticamente.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Tracciabilità legale completa. Costi sempre aggiornati. Fine delle vertenze sui consuntivi. Ore straordinarie gestite con tariffa differenziata.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-reports')">💡 Campi del rapportino</button>
+          <button class="info-btn" onclick="toggleInfo('tips-reports')">🎯 Flusso di approvazione</button>
+          <button class="info-btn" onclick="toggleInfo('faq-reports')">❓ FAQ</button>
+        </div>
+        <div class="collapsible-box" id="why-reports">
+          <div class="info-panel info-blue"><div class="info-title">📝 Cosa si registra in un rapportino</div>
+          <p>✅ <strong>Tipo attività:</strong> Lavoro esterno / Attività interna (include ferie, malattia, permesso)</p>
+          <p>✅ <strong>Progetto</strong> (obbligatorio) · <strong>Data</strong> · <strong>Descrizione lavori</strong></p>
+          <p>✅ <strong>Per ogni operaio nel team:</strong> Ora inizio · Ora fine · Ore pausa · Ore straordinarie · Ore festive · Ore notturne · Override totale ore</p>
+          <p>✅ <strong>Spese:</strong> Cantiere / Rimborso / Km (con importo e note)</p>
+          <p>✅ <strong>Admin aggiunge:</strong> Stato fatturazione (Pending/Fatturato/Pagato)</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-reports">
+          <div class="info-panel info-green"><div class="info-title">🔄 Flusso di approvazione</div>
+          <p><strong>1. Operaio</strong> inserisce il rapportino → stato Pending</p>
+          <p><strong>2. Admin/Supervisore</strong> rivede e approva (o modifica)</p>
+          <p><strong>3. Admin</strong> imposta stato fatturazione: Pending → Fatturato → Pagato</p>
+          <p><strong>4. Work Summary</strong> mostra l'aggregato pronto per il commercialista</p></div>
+        </div>
+        <div class="collapsible-box" id="faq-reports">
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Posso inserire un rapportino per un altro operaio? <span class="arrow">▾</span></div><div class="faq-a">Solo Admin e Supervisore possono scegliere il lavoratore principale e aggiungere worker aggiuntivi. L'operaio registra sempre e solo le proprie ore.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Cosa sono le "Spese Cantiere"? <span class="arrow">▾</span></div><div class="faq-a">Sono i costi sostenuti in cantiere: acquisto materiali (CANTIERE), rimborsi spese varie (RIMBORSO), trasferta a km (KM — inserisci i km e il sistema calcola il costo). Vengono sommate al costo totale del progetto nel Work Summary.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Posso duplicare un rapportino? <span class="arrow">▾</span></div><div class="faq-a">Sì. Il pulsante "Duplica" (icona copia) crea una copia del rapportino con la data odierna, pronta da modificare. Utile per lavori ripetitivi.</div></div>
+        </div>
+
+        <!-- Filtri -->
+        <div class="card card-sm mb-4" style="background:#f8fafc">
+          <div class="flex-gap" style="flex-wrap:wrap;gap:8px">
+            <div class="flex-gap" style="gap:4px">
+              <button class="toggle-btn on" style="border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">Oggi</button>
+              <button class="toggle-btn" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">Settimana</button>
+              <button class="toggle-btn" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">Mese</button>
+            </div>
+            <select class="form-input form-select" style="width:auto;padding:5px 30px 5px 10px;font-size:11px"><option>Tutti i Progetti</option><option>Ristrutturazione Via Roma 42</option></select>
+            <select class="form-input form-select" style="width:auto;padding:5px 30px 5px 10px;font-size:11px"><option>Tutti i Lavoratori</option><option>Giuseppe Ferrara</option></select>
+            <input class="form-input" style="width:160px;padding:5px 10px;font-size:11px" placeholder="🔍 Cerca..." />
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Progetto</th><th>Lavoratore</th><th>Descrizione</th><th>Ore Totali</th><th>Azioni</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>07/06/2026</strong></td>
+                <td>Via Roma 42</td>
+                <td>G. Ferrara <span class="badge badge-blue">+1</span></td>
+                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Intonacatura pareti interno</td>
+                <td><strong>8h 30min</strong></td>
+                <td><div class="flex-gap" style="gap:4px">
+                  <button class="btn-icon" style="background:#f0fdf4;color:#059669" title="Compliance Report" onclick="alert('Simulazione: Apre il modulo Compliance Report per questo rapportino')">✅</button>
+                  <button class="btn-icon" style="background:#f5f3ff;color:#7c3aed" title="Duplica" onclick="alert('Simulazione: Duplica questo rapportino alla data odierna')">⧉</button>
+                  <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+                  <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><strong>06/06/2026</strong></td>
+                <td>Corso Italia</td>
+                <td>A. Marino</td>
+                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Posa impianto elettrico piano 2</td>
+                <td><strong>9h 00min</strong></td>
+                <td><div class="flex-gap" style="gap:4px">
+                  <button class="btn-icon" style="background:#f0fdf4;color:#059669" title="Compliance Report" onclick="alert('Simulazione: Apre il modulo Compliance Report per questo rapportino')">✅</button>
+                  <button class="btn-icon" style="background:#f5f3ff;color:#7c3aed" title="Duplica" onclick="alert('Simulazione: Duplica questo rapportino alla data odierna')">⧉</button>
+                  <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+                  <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+                </div></td>
+              </tr>
+              <tr style="background:#fffbeb">
+                <td><strong>05/06/2026</strong></td>
+                <td>Via Roma 42</td>
+                <td>G. Ferrara</td>
+                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Posa piastrelle bagno</td>
+                <td><strong>7h 45min</strong> <span class="badge badge-amber" style="font-size:8px">+2h extra</span></td>
+                <td><div class="flex-gap" style="gap:4px">
+                  <button class="btn-icon" style="background:#f0fdf4;color:#059669" title="Compliance Report" onclick="alert('Simulazione: Apre il modulo Compliance Report per questo rapportino')">✅</button>
+                  <button class="btn-icon" style="background:#f5f3ff;color:#7c3aed" title="Duplica" onclick="alert('Simulazione: Duplica questo rapportino alla data odierna')">⧉</button>
+                  <button class="btn-icon btn-edit" onclick="alert('Simulazione: Apertura modulo di modifica (sola lettura nella demo)')" title="Modifica">✏️</button>
+                  <button class="btn-icon btn-del" onclick="alert('Simulazione: Richiesta di conferma per eliminare il record')" title="Elimina">🗑️</button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: WORK SUMMARY ═══════ -->
+      <div class="section-view" id="sec-worksummary">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Work Summary</div>
+            <div class="section-subtitle">Riepilogo economico per progetto — Admin e Supervisore</div>
+          </div>
+          <div class="flex-gap">
+            <button class="btn btn-outline btn-sm" onclick="alert('Simulazione: Generazione e download PDF')">📄 PDF</button>
+            <button class="btn btn-success btn-sm" onclick="alert('Simulazione: Export in formato Excel XLSX')">📊 Excel</button>
+          </div>
+        </div>
+
+        <div class="commercial-strip" id="comm-worksummary">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Work Summary</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>Calcolare quanto si è guadagnato (o perso) su un cantiere richiede ore di lavoro con Excel. Spesso viene fatto quando è troppo tardi per rimediare.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Work Summary aggrega automaticamente: ore lavorate × tariffa oraria + costi subappalti + spese = costo totale vs ricavo concordato = margine in tempo reale.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Sai in qualsiasi momento se stai guadagnando. Puoi bloccare un cantiere in perdita prima di peggiorare. Export in un click per il commercialista.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-ws')">💡 Come leggere il Work Summary</button>
+          <button class="info-btn" onclick="toggleInfo('tips-ws')">🎯 Filtri disponibili</button>
+        </div>
+        <div class="collapsible-box" id="why-ws">
+          <div class="info-panel info-purple"><div class="info-title">📊 I dati nel Work Summary</div>
+          <p><strong>KPI globali:</strong> ore totali, costo personale, costo subappalti, spese, ricavo, margine</p>
+          <p><strong>Per ogni progetto:</strong> data, cliente, ore totali, costo totale, ricavo totale, margine % (verde se positivo, rosso se negativo)</p>
+          <p><strong>Solo Admin:</strong> può cambiare stato fatturazione (Pending/Fatturato/Pagato) e archiviare i dati pagati</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-ws">
+          <div class="info-panel info-blue"><div class="info-title">🔍 Filtri disponibili</div>
+          <p>Cliente · Progetto · Lavoratore · Subappaltatore · Data da/a · Stato fatturazione (Tutti/Pending/Fatturato/Pagato)</p></div>
+        </div>
+
+        <!-- KPI strip -->
+        <div class="grid-4 mb-4">
+          <div class="card card-sm"><div class="card-label">Ore Lavorate</div><div class="card-value blue">284h</div><div class="card-sub">questo mese</div></div>
+          <div class="card card-sm"><div class="card-label">Costo Personale</div><div class="card-value red">€ 5.248</div></div>
+          <div class="card card-sm"><div class="card-label">Ricavo Totale</div><div class="card-value blue">€ 18.300</div></div>
+          <div class="card card-sm"><div class="card-label">Margine</div><div class="card-value green">€ 13.052 <span style="font-size:14px">(71%)</span></div></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card card-sm mb-4" style="background:#f8fafc">
+          <div class="flex-gap" style="flex-wrap:wrap;gap:8px">
+            <select class="form-input form-select" style="width:auto;padding:5px 30px 5px 10px;font-size:11px"><option>Tutti i Clienti</option></select>
+            <select class="form-input form-select" style="width:auto;padding:5px 30px 5px 10px;font-size:11px"><option>Tutti i Progetti</option></select>
+            <select class="form-input form-select" style="width:auto;padding:5px 30px 5px 10px;font-size:11px"><option>Tutti i Lavoratori</option></select>
+            <input class="form-input" type="date" value="2026-06-01" style="width:auto;padding:5px 10px;font-size:11px"/>
+            <input class="form-input" type="date" value="2026-06-07" style="width:auto;padding:5px 10px;font-size:11px"/>
+            <div class="flex-gap" style="gap:4px">
+              <button class="toggle-btn" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">Tutti</button>
+              <button class="toggle-btn" style="border:1px solid #fde68a;background:#fffbeb;color:#d97706;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">In attesa</button>
+              <button class="toggle-btn on" style="border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">Fatturato</button>
+              <button class="toggle-btn" style="border:1px solid #bbf7d0;background:#f0fdf4;color:#059669;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700">Pagato</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Progetto</th><th>Cliente</th><th>Ore Totali</th><th>Costo</th><th>Ricavo</th><th>Margine</th><th>Stato</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Via Roma 42</strong></td><td>Edilcasa Srl</td><td>148h</td><td>€ 2.738</td><td>€ 11.500</td>
+                <td><strong style="color:#059669">€ 8.762 (76%)</strong></td>
+                <td><select class="form-input form-select" style="padding:4px 28px 4px 8px;font-size:10px;font-weight:700;color:#1d4ed8;background-color:#eff6ff;border-color:#bfdbfe;cursor:pointer"><option>Fatturato</option><option>In attesa</option><option>Pagato</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>Corso Italia</strong></td><td>Rossi Costruzioni</td><td>136h</td><td>€ 2.510</td><td>€ 6.800</td>
+                <td><strong style="color:#059669">€ 4.290 (63%)</strong></td>
+                <td><select class="form-input form-select" style="padding:4px 28px 4px 8px;font-size:10px;font-weight:700;color:#d97706;background-color:#fffbeb;border-color:#fde68a;cursor:pointer"><option>In attesa</option><option>Fatturato</option><option>Pagato</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: COMPLIANCE REPORT ═══════ -->
+      <div class="section-view" id="sec-compliance">
+        <div class="section-header">
+          <div class="section-title">Compliance Report</div>
+          <div class="section-subtitle">PDF con foto, soddisfazione e firma cliente — disponibile per tutti i ruoli dal rapportino</div>
+        </div>
+
+        <div class="commercial-strip" id="comm-compliance">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Compliance Report</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>Come dimostrare al cliente (o in caso di contestazione) che i lavori sono stati eseguiti bene? La parola del caposquadra non basta.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Al termine del lavoro si apre il Compliance Report: l'operaio scatta fino a 3 foto, il cliente dichiara la sua soddisfazione e firma digitalmente. Viene generato un PDF.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Documentazione legale immediata. Meno contestazioni. Professionalità percepita superiore. Il cliente vede che lavori con ordine.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-compliance')">💡 Come si usa</button>
+          <button class="info-btn" onclick="toggleInfo('tips-compliance')">🎯 Cosa contiene il PDF</button>
+        </div>
+        <div class="collapsible-box" id="why-compliance">
+          <div class="info-panel info-blue"><div class="info-title">📋 Flusso del Compliance Report</div>
+          <p><strong>1.</strong> Dalla lista Rapportini, clicca il pulsante ✅ su qualsiasi report</p>
+          <p><strong>2.</strong> Si apre il modal con la descrizione lavori (in sola lettura)</p>
+          <p><strong>3.</strong> Aggiungi fino a <strong>3 foto</strong> (fotocamera o galleria)</p>
+          <p><strong>4.</strong> Il cliente dichiara la soddisfazione: <strong>Sì / No</strong> (opzionale)</p>
+          <p><strong>5.</strong> Il cliente <strong>firma digitalmente</strong> nel canvas (obbligatorio)</p>
+          <p><strong>6.</strong> Clicca "Genera PDF" → il file viene scaricato automaticamente</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-compliance">
+          <div class="info-panel info-green"><div class="info-title">📄 Il PDF generato contiene</div>
+          <p>✅ Intestazione con data del report</p>
+          <p>✅ Descrizione dei lavori eseguiti</p>
+          <p>✅ Le foto allegate (fino a 3)</p>
+          <p>✅ Dichiarazione di soddisfazione (Sì/No)</p>
+          <p>✅ Firma digitalizzata del cliente</p></div>
+        </div>
+
+        <div class="card" style="max-width:600px">
+          <div class="flex-between mb-4" style="border-bottom:1px solid #e2e8f0;padding-bottom:12px">
+            <div class="flex-gap">
+              <div style="width:36px;height:36px;background:#1d4ed8;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">✅</div>
+              <div><div style="font-size:15px;font-weight:900">Compliance Report</div><div class="text-xs text-slate">07/06/2026 · Ristrutturazione Via Roma 42</div></div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="compliance-step">
+            <div style="width:28px;height:28px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">📋</div>
+            <div><div class="compliance-content"><div class="ct">Descrizione Lavori</div><div class="cd">Intonacatura pareti interno, posa piastrelle bagno principale. Completato al 100%.</div></div></div>
+          </div>
+
+          <!-- Photos -->
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#64748b;margin:12px 0 6px">1. Foto (2/3)</div>
+          <div class="photo-grid">
+            <div class="photo-thumb">🧱<div class="photo-badge">#1</div></div>
+            <div class="photo-thumb">🪟<div class="photo-badge">#2</div></div>
+          </div>
+          <div style="border:2px dashed #bfdbfe;border-radius:10px;padding:14px;text-align:center;background:#eff6ff;margin-bottom:12px">
+            <div style="font-size:22px;margin-bottom:4px">📷</div>
+            <div style="font-size:10px;font-weight:700;color:#1d4ed8">+ Aggiungi Foto</div>
+          </div>
+
+          <!-- Satisfaction -->
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:12px">
+            <div class="flex-between">
+              <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em">2. Soddisfazione Cliente</span>
+              <div class="flex-gap">
+                <button style="padding:6px 16px;border:2px solid #10b981;background:#ecfdf5;color:#047857;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer">✓ SÌ</button>
+                <button style="padding:6px 16px;border:2px solid #e2e8f0;background:#fff;color:#64748b;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer">NO</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signature -->
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#64748b;margin-bottom:6px">3. Firma Cliente ✓</div>
+          <div class="sig-area" style="border:2px solid #e2e8f0;border-radius:12px;background:#f8fafc">
+            <div class="sig-mock">M. Bianchi</div>
+            <div class="sig-area p" style="font-size:9px;color:#94a3b8">Firma digitalizzata</div>
+          </div>
+
+          <button class="btn btn-primary w-full mt-4" style="justify-content:center;padding:12px">📥 Genera PDF</button>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: COMMUNICATIONS ═══════ -->
+      <div class="section-view" id="sec-comms">
+        <div class="section-header flex-between">
+          <div>
+            <div class="section-title">Comunicazioni Interne</div>
+            <div class="section-subtitle">Messaggistica aziendale in tempo reale — funzionalità Premium</div>
+          </div>
+          <div class="flex-gap">
+            <span class="badge badge-purple">🔔 PRO</span>
+            <button class="btn btn-primary btn-sm">+ Nuova Comunicazione</button>
+          </div>
+        </div>
+
+        <div class="commercial-strip" id="comm-comms">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Comunicazioni</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>WhatsApp mescolato tra comunicazioni di lavoro, foto di famiglia e video buffi. Impossibile trovare un'istruzione operativa data 3 mesi fa.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Sistema di messaggistica interno: Note operative, Segnalazioni problemi, Conferme attività. Messaggi collegati a un progetto specifico, con storico esportabile in PDF.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Comunicazioni tracciabili e archiviabili. Niente più "non lo sapevo". L'admin può vedere chi ha letto cosa e quando.</p></div>
+          </div>
+        </div>
+
+        <div class="info-btn-row">
+          <button class="info-btn" onclick="toggleInfo('why-comms')">💡 Come funziona</button>
+          <button class="info-btn" onclick="toggleInfo('tips-comms')">🎯 Tipi di comunicazione</button>
+          <button class="info-btn" onclick="toggleInfo('faq-comms')">❓ FAQ</button>
+        </div>
+        <div class="collapsible-box" id="why-comms">
+          <div class="info-panel info-blue"><div class="info-title">💬 Il sistema di comunicazione interna</div>
+          <p><strong>Inbox / Inviati:</strong> due sezioni collassabili nella sidebar sinistra.</p>
+          <p><strong>Destinatari:</strong> Tutti gli utenti oppure uno o più specifici (multi-selezione).</p>
+          <p><strong>Collegamento progetto:</strong> ogni messaggio può essere associato a un cantiere.</p>
+          <p><strong>Thread:</strong> le risposte si organizzano in conversazioni. Puoi rispondere, inoltrare (Forward) ed esportare il thread in PDF.</p>
+          <p><strong>Realtime:</strong> i messaggi arrivano senza ricaricare la pagina. Suono di notifica configurabile.</p>
+          <p><strong>Push:</strong> notifiche anche quando l'app non è aperta (nei browser che lo supportano).</p></div>
+        </div>
+        <div class="collapsible-box" id="tips-comms">
+          <div class="info-panel info-green"><div class="info-title">📌 3 tipi di comunicazione</div>
+          <p><strong>📝 Nota (Note):</strong> informazione operativa generica. Es: "Domani si entra alle 9 per consegna materiali".</p>
+          <p><strong>⚠️ Segnalazione (Issue):</strong> problema da risolvere. Es: "Il ponteggio del piano 2 va verificato prima di salire".</p>
+          <p><strong>✅ Conferma (Confirmation):</strong> un'attività è stata completata. Es: "Completata posa pavimento bagno".</p></div>
+        </div>
+        <div class="collapsible-box" id="faq-comms">
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Chi può eliminare una comunicazione? <span class="arrow">▾</span></div><div class="faq-a">Solo l'Admin può eliminare comunicazioni. Supervisori e Operatori possono solo archiviarle. L'eliminazione è irreversibile e richiede conferma.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Cos'è l'"Inoltro" (Forward)? <span class="arrow">▾</span></div><div class="faq-a">Se ricevi una comunicazione che devi girare ad altri colleghi, usa Inoltra. Puoi aggiungere una nota al messaggio originale. Il destinatario vede sia la nota che il messaggio originale con il nome del mittente.</div></div>
+          <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Le comunicazioni richiedono un piano Premium? <span class="arrow">▾</span></div><div class="faq-a">Sì, il modulo Comunicazioni è disponibile con il piano Premium. L'Operaio vede il link nel menu solo se ha già ricevuto comunicazioni.</div></div>
+        </div>
+
+        <!-- Comms Hub mock -->
+        <div class="comms-layout">
+          <!-- Left sidebar -->
+          <div class="comms-left">
+            <div class="comms-left-header">
+              Comunicazioni Interne
+              <div class="flex-gap" style="gap:4px">
+                <button style="width:26px;height:26px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px">🔔</button>
+                <button style="width:26px;height:26px;border-radius:8px;background:#1d4ed8;border:none;cursor:pointer;color:#fff;font-size:12px;font-weight:800">+</button>
+              </div>
+            </div>
+            <div style="padding:8px;border-bottom:1px solid #e2e8f0">
+              <input class="form-input" placeholder="🔍 Cerca..." style="padding:6px 10px;font-size:11px;background:#fff"/>
+            </div>
+            <button class="comms-section-btn">▶ INBOX <span class="nav-badge" style="position:static;margin-left:4px;font-size:8px;padding:1px 5px">2</span></button>
+            <div class="comms-msg-row selected">
+              <div class="comms-msg-type">⚠️ issue</div>
+              <div class="comms-msg-text">Ponteggio piano 2 da verificare prima di salire</div>
+            </div>
+            <div class="comms-msg-row">
+              <div class="comms-msg-type">📝 note</div>
+              <div class="comms-msg-text">Domani consegna materiali alle 8:00</div>
+            </div>
+            <button class="comms-section-btn" style="margin-top:4px">▶ INVIATI</button>
+          </div>
+
+          <!-- Right detail -->
+          <div class="comms-right">
+            <div class="comms-right-header">
+              <div class="comms-avatar">A</div>
+              <div>
+                <div style="font-size:12px;font-weight:800">ISSUE · Via Roma 42</div>
+                <div style="font-size:10px;color:#64748b">Da: Antonio Marino → Tutti · 07/06 09:45</div>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <button style="padding:4px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;background:#fff">Inoltra</button>
+                <button style="width:26px;height:26px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px">📄</button>
+                <button style="width:26px;height:26px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:12px;color:#cbd5e1">🗑️</button>
+              </div>
+            </div>
+            <div class="comms-thread">
+              <div class="comms-bubble recv">
+                <div>Ponteggio del piano 2 mostra qualche instabilità. Va controllato prima che i ragazzi salgano domani mattina.</div>
+                <div class="comms-bubble-meta">Antonio Marino · 07/06 09:45</div>
+              </div>
+              <div class="comms-bubble sent">
+                <div>Grazie per la segnalazione. Ho già chiamato il tecnico, arriverà domani alle 7:30 a fare il controllo.</div>
+                <div class="comms-bubble-meta">Mario Rossi (Admin) · 07/06 10:12</div>
+              </div>
+              <div class="comms-bubble recv">
+                <div>Perfetto. Dico ai ragazzi di aspettare il via libera.</div>
+                <div class="comms-bubble-meta">Antonio Marino · 07/06 10:18</div>
+              </div>
+            </div>
+            <div class="comms-reply">
+              <input class="comms-reply-input" placeholder="Scrivi una risposta..." />
+              <button class="btn btn-primary btn-sm">Invia ➤</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:10px">Form: Nuova Comunicazione</div>
+          <div class="card" style="max-width:500px">
+            <div class="form-field"><label class="form-label">Destinatari</label>
+              <div class="toggle-group" style="max-width:220px;margin-bottom:8px"><button class="toggle-btn on">Tutti</button><button class="toggle-btn">Utenti specifici</button></div>
+            </div>
+            <div class="form-field"><label class="form-label">Progetto (opzionale)</label><select class="form-input form-select"><option>— nessun progetto —</option><option selected>Via Roma 42</option></select></div>
+            <div class="form-field"><label class="form-label">Tipo</label>
+              <div class="flex-gap" style="gap:6px">
+                <button class="btn btn-outline btn-sm" style="font-size:10px">📝 Nota</button>
+                <button class="btn btn-sm" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-size:10px">⚠️ Segnalazione</button>
+                <button class="btn btn-outline btn-sm" style="font-size:10px">✅ Conferma</button>
+              </div>
+            </div>
+            <div class="form-field"><label class="form-label">Messaggio</label><textarea class="form-input" rows="3" placeholder="Scrivi la comunicazione...">Ponteggio piano 2 da verificare prima di salire.</textarea></div>
+            <div class="flex-gap" style="justify-content:flex-end">
+              <button class="btn btn-outline btn-sm">Annulla</button>
+              <button class="btn btn-primary btn-sm">Invia Comunicazione ➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: GUIDED PATHS ═══════ -->
+      <div class="section-view" id="sec-paths">
+        <div class="section-header">
+          <div class="section-title">Percorsi Guidati</div>
+          <div class="section-subtitle">Impara Jobs-Report seguendo il tuo ruolo — clicca un passo per arrivarci direttamente</div>
+        </div>
+
+        <div class="commercial-strip" id="comm-paths">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Percorsi Guidati</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>I nuovi software spesso falliscono perché il personale non sa da dove cominciare o si perde in menu complessi.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Percorsi passo-passo differenziati per ruolo (Amministratore, Operaio, Compliance). Ogni utente vede esattamente cosa deve fare, nell'ordine giusto.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Formazione ridotta a zero. Adozione immediata da parte di tutto il team, anche del personale meno esperto di tecnologia.</p></div>
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:24px">
+          <!-- Admin path -->
+          <div class="path-card">
+            <div class="path-icon" style="background:#eff6ff">👑</div>
+            <div class="path-title">Percorso Amministratore</div>
+            <div class="path-desc">Configura l'azienda, gestisci cantieri, controlla costi e fatturazione.</div>
+            <div class="path-steps">
+              <div class="path-step-item" onclick="navigate('dashboard')"><div class="path-step-num">1</div>Dashboard — panoramica azienda</div>
+              <div class="path-step-item" onclick="navigate('clients')"><div class="path-step-num">2</div>Clienti — crea anagrafiche</div>
+              <div class="path-step-item" onclick="navigate('projects')"><div class="path-step-num">3</div>Progetti — crea cantieri</div>
+              <div class="path-step-item" onclick="navigate('personnel')"><div class="path-step-num">4</div>Personale — aggiungi operatori</div>
+              <div class="path-step-item" onclick="navigate('comms')"><div class="path-step-num">5</div>Comunicazioni — invia istruzioni</div>
+              <div class="path-step-item" onclick="navigate('worksummary')"><div class="path-step-num">6</div>Work Summary — controlla margini</div>
+            </div>
+          </div>
+
+          <!-- Worker path -->
+          <div class="path-card">
+            <div class="path-icon" style="background:#f0fdf4">👷</div>
+            <div class="path-title">Percorso Operaio</div>
+            <div class="path-desc">Ogni giorno: inserisci le ore, aggiungi foto, compila il rapportino.</div>
+            <div class="path-steps">
+              <div class="path-step-item" onclick="navigate('projects')"><div class="path-step-num">1</div>Progetti — trova il tuo cantiere</div>
+              <div class="path-step-item" onclick="navigate('reports')"><div class="path-step-num">2</div>Rapportino — registra le ore</div>
+              <div class="path-step-item" onclick="navigate('reports')"><div class="path-step-num">3</div>Spese — aggiungi materiali/km</div>
+              <div class="path-step-item" onclick="navigate('compliance')"><div class="path-step-num">4</div>Compliance — foto e firma cliente</div>
+              <div class="path-step-item" onclick="navigate('comms')"><div class="path-step-num">5</div>Comunicazioni — messaggi interni</div>
+            </div>
+          </div>
+
+          <!-- Compliance path -->
+          <div class="path-card">
+            <div class="path-icon" style="background:#faf5ff">📋</div>
+            <div class="path-title">Percorso Compliance</div>
+            <div class="path-desc">Documentazione legale dei lavori: foto, firma, PDF per il cliente.</div>
+            <div class="path-steps">
+              <div class="path-step-item" onclick="navigate('reports')"><div class="path-step-num">1</div>Rapportini — apri il report</div>
+              <div class="path-step-item" onclick="navigate('compliance')"><div class="path-step-num">2</div>Compliance — apri il modal ✅</div>
+              <div class="path-step-item" onclick="navigate('compliance')"><div class="path-step-num">3</div>Foto — scatta fino a 3 foto</div>
+              <div class="path-step-item" onclick="navigate('compliance')"><div class="path-step-num">4</div>Soddisfazione — Sì/No cliente</div>
+              <div class="path-step-item" onclick="navigate('compliance')"><div class="path-step-num">5</div>Firma — cliente firma sul display</div>
+              <div class="path-step-item" onclick="navigate('compliance')"><div class="path-step-num">6</div>PDF — genera e condividi</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary learning -->
+        <div class="card">
+          <div style="font-size:14px;font-weight:800;margin-bottom:16px">✅ Cosa hai imparato con Jobs-Report</div>
+          <div class="grid-2">
+            <div class="learn-card">
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:#1d4ed8;margin-bottom:8px">👑 Per l'Amministratore</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come creare l'anagrafica clienti e associarla ai cantieri</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come configurare un progetto con accordo orario o forfait</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come assegnare operai e dare accesso al sistema</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come leggere il Work Summary e controllare i margini</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come gestire stati fatturazione e archiviare i dati pagati</div>
+            </div>
+            <div class="learn-card">
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:#15803d;margin-bottom:8px">👷 Per l'Operaio</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come trovare il cantiere assegnato con indirizzo e contatto</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come inserire le ore con inizio, fine, pause e straordinari</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come aggiungere spese di cantiere e rimborsi km</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come generare il Compliance Report con firma del cliente</div>
+              <div class="learn-item"><span class="learn-check">✓</span>Come usare le comunicazioni interne invece di WhatsApp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ SECTION: ROADMAP ═══════ -->
+      <div class="section-view" id="sec-roadmap">
+        <div class="section-header">
+          <div class="section-title">🚀 Roadmap</div>
+          <div class="section-subtitle">Funzionalità in sviluppo — separate dalle funzioni attualmente disponibili</div>
+        </div>
+
+        <div class="commercial-strip" id="comm-roadmap">
+          <div style="color:#fff;font-size:13px;font-weight:800;margin-bottom:4px">💼 Presentazione — Roadmap & Futuro</div>
+          <div class="comm-grid">
+            <div class="comm-block"><div class="comm-block-label prob">⚠️ Problema</div><p>Scegliere un software chiuso significa essere costretti a cambiarlo quando l'azienda cresce, perdendo tempo e dati storici.</p></div>
+            <div class="comm-block"><div class="comm-block-label sol">✅ Soluzione</div><p>Una roadmap chiara di sviluppi futuri: GPS per le timbrature, magazzino, app nativa con offline mode e assistente AI.</p></div>
+            <div class="comm-block"><div class="comm-block-label ben">💰 Beneficio</div><p>Jobs-Report cresce insieme a te. Investi oggi in una piattaforma che ti accompagnerà e si adatterà alle tue esigenze per i prossimi anni.</p></div>
+          </div>
+        </div>
+
+        <div class="info-panel info-amber">
+          <div class="info-title">⚠️ Nota importante</div>
+          <p>Le funzionalità elencate qui <strong>NON sono ancora disponibili</strong> nell'applicazione. Sono in pianificazione o sviluppo. Questa sezione ti aiuta a capire dove sta andando Jobs-Report.</p>
+        </div>
+
+        <div class="roadmap-card rm-soon">
+          <span class="rm-tag">🔥 Prossimamente</span>
+          <div class="rm-title">Geolocalizzazione Cantiere</div>
+          <div class="rm-desc">L'operaio timbra l'entrata in cantiere tramite GPS. Il sistema verifica automaticamente che sia fisicamente presente sul luogo di lavoro prima di accettare il rapportino.</div>
+          <div class="rm-features"><span class="rm-feat">Timbratura GPS</span><span class="rm-feat">Verifica presenza</span><span class="rm-feat">Mappa cantieri</span></div>
+        </div>
+
+        <div class="roadmap-card rm-soon">
+          <span class="rm-tag">🔥 Prossimamente</span>
+          <div class="rm-title">Gestione Materiali e Magazzino</div>
+          <div class="rm-desc">Registra i materiali utilizzati per ogni cantiere con quantità e prezzo. Tieni traccia delle scorte in magazzino. Confronta il consumo previsto con quello reale.</div>
+          <div class="rm-features"><span class="rm-feat">Registro materiali</span><span class="rm-feat">Magazzino digitale</span><span class="rm-feat">Analisi scostamenti</span></div>
+        </div>
+
+        <div class="roadmap-card rm-later">
+          <span class="rm-tag">📅 In Pianificazione</span>
+          <div class="rm-title">App Mobile Nativa (iOS/Android)</div>
+          <div class="rm-desc">Versione nativa dell'applicazione per smartphone, con funzionamento offline. I rapportini compilati senza connessione vengono sincronizzati appena torna il segnale.</div>
+          <div class="rm-features"><span class="rm-feat">Offline mode</span><span class="rm-feat">Sync automatica</span><span class="rm-feat">Push nativa</span></div>
+        </div>
+
+        <div class="roadmap-card rm-later">
+          <span class="rm-tag">📅 In Pianificazione</span>
+          <div class="rm-title">Integrazione Contabilità</div>
+          <div class="rm-desc">Export diretto verso software di contabilità (FattureInCloud, Fatture PA). Le ore fatturate si trasformano in bozze di fattura pronte da inviare al cliente senza ricopiare nulla.</div>
+          <div class="rm-features"><span class="rm-feat">FattureInCloud</span><span class="rm-feat">Export XML fatture</span><span class="rm-feat">Fattura PA</span></div>
+        </div>
+
+        <div class="roadmap-card rm-future">
+          <span class="rm-tag">🔮 Futuro</span>
+          <div class="rm-title">Piano Lavori e Gantt</div>
+          <div class="rm-desc">Pianifica le attività nel tempo con un diagramma Gantt interattivo. Assegna compiti specifici a ogni operaio con date di inizio e fine previste. Monitoraggio dell'avanzamento in tempo reale.</div>
+          <div class="rm-features"><span class="rm-feat">Diagramma Gantt</span><span class="rm-feat">Assegnazione task</span><span class="rm-feat">% avanzamento</span><span class="rm-feat">Alert scadenze</span></div>
+        </div>
+
+        <div class="roadmap-card rm-future">
+          <span class="rm-tag">🔮 Futuro</span>
+          <div class="rm-title">AI Report Assistant</div>
+          <div class="rm-desc">L'assistente AI analizza i tuoi dati storici e ti segnala: cantieri a rischio perdita, operai con ore anomale, pattern di spesa insoliti. Ti suggerisce il prezzo ottimale per il prossimo preventivo.</div>
+          <div class="rm-features"><span class="rm-feat">Analisi predittiva</span><span class="rm-feat">Alert automatici</span><span class="rm-feat">Suggerimenti prezzo</span></div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let currentSection = 'dashboard';
+let currentMode = 'user';   // 'user' | 'commercial'
+let currentRole = 'admin';  // 'admin' | 'supervisor' | 'worker'
+
+// ─── NAVIGATION ──────────────────────────────────────────
+function navigate(sectionId) {
+  // Hide all
+  document.querySelectorAll('.section-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  // Show target
+  const sec = document.getElementById('sec-' + sectionId);
+  if (sec) sec.classList.add('active');
+  const navEl = document.querySelector(`[data-section="${sectionId}"]`);
+  if (navEl) navEl.classList.add('active');
+  currentSection = sectionId;
+  // Breadcrumb
+  const labels = {
+    dashboard: '🏠 Dashboard',
+    clients: '🏢 Clienti',
+    projects: '📋 Progetti',
+    personnel: '👥 Personale',
+    reports: '📝 Rapportini',
+    worksummary: '📊 Work Summary',
+    compliance: '✅ Compliance Report',
+    comms: '💬 Comunicazioni',
+    paths: '🗺️ Percorsi Guidati',
+    roadmap: '🚀 Roadmap'
+  };
+  document.getElementById('breadcrumb').innerHTML = labels[sectionId] || sectionId;
+  // Commercial strips
+  updateCommercialStrips();
+  // Scroll to top
+  document.getElementById('contentArea').scrollTop = 0;
+}
+
+// ─── SIDEBAR CLICK ───────────────────────────────────────
+document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+  item.addEventListener('click', () => navigate(item.dataset.section));
+});
+
+// ─── MODE ────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeUser').classList.toggle('active', mode === 'user');
+  document.getElementById('modeComm').classList.toggle('active', mode === 'commercial');
+  updateCommercialStrips();
+}
+
+function updateCommercialStrips() {
+  document.querySelectorAll('.commercial-strip').forEach(el => {
+    el.classList.toggle('visible', currentMode === 'commercial');
+  });
+}
+
+// ─── ROLE ────────────────────────────────────────────────
+function setRole(role) {
+  currentRole = role;
+  // Pills
+  ['admin', 'super', 'worker'].forEach(r => {
+    document.getElementById('pill' + r.charAt(0).toUpperCase() + r.slice(1))?.classList.remove('active-path');
+  });
+  document.getElementById({admin:'pillAdmin',supervisor:'pillSuper',worker:'pillWorker'}[role])?.classList.add('active-path');
+  
+  // Role badge
+  const badge = document.getElementById('roleBadge');
+  const cfg = {
+    admin: { text: '👑 Amministratore', cls: 'role-admin' },
+    supervisor: { text: '🔧 Supervisore', cls: 'role-supervisor' },
+    worker: { text: '👷 Operaio', cls: 'role-worker' }
+  }[role];
+  badge.textContent = cfg.text;
+  badge.className = 'topbar-role-badge ' + cfg.cls;
+  
+  // Dashboard KPI switch
+  if (currentSection === 'dashboard' || true) {
+    document.getElementById('kpiAdmin').classList.toggle('hidden', role === 'worker');
+    document.getElementById('kpiWorker').classList.toggle('hidden', role !== 'worker');
+    
+    // Hide financial KPIs in Dashboard for non-admin
+    document.querySelectorAll('.admin-only').forEach(el => {
+      el.classList.toggle('hidden', role !== 'admin');
+    });
+  }
+  
+  // Projects View switch
+  const btnNewProj = document.getElementById('btnNewProject');
+  if (btnNewProj) btnNewProj.classList.toggle('hidden', role !== 'admin');
+  
+  const projectsAdmin = document.getElementById('projectsAdminView');
+  const projectsReadOnly = document.getElementById('projectsReadOnlyView');
+  if (projectsAdmin && projectsReadOnly) {
+    projectsAdmin.classList.toggle('hidden', role !== 'admin');
+    projectsReadOnly.classList.toggle('hidden', role === 'admin');
+  }
+
+  // Nav items visibility hint
+  const adminOnlyItems = document.querySelectorAll('.nav-item[data-role="admin"], .kpi-card[data-role="admin"]');
+  adminOnlyItems.forEach(item => {
+    item.style.opacity = (role !== 'admin') ? '0.35' : '1';
+    item.style.pointerEvents = (role !== 'admin') ? 'none' : 'auto';
+  });
+}
+
+// ─── COLLAPSIBLE INFO ────────────────────────────────────
+function toggleInfo(id) {
+  const box = document.getElementById(id);
+  if (!box) return;
+  const isOpen = box.classList.contains('open');
+  box.classList.toggle('open', !isOpen);
+  // Toggle button active state
+  const btn = document.querySelector(`[onclick="toggleInfo('${id}')"]`);
+  if (btn) btn.classList.toggle('active-btn', !isOpen);
+}
+
+// ─── FAQ ACCORDION ────────────────────────────────────────
+function toggleFaq(el) {
+  const answer = el.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  // Close all in same container
+  const container = el.closest('.faq-item').parentElement;
+  container.querySelectorAll('.faq-a.open').forEach(a => a.classList.remove('open'));
+  container.querySelectorAll('.faq-q.open').forEach(q => q.classList.remove('open'));
+  if (!isOpen) {
+    answer.classList.add('open');
+    el.classList.add('open');
+  }
+}
+
+// ─── KEYBOARD NAV ────────────────────────────────────────
+const sections = ['dashboard','clients','projects','personnel','reports','worksummary','compliance','comms','paths','roadmap'];
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  const idx = sections.indexOf(currentSection);
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(sections[(idx + 1) % sections.length]); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(sections[(idx - 1 + sections.length) % sections.length]); }
+});
+
+// ─── INIT ────────────────────────────────────────────────
+navigate('dashboard');
+setRole('admin');
+</script>
+</body>
+</html>

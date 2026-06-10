@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobs-Report Promo Video Generator &amp; Recorder</title>
+  
+  <!-- Inter & Outfit Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-primary: #1e40af;
+      --color-dark: #0f172a;
+      --color-accent: #f59e0b;
+      --color-light: #f8fafc;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header & Main Layout */
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-b: 1px solid rgba(255,255,255,0.05);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title span {
+      color: var(--color-accent);
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 63px);
+    }
+
+    /* Control Panel (Left) */
+    .control-panel {
+      width: 420px;
+      background: #111827;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      shrink: 0;
+    }
+
+    .panel-section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .panel-section-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.25);
+    }
+
+    .record-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .record-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    }
+
+    .record-btn:active {
+      transform: translateY(0);
+    }
+
+    .record-btn.recording {
+      background: linear-gradient(135deg, #475569 0%, #334155 100%);
+      animation: pulse 1.5s infinite;
+      box-shadow: none;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    .play-btn {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .play-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* View Area (Right) */
+    .view-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #090d16;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* 16:9 HD Aspect Ratio Container */
+    .video-viewport-wrapper {
+      width: 100%;
+      max-width: 960px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      position: relative;
+      border: 4px solid rgba(255,255,255,0.05);
+    }
+
+    /* Canvas / Element to record at real 1920x1080 */
+    #promo-canvas-container {
+      width: 1920px;
+      height: 1080px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+      background: #0f172a;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .status-dot.active {
+      background: #ef4444;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* SCENES & INTERNAL ANIMATIONS */
+    .scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease-in-out, visibility 0.8s;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .scene.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Dark/Coloured Overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(10, 17, 32, 0.72) 0%, rgba(10, 17, 32, 0.40) 100%);
+      z-index: 1;
+    }
+
+    .overlay-accent {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(30, 64, 175, 0.4) 0%, rgba(10, 17, 32, 0.55) 80%);
+      z-index: 1;
+    }
+
+    /* Ken Burns background animation */
+    .ken-burns {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.0);
+      transition: transform 4s linear;
+    }
+
+    .scene.active .ken-burns {
+      transform: scale(1.12);
+    }
+
+    /* Animated Texts */
+    .text-content {
+      position: absolute;
+      left: 120px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 800px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .text-tagline {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-accent);
+      transform: translateY(30px);
+      opacity: 0;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+    }
+
+    .text-title {
+      font-family: var(--font-display);
+      font-size: 5rem;
+      font-weight: 900;
+      line-height: 1.1;
+      color: #fff;
+      transform: translateY(40px);
+      opacity: 0;
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+    }
+
+    .text-highlight {
+      background: linear-gradient(120deg, var(--color-accent) 0%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-desc {
+      font-size: 1.75rem;
+      line-height: 1.5;
+      color: #94a3b8;
+      transform: translateY(30px);
+      opacity: 0;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;
+    }
+
+    /* Activate text animations when scene is active */
+    .scene.active .text-tagline,
+    .scene.active .text-title,
+    .scene.active .text-desc {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* 3D SMARTPHONE MOCKUP */
+    .phone-container {
+      position: absolute;
+      right: 120px;
+      top: 50%;
+      transform: translateY(-50%) rotateY(-10deg) rotateX(5deg);
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      width: 480px;
+      height: 940px;
+      z-index: 10;
+      opacity: 0;
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+    }
+
+    .scene.active .phone-container {
+      opacity: 1;
+      transform: translateY(-50%) rotateY(-18deg) rotateX(8deg);
+    }
+
+    .phone-device {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      border-radius: 56px;
+      padding: 14px;
+      box-shadow: 
+        0 25px 50px -12px rgba(0,0,0,0.7),
+        0 0 0 4px #1e293b,
+        0 0 40px rgba(30, 64, 175, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Dynamic Island */
+    .phone-island {
+      position: absolute;
+      top: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 32px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-screenshot {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.05);
+      transition: transform 5s ease-out;
+    }
+
+    .scene.active .phone-screenshot {
+      transform: scale(1.0);
+    }
+
+    /* SCENE 4: 5 SMARTPHONES SIDE BY SIDE (Fan entry) */
+    .features-grid {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 35px;
+      z-index: 10;
+      padding: 0 80px;
+      top: 150px;
+      height: 750px;
+    }
+
+    .feature-phone-wrapper {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      opacity: 0;
+      transform: translateY(120px) scale(0.9);
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .scene.active .feature-phone-wrapper:nth-child(1) { transition-delay: 0.2s; opacity: 1; transform: translateY(0) scale(1); }
+    .scene.active .feature-phone-wrapper:nth-child(2) { transition-delay: 0.4s; opacity: 1; transform: translateY(0) scale(1); }
+    .scene.active .feature-phone-wrapper:nth-child(3) { transition-delay: 0.6s; opacity: 1; transform: translateY(0) scale(1); }
+    .scene.active .feature-phone-wrapper:nth-child(4) { transition-delay: 0.8s; opacity: 1; transform: translateY(0) scale(1); }
+    .scene.active .feature-phone-wrapper:nth-child(5) { transition-delay: 1.0s; opacity: 1; transform: translateY(0) scale(1); }
+
+    /* Highlight each phone in turn */
+    @keyframes featureHighlight {
+      0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
+      15%, 25% { transform: translateY(-40px) scale(1.08); filter: brightness(1.1); box-shadow: 0 20px 40px rgba(245, 158, 11, 0.2); }
+    }
+
+    .scene.active .feature-phone-wrapper:nth-child(1) .phone-device { animation: featureHighlight 6s infinite 1.2s; }
+    .scene.active .feature-phone-wrapper:nth-child(2) .phone-device { animation: featureHighlight 6s infinite 2.2s; }
+    .scene.active .feature-phone-wrapper:nth-child(3) .phone-device { animation: featureHighlight 6s infinite 3.2s; }
+    .scene.active .feature-phone-wrapper:nth-child(4) .phone-device { animation: featureHighlight 6s infinite 4.2s; }
+    .scene.active .feature-phone-wrapper:nth-child(5) .phone-device { animation: featureHighlight 6s infinite 5.2s; }
+
+    .feature-label {
+      margin-top: 25px;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+    }
+
+    /* SCENE 6: THE 4 BRAND PILLARS */
+    .brand-pillars {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 35px;
+      margin-top: 60px;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    .pillar-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-top: 5px solid var(--color-accent);
+      border-radius: 24px;
+      padding: 40px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+      transform: translateY(60px);
+      opacity: 0;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .scene.active .pillar-card:nth-child(1) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
+    .scene.active .pillar-card:nth-child(2) { transition-delay: 0.5s; opacity: 1; transform: translateY(0); }
+    .scene.active .pillar-card:nth-child(3) { transition-delay: 0.7s; opacity: 1; transform: translateY(0); }
+    .scene.active .pillar-card:nth-child(4) { transition-delay: 0.9s; opacity: 1; transform: translateY(0); }
+
+    .pillar-icon-wrapper {
+      width: 90px;
+      height: 90px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--color-accent) 0%, #fbbf24 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+    }
+
+    .pillar-title {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    /* SCENE 7: STORE BADGES & CTA */
+    .cta-container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .cta-logo {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+      margin-bottom: 30px;
+      filter: drop-shadow(0 15px 30px rgba(30, 64, 175, 0.3));
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
+    }
+
+    .scene.active .cta-logo {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: 5.5rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 15px;
+      color: #fff;
+      transform: translateY(30px);
+      opacity: 0;
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+    }
+
+    .cta-domain {
+      font-family: var(--font-display);
+      font-size: 3.25rem;
+      font-weight: 800;
+      color: var(--color-accent);
+      background: rgba(245, 158, 11, 0.1);
+      border: 2px solid rgba(245, 158, 11, 0.3);
+      padding: 10px 40px;
+      border-radius: 50px;
+      margin-bottom: 45px;
+      display: inline-block;
+      transform: translateY(30px);
+      opacity: 0;
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
+    }
+
+    .store-badges {
+      display: flex;
+      gap: 25px;
+      justify-content: center;
+      transform: translateY(30px);
+      opacity: 0;
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
+    }
+
+    .scene.active .cta-title,
+    .scene.active .cta-domain,
+    .scene.active .store-badges {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .store-badge {
+      height: 70px;
+      object-fit: contain;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .store-badge:hover {
+      transform: scale(1.05);
+    }
+
+    /* SCENE 2: FLOATING NOTIFICATIONS */
+    .floating-notifications {
+      position: absolute;
+      right: 180px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 480px;
+      height: 600px;
+      z-index: 10;
+    }
+
+    .notif-bubble {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+      position: absolute;
+      width: 420px;
+      opacity: 0;
+      transform: translateY(30px) scale(0.9);
+      transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .scene.active .notif-bubble:nth-child(1) { top: 80px; left: 0; transition-delay: 0.4s; opacity: 1; transform: translateY(0) scale(1); }
+    .scene.active .notif-bubble:nth-child(2) { top: 220px; left: 40px; transition-delay: 0.8s; opacity: 1; transform: translateY(0) scale(1); }
+    .scene.active .notif-bubble:nth-child(3) { top: 360px; left: -20px; transition-delay: 1.2s; opacity: 1; transform: translateY(0) scale(1); }
+
+    .notif-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--color-primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+    }
+
+    .notif-details {
+      flex: 1;
+    }
+
+    .notif-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #fff;
+    }
+
+    .notif-desc {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    /* Video timeline bar */
+    .timeline-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 6px;
+      background: var(--color-accent);
+      width: 0%;
+      z-index: 100;
+    }
+
+    /* Time Indicators */
+    .time-indicator {
+      font-family: monospace;
+      font-size: 0.875rem;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bg-music" loop></audio>
+
+  <header>
+    <div class="brand">
+      <img src="Logo Jobs Report.png" alt="Logo" class="brand-logo">
+      <div class="brand-title">Jobs<span>Report</span> Promo Engine</div>
+    </div>
+    <div style="display:flex; gap:15px; align-items:center;">
+      <span class="time-indicator" id="global-timer">00:00.00 / 00:30.00</span>
+      <button class="play-btn" id="preview-btn">▶ Play Preview</button>
+      <button class="record-btn" id="record-btn">⏺ Record HD Video</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    
+    <!-- LEFT PANEL (TEXT EDITOR) -->
+    <div class="control-panel">
+      
+      <div class="panel-section">
+        <div class="panel-section-title">🎬 Scene Configuration</div>
+        <div class="form-group">
+          <label>Export Resolution</label>
+          <div style="font-size:0.875rem; color:#94a3b8; font-weight:600; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:6px; border: 1px dashed rgba(255,255,255,0.1);">
+            Full HD 1080p (1920 x 1080)
+          </div>
+        </div>
+      </div>
+
+      <!-- Background Music -->
+      <div class="panel-section">
+        <div class="panel-section-title">🎵 Background Music</div>
+        <div class="form-group">
+          <label>Upload MP3 / WAV File</label>
+          <input type="file" id="music-upload" accept="audio/*" style="width: 100%; font-size: 0.8rem; padding: 6px;">
+        </div>
+        <div class="form-group">
+          <label>Music Volume</label>
+          <input type="range" id="music-volume" min="0" max="1" step="0.05" value="0.5" style="width: 100%; accent-color: var(--color-accent);">
+        </div>
+        <div class="form-group">
+          <label>Recording Mode</label>
+          <select id="record-mode" style="width:100%; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; color:#fff; font-size:0.875rem;">
+            <option value="tab">Capture with Audio (Recommended for YouTube)</option>
+            <option value="silent">Quick Silent Export</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Scene 1 -->
+      <div class="panel-section">
+        <div class="panel-section-title">1️⃣ Scene 1 (0s - 4s) - The Problem</div>
+        <div class="form-group">
+          <label>Main Title</label>
+          <input type="text" id="s1-title" value="STILL FILLING OUT JOB REPORTS BY HAND?">
+        </div>
+        <div class="form-group">
+          <label>Tagline</label>
+          <input type="text" id="s1-tagline" value="THE OLD-FASHIONED WAY">
+        </div>
+      </div>
+
+      <!-- Scene 2 -->
+      <div class="panel-section">
+        <div class="panel-section-title">2️⃣ Scene 2 (4s - 8s) - The Chaos</div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="s2-title" value="HOURS, COSTS AND MESSAGES SCATTERED EVERYWHERE...">
+        </div>
+        <div class="form-group">
+          <label>Notification 1</label>
+          <input type="text" id="s2-notif1" value="WhatsApp: Where is yesterday's job report?">
+        </div>
+        <div class="form-group">
+          <label>Notification 2</label>
+          <input type="text" id="s2-notif2" value="SMS: Missing hours for the Smith project">
+        </div>
+      </div>
+
+      <!-- Scene 3 -->
+      <div class="panel-section">
+        <div class="panel-section-title">3️⃣ Scene 3 (8s - 12s) - The Solution</div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="s3-title" value="MANAGE EVERYTHING IN ONE SINGLE PLATFORM">
+        </div>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input type="text" id="s3-desc" value="Your entire job site under control, from any device.">
+        </div>
+      </div>
+
+      <!-- Scene 4 -->
+      <div class="panel-section">
+        <div class="panel-section-title">4️⃣ Scene 4 (12s - 18s) - Features</div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="s4-title" value="HOURS, REPORTS, PHOTOS, SIGNATURES &amp; COSTS">
+        </div>
+      </div>
+
+      <!-- Scene 5 -->
+      <div class="panel-section">
+        <div class="panel-section-title">5️⃣ Scene 5 (18s - 23s) - Dashboard</div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="s5-title" value="MORE CONTROL. LESS TIME WASTED.">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="s5-desc" rows="2">Track working hours, analyse project costs and optimise your budget in real time.</textarea>
+        </div>
+      </div>
+
+      <!-- Scene 6 -->
+      <div class="panel-section">
+        <div class="panel-section-title">6️⃣ Scene 6 (23s - 27s) - Brand</div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="s6-title" value="JOBS-REPORT">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="s6-desc" value="The ideal software for tradespeople and construction companies">
+        </div>
+      </div>
+
+      <!-- Scene 7 -->
+      <div class="panel-section">
+        <div class="panel-section-title">7️⃣ Scene 7 (27s - 30s) - Call to Action</div>
+        <div class="form-group">
+          <label>CTA Text</label>
+          <input type="text" id="s7-title" value="TRY IT FOR FREE">
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="text" id="s7-domain" value="jobs-report.app">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW AREA & VIDEO GENERATOR -->
+    <div class="view-area">
+      
+      <div class="status-badge">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Ready to export</span>
+      </div>
+
+      <div class="video-viewport-wrapper">
+        <div id="promo-canvas-container">
+          
+          <div class="timeline-bar" id="timeline-indicator"></div>
+
+          <!-- SCENE 1: THE PROBLEM -->
+          <div class="scene active" id="scene-1" style="background-image: url('promo-images/stressed_worker.png');">
+            <div class="overlay"></div>
+            <div class="text-content">
+              <div class="text-tagline" id="r-s1-tagline">THE OLD-FASHIONED WAY</div>
+              <div class="text-title" id="r-s1-title">STILL FILLING OUT JOB REPORTS <span class="text-highlight">BY HAND?</span></div>
+            </div>
+          </div>
+
+          <!-- SCENE 2: THE CHAOS -->
+          <div class="scene" id="scene-2" style="background-image: url('promo-images/construction_worker_phone.png');">
+            <div class="overlay"></div>
+            <div class="text-content">
+              <div class="text-tagline">THE FRAGMENTATION</div>
+              <div class="text-title" id="r-s2-title">HOURS, COSTS AND MESSAGES <span class="text-highlight">SCATTERED EVERYWHERE...</span></div>
+            </div>
+            <div class="floating-notifications">
+              <div class="notif-bubble">
+                <div class="notif-icon">💬</div>
+                <div class="notif-details">
+                  <div class="notif-title">WhatsApp</div>
+                  <div class="notif-desc" id="r-s2-notif1">Where is yesterday's job report?</div>
+                </div>
+              </div>
+              <div class="notif-bubble">
+                <div class="notif-icon">📅</div>
+                <div class="notif-details">
+                  <div class="notif-title">Reminder</div>
+                  <div class="notif-desc" id="r-s2-notif2">Missing hours for the Smith project</div>
+                </div>
+              </div>
+              <div class="notif-bubble">
+                <div class="notif-icon">💶</div>
+                <div class="notif-details">
+                  <div class="notif-title">Administration</div>
+                  <div class="notif-desc">Who has the fuel receipt?</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCENE 3: THE SOLUTION -->
+          <div class="scene" id="scene-3" style="background-image: url('promo-images/construction_site_bg.png');">
+            <div class="overlay-accent"></div>
+            <div class="text-content">
+              <div class="text-tagline">THE DIGITAL BREAKTHROUGH</div>
+              <div class="text-title" id="r-s3-title">MANAGE EVERYTHING IN <span class="text-highlight">ONE SINGLE PLATFORM</span></div>
+              <div class="text-desc" id="r-s3-desc">Your entire job site under control, from any device.</div>
+            </div>
+            
+            <div class="phone-container">
+              <div class="phone-device">
+                <div class="phone-island"></div>
+                <div class="phone-screen">
+                  <img src="promo-images/screenshot_home.png" alt="App Home" class="phone-screenshot">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCENE 4: KEY FEATURES -->
+          <div class="scene" id="scene-4" style="background-image: url('promo-images/construction_site_bg.png');">
+            <div class="overlay" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.88) 100%);"></div>
+            <div style="position:absolute; top:50px; left:50%; transform:translateX(-50%); width:100%; text-align:center; z-index:20;">
+              <h2 id="r-s4-title" style="font-family:var(--font-display); font-size:4.25rem; font-weight:900; color:#fff; letter-spacing:-1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                HOURS, REPORTS, PHOTOS, SIGNATURES &amp; COSTS
+              </h2>
+            </div>
+            <div class="features-grid">
+              <!-- Hours -->
+              <div class="feature-phone-wrapper">
+                <div class="phone-device" style="width:280px; height:560px; border-radius:36px; padding:8px;">
+                  <div class="phone-screen" style="border-radius:28px;">
+                    <img src="promo-images/screenshot_home.png" class="phone-screenshot">
+                  </div>
+                </div>
+                <div class="feature-label">
+                  <span class="feature-icon">⏱️</span>
+                  <span>Log Hours</span>
+                </div>
+              </div>
+              <!-- Report -->
+              <div class="feature-phone-wrapper">
+                <div class="phone-device" style="width:280px; height:560px; border-radius:36px; padding:8px;">
+                  <div class="phone-screen" style="border-radius:28px;">
+                    <img src="promo-images/screenshot_rapportino.png" class="phone-screenshot">
+                  </div>
+                </div>
+                <div class="feature-label">
+                  <span class="feature-icon">📄</span>
+                  <span>Job Report</span>
+                </div>
+              </div>
+              <!-- New -->
+              <div class="feature-phone-wrapper">
+                <div class="phone-device" style="width:280px; height:560px; border-radius:36px; padding:8px;">
+                  <div class="phone-screen" style="border-radius:28px;">
+                    <img src="promo-images/screenshot_nuovo_rapportino.png" class="phone-screenshot">
+                  </div>
+                </div>
+                <div class="feature-label">
+                  <span class="feature-icon">📝</span>
+                  <span>New Submission</span>
+                </div>
+              </div>
+              <!-- Staff -->
+              <div class="feature-phone-wrapper">
+                <div class="phone-device" style="width:280px; height:560px; border-radius:36px; padding:8px;">
+                  <div class="phone-screen" style="border-radius:28px;">
+                    <img src="promo-images/screenshot_personale.png" class="phone-screenshot">
+                  </div>
+                </div>
+                <div class="feature-label">
+                  <span class="feature-icon">👥</span>
+                  <span>Client Signature</span>
+                </div>
+              </div>
+              <!-- Reports list -->
+              <div class="feature-phone-wrapper">
+                <div class="phone-device" style="width:280px; height:560px; border-radius:36px; padding:8px;">
+                  <div class="phone-screen" style="border-radius:28px;">
+                    <img src="promo-images/screenshot_rapportini.png" class="phone-screenshot">
+                  </div>
+                </div>
+                <div class="feature-label">
+                  <span class="feature-icon">💶</span>
+                  <span>Expenses &amp; Costs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCENE 5: MORE CONTROL -->
+          <div class="scene" id="scene-5" style="background-image: url('promo-images/construction_site_bg.png');">
+            <div class="overlay"></div>
+            <div class="text-content">
+              <div class="text-tagline">FINANCIAL ANALYTICS</div>
+              <div class="text-title" id="r-s5-title">MORE CONTROL. <span class="text-highlight">LESS TIME WASTED.</span></div>
+              <div class="text-desc" id="r-s5-desc">Track working hours, analyse project costs and optimise your budget in real time.</div>
+            </div>
+            <div class="phone-container">
+              <div class="phone-device">
+                <div class="phone-island"></div>
+                <div class="phone-screen">
+                  <img src="promo-images/screenshot_dashboard.png" alt="Dashboard" class="phone-screenshot">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCENE 6: BRAND & PILLARS -->
+          <div class="scene" id="scene-6" style="background-image: url('promo-images/construction_site_bg.png');">
+            <div class="overlay"></div>
+            <div style="position: relative; z-index: 10; display:flex; flex-direction:column; align-items:center; width:100%; height:100%; justify-content:center; padding: 0 100px;">
+              
+              <!-- Logo container with glow -->
+              <div style="position: relative; margin-bottom: 25px;">
+                <div style="position: absolute; inset: -20px; background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(0,0,0,0) 70%); filter: blur(12px); z-index: -1;"></div>
+                <img src="Logo Jobs Report.png" alt="Logo" style="width: 130px; height: 130px; object-fit: contain; display: block; margin: 0 auto; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));">
+              </div>
+
+              <h2 id="r-s6-title" style="font-family:var(--font-display); font-size: 5.5rem; font-weight: 900; color:#fff; letter-spacing: -1.5px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                JOBS-<span style="color:var(--color-accent);">REPORT</span>
+              </h2>
+              <p id="r-s6-desc" style="font-size: 1.95rem; font-weight: 500; color: #94a3b8; margin-top: 12px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                The ideal software for tradespeople and construction companies
+              </p>
+              
+              <div class="brand-pillars">
+                <div class="pillar-card">
+                  <div class="pillar-icon-wrapper">⏱️</div>
+                  <div class="pillar-title">Simple</div>
+                </div>
+                <div class="pillar-card">
+                  <div class="pillar-icon-wrapper">🛡️</div>
+                  <div class="pillar-title">Reliable</div>
+                </div>
+                <div class="pillar-card">
+                  <div class="pillar-icon-wrapper">🔄</div>
+                  <div class="pillar-title">Up to date</div>
+                </div>
+                <div class="pillar-card">
+                  <div class="pillar-icon-wrapper">📱</div>
+                  <div class="pillar-title">Multi-device</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCENE 7: CALL TO ACTION -->
+          <div class="scene" id="scene-7" style="background-image: url('promo-images/construction_site_bg.png');">
+            <div class="overlay"></div>
+            <div class="cta-container">
+              <img src="Logo Jobs Report.png" class="cta-logo">
+              <h2 class="cta-title" id="r-s7-title">TRY IT FOR FREE</h2>
+              <div class="cta-domain" id="r-s7-domain">jobs-report.app</div>
+              <div class="store-badges">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" class="store-badge" alt="Google Play">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" class="store-badge" alt="App Store">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Configuration and viewport scaling
+    const wrapper = document.querySelector('.video-viewport-wrapper');
+    const container = document.getElementById('promo-canvas-container');
+
+    function resizeViewport() {
+      const wrapperWidth = wrapper.clientWidth;
+      const scale = wrapperWidth / 1920;
+      container.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('resize', resizeViewport);
+    resizeViewport();
+
+    // Real-time text field sync
+    const textSync = [
+      { input: 's1-title', render: 'r-s1-title', html: true },
+      { input: 's1-tagline', render: 'r-s1-tagline' },
+      { input: 's2-title', render: 'r-s2-title', html: true },
+      { input: 's2-notif1', render: 'r-s2-notif1' },
+      { input: 's2-notif2', render: 'r-s2-notif2' },
+      { input: 's3-title', render: 'r-s3-title', html: true },
+      { input: 's3-desc', render: 'r-s3-desc' },
+      { input: 's4-title', render: 'r-s4-title' },
+      { input: 's5-title', render: 'r-s5-title', html: true },
+      { input: 's5-desc', render: 'r-s5-desc' },
+      { input: 's6-title', render: 'r-s6-title', html: true },
+      { input: 's6-desc', render: 'r-s6-desc' },
+      { input: 's7-title', render: 'r-s7-title' },
+      { input: 's7-domain', render: 'r-s7-domain' }
+    ];
+
+    textSync.forEach(item => {
+      const inputEl = document.getElementById(item.input);
+      const renderEl = document.getElementById(item.render);
+      if (inputEl && renderEl) {
+        inputEl.addEventListener('input', () => {
+          if (item.html) {
+            renderEl.innerHTML = inputEl.value.replace(/\[HIGHLIGHT\](.*?)\[\/HIGHLIGHT\]/g, '<span class="text-highlight">$1</span>');
+          } else {
+            renderEl.textContent = inputEl.value;
+          }
+        });
+        // Trigger input event to initialise advanced formatting
+        inputEl.dispatchEvent(new Event('input'));
+      }
+    });
+
+    // Background music management
+    const musicUpload = document.getElementById('music-upload');
+    const musicVolume = document.getElementById('music-volume');
+    const bgMusic = document.getElementById('bg-music');
+
+    musicUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        bgMusic.src = url;
+        bgMusic.load();
+        statusText.textContent = "Music loaded successfully!";
+      }
+    });
+
+    musicVolume.addEventListener('input', () => {
+      bgMusic.volume = musicVolume.value;
+    });
+
+    // TIMELINE ENGINE & ANIMATOR
+    const scenes = [
+      { id: 'scene-1', duration: 4000 },
+      { id: 'scene-2', duration: 4000 },
+      { id: 'scene-3', duration: 4000 },
+      { id: 'scene-4', duration: 6000 },
+      { id: 'scene-5', duration: 5000 },
+      { id: 'scene-6', duration: 4000 },
+      { id: 'scene-7', duration: 3000 }
+    ];
+
+    const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0); // 30000ms = 30s
+    let animationTimer = null;
+    let isPlaying = false;
+    let startTime = 0;
+    let pausedTime = 0;
+    let currentSceneIndex = 0;
+
+    const globalTimer = document.getElementById('global-timer');
+    const previewBtn = document.getElementById('preview-btn');
+    const recordBtn = document.getElementById('record-btn');
+    const timelineIndicator = document.getElementById('timeline-indicator');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+
+    function formatTime(ms) {
+      const totalSeconds = ms / 1000;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+      const hundredths = Math.floor((ms % 1000) / 10);
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
+    }
+
+    function setActiveScene(index) {
+      scenes.forEach((scene, idx) => {
+        const el = document.getElementById(scene.id);
+        if (idx === index) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+      currentSceneIndex = index;
+    }
+
+    function tick() {
+      if (!isPlaying) return;
+      const elapsed = Date.now() - startTime + pausedTime;
+      
+      if (elapsed >= totalDuration) {
+        stopVideo();
+        return;
+      }
+
+      // Update timer and timeline bar
+      globalTimer.textContent = `${formatTime(elapsed)} / ${formatTime(totalDuration)}`;
+      timelineIndicator.style.width = `${(elapsed / totalDuration) * 100}%`;
+
+      // Find current scene
+      let cumulativeTime = 0;
+      for (let i = 0; i < scenes.length; i++) {
+        cumulativeTime += scenes[i].duration;
+        if (elapsed < cumulativeTime) {
+          if (currentSceneIndex !== i) {
+            setActiveScene(i);
+          }
+          break;
+        }
+      }
+
+      animationTimer = requestAnimationFrame(tick);
+    }
+
+    function startVideo() {
+      isPlaying = true;
+      startTime = Date.now();
+      previewBtn.textContent = '⏸ Pause';
+      if (bgMusic.src) {
+        bgMusic.play().catch(e => console.log("Audio play blocked by browser: " + e.message));
+      }
+      tick();
+    }
+
+    function pauseVideo() {
+      isPlaying = false;
+      cancelAnimationFrame(animationTimer);
+      pausedTime += Date.now() - startTime;
+      bgMusic.pause();
+      previewBtn.textContent = '▶ Resume';
+    }
+
+    function stopVideo() {
+      isPlaying = false;
+      cancelAnimationFrame(animationTimer);
+      pausedTime = 0;
+      currentSceneIndex = 0;
+      setActiveScene(0);
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+      globalTimer.textContent = `00:00.00 / ${formatTime(totalDuration)}`;
+      timelineIndicator.style.width = '0%';
+      previewBtn.textContent = '▶ Play Preview';
+    }
+
+    previewBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        pauseVideo();
+      } else {
+        startVideo();
+      }
+    });
+
+    // MEDIARECORDER / HD VIDEO EXPORTER
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordStream = null;
+
+    recordBtn.addEventListener('click', async () => {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        return;
+      }
+
+      stopVideo();
+      recordedChunks = [];
+
+      const mode = document.getElementById('record-mode').value;
+      let stream = null;
+
+      statusDot.classList.add('active');
+      statusText.textContent = "Preparing recording...";
+      recordBtn.textContent = "⏹ Stop Recording";
+      recordBtn.classList.add('recording');
+
+      if (mode === 'tab') {
+        // Recommended mode: getDisplayMedia to record the browser tab WITH AUDIO
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              displaySurface: "browser",
+              width: 1920,
+              height: 1080,
+              frameRate: { ideal: 60 }
+            },
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            }
+          });
+          recordStream = stream;
+        } catch (e) {
+          alert("To record the video with background audio, select this generator's tab and tick the 'Share tab audio' checkbox.");
+          resetRecordUI();
+          return;
+        }
+      } else {
+        // Quick Silent Export mode
+        try {
+          if (container.captureStream) {
+            stream = container.captureStream(60);
+          } else if (container.mozCaptureStream) {
+            stream = container.mozCaptureStream(60);
+          } else {
+            alert("Your browser does not support direct DOM capture. The tab capture will be used as a fallback.");
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { width: 1920, height: 1080, frameRate: 60 }
+            });
+            recordStream = stream;
+          }
+        } catch (e) {
+          resetRecordUI();
+          return;
+        }
+      }
+
+      // Define optimal supported codecs
+      let options = { mimeType: 'video/webm;codecs=vp9,opus', videoBitsPerSecond: 12000000 };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 8000000 };
+      }
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm', videoBitsPerSecond: 6000000 };
+      }
+
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        alert("Error configuring the browser recorder: " + e.message);
+        if (recordStream) {
+          recordStream.getTracks().forEach(track => track.stop());
+        }
+        resetRecordUI();
+        return;
+      }
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        statusDot.classList.remove('active');
+        statusText.textContent = "Generating video...";
+        
+        if (recordStream) {
+          recordStream.getTracks().forEach(track => track.stop());
+          recordStream = null;
+        }
+
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'jobs-report-promo-video-en.webm';
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          statusText.textContent = "Exported successfully!";
+          resetRecordUI();
+        }, 100);
+      };
+
+      // Start playback and recording simultaneously
+      setActiveScene(0);
+      isPlaying = true;
+      startTime = Date.now();
+      pausedTime = 0;
+      
+      if (bgMusic.src) {
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(e => console.log(e));
+      }
+
+      mediaRecorder.start();
+      statusText.textContent = "RECORDING IN PROGRESS (Full HD)...";
+      tick();
+
+      const checkEnd = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= totalDuration) {
+          clearInterval(checkEnd);
+          if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+          }
+        }
+      }, 100);
+    });
+
+    function resetRecordUI() {
+      recordBtn.textContent = "⏺ Record HD Video";
+      recordBtn.classList.remove('recording');
+      stopVideo();
+      if (recordStream) {
+        recordStream.getTracks().forEach(track => track.stop());
+        recordStream = null;
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -100,7 +100,11 @@ const translations: Record<string, Record<string, string>> = {
     rawNightHours: 'Ore notturne',
     rawAdditionalHours: 'Ore aggiuntive (team)',
     rawTotalHours: 'Totale ore',
-    rawActivityType: 'Tipo attività'
+    rawActivityType: 'Tipo attività',
+    rawInvoiceStatus: 'Stato fatturazione',
+    statusPending: 'In Attesa',
+    statusInvoiced: 'Fatturato',
+    statusPaid: 'Pagato'
   },
   en: {
     payrollTitle: 'Employee',
@@ -141,7 +145,11 @@ const translations: Record<string, Record<string, string>> = {
     rawNightHours: 'Night hours',
     rawAdditionalHours: 'Additional hours (team)',
     rawTotalHours: 'Total hours',
-    rawActivityType: 'Activity type'
+    rawActivityType: 'Activity type',
+    rawInvoiceStatus: 'Billing Status',
+    statusPending: 'Pending',
+    statusInvoiced: 'Invoiced',
+    statusPaid: 'Paid'
   },
   es: {
     payrollTitle: 'Empleado',
@@ -182,7 +190,11 @@ const translations: Record<string, Record<string, string>> = {
     rawNightHours: 'Horas nocturnas',
     rawAdditionalHours: 'Horas adicionales (equipo)',
     rawTotalHours: 'Horas totales',
-    rawActivityType: 'Tipo de actividad'
+    rawActivityType: 'Tipo de actividad',
+    rawInvoiceStatus: 'Estado de facturación',
+    statusPending: 'Pendiente',
+    statusInvoiced: 'Facturado',
+    statusPaid: 'Pagado'
   },
   pl: {
     payrollTitle: 'Pracownik',
@@ -223,7 +235,11 @@ const translations: Record<string, Record<string, string>> = {
     rawNightHours: 'Godziny nocne',
     rawAdditionalHours: 'Dodatkowe godziny (zespół)',
     rawTotalHours: 'Suma godzin',
-    rawActivityType: 'Rodzaj aktywności'
+    rawActivityType: 'Rodzaj aktywności',
+    rawInvoiceStatus: 'Status fakturowania',
+    statusPending: 'Oczekujący',
+    statusInvoiced: 'Zafakturowano',
+    statusPaid: 'Zapłacono'
   },
   tr: {
     payrollTitle: 'Çalışan',
@@ -264,7 +280,11 @@ const translations: Record<string, Record<string, string>> = {
     rawNightHours: 'Gece saatleri',
     rawAdditionalHours: 'Ek saatler (ekip)',
     rawTotalHours: 'Toplam saat',
-    rawActivityType: 'Faaliyet türü'
+    rawActivityType: 'Faaliyet türü',
+    rawInvoiceStatus: 'Fatura Durumu',
+    statusPending: 'Beklemede',
+    statusInvoiced: 'Faturalandı',
+    statusPaid: 'Ödendi'
   },
   da: {
     payrollTitle: 'Medarbejder',
@@ -305,8 +325,22 @@ const translations: Record<string, Record<string, string>> = {
     rawNightHours: 'Nattetimer',
     rawAdditionalHours: 'Ekstra timer (team)',
     rawTotalHours: 'Samlet antal timer',
-    rawActivityType: 'Aktivitetstype'
+    rawActivityType: 'Aktivitetstype',
+    rawInvoiceStatus: 'Faktureringsstatus',
+    statusPending: 'Afventer',
+    statusInvoiced: 'Faktureret',
+    statusPaid: 'Betalt'
   }
+};
+
+const formatDateEU = (isoDate: string, lang: string) => {
+  if (!isoDate) return '---';
+  const parts = isoDate.split('-');
+  if (parts.length === 3) {
+    if (lang === 'en') return `${parts[1]}/${parts[2]}/${parts[0]}`;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return isoDate;
 };
 
 // --- SERVIZI DI AGGREGAZIONE MODULARI (PRODUCTION-GRADE) ---
@@ -532,7 +566,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const params = req.method === 'POST' ? req.body : req.query;
-  const { companyId, dateFrom, dateTo, clientId, projectId, userId, subcontractorId, lang = 'it' } = params;
+  const { companyId, dateFrom, dateTo, clientId, projectId, userId, subcontractorId, adminStatus, lang = 'it' } = params;
 
   // Risolvi il dizionario di traduzione
   const t = translations[lang] || translations.it;
@@ -573,13 +607,20 @@ export default async function handler(req: any, res: any) {
     let reportQuery = supabaseAdmin
       .from('reports')
       .select(`
-        id, date, total_hours, overtime_hours, festive_hours, night_hours, activity_type, created_by, project_id,
+        id, date, total_hours, overtime_hours, festive_hours, night_hours, activity_type, invoice_status, created_by, project_id,
         additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, hourly_rate, person_name, membership_type, subcontractor_id)
       `)
       .eq('company_id', companyId);
 
     if (dateFrom) reportQuery = reportQuery.gte('date', dateFrom);
     if (dateTo) reportQuery = reportQuery.lte('date', dateTo);
+    if (adminStatus && adminStatus !== 'Tutti') {
+      if (adminStatus === 'Pending') {
+        reportQuery = reportQuery.or('invoice_status.eq.Pending,invoice_status.is.null');
+      } else {
+        reportQuery = reportQuery.eq('invoice_status', adminStatus);
+      }
+    }
 
     const [reportsRes, projectsRes, clientsRes, workersRes, subcontractorsRes] = await Promise.all([
       reportQuery,
@@ -712,7 +753,8 @@ export default async function handler(req: any, res: any) {
         t.rawFestiveHours,
         t.rawNightHours,
         t.rawTotalHours,
-        t.rawActivityType
+        t.rawActivityType,
+        t.rawInvoiceStatus
       ]
     ];
     for (const r of mappedReports) {
@@ -725,9 +767,11 @@ export default async function handler(req: any, res: any) {
       const festiveHours = Number(r.festive_hours) || 0;
       const nightHours = Number(r.night_hours) || 0;
       const ordinaryHours = Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
+      const invoiceStatusRaw = r.invoice_status || 'Pending';
+      const invoiceStatusTranslated = invoiceStatusRaw === 'Fatturato' ? t.statusInvoiced : invoiceStatusRaw === 'Pagato' ? t.statusPaid : t.statusPending;
       
       rawDataRows.push([
-        { v: r.date, t: 's' },
+        { v: formatDateEU(r.date, lang as string), t: 's' },
         { v: workerName, t: 's' },
         { v: r.projectName || 'N/A', t: 's' },
         { v: ordinaryHours, t: 'n', z: '#,##0.00' },
@@ -735,7 +779,8 @@ export default async function handler(req: any, res: any) {
         { v: festiveHours, t: 'n', z: '#,##0.00' },
         { v: nightHours, t: 'n', z: '#,##0.00' },
         { v: totalHours, t: 'n', z: '#,##0.00' },
-        { v: r.activity_type || '', t: 's' }
+        { v: r.activity_type || '', t: 's' },
+        { v: invoiceStatusTranslated, t: 's' }
       ]);
 
       // Additional workers rows
@@ -751,7 +796,7 @@ export default async function handler(req: any, res: any) {
           const awOrd = Math.max(0, awTot - awExt - awFst - awNgt);
 
           rawDataRows.push([
-            { v: r.date, t: 's' },
+            { v: formatDateEU(r.date, lang as string), t: 's' },
             { v: awName, t: 's' },
             { v: r.projectName || 'N/A', t: 's' },
             { v: awOrd, t: 'n', z: '#,##0.00' },
@@ -759,13 +804,14 @@ export default async function handler(req: any, res: any) {
             { v: awFst, t: 'n', z: '#,##0.00' },
             { v: awNgt, t: 'n', z: '#,##0.00' },
             { v: awTot, t: 'n', z: '#,##0.00' },
-            { v: r.activity_type || '', t: 's' }
+            { v: r.activity_type || '', t: 's' },
+            { v: invoiceStatusTranslated, t: 's' }
           ]);
         }
       }
     }
     const wsRaw = utils.aoa_to_sheet(rawDataRows);
-    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }];
+    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 16 }];
     utils.book_append_sheet(wb, wsRaw, t.rawDataSheetName);
 
     // --- SHEET 5: Sintesi (Dashboard Direzionale) ---

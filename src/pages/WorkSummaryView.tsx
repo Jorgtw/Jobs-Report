@@ -84,34 +84,44 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
   });
 
   const groupedByProject = useMemo(() => {
-    return projectBillingSummary.map(row => {
-      const proj = projects.find(p => p.id === row.projectId);
-      const client = clients.find(c => c.id === proj?.clientId);
-      return {
-        id: row.projectId,
-        name: row.projectTitle,
-        clientName: client?.name || t('common.unknown') || 'Sconosciuto',
-        hours: row.totalHours,
-        totalCost: 0,
-        totalExpenses: 0,
-        revenue: row.totalBilledAmount,
-        margin: row.totalBilledAmount,
-        dateDisplay: 'Periodo'
-      };
+    const grouped = new Map<string, any>();
+    filteredData.forEach(row => {
+      if (!grouped.has(row.projectId)) {
+        grouped.set(row.projectId, {
+          id: row.projectId,
+          name: row.projectName,
+          clientName: row.clientName,
+          hours: 0,
+          totalCost: 0,
+          totalExpenses: 0,
+          revenue: 0,
+          margin: 0,
+          dateDisplay: 'Periodo'
+        });
+      }
+      const group = grouped.get(row.projectId);
+      group.hours += row.totalHours || 0;
+      group.totalExpenses += row.totalExpenses || 0;
+      group.revenue += row.revenue || 0;
+      group.margin += row.revenue || 0;
     });
-  }, [projectBillingSummary, projects, clients, t]);
+    return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [filteredData]);
 
   const totals = useMemo(() => {
-    return {
-      hours: dbTotals?.totalHours || 0,
-      personnelCost: 0,
-      subcontractCost: 0,
-      totalExpenses: 0,
-      totalCost: 0,
-      revenue: dbTotals?.totalBilledAmount || 0,
-      margin: dbTotals?.totalBilledAmount || 0
-    };
-  }, [dbTotals]);
+    return filteredData.reduce((acc, row) => {
+      acc.hours += row.totalHours || 0;
+      acc.personnelCost += row.personnelCost || 0;
+      acc.subcontractCost += row.subcontractorCost || 0;
+      acc.totalExpenses += row.totalExpenses || 0;
+      acc.totalCost += (row.personnelCost || 0) + (row.subcontractorCost || 0) + (row.totalExpenses || 0);
+      acc.revenue += row.revenue || 0;
+      acc.margin += (row.revenue || 0) - ((row.personnelCost || 0) + (row.subcontractorCost || 0) + (row.totalExpenses || 0));
+      return acc;
+    }, {
+      hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0, margin: 0
+    });
+  }, [filteredData]);
 
   const formatCurrency = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -163,7 +173,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
           </button>
           <button
             onClick={() => {
-              exportReportExcel(user.companyId || '', filters, lang);
+              exportReportExcel(user.companyId || '', { ...filters, adminStatus: adminStatus === 'Tutti' ? undefined : adminStatus }, lang);
             }}
             className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-emerald-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >

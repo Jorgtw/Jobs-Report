@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Volume2, VolumeX, Square } from 'lucide-react';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
+import { Capacitor } from '@capacitor/core';
 
 interface Message {
   role: 'user' | 'model';
@@ -8,10 +9,8 @@ interface Message {
 }
 
 const getApiUrl = (url: string) => {
-  if (typeof window !== 'undefined' && (window as any).Capacitor) {
-    return 'https://jobs-report.vercel.app' + url;
-  }
-  return url;
+  const isNative = Capacitor.isNativePlatform();
+  return isNative ? 'https://jobs-report.vercel.app' + url : url;
 };
 
 const AIChatAssistant: React.FC = () => {
@@ -109,8 +108,9 @@ const AIChatAssistant: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
+    const resolvedUrl = getApiUrl('/api/chat-assistant');
     try {
-      const response = await fetch(getApiUrl('/api/chat-assistant'), {
+      const response = await fetch(resolvedUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -130,7 +130,7 @@ const AIChatAssistant: React.FC = () => {
       } else if (data.error) {
         setMessages([...newMessages, { role: 'model', parts: [{ text: t('help.aiErrorPrefix') + data.error }] }]);
       }
-    } catch (error) {
+    } catch (error: any) {
       setMessages([...newMessages, { role: 'model', parts: [{ text: t('help.aiErrorConnection') }] }]);
     } finally {
       setIsLoading(false);

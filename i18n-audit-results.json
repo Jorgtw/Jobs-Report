@@ -32,6 +32,7 @@
       "landing.diff5Title",
       "landing.sandbox.guestId",
       "projects.personPassword",
+      "reports.summaryTitle",
       "reports.headerTotal",
       "reports.headerExtra",
       "reports.headerFestive"
@@ -55,6 +56,7 @@
       "landing.diff5Title",
       "landing.sandbox.guestId",
       "projects.client",
+      "reports.summaryTitle",
       "reports.breakHours",
       "reports.headerClient",
       "reports.summaryPeriod",
@@ -74,6 +76,7 @@
       "landing.title",
       "landing.diff5Title",
       "landing.sandbox.guestId",
+      "reports.summaryTitle",
       "reports.date",
       "reports.headerDate",
       "reports.headerExtra"
@@ -84,7 +87,8 @@
       "communications.feature_ticket_title",
       "landing.title",
       "landing.diff5Title",
-      "landing.sandbox.guestId"
+      "landing.sandbox.guestId",
+      "reports.summaryTitle"
     ],
     "da": [
       "auth.email",
@@ -98,6 +102,7 @@
       "landing.sandbox.guestId",
       "presentation.sidebar.personale",
       "projects.personnelTitle",
+      "reports.summaryTitle",
       "reports.headerWorker",
       "reports.headerTotal"
     ]
