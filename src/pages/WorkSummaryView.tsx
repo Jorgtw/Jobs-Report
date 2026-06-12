@@ -6,7 +6,7 @@ import {
   FileSpreadsheet, 
   Filter 
 } from 'lucide-react';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 import { User } from '../types';
@@ -67,21 +67,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
     });
   }, [summary, filters, projects, adminStatus]);
 
-  // Call standard database RPC to get pre-aggregated project-level billing data (SSOT)
-  const { data: projectBillingSummary = [] } = useQuery<any[], Error>({
-    queryKey: ['projectBillingSummary', user.companyId, filters.dateFrom, filters.dateTo, filters.clientId, filters.projectId],
-    queryFn: () => db.getProjectBillingSummary(filters.dateFrom, filters.dateTo, filters.clientId || undefined, filters.projectId || undefined),
-    staleTime: 1000 * 30, // 30 seconds
-    enabled: !!user.companyId
-  });
 
-  // Call separate database RPC to get pre-aggregated global totals (SSOT)
-  const { data: dbTotals } = useQuery<any, Error>({
-    queryKey: ['projectBillingTotals', user.companyId, filters.dateFrom, filters.dateTo, filters.clientId, filters.projectId],
-    queryFn: () => db.getProjectBillingTotals(filters.dateFrom, filters.dateTo, filters.clientId || undefined, filters.projectId || undefined),
-    staleTime: 1000 * 30, // 30 seconds
-    enabled: !!user.companyId
-  });
 
   const groupedByProject = useMemo(() => {
     const grouped = new Map<string, any>();
