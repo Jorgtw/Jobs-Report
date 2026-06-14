@@ -40,7 +40,7 @@ export default async function handler(req: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel(
       { 
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         systemInstruction: intent === 'translate' 
           ? `Sei un traduttore professionale. Traduci il testo fornito in ${data?.targetLanguage || 'italiano'}. 
              RISPONDI ESCLUSIVAMENTE COL TESTO TRADOTTO. NO saluti, NO introduzioni, NO markdown. 
