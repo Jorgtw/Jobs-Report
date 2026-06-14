@@ -55,9 +55,15 @@ serve(async (req) => {
     //   1. subscription_data.metadata → our trigger reads this (source of truth)
     //   2. session metadata → fallback for webhook events
     //   3. client_reference_id → UI/debug only
+    //
+    // Payment methods strategy: automatic_payment_methods (Stripe-recommended for production)
+    //   Stripe automatically shows all methods enabled in Dashboard → Settings → Payment methods.
+    //   This includes Card (+ Apple Pay / Google Pay on supported devices), SEPA Direct Debit,
+    //   MobilePay (if enabled for DK market), and any future methods — without code changes.
+    //   Stripe also filters out methods incompatible with subscription mode automatically.
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
+      automatic_payment_methods: { enabled: true },
       line_items: [{ price: price_id, quantity: 1 }],
       metadata: {
         company_id: company_id,

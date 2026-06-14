@@ -21,6 +21,7 @@ interface PlanData {
   features_list: string[];
   color_theme: string;
   is_popular: boolean;
+  billed_annually?: boolean;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = 'generic' }) => {
@@ -29,6 +30,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   useEffect(() => {
     // 1. Get current plan and resolve config-driven plans catalog
@@ -36,20 +38,26 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
     
     const mappedPlans = Object.values(PRICING_PLANS)
       .filter(p => p.code !== 'free' && p.code !== currentCode)
-      .map(p => ({
-        code: p.code,
-        name: p.name,
-        price_label: p.code === 'enterprise' ? 'Su Richiesta' : `€${p.priceMonthly}`,
-        stripe_price_id: p.stripePriceIdMonthly || '',
-        description: p.description,
-        features_list: p.features_list,
-        color_theme: p.color_theme,
-        is_popular: p.is_popular
-      }));
+      .map(p => {
+        const price = isAnnual ? p.priceYearly : p.priceMonthly;
+        const stripeId = isAnnual ? p.stripePriceIdYearly : p.stripePriceIdMonthly;
+        
+        return {
+          code: p.code,
+          name: p.name,
+          price_label: p.code === 'enterprise' ? 'Su Richiesta' : `€${price}`,
+          stripe_price_id: stripeId || '',
+          description: p.description,
+          features_list: p.features_list,
+          color_theme: p.color_theme,
+          is_popular: p.is_popular,
+          billed_annually: isAnnual && p.code !== 'enterprise'
+        };
+      });
 
     setPlans(mappedPlans);
     setLoadingPlans(false);
-  }, [status?.planCode]);
+  }, [status?.planCode, isAnnual]);
 
   const handleUpgrade = async (priceId: string, planCode?: string) => {
     // Track click event for business observability
@@ -146,7 +154,34 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
               {cfg.icon}
             </div>
             <h2 className="text-2xl font-black text-slate-900 mb-1">{cfg.title}</h2>
-            <p className="text-xs text-slate-500 max-w-md leading-relaxed">{cfg.desc}</p>
+            <p className="text-xs text-slate-500 max-w-md leading-relaxed mb-6">{cfg.desc}</p>
+            
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-2 bg-slate-100/80 p-1 rounded-xl w-fit mx-auto border border-slate-200/60 shadow-inner">
+              <button
+                onClick={() => setIsAnnual(false)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${
+                  !isAnnual 
+                    ? 'bg-white text-slate-900 shadow border border-slate-200/50' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Mensile
+              </button>
+              <button
+                onClick={() => setIsAnnual(true)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 ${
+                  isAnnual 
+                    ? 'bg-white text-slate-900 shadow border border-slate-200/50' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Annuale
+                <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-emerald-200">
+                  -17%
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -190,14 +225,19 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                          <p className="text-xs text-slate-500 leading-snug">{displayDesc}</p>
                        </div>
 
-                       <div className="mb-4">
-                         <div className="flex items-baseline gap-1">
-                           <span className={`${plan.code === 'enterprise' ? 'text-2xl' : 'text-3xl'} font-black text-slate-900`}>{plan.price_label}</span>
-                           {plan.code !== 'enterprise' && (
-                             <span className="text-slate-400 font-bold text-[10px]">{t('dashboard.upgradeModal.perMonth')}</span>
-                           )}
-                         </div>
-                       </div>
+                        <div className="mb-4 min-h-[60px]">
+                          <div className="flex items-baseline gap-1">
+                            <span className={`${plan.code === 'enterprise' ? 'text-2xl' : 'text-3xl'} font-black text-slate-900`}>{plan.price_label}</span>
+                            {plan.code !== 'enterprise' && (
+                              <span className="text-slate-400 font-bold text-[10px]">{t('dashboard.upgradeModal.perMonth')}</span>
+                            )}
+                          </div>
+                          {plan.billed_annually && (
+                            <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
+                              Fatturato annualmente
+                            </div>
+                          )}
+                        </div>
 
                        <div className="space-y-2.5 mb-6">
                          {(plan.features_list || []).map((f, i) => {
@@ -251,6 +291,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
             </div>
           )}
 
+          {/* Secure Payments Badge */}
           <div className="mt-8 text-center flex-shrink-0">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
               {t('dashboard.upgradeModal.securePayments')}

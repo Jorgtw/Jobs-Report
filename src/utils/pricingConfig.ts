@@ -62,9 +62,9 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     code: 'starter',
     name: 'Starter',
     priceMonthly: 39,
-    priceYearly: 31, // equivalent per month when paid yearly
+    priceYearly: 32.50, // 390 / 12
     stripePriceIdMonthly: 'price_1TcUsRQL4s145ccHKvia2EMG',
-    stripePriceIdYearly: 'price_starter_yearly_placeholder',
+    stripePriceIdYearly: 'price_1TiAiXQL4s145ccHAMmazaPS',
     maxUsers: 10,
     maxProjects: null, // unlimited
     maxReports: null,  // unlimited
@@ -94,9 +94,9 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     code: 'business',
     name: 'Business',
     priceMonthly: 119,
-    priceYearly: 95,
+    priceYearly: 99, // 1188 / 12
     stripePriceIdMonthly: 'price_1TcV2XQL4s145ccH4HDSiFL3',
-    stripePriceIdYearly: 'price_business_yearly_placeholder',
+    stripePriceIdYearly: 'price_1TiB2JQL4s145ccHy6agWlVL',
     maxUsers: 50,
     maxProjects: null,
     maxReports: null,
@@ -125,9 +125,9 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     code: 'growth',
     name: 'Growth',
     priceMonthly: 299,
-    priceYearly: 239,
+    priceYearly: 249, // 2988 / 12
     stripePriceIdMonthly: 'price_1TcV5wQL4s145ccHKMOV2i9G',
-    stripePriceIdYearly: 'price_growth_yearly_placeholder',
+    stripePriceIdYearly: 'price_1TiB8FQL4s145ccHR00pxR76',
     maxUsers: 150,
     maxProjects: null,
     maxReports: null,
