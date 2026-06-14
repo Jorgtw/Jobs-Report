@@ -41,6 +41,10 @@ export const dashboard = {
   italy: "Italien",
   premium: "Premium",
   upgradeModal: {
+    monthly: 'Månedlig',
+    annually: 'Årlig',
+    billedAnnually: 'Faktureres årligt',
+    twoMonthsFree: '-17%',
     complianceTitle: "Overensstemmelsesmodul",
     complianceDesc: "Sikr overholdelse af lovgivningen med avancerede rapporter og automatiserede sikkerhedskontroller.",
     genericTitle: "Udvid din virksomhed",

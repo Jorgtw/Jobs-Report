@@ -54,6 +54,10 @@ export const dashboard = {
   autoSendActive: "AUTO-SEND ACTIVE",
   sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)",
   upgradeModal: {
+    monthly: 'Monthly',
+    annually: 'Annually',
+    billedAnnually: 'Billed annually',
+    twoMonthsFree: '-17%',
     complianceTitle: "Compliance Module",
     complianceDesc: "Ensure regulatory compliance with advanced reports and automated security checks.",
     communicationsDesc: "Unlock real-time internal communications and track company messages.",

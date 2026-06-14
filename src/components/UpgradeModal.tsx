@@ -166,7 +166,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Mensile
+                {t('dashboard.upgradeModal.monthly')}
               </button>
               <button
                 onClick={() => setIsAnnual(true)}
@@ -176,9 +176,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Annuale
+                {t('dashboard.upgradeModal.annually')}
                 <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-emerald-200">
-                  -17%
+                  {t('dashboard.upgradeModal.twoMonthsFree')}
                 </span>
               </button>
             </div>
@@ -234,7 +234,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
                           </div>
                           {plan.billed_annually && (
                             <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
-                              Fatturato annualmente
+                              {t('dashboard.upgradeModal.billedAnnually')}
                             </div>
                           )}
                         </div>

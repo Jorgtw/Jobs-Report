@@ -41,6 +41,10 @@ export const dashboard = {
   italy: "España",
   premium: "Premium",
   upgradeModal: {
+    monthly: 'Mensual',
+    annually: 'Anual',
+    billedAnnually: 'Facturado anualmente',
+    twoMonthsFree: '-17%',
     complianceTitle: "Módulo de Compliance",
     complianceDesc: "Garantice el cumplimiento normativo con informes avanzados y controles de seguridad automatizados.",
     genericTitle: "Expanda su negocio",

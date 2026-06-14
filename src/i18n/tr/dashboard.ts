@@ -41,6 +41,10 @@ export const dashboard = {
   italy: "İtalya",
   premium: "Premium",
   upgradeModal: {
+    monthly: 'Aylık',
+    annually: 'Yıllık',
+    billedAnnually: 'Yıllık faturalandırılır',
+    twoMonthsFree: '-17%',
     complianceTitle: "Uygunluk Modülü",
     complianceDesc: "Gelişmiş raporlar ve otomatik güvenlik kontrolleri ile yasal uyumluluğu sağlayın.",
     genericTitle: "İşinizi Büyütün",

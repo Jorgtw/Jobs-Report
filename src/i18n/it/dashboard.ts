@@ -60,6 +60,10 @@ export const dashboard = {
   autoSendActive: "AUTO-INVIO ATTIVO",
   sendInstructionsAuto: "INVIA ISTRUZIONI (AUTO)",
   upgradeModal: {
+    monthly: 'Mensile',
+    annually: 'Annuale',
+    billedAnnually: 'Fatturato annualmente',
+    twoMonthsFree: '-17%',
     complianceTitle: 'Modulo Compliance',
     complianceDesc: 'Garantisci la conformità normativa con report avanzati e controlli di sicurezza automatizzati.',
     communicationsDesc: 'Sblocca le comunicazioni interne in tempo reale e tieni traccia dei messaggi aziendali.',
