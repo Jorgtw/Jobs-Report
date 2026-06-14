@@ -63,7 +63,7 @@ serve(async (req) => {
     //   Stripe also filters out methods incompatible with subscription mode automatically.
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      automatic_payment_methods: { enabled: true },
+      payment_method_types: ["card", "sepa_debit", "amazon_pay", "revolut_pay"],
       line_items: [{ price: price_id, quantity: 1 }],
       metadata: {
         company_id: company_id,
