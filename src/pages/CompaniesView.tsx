@@ -36,6 +36,7 @@ const CompaniesView: React.FC = () => {
     email: '',
     vatNumber: '',
     planCode: 'free',
+    manualOverride: false,
     sendWelcomeEmail: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
