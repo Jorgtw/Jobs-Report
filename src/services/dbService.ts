@@ -761,19 +761,26 @@ class DBService {
 
     // Handle new subscription model
     const sub = c.company_entitlements || c.company_subscriptions;
+    const overridesRaw = c.company_manual_overrides;
+    const manualOverride = Array.isArray(overridesRaw) ? overridesRaw[0] : overridesRaw;
+
     if (sub) {
-      // PostgREST might return an array or a single object depending on the join
       const subData = Array.isArray(sub) ? sub[0] : sub;
-      if (subData) {
-        comp.subscription = {
-          planCode: subData.plan_code,
-          status: subData.billing_status || subData.status,
-          currentPeriodEnd: subData.current_period_end
-        };
-        // Update isPremium based on the new source of truth
-        const isActive = subData.billing_status === 'active' || subData.billing_status === 'trialing' || subData.status === 'active' || subData.status === 'trialing';
-        comp.isPremium = subData.plan_code !== 'free' && isActive;
-      }
+      
+      // Coalescing logic (Override wins over Stripe)
+      const isManualActive = manualOverride?.enabled === true;
+      const effectivePlanCode = isManualActive ? manualOverride.plan_code : (subData?.plan_code || 'free');
+      const effectiveStatus = isManualActive ? (effectivePlanCode === 'free' ? 'free' : 'active') : (subData?.billing_status || subData?.status || 'free');
+
+      comp.subscription = {
+        planCode: effectivePlanCode,
+        status: effectiveStatus,
+        currentPeriodEnd: subData?.current_period_end,
+        manualOverride: isManualActive
+      };
+
+      const isActive = effectiveStatus === 'active' || effectiveStatus === 'trialing';
+      comp.isPremium = effectivePlanCode !== 'free' && isActive;
     }
 
     return comp;
@@ -826,7 +833,7 @@ class DBService {
   async getCompanyDetails(companyId: string): Promise<any> {
     const { data, error } = await supabase
       .from('companies')
-      .select('*, company_entitlements(*)')
+      .select('*, company_entitlements(*), company_manual_overrides(*)')
       .eq('id', companyId)
       .maybeSingle();
     if (error) {
@@ -863,7 +870,7 @@ class DBService {
   async getAllCompanies() {
     const { data: companies, error } = await supabase
       .from('companies')
-      .select('*, company_entitlements(*)')
+      .select('*, company_entitlements(*), company_manual_overrides(*)')
       .order('name');
     if (error) {
       console.error('Error fetching companies:', error);
@@ -944,22 +951,27 @@ class DBService {
   }
 
   async updateCompanyPlan(companyId: string, planCode: string) {
-    const { data: current } = await supabase
-      .from('company_entitlements')
-      .select('*')
-      .eq('company_id', companyId)
-      .maybeSingle();
-
     const { error } = await supabase
-      .from('company_entitlements')
+      .from('company_manual_overrides')
       .upsert({
-        ...(current || {}),
         company_id: companyId,
         plan_code: planCode,
-        billing_status: planCode === 'free' ? 'free' : 'active',
-        is_billing_active: planCode !== 'free'
+        enabled: true,
+        updated_at: new Date().toISOString()
       });
     
+    if (error) throw error;
+  }
+
+  async resetCompanyPlanToStripe(companyId: string) {
+    const { error } = await supabase
+      .from('company_manual_overrides')
+      .update({
+        enabled: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('company_id', companyId);
+      
     if (error) throw error;
   }
 

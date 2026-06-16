@@ -56,6 +56,7 @@ const CompaniesView: React.FC = () => {
       email: c.email || '',
       vatNumber: c.vatNumber || '',
       planCode: c.subscription?.planCode || 'free',
+      manualOverride: !!c.subscription?.manualOverride,
       sendWelcomeEmail: false,
     });
     setIsModalOpen(true);
@@ -154,7 +155,7 @@ const CompaniesView: React.FC = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '', sendWelcomeEmail: true });
+    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '', planCode: 'free', manualOverride: false, sendWelcomeEmail: true });
     setIsModalOpen(true);
   };
 
@@ -298,12 +299,20 @@ const CompaniesView: React.FC = () => {
                   </FullWidthField>
                   {editingId && (
                     <FullWidthField label={t('common.plan') || 'Plan'}>
-                      <select value={formData.planCode} onChange={e => setFormData({ ...formData, planCode: e.target.value })} className={inputClasses}>
-                        <option value="free">{'Free'}</option>
-                        <option value="starter">{'Starter'}</option>
-                        <option value="premium">{'Premium'}</option>
-                        <option value="blindato">{'Blindato'}</option>
-                      </select>
+                      <div className="flex flex-col gap-2">
+                        <select value={formData.planCode} onChange={e => setFormData({ ...formData, planCode: e.target.value })} className={inputClasses}>
+                          <option value="free">{'Free'}</option>
+                          <option value="starter">{'Starter'}</option>
+                          <option value="premium">{'Premium'}</option>
+                          <option value="blindato">{'Blindato'}</option>
+                        </select>
+                        {formData.manualOverride && (
+                          <div className="text-[10px] text-amber-600 bg-amber-50 p-2 rounded border border-amber-200 flex justify-between items-center">
+                            <span>{'⚠️ Manual Override Active (Stripe Ignored)'}</span>
+                            <button type="button" onClick={async () => { await db.resetCompanyPlanToStripe(editingId); loadCompanies(); setIsModalOpen(false); }} className="text-amber-800 font-bold underline">{'Reset to Stripe'}</button>
+                          </div>
+                        )}
+                      </div>
                     </FullWidthField>
                   )}
                 </div>
