@@ -218,7 +218,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
             <span>{isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}</span>
             {!isSuperAdmin && authService.canAccessAdmin(user) && status?.planCode && (
               <span className={`px-1.5 py-0.5 rounded text-[9px] tracking-widest ${status.planCode === 'free' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
-                PIANO {status.planCode}
+                {t('common.plan')} {status.planCode}
               </span>
             )}
           </p>

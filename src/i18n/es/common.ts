@@ -1,4 +1,5 @@
 export const common = {
+  plan: "Plan",
   dashboard: "Panel de Control",
   reports: "Partes de Trabajo",
   workSummary: "Resumen de Trabajo",
