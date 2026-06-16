@@ -35,6 +35,7 @@ const CompaniesView: React.FC = () => {
     phone: '',
     email: '',
     vatNumber: '',
+    planCode: 'free',
     sendWelcomeEmail: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,6 +55,7 @@ const CompaniesView: React.FC = () => {
       phone: c.phone || '',
       email: c.email || '',
       vatNumber: c.vatNumber || '',
+      planCode: c.subscription?.planCode || 'free',
       sendWelcomeEmail: false,
     });
     setIsModalOpen(true);
@@ -109,6 +111,9 @@ const CompaniesView: React.FC = () => {
             email: formData.email,
             vatNumber: formData.vatNumber,
           });
+          if (formData.planCode) {
+            await db.updateCompanyPlan(editingId, formData.planCode);
+          }
         }
       } else {
         await db.registerCompany({
@@ -291,6 +296,16 @@ const CompaniesView: React.FC = () => {
                   <FullWidthField label={t('dashboard.vatNumber')}>
                     <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderVat')} />
                   </FullWidthField>
+                  {editingId && (
+                    <FullWidthField label={t('common.plan') || 'Plan'}>
+                      <select value={formData.planCode} onChange={e => setFormData({ ...formData, planCode: e.target.value })} className={inputClasses}>
+                        <option value="free">{'Free'}</option>
+                        <option value="starter">{'Starter'}</option>
+                        <option value="premium">{'Premium'}</option>
+                        <option value="blindato">{'Blindato'}</option>
+                      </select>
+                    </FullWidthField>
+                  )}
                 </div>
               </div>
 

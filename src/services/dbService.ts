@@ -943,6 +943,26 @@ class DBService {
     if (error) throw error;
   }
 
+  async updateCompanyPlan(companyId: string, planCode: string) {
+    const { data: current } = await supabase
+      .from('company_entitlements')
+      .select('*')
+      .eq('company_id', companyId)
+      .maybeSingle();
+
+    const { error } = await supabase
+      .from('company_entitlements')
+      .upsert({
+        ...(current || {}),
+        company_id: companyId,
+        plan_code: planCode,
+        billing_status: planCode === 'free' ? 'free' : 'active',
+        is_billing_active: planCode !== 'free'
+      });
+    
+    if (error) throw error;
+  }
+
   async updateCompanyAndAdmin(companyId: string, companyName: string, adminId?: string, adminName?: string, username?: string, password?: string, sendEmail?: boolean, email?: string) {
     if (username && adminId) {
       const { data: existingUser, error: checkErr } = await supabase
