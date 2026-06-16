@@ -111,6 +111,33 @@ export const useSubscription = (manualCompanyId?: string | null) => {
     }
   }, [refreshStatus, isReady, manualCompanyId]);
 
+  // Realtime listener for immediate UI updates when Stripe webhook fires
+  useEffect(() => {
+    const companyId = manualCompanyId || contextCompanyId;
+    if (!companyId || !isReady) return;
+
+    const channel = supabase
+      .channel(`entitlements_${companyId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'company_entitlements',
+          filter: `company_id=eq.${companyId}`,
+        },
+        () => {
+          // Trigger a refresh whenever the webhook updates our entitlements
+          refreshStatus();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [manualCompanyId, contextCompanyId, isReady, refreshStatus]);
+
   /**
    * Universal feature check. Derives answer from the correct source:
    *   - PlanFeature → from planFeatures (static plan metadata)

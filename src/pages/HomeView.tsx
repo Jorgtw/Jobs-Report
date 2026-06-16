@@ -186,7 +186,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
     return links.filter(l => l.show);
   };
 
-  const { hasFeature } = useSubscription(user.companyId);
+  const { hasFeature, status } = useSubscription(user.companyId);
   const actions = getNavLinks(t, user, hasFeature('communications'));
   const isOperator = authService.isOperator(user);
 
@@ -214,8 +214,13 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           <h1 className="text-lg font-black text-slate-800 tracking-tight">
             {t('common.welcome')}, {user.name}
           </h1>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-            {isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-2">
+            <span>{isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}</span>
+            {!isSuperAdmin && authService.canAccessAdmin(user) && status?.planCode && (
+              <span className={`px-1.5 py-0.5 rounded text-[9px] tracking-widest ${status.planCode === 'free' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
+                PIANO {status.planCode}
+              </span>
+            )}
           </p>
         </div>
       </div>

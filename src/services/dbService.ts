@@ -760,18 +760,19 @@ class DBService {
     };
 
     // Handle new subscription model
-    const sub = c.company_subscriptions;
+    const sub = c.company_entitlements || c.company_subscriptions;
     if (sub) {
       // PostgREST might return an array or a single object depending on the join
       const subData = Array.isArray(sub) ? sub[0] : sub;
       if (subData) {
         comp.subscription = {
           planCode: subData.plan_code,
-          status: subData.status,
+          status: subData.billing_status || subData.status,
           currentPeriodEnd: subData.current_period_end
         };
         // Update isPremium based on the new source of truth
-        comp.isPremium = subData.plan_code === 'pro' && (subData.status === 'active' || subData.status === 'trialing');
+        const isActive = subData.billing_status === 'active' || subData.billing_status === 'trialing' || subData.status === 'active' || subData.status === 'trialing';
+        comp.isPremium = subData.plan_code !== 'free' && isActive;
       }
     }
 
@@ -825,7 +826,7 @@ class DBService {
   async getCompanyDetails(companyId: string): Promise<any> {
     const { data, error } = await supabase
       .from('companies')
-      .select('*')
+      .select('*, company_entitlements(*)')
       .eq('id', companyId)
       .maybeSingle();
     if (error) {
@@ -862,7 +863,7 @@ class DBService {
   async getAllCompanies() {
     const { data: companies, error } = await supabase
       .from('companies')
-      .select('*, company_subscriptions(*)')
+      .select('*, company_entitlements(*)')
       .order('name');
     if (error) {
       console.error('Error fetching companies:', error);

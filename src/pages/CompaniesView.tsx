@@ -184,10 +184,10 @@ const CompaniesView: React.FC = () => {
                   <td className="px-4 py-2">
                     <button
                       onClick={() => handleTogglePremium(c.id, !!c.isPremium)}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black transition-all ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' : 'bg-slate-100 text-slate-400'}`}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black transition-all uppercase ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' : 'bg-slate-100 text-slate-400'}`}
                     >
                       <Building2 size={10} />
-                      {c.isPremium ? 'PREMIUM' : 'BASE'}
+                      {c.subscription?.planCode ? c.subscription.planCode : (c.isPremium ? 'PREMIUM' : 'BASE')}
                     </button>
                   </td>
                   <td className="px-4 py-2 flex items-center gap-2">
