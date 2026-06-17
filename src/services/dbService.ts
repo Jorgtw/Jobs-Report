@@ -928,7 +928,7 @@ class DBService {
     if (error) throw error;
   }
 
-  async updateCompanyPlan(companyId: string, planCode: string) {
+  async updateCompanyPlan(_companyId: string, _planCode: string) {
     // Legacy function, billing plans are now handled by Stripe ONLY.
     // If you need commercial overrides, use a Stripe 100% discount coupon.
     console.warn("Manual plan upgrades are disabled in Formal Verification Schema.");

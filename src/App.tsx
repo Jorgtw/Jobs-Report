@@ -408,6 +408,8 @@ const AppLayout: React.FC<{
 // --- App Component ---
 const App: React.FC = () => {
   const { user, status, isReady, updateUser } = useCompany();
+  const { canUseFeature } = useSubscription();
+  const hasComms = canUseFeature('communications');
   const [adminUser, setAdminUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('ws_auth_admin');
     return saved ? JSON.parse(saved) : null;
