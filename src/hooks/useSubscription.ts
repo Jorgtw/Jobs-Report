@@ -116,25 +116,29 @@ export const useSubscription = (manualCompanyId?: string | null) => {
     const companyId = manualCompanyId || contextCompanyId;
     if (!companyId || !isReady) return;
 
-    const channel = supabase
+    // Listen to Stripe changes
+    const entitlementsChannel = supabase
       .channel(`entitlements_${companyId}`)
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'company_entitlements',
-          filter: `company_id=eq.${companyId}`,
-        },
-        () => {
-          // Trigger a refresh whenever the webhook updates our entitlements
-          refreshStatus();
-        }
+        { event: '*', schema: 'public', table: 'company_entitlements', filter: `company_id=eq.${companyId}` },
+        () => refreshStatus()
+      )
+      .subscribe();
+
+    // Listen to Operational State (Break-Glass) changes
+    const overridesChannel = supabase
+      .channel(`overrides_${companyId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'company_operational_state', filter: `company_id=eq.${companyId}` },
+        () => refreshStatus()
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(entitlementsChannel);
+      supabase.removeChannel(overridesChannel);
     };
   }, [manualCompanyId, contextCompanyId, isReady, refreshStatus]);
 

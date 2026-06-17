@@ -12,7 +12,6 @@ export interface Company {
   name: string;
   status: 'active' | 'inactive';
   subscription?: Subscription;
-  is_premium?: boolean;
   createdAt: number;
 }
 
@@ -42,7 +41,6 @@ export interface User {
   status: UserStatus;
   companyId?: string | null;
   companyName?: string;
-  isPremium?: boolean;
   availableCompanies?: { id: string; name: string; role: Role }[];
   hourlyRate?: number;
   extraCost?: number;

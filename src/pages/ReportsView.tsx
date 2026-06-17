@@ -55,7 +55,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
-  const { status, isLimitReached } = useSubscription();
+  const { status, isLimitReached, hasFeature } = useSubscription();
 
   const [formData, setFormData] = useState({
     projectId: '',
@@ -114,7 +114,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     openComplianceReport: handleComplianceClick,
     closeComplianceReport,
     handleGenerateCompliance
-  } = useComplianceReportController(user, projects, clients, personnel, lang, (feature) => {
+  } = useComplianceReportController(user, projects, clients, personnel, lang, hasFeature('compliance'), (feature) => {
     setUpgradeFeature(feature);
     setIsUpgradeModalOpen(true);
   });

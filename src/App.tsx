@@ -583,7 +583,7 @@ const App: React.FC = () => {
                       <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                       <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
                       <Route path="/projects" element={<ProjectsView user={user} />} />
-                      <Route path="/communications" element={<CommunicationsHub currentUser={user} isPremium={user.isPremium} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
+                      <Route path="/communications" element={<CommunicationsHub currentUser={user} hasAccess={hasComms} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
                       <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
                       <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                       <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />

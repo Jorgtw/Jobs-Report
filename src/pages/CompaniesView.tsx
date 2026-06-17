@@ -28,7 +28,6 @@ const CompaniesView: React.FC = () => {
     adminName: '',
     username: '',
     password: '',
-    isPremium: false,
     address: '',
     city: '',
     country: '',
@@ -49,7 +48,6 @@ const CompaniesView: React.FC = () => {
       adminName: c.adminName || '',
       username: c.username || '',
       password: c.password || '',
-      isPremium: !!c.isPremium,
       address: c.address || '',
       city: c.city || '',
       country: c.country || '',
@@ -79,11 +77,6 @@ const CompaniesView: React.FC = () => {
     loadCompanies();
   };
 
-  const handleTogglePremium = async (id: string, currentPremium: boolean) => {
-    await db.togglePremiumStatus(id, currentPremium);
-    loadCompanies();
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -104,7 +97,6 @@ const CompaniesView: React.FC = () => {
         } else {
           // Normal update for an already active company
           await db.updateCompanyAndAdmin(editingId, formData.companyName, formData.adminId, formData.adminName, formData.username, formData.password, formData.sendWelcomeEmail, formData.email);
-          await db.setPremiumStatus(editingId, formData.isPremium);
           await db.updateCompanyDetails(editingId, {
             address: formData.address,
             city: formData.city,
@@ -156,7 +148,7 @@ const CompaniesView: React.FC = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', isPremium: false, address: '', city: '', country: '', phone: '', email: '', vatNumber: '', planCode: 'free', manualOverride: false, sendWelcomeEmail: true });
+    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', address: '', city: '', country: '', phone: '', email: '', vatNumber: '', planCode: 'free', manualOverride: false, sendWelcomeEmail: true });
     setIsModalOpen(true);
   };
 
@@ -189,13 +181,12 @@ const CompaniesView: React.FC = () => {
                   <td className="px-4 py-2 text-slate-500 text-[11px]">{c.email || '-'}</td>
                   <td className="px-4 py-2 text-slate-500 text-[11px]">{c.phone || '-'}</td>
                   <td className="px-4 py-2">
-                    <button
-                      onClick={() => handleTogglePremium(c.id, !!c.isPremium)}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black transition-all uppercase ${c.isPremium ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' : 'bg-slate-100 text-slate-400'}`}
+                    <span
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase w-max ${c.subscription?.planCode && c.subscription.planCode !== 'free' ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' : 'bg-slate-100 text-slate-400'}`}
                     >
                       <Building2 size={10} />
-                      {c.subscription?.planCode ? c.subscription.planCode : (c.isPremium ? 'PREMIUM' : 'BASE')}
-                    </button>
+                      {c.subscription?.planCode ? c.subscription.planCode : 'free'}
+                    </span>
                   </td>
                   <td className="px-4 py-2 flex items-center gap-2">
                     <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
@@ -320,40 +311,6 @@ const CompaniesView: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {editingId ? (
-                  <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <div>
-                      <p className="text-sm font-bold text-amber-800">{t('dashboard.premiumPlan')}</p>
-                      <p className="text-xs text-amber-600">{t('dashboard.premiumPlanDesc')}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-amber-500' : 'bg-slate-300'
-                        }`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                        }`} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <div>
-                      <p className="text-sm font-bold text-blue-800">{t('dashboard.premiumPlan')}</p>
-                      <p className="text-xs text-blue-600">{t('dashboard.activatePremiumDesc')}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, isPremium: !formData.isPremium })}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${formData.isPremium ? 'bg-blue-500' : 'bg-slate-300'
-                        }`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${formData.isPremium ? 'translate-x-8' : 'translate-x-1'
-                        }`} />
-                    </button>
-                  </div>
-                )}
-
                 <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
                   <div className="flex-1">
                     <p className="text-sm font-bold text-emerald-800">{t('dashboard.sendCredentialsTitle')}</p>

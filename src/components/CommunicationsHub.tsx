@@ -30,7 +30,7 @@ import { audioService } from '../services/audioService';
 
 interface CommunicationsHubProps {
   currentUser: AppUser;
-  isPremium?: boolean;
+  hasAccess?: boolean;
   onUpgradeRequest?: () => void;
 }
 
@@ -119,7 +119,7 @@ const UserMultiSelect = ({
   );
 };
 
-const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPremium, onUpgradeRequest }) => {
+const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasAccess, onUpgradeRequest }) => {
   const { t, lang } = useTranslation();
   
   const formatDate = (date: number | Date | string, options: Intl.DateTimeFormatOptions = { 
@@ -217,7 +217,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
   };
 
   useEffect(() => {
-    if (!isPremium) {
+    if (!hasAccess) {
       return;
     }
     fetchMainData();
@@ -269,13 +269,13 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUser.companyId, isPremium]);
+  }, [currentUser.companyId, hasAccess]);
 
   useEffect(() => {
-    if (!isPremium) {
+    if (!hasAccess) {
       if (onUpgradeRequest) onUpgradeRequest();
     }
-  }, [isPremium]);
+  }, [hasAccess]);
 
   useEffect(() => {
     setSelectedThread(null);
@@ -292,7 +292,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     }
   }, [threadMessages]);
 
-  if (!isPremium) return null;
+  if (!hasAccess) return null;
 
   const fetchMainData = async () => {
     try {
@@ -536,7 +536,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, isPr
     );
   };
 
-  if (!isPremium && currentUser.role !== 'admin') {
+  if (!hasAccess && currentUser.role !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-100">
         <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">

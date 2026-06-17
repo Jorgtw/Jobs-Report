@@ -9,12 +9,13 @@ export function useComplianceReportController(
   clients: Client[],
   personnel: User[],
   lang: Language,
+  hasAccess: boolean,
   onUpgradeRequired: (feature: 'compliance') => void
 ) {
   const [complianceReportToSign, setComplianceReportToSign] = useState<WorkReport | null>(null);
 
   const openComplianceReport = (report: WorkReport) => {
-    if (!user.isPremium) {
+    if (!hasAccess) {
       onUpgradeRequired('compliance');
       return;
     }

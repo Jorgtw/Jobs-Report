@@ -384,7 +384,6 @@ class DBService {
       id: c.cid,
       name: c.cname,
       role: c.urole,
-      isPremium: !!c.is_premium,
       planCode: c.plan_code,
       subscriptionStatus: c.subscription_status
     })) || [];
@@ -402,7 +401,6 @@ class DBService {
 
     if (saContext) {
       user.role = 'superadmin';
-      user.isPremium = true;
     }
 
     if (activeCompId) {
@@ -412,7 +410,6 @@ class DBService {
       const compContext = availableCompanies.find((c: any) => c.id === activeCompId);
       if (compContext && !saContext) {
         user.role = compContext.role;
-        user.isPremium = compContext.isPremium;
         user.companyName = compContext.name;
       }
 
@@ -425,7 +422,6 @@ class DBService {
              status: subStatus.status,
              currentPeriodEnd: subStatus.current_period_end
            };
-           user.isPremium = subStatus.plan_code === 'premium' || subStatus.plan_code === 'basic';
         }
       } catch (e) {
         console.error('Error fetching initial subscription status:', e);
@@ -457,7 +453,6 @@ class DBService {
     city?: string;
     country?: string;
     vatNumber?: string;
-    isPremium?: boolean;
     sendEmail?: boolean;
   }) {
     const { 
@@ -471,7 +466,6 @@ class DBService {
       city, 
       country, 
       vatNumber, 
-      isPremium,
       sendEmail = true
     } = data;
 
@@ -520,9 +514,7 @@ class DBService {
         address: address || null,
         city: city || null,
         country: country || null,
-        vat_number: vatNumber || null,
-        is_premium: !!isPremium,
-        premium_since: isPremium ? new Date().toISOString() : null
+        vat_number: vatNumber || null
       }])
       .select();
       
@@ -746,7 +738,6 @@ class DBService {
       id: c.id,
       name: c.name,
       status: c.status || 'active',
-      isPremium: !!c.is_premium,
       address: c.address || '',
       phone: c.phone || '',
       email: c.email || '',
@@ -759,29 +750,7 @@ class DBService {
       setupFailedAt: c.setup_failed_at || null
     };
 
-    // Handle new subscription model
-    const sub = c.company_entitlements || c.company_subscriptions;
-    const overridesRaw = c.company_manual_overrides;
-    const manualOverride = Array.isArray(overridesRaw) ? overridesRaw[0] : overridesRaw;
-
-    if (sub) {
-      const subData = Array.isArray(sub) ? sub[0] : sub;
-      
-      // Coalescing logic (Override wins over Stripe)
-      const isManualActive = manualOverride?.enabled === true;
-      const effectivePlanCode = isManualActive ? manualOverride.plan_code : (subData?.plan_code || 'free');
-      const effectiveStatus = isManualActive ? (effectivePlanCode === 'free' ? 'free' : 'active') : (subData?.billing_status || subData?.status || 'free');
-
-      comp.subscription = {
-        planCode: effectivePlanCode,
-        status: effectiveStatus,
-        currentPeriodEnd: subData?.current_period_end,
-        manualOverride: isManualActive
-      };
-
-      const isActive = effectiveStatus === 'active' || effectiveStatus === 'trialing';
-      comp.isPremium = effectivePlanCode !== 'free' && isActive;
-    }
+    comp.subscription = { planCode: 'free', status: 'free', manualOverride: false };
 
     return comp;
   }
@@ -833,7 +802,7 @@ class DBService {
   async getCompanyDetails(companyId: string): Promise<any> {
     const { data, error } = await supabase
       .from('companies')
-      .select('*, company_entitlements(*), company_manual_overrides(*)')
+      .select('*, company_operational_state(*)')
       .eq('id', companyId)
       .maybeSingle();
     if (error) {
@@ -841,7 +810,22 @@ class DBService {
        return null;
     }
     if (!data) return null;
-    return this.mapSupabaseCompany(data);
+    const comp = this.mapSupabaseCompany(data);
+    
+    // Single Source of Truth for frontend details
+    const { data: access } = await supabase.from('vw_access_control').select('*').eq('company_id', companyId).maybeSingle();
+    const opsRaw = data.company_operational_state;
+    const opState = Array.isArray(opsRaw) ? opsRaw[0] : opsRaw;
+
+    comp.subscription = {
+       planCode: access?.plan_code || 'free',
+       status: access?.billing_status || 'free',
+       currentPeriodEnd: access?.current_period_end,
+       operationalMode: opState?.mode || 'normal',
+       operationalJustification: opState?.justification || ''
+    };
+    
+    return comp;
   }
 
   async getCompanyAdminEmails(companyId: string): Promise<string[]> {
@@ -870,14 +854,17 @@ class DBService {
   async getAllCompanies() {
     const { data: companies, error } = await supabase
       .from('companies')
-      .select('*, company_entitlements(*), company_manual_overrides(*)')
+      .select('*, company_operational_state(*)')
       .order('name');
     if (error) {
       console.error('Error fetching companies:', error);
       return [];
     }
 
-    // SSOT: Fetch admin memberships from the bridge table
+    // SSOT: Fetch unified entitlements from access control
+    const { data: accessControls } = await supabase.from('vw_access_control').select('*');
+
+    // Fetch admin memberships from the bridge table
     const { data: memberships } = await supabase
       .from('user_companies')
       .select('company_id, auth_id')
@@ -890,6 +877,18 @@ class DBService {
 
     return companies.map(c => {
       const comp = this.mapSupabaseCompany(c);
+      
+      const access = accessControls?.find(a => a.company_id === c.id);
+      const opsRaw = c.company_operational_state;
+      const opState = Array.isArray(opsRaw) ? opsRaw[0] : opsRaw;
+
+      comp.subscription = {
+         planCode: access?.plan_code || 'free',
+         status: access?.billing_status || 'free',
+         currentPeriodEnd: access?.current_period_end,
+         operationalMode: opState?.mode || 'normal',
+         operationalJustification: opState?.justification || ''
+      };
       const membership = memberships?.find(m => m.company_id === c.id);
       if (membership) {
         const admin = workers?.find(w => w.auth_id === membership.auth_id);
@@ -923,27 +922,6 @@ class DBService {
     });
   }
 
-  async togglePremiumStatus(id: string, currentStatus: boolean) {
-    const newStatus = !currentStatus;
-    const updates: any = { is_premium: newStatus };
-    if (newStatus) {
-      updates.premium_since = new Date().toISOString();
-    } else {
-      updates.premium_since = null;
-    }
-    const { error } = await supabase.from('companies').update(updates).eq('id', id);
-    if (error) throw error;
-    return newStatus;
-  }
-
-  async setPremiumStatus(id: string, isPremium: boolean) {
-    const updates: any = { is_premium: isPremium };
-    if (isPremium) {
-      updates.premium_since = new Date().toISOString();
-    }
-    const { error } = await supabase.from('companies').update(updates).eq('id', id);
-    if (error) throw error;
-  }
 
   async updateCompany(id: string, updates: any) {
     const { error } = await supabase.from('companies').update(updates).eq('id', id);
@@ -951,12 +929,18 @@ class DBService {
   }
 
   async updateCompanyPlan(companyId: string, planCode: string) {
+    // Legacy function, billing plans are now handled by Stripe ONLY.
+    // If you need commercial overrides, use a Stripe 100% discount coupon.
+    console.warn("Manual plan upgrades are disabled in Formal Verification Schema.");
+  }
+
+  async setOperationalMode(companyId: string, mode: string, justification: string) {
     const { error } = await supabase
-      .from('company_manual_overrides')
+      .from('company_operational_state')
       .upsert({
         company_id: companyId,
-        plan_code: planCode,
-        enabled: true,
+        mode: mode,
+        justification: justification,
         updated_at: new Date().toISOString()
       });
     
@@ -964,10 +948,12 @@ class DBService {
   }
 
   async resetCompanyPlanToStripe(companyId: string) {
+    // Reset Operational mode back to normal
     const { error } = await supabase
-      .from('company_manual_overrides')
+      .from('company_operational_state')
       .update({
-        enabled: false,
+        mode: 'normal',
+        justification: 'Reset to normal operations',
         updated_at: new Date().toISOString()
       })
       .eq('company_id', companyId);
@@ -1225,7 +1211,7 @@ class DBService {
       
       const userContext = contexts?.find((c: any) => c.cid === availableCompanies[0].id) || {};
       
-      const user = this.mapSupabaseWorker(workerData, userContext.is_premium, userContext.cname);
+      const user = this.mapSupabaseWorker(workerData, userContext.cname);
       user.availableCompanies = availableCompanies;
       
       // Check if truly superadmin via user_roles for extra safety
@@ -1278,7 +1264,7 @@ class DBService {
     if (error) throw error;
   }
 
-  private mapSupabaseWorker(w: any, isPremium?: boolean, companyName?: string): any {
+  private mapSupabaseWorker(w: any, companyName?: string): any {
     return {
       id: w.id,
       name: w.name,
@@ -1294,8 +1280,6 @@ class DBService {
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
       extraCost: Number(w.extra_cost) || 0,
       isInternal: true,
-      // Legacy isPremium mapping - we should move away from this
-      isPremium: isPremium ?? !!w.is_premium,
       companyName: companyName || '',
       address: w.address || w.billing_address || w.billingAddress || w.home_address || '',
       notes: w.internal_note || w.Notes || w.notes || '',
