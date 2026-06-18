@@ -1,4 +1,6 @@
 export default async function handler(req: any, res: any) {
+  console.log('[DEBUG-API] /api/sendComplianceEmail invoked! Method:', req.method);
+  
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -84,20 +86,24 @@ Generato automaticamente da JobsReport
 
 
   try {
+    const payload: any = {
+      from: 'JobsReport <onboarding@resend.dev>',
+      to: to,
+      subject: subject || `[JobsReport] Compliance Report — ${projectName} — ${date}`,
+      text: textBody,
+      html: htmlBody,
+    };
+    if (attachments && attachments.length > 0) {
+      payload.attachments = attachments;
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: 'JobsReport <onboarding@resend.dev>',
-        to: to,
-        subject: subject || `[JobsReport] Compliance Report — ${projectName} — ${date}`,
-        text: textBody,
-        html: htmlBody,
-        attachments,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();

@@ -44,6 +44,7 @@ export const complianceReportService = {
       companyVat: companyDetails?.vatNumber || '',
     };
 
-    await generateCompliancePDF(reportData, photos, signature, lang, adminEmails);
+    console.log('[DEBUG-EXPORT] Generating PDF only. Email sending is now a separated feature.');
+    await generateCompliancePDF(reportData, photos, signature, lang);
   }
 };

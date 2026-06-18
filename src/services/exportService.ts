@@ -264,8 +264,7 @@ export const generateCompliancePDF = async (
   report: any,
   photos: string[],
   signature: string,
-  lang: Language,
-  adminEmails: string[] = []
+  lang: Language
 ) => {
   const t = getT(lang);
   const doc = new jsPDF('p', 'mm', 'a4');
@@ -523,66 +522,48 @@ export const generateCompliancePDF = async (
 
   const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
 
-  const isCapacitor = typeof (window as any).Capacitor !== 'undefined';
-  let uploadedSignedUrl = '';
+  doc.save(fileName);
+  return doc.output('blob');
+};
 
-  if (isCapacitor) {
-    try {
-      const pdfBlob = doc.output('blob');
-      const compId = report.companyId || (report as any).company_id || db.getCompanyIdSafe();
-      if (!compId) throw new Error("Missing companyId for storage upload");
-      const storagePath = `${compId}/reports/${fileName}`;
-      await db.uploadFile('compliance-reports', storagePath, pdfBlob);
-      uploadedSignedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
-      window.open(uploadedSignedUrl, '_blank');
-    } catch (e) {
-      console.error('Failed to upload/open PDF on Capacitor:', e);
-      // Fallback: try doc.save as last resort
-      try {
-        doc.save(fileName);
-      } catch (_) {}
-    }
-  } else {
-    // Normal web behavior
-    try {
-      window.open(doc.output('bloburl'), '_blank');
-    } catch (_) {}
-    doc.save(fileName);
-  }
+export const sendComplianceReportEmail = async (
+  report: any,
+  pdfBlob: Blob,
+  adminEmails: string[],
+  reportDateEU: string
+) => {
+  if (!adminEmails || adminEmails.length === 0) return;
+  const emailsToNotify = adminEmails.filter(Boolean);
+  if (emailsToNotify.length === 0) return;
 
-  if (adminEmails.length > 0) {
-    const emailsToNotify = adminEmails.filter(Boolean);
-    if (emailsToNotify.length > 0) {
-      try {
-        let signedUrl = uploadedSignedUrl;
-        if (!signedUrl) {
-          const pdfBlob = doc.output('blob');
-          const compId = report.companyId || (report as any).company_id || db.getCompanyIdSafe();
-          if (!compId) throw new Error("Missing companyId for storage upload");
-          const storagePath = `${compId}/reports/${fileName}`;
-          await db.uploadFile('compliance-reports', storagePath, pdfBlob);
-          signedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
-        }
-        
-        await fetch(getApiUrl('/api/sendComplianceEmail'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: emailsToNotify,
-            subject: `[JobsReport] Compliance Report — ${report.projectName} — ${reportDateEU}`,
-            companyName: report.companyName || '',
-            projectName: report.projectName || '',
-            clientName: report.clientName || '',
-            date: report.date || '',
-            totalHours: totalTeamHours.toFixed(2),
-            userName: report.userName || '',
-            pdfUrl: signedUrl,
-          }),
-        });
-      } catch (e) {
-        console.warn('Storage upload or Email notification failed:', e);
-      }
-    }
+  try {
+    const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
+    let signedUrl = '';
+
+    const compId = report.companyId || (report as any).company_id || db.getCompanyIdSafe();
+    if (!compId) throw new Error("Missing companyId for storage upload");
+    const storagePath = `${compId}/reports/${fileName}`;
+    await db.uploadFile('compliance-reports', storagePath, pdfBlob);
+    signedUrl = await db.getSignedUrl('compliance-reports', storagePath, 604800);
+
+    await fetch(getApiUrl('/api/sendComplianceEmail'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: emailsToNotify,
+        subject: `[JobsReport] Compliance Report — ${report.projectName} — ${reportDateEU}`,
+        companyName: report.companyName || '',
+        projectName: report.projectName || '',
+        clientName: report.clientName || '',
+        date: report.date || '',
+        totalHours: report.totalHours || '0', // Adjust if needed
+        userName: report.userName || '',
+        pdfUrl: signedUrl,
+      }),
+    });
+  } catch (e) {
+    console.error('Storage upload or Email notification failed:', e);
+    throw e;
   }
 };
 
