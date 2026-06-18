@@ -10,7 +10,8 @@ const translations = {
         "nav.register": "Registrazione",
         "nav.contact": "Contattaci",
         "nav.login": "Accedi",
-        "nav.theme": "Tema",
+        "nav.theme_to_dark": "Attiva tema scuro",
+        "nav.theme_to_light": "Attiva tema chiaro",
 
         // Hero
         "hero.title1": "Più controllo operativo,",
@@ -68,7 +69,7 @@ const translations = {
         "feat.2.title": "Squadre e Subappaltatori",
         "feat.2.desc": "Gestione del personale interno e supporto per aziende esterne.",
         "feat.3.title": "Supporto Multilingua",
-        "feat.3.desc": "Pensato per squadre internazionali (IT, EN, ES, PL, TR, DA).",
+        "feat.3.desc": "Pensato per squadre internazionali (IT, EN, ES, DA).",
         "feat.4.title": "Traduzioni Integrate",
         "feat.4.desc": "Traduci comunicazioni e note direttamente nell'app.",
         "feat.5.title": "Assistente Operativo IA",
@@ -126,7 +127,8 @@ const translations = {
         "nav.register": "Register",
         "nav.contact": "Contact Us",
         "nav.login": "Log In",
-        "nav.theme": "Theme",
+        "nav.theme_to_dark": "Switch to dark mode",
+        "nav.theme_to_light": "Switch to light mode",
 
         // Hero
         "hero.title1": "More operational control,",
@@ -184,7 +186,7 @@ const translations = {
         "feat.2.title": "Teams & Subcontractors",
         "feat.2.desc": "Internal staff management and support for external companies.",
         "feat.3.title": "Multilingual Support",
-        "feat.3.desc": "Designed for international teams (IT, EN, ES, PL, TR, DA).",
+        "feat.3.desc": "Designed for international teams (IT, EN, ES, DA).",
         "feat.4.title": "Integrated Translations",
         "feat.4.desc": "Translate communications and notes directly in the app.",
         "feat.5.title": "AI Operational Assistant",
@@ -242,7 +244,8 @@ const translations = {
         "nav.register": "Registro",
         "nav.contact": "Contáctanos",
         "nav.login": "Acceder",
-        "nav.theme": "Tema",
+        "nav.theme_to_dark": "Activar tema oscuro",
+        "nav.theme_to_light": "Activar tema claro",
 
         // Hero
         "hero.title1": "Más control operativo,",
@@ -300,7 +303,7 @@ const translations = {
         "feat.2.title": "Equipos y Subcontratas",
         "feat.2.desc": "Gestión de personal interno y soporte para empresas externas.",
         "feat.3.title": "Soporte Multilingüe",
-        "feat.3.desc": "Pensado para equipos internacionales (IT, EN, ES, PL, TR, DA).",
+        "feat.3.desc": "Pensado para equipos internacionales (IT, EN, ES, DA).",
         "feat.4.title": "Traducciones Integradas",
         "feat.4.desc": "Traduce comunicaciones y notas directamente en la app.",
         "feat.5.title": "Asistente Operativo IA",
@@ -358,7 +361,8 @@ const translations = {
         "nav.register": "Registrering",
         "nav.contact": "Kontakt os",
         "nav.login": "Log ind",
-        "nav.theme": "Tema",
+        "nav.theme_to_dark": "Skift til mørkt tema",
+        "nav.theme_to_light": "Skift til lyst tema",
 
         // Hero
         "hero.title1": "Mere operationel kontrol,",
@@ -416,7 +420,7 @@ const translations = {
         "feat.2.title": "Teams og underentreprenører",
         "feat.2.desc": "Styring af internt personale og support til eksterne virksomheder.",
         "feat.3.title": "Flersproget support",
-        "feat.3.desc": "Designet til internationale teams (IT, EN, ES, PL, TR, DA).",
+        "feat.3.desc": "Designet til internationale teams (IT, EN, ES, DA).",
         "feat.4.title": "Integrerede oversættelser",
         "feat.4.desc": "Oversæt kommunikation og noter direkte i appen.",
         "feat.5.title": "AI operationel assistent",

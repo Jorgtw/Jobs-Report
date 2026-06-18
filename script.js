@@ -20,6 +20,8 @@ function switchTab(targetId) {
 function changeLanguage(lang) {
     if (!window.i18nTranslations || !window.i18nTranslations[lang]) lang = 'it';
     localStorage.setItem('lang', lang);
+    document.documentElement.lang = lang;
+
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -27,10 +29,29 @@ function changeLanguage(lang) {
             el.innerHTML = window.i18nTranslations[lang][key];
         }
     });
+
     const langSelect = document.getElementById('lang-select');
     if (langSelect && langSelect.value !== lang) {
         langSelect.value = lang;
     }
+
+    // Il testo del toggle tema non passa dal loop data-i18n perché dipende
+    // anche dallo stato corrente (chiaro/scuro), non solo dalla lingua.
+    updateThemeText();
+}
+
+// Imposta il testo del toggle tema in base allo stato attuale (chiaro/scuro)
+// e alla lingua corrente: il testo descrive l'azione (passaggio allo stato
+// successivo), non lo stato presente.
+function updateThemeText() {
+    const lang = localStorage.getItem('lang') || 'it';
+    const dict = (window.i18nTranslations && window.i18nTranslations[lang]) || {};
+    const themeTextEl = document.getElementById('theme-text');
+    if (!themeTextEl) return;
+
+    const isDark = document.body.classList.contains('dark-mode');
+    const key = isDark ? 'nav.theme_to_light' : 'nav.theme_to_dark';
+    themeTextEl.textContent = dict[key] || (isDark ? 'Light mode' : 'Dark mode');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -52,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body.classList.replace('dark-mode', 'light-mode');
             localStorage.setItem('theme', 'light');
         }
+        updateThemeText();
     });
 
     // --- Tab Switching Logic (Sidebar) ---
