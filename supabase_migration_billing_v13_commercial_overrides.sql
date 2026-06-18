@@ -48,8 +48,6 @@ SELECT
     COALESCE(e.billing_status, 'free') AS billing_status,
     COALESCE(e.is_billing_active, false) AS is_billing_active,
     e.current_period_end,
-    -- OVERRIDE METADATA
-    (mo.company_id IS NOT NULL) AS is_commercial_override,
     -- OPERATIONAL MODE (Incident State)
     COALESCE(o.mode, 'normal') AS operational_mode,
     -- USAGE (from counters)
@@ -60,7 +58,9 @@ SELECT
     COALESCE(p.has_communications, false) AS has_communications,
     -- DIAGNOSTIC
     (e.company_id IS NOT NULL) AS has_entitlement_record,
-    (u.company_id IS NOT NULL) AS has_usage_record
+    (u.company_id IS NOT NULL) AS has_usage_record,
+    -- OVERRIDE METADATA
+    (mo.company_id IS NOT NULL) AS is_commercial_override
 FROM public.companies c
 LEFT JOIN public.company_entitlements e ON e.company_id = c.id
 LEFT JOIN public.company_commercial_overrides mo ON mo.company_id = c.id
