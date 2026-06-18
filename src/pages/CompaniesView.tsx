@@ -34,6 +34,9 @@ const CompaniesView: React.FC = () => {
     phone: '',
     email: '',
     vatNumber: '',
+    planCode: 'free',
+    manualOverride: false,
+    commercialReason: '',
     operationalMode: 'normal',
     justification: '',
     sendWelcomeEmail: true,
@@ -55,6 +58,9 @@ const CompaniesView: React.FC = () => {
       phone: c.phone || '',
       email: c.email || '',
       vatNumber: c.vatNumber || '',
+      planCode: c.subscription?.planCode || c.plan_code || 'free',
+      manualOverride: !!c.is_commercial_override,
+      commercialReason: '',
       operationalMode: opState?.mode || 'normal',
       justification: opState?.justification || '',
       sendWelcomeEmail: false,
@@ -109,6 +115,9 @@ const CompaniesView: React.FC = () => {
           if (formData.operationalMode) {
             await db.setOperationalMode(editingId, formData.operationalMode, formData.justification);
           }
+          if (formData.manualOverride && formData.commercialReason) {
+            await db.setCommercialOverride(editingId, formData.planCode, formData.commercialReason);
+          }
         }
       } else {
         await db.registerCompany({
@@ -149,7 +158,7 @@ const CompaniesView: React.FC = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', address: '', city: '', country: '', phone: '', email: '', vatNumber: '', operationalMode: 'normal', justification: '', sendWelcomeEmail: true });
+    setFormData({ companyName: '', adminId: '', adminName: '', username: '', password: '', address: '', city: '', country: '', phone: '', email: '', vatNumber: '', planCode: 'free', manualOverride: false, commercialReason: '', operationalMode: 'normal', justification: '', sendWelcomeEmail: true });
     setIsModalOpen(true);
   };
 
@@ -290,6 +299,38 @@ const CompaniesView: React.FC = () => {
                   <FullWidthField label={t('dashboard.vatNumber')}>
                     <input type="text" value={formData.vatNumber} onChange={e => setFormData({ ...formData, vatNumber: e.target.value })} className={inputClasses} placeholder={t('auth.placeholderVat')} />
                   </FullWidthField>
+                  {editingId && (
+                    <FullWidthField label={t('common.plan') || 'Plan'}>
+                      <div className="flex flex-col gap-2">
+                        <select 
+                          value={formData.planCode} 
+                          onChange={e => setFormData({ ...formData, planCode: e.target.value, manualOverride: true })} 
+                          className={inputClasses}
+                        >
+                          <option value="free">{'Free'}</option>
+                          <option value="starter">{'Starter'}</option>
+                          <option value="premium">{'Premium'}</option>
+                          <option value="blindato">{'Blindato'}</option>
+                        </select>
+                        {formData.manualOverride && (
+                          <div className="flex flex-col gap-2 mt-2">
+                            <div className="text-[10px] text-amber-600 bg-amber-50 p-2 rounded border border-amber-200 flex justify-between items-center">
+                              <span>{'⚠️ Commercial Override Active'}</span>
+                              <button type="button" onClick={async () => { await db.removeCommercialOverride(editingId); loadCompanies(); setIsModalOpen(false); }} className="text-amber-800 font-bold underline">{'Reset to Stripe'}</button>
+                            </div>
+                            <input 
+                              type="text" 
+                              required={formData.manualOverride}
+                              value={formData.commercialReason} 
+                              onChange={e => setFormData({ ...formData, commercialReason: e.target.value })} 
+                              className={`${inputClasses} border-amber-300 focus:border-amber-500`} 
+                              placeholder={'Motivazione (es. Pagato con bonifico)'} 
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </FullWidthField>
+                  )}
                   {editingId && (
                     <div className="col-span-1 md:col-span-2 space-y-4 pt-4 border-t mt-4">
                       <FullWidthField label={'Operational Mode (Break-Glass)'}>

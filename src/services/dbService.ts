@@ -947,6 +947,28 @@ class DBService {
     if (error) throw error;
   }
 
+  async setCommercialOverride(companyId: string, planCode: string, reason: string) {
+    const { error } = await supabase
+      .from('company_commercial_overrides')
+      .upsert({
+        company_id: companyId,
+        plan_code: planCode,
+        reason: reason,
+        updated_at: new Date().toISOString()
+      });
+    
+    if (error) throw error;
+  }
+
+  async removeCommercialOverride(companyId: string) {
+    const { error } = await supabase
+      .from('company_commercial_overrides')
+      .delete()
+      .eq('company_id', companyId);
+    
+    if (error) throw error;
+  }
+
   async resetCompanyPlanToStripe(companyId: string) {
     // Reset Operational mode back to normal
     const { error } = await supabase
