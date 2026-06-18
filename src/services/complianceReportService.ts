@@ -26,7 +26,6 @@ export const complianceReportService = {
 
     // Fetch company details and admin emails
     const companyDetails = await db.getCompanyDetails(user.companyId || '');
-    const adminEmails = await db.getCompanyAdminEmails(user.companyId || '');
 
     const reportData = {
       ...report,
