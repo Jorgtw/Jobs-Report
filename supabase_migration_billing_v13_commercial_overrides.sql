@@ -17,23 +17,19 @@ ALTER TABLE public.company_commercial_overrides ENABLE ROW LEVEL SECURITY;
 -- Policy: Only superadmin can manage overrides
 DROP POLICY IF EXISTS "Superadmin manage commercial overrides" ON public.company_commercial_overrides;
 CREATE POLICY "Superadmin manage commercial overrides" ON public.company_commercial_overrides
-    FOR ALL
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.user_roles ur 
-            WHERE ur.user_id = auth.uid() AND ur.role = 'superadmin'
-        )
-    );
+    FOR ALL TO authenticated
+    USING (public.is_global_superadmin())
+    WITH CHECK (public.is_global_superadmin());
 
 -- Policy: Users can read their own company's override status (useful for UI)
 DROP POLICY IF EXISTS "Users read their commercial overrides" ON public.company_commercial_overrides;
 CREATE POLICY "Users read their commercial overrides" ON public.company_commercial_overrides
-    FOR SELECT
+    FOR SELECT TO authenticated
     USING (
         EXISTS (
             SELECT 1 FROM public.user_companies uc
             WHERE uc.company_id = company_commercial_overrides.company_id
-            AND uc.user_id = auth.uid()
+            AND uc.auth_id = auth.uid()
         )
     );
 
