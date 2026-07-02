@@ -140,7 +140,7 @@ export default async function handler(req: any, res: any) {
     // 7. Invia email di notifica
     try {
       const resendApiKey = process.env.RESEND_API_KEY || '';
-      const adminEmailRecipient = process.env.ADMIN_EMAIL || 'jobsreportadmin@gmail.com';
+      const adminEmailRecipient = process.env.ADMIN_EMAIL || 'jorgtw@gmail.com';
       if (resendApiKey) {
         // Invia notifica all'admin
         await fetch('https://api.resend.com/emails', {

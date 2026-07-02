@@ -7,7 +7,7 @@ export default async function handler(req: any, res: any) {
 
   const { type = 'registration', companyName, contactName, adminName, email, phone, notes, username, password } = req.body;
   
-  const adminEmailRecipient = process.env.ADMIN_EMAIL || 'jobsreportadmin@gmail.com';
+  const adminEmailRecipient = process.env.ADMIN_EMAIL || 'jorgtw@gmail.com';
   const resendApiKey = process.env.RESEND_API_KEY || '';
 
   let subject = '';
