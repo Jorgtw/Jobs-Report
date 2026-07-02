@@ -147,7 +147,7 @@ export default async function handler(req: any, res: any) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` },
           body: JSON.stringify({
-            from: 'Jobs Report <noreply@jobs-report.app>',
+            from: 'Jobs Report <onboarding@resend.dev>',
             to: [adminEmailRecipient],
             subject: `[JobsReport] Nuova azienda attivata: ${companyName}`,
             text: `È stata registrata e attivata una nuova azienda su JobsReport.\n\nAzienda: ${companyName}\nReferente: ${adminName}\nEmail: ${finalEmail}\nTelefono: ${phone || 'N/D'}\n\n--- Messaggio automatico`
@@ -159,7 +159,7 @@ export default async function handler(req: any, res: any) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` },
           body: JSON.stringify({
-            from: 'Jobs Report <noreply@jobs-report.app>',
+            from: 'Jobs Report <onboarding@resend.dev>',
             to: [finalEmail],
             subject: `Benvenuto su JobsReport - Credenziali per ${companyName}`,
             text: `Ciao ${adminName},\n\nLa tua azienda "${companyName}" è stata registrata con successo su JobsReport.\n\nEcco le tue credenziali di accesso:\nURL: https://jobs-report.app\nUsername: ${username}\nPassword: ${password}\n\nBuon lavoro!\nIl team di JobsReport`

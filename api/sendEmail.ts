@@ -106,7 +106,7 @@ export default async function handler(req: any, res: any) {
         'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: 'Jobs Report <noreply@jobs-report.app>',
+        from: 'Jobs Report <onboarding@resend.dev>',
         to: to,
         subject: subject,
         text: textBody,
