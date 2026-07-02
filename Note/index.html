@@ -526,19 +526,46 @@ function closeModal() {
   document.getElementById('demoModal').classList.remove('visible');
 }
 
-function submitDemo() {
+async function submitDemo() {
   var nome  = document.getElementById('fNome').value.trim();
+  var azienda = document.getElementById('fAzienda').value.trim();
   var email = document.getElementById('fEmail').value.trim();
+  var tel = document.getElementById('fTel').value.trim();
+  var msg = document.getElementById('fMsg').value.trim();
+  
   if (!nome || !email) { alert(I18N[currentLang].modal.alert); return; }
-  var body = 'Nome: '+nome+
-    (document.getElementById('fAzienda').value.trim() ? '\nAzienda: '+document.getElementById('fAzienda').value.trim() : '')+
-    '\nEmail: '+email+
-    (document.getElementById('fTel').value.trim() ? '\nTelefono: '+document.getElementById('fTel').value.trim() : '')+
-    (document.getElementById('fMsg').value.trim() ? '\n\nMessaggio:\n'+document.getElementById('fMsg').value.trim() : '')+
-    '\n\n---\nInviato dal modulo JobsReport';
-  window.location.href = 'mailto:jtw@live.it?subject='+encodeURIComponent('Richiesta demo – JobsReport')+'&body='+encodeURIComponent(body);
-  document.getElementById('modalFormWrap').style.display = 'none';
-  document.getElementById('modalSuccessWrap').style.display = 'block';
+  
+  var submitBtn = document.getElementById('submitBtn');
+  var originalBtnText = submitBtn.textContent;
+  submitBtn.textContent = "Invio in corso...";
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/sendEmail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'contact',
+        contactName: nome,
+        companyName: azienda,
+        email: email,
+        phone: tel,
+        notes: msg
+      })
+    });
+    
+    if (res.ok) {
+      document.getElementById('modalFormWrap').style.display = 'none';
+      document.getElementById('modalSuccessWrap').style.display = 'block';
+    } else {
+      alert("Si è verificato un errore durante l'invio. Riprova più tardi.");
+    }
+  } catch (err) {
+    alert("Errore di rete. Controlla la tua connessione e riprova.");
+  } finally {
+    submitBtn.textContent = originalBtnText;
+    submitBtn.disabled = false;
+  }
 }
 
 // Wire up events after DOM ready

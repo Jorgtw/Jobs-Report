@@ -137,6 +137,39 @@ export default async function handler(req: any, res: any) {
       });
     }
 
+    // 7. Invia email di notifica
+    try {
+      const resendApiKey = process.env.RESEND_API_KEY || '';
+      const adminEmailRecipient = process.env.ADMIN_EMAIL || 'jobsreportadmin@gmail.com';
+      if (resendApiKey) {
+        // Invia notifica all'admin
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` },
+          body: JSON.stringify({
+            from: 'Jobs Report <noreply@jobs-report.app>',
+            to: [adminEmailRecipient],
+            subject: `[JobsReport] Nuova azienda attivata: ${companyName}`,
+            text: `È stata registrata e attivata una nuova azienda su JobsReport.\n\nAzienda: ${companyName}\nReferente: ${adminName}\nEmail: ${finalEmail}\nTelefono: ${phone || 'N/D'}\n\n--- Messaggio automatico`
+          })
+        });
+
+        // Invia email di benvenuto all'utente
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` },
+          body: JSON.stringify({
+            from: 'Jobs Report <noreply@jobs-report.app>',
+            to: [finalEmail],
+            subject: `Benvenuto su JobsReport - Credenziali per ${companyName}`,
+            text: `Ciao ${adminName},\n\nLa tua azienda "${companyName}" è stata registrata con successo su JobsReport.\n\nEcco le tue credenziali di accesso:\nURL: https://jobs-report.app\nUsername: ${username}\nPassword: ${password}\n\nBuon lavoro!\nIl team di JobsReport`
+          })
+        });
+      }
+    } catch (e) {
+      console.error('Errore invio email post-registrazione:', e);
+    }
+
     return res.status(200).json({ success: true });
 
   } catch (err: any) {

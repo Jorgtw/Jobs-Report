@@ -75,6 +75,26 @@ export default async function handler(req: any, res: any) {
       '---',
       'Messaggio automatico da JobsReport'
     ].join('\n');
+  } else if (type === 'contact') {
+    console.log(`[CONTATTO] Nuovo messaggio da: ${contactName || companyName || email}`);
+    
+    subject = `[JobsReport - Contatto] Messaggio da ${contactName || 'Sconosciuto'}`;
+    to = [adminEmailRecipient];
+    
+    textBody = [
+      'Nuovo messaggio dal modulo "Contattaci" del sito.',
+      '',
+      `Nome e Cognome: ${contactName || 'N/D'}`,
+      `Azienda:        ${companyName || 'N/D'}`,
+      `Email:          ${email || 'N/D'}`,
+      `Telefono:       ${phone || 'N/D'}`,
+      '',
+      `Messaggio:`,
+      `${notes || 'N/D'}`,
+      '',
+      '---',
+      'Messaggio generato automaticamente dal modulo contatti di JobsReport'
+    ].join('\n');
   }
 
   let emailSent = false;
