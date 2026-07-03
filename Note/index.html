@@ -248,7 +248,7 @@ var MENU_COLORS = ['ic-green','ic-red','ic-orange','ic-teal','ic-blue','ic-purpl
 var I18N = {
   it: {
     sidebar:['Clienti','Personale','Progetti','Subappalti','Rapportini','Sommario Lavori','Profilo','Assistenza'],
-    esci:'Esci', sectionLabel:'Funzionalità Chiave', demoCta:'Richiedi una demo gratuita →',
+    esci:'Esci', sectionLabel:'Funzionalità Chiave', demoCta:'Registrati →',
     footerRights:'Tutti i diritti riservati', overlayTitle:'Benvenuto in JobsReport',
     overlaySub:'Scegli la tua lingua per iniziare la presentazione',
     modal:{title:'Richiedi una demo gratuita', sub:'Compila il modulo e ti contatteremo al più presto.', nome:'Nome e Cognome *', azienda:'Azienda', email:'Email *', tel:'Telefono', msg:'Messaggio', btn:'Invia richiesta →', successTitle:'Richiesta inviata!', successMsg:'Grazie per il tuo interesse. Ti contatteremo al più presto.', alert:'Per favore compila Nome e Email.'},
@@ -274,7 +274,7 @@ var I18N = {
   },
   en: {
     sidebar:['Clients','Personnel','Projects','Subcontracts','Timesheets','Work Summary','Profile','Support'],
-    esci:'Exit', sectionLabel:'Key Features', demoCta:'Request a free demo →',
+    esci:'Exit', sectionLabel:'Key Features', demoCta:'Register →',
     footerRights:'All rights reserved', overlayTitle:'Welcome to JobsReport',
     overlaySub:'Choose your language to start the presentation',
     modal:{title:'Request a free demo', sub:'Fill in the form and we will contact you shortly.', nome:'Full Name *', azienda:'Company', email:'Email *', tel:'Phone', msg:'Message', btn:'Send request →', successTitle:'Request sent!', successMsg:'Thank you for your interest. We will contact you soon.', alert:'Please fill in Name and Email.'},
@@ -300,7 +300,7 @@ var I18N = {
   },
   es: {
     sidebar:['Clientes','Personal','Proyectos','Subcontratas','Partes','Resumen','Perfil','Asistencia'],
-    esci:'Salir', sectionLabel:'Funcionalidades Clave', demoCta:'Solicitar demo gratuita →',
+    esci:'Salir', sectionLabel:'Funcionalidades Clave', demoCta:'Regístrate →',
     footerRights:'Todos los derechos reservados', overlayTitle:'Bienvenido a JobsReport',
     overlaySub:'Elige tu idioma para comenzar',
     modal:{title:'Solicitar demo gratuita', sub:'Rellena el formulario y te contactaremos pronto.', nome:'Nombre y Apellido *', azienda:'Empresa', email:'Email *', tel:'Teléfono', msg:'Mensaje', btn:'Enviar solicitud →', successTitle:'¡Solicitud enviada!', successMsg:'Gracias por tu interés. Te contactaremos pronto.', alert:'Por favor completa Nombre y Email.'},
@@ -326,7 +326,7 @@ var I18N = {
   },
   pl: {
     sidebar:['Klienci','Personel','Projekty','Podwykonawcy','Raporty','Podsumowanie','Profil','Pomoc'],
-    esci:'Wyjdź', sectionLabel:'Kluczowe funkcje', demoCta:'Poproś o darmowe demo →',
+    esci:'Wyjdź', sectionLabel:'Kluczowe funkcje', demoCta:'Zarejestruj się →',
     footerRights:'Wszelkie prawa zastrzeżone', overlayTitle:'Witaj w JobsReport',
     overlaySub:'Wybierz język, aby rozpocząć',
     modal:{title:'Poproś o darmowe demo', sub:'Wypełnij formularz, a skontaktujemy się z Tobą wkrótce.', nome:'Imię i Nazwisko *', azienda:'Firma', email:'Email *', tel:'Telefon', msg:'Wiadomość', btn:'Wyślij zgłoszenie →', successTitle:'Zgłoszenie wysłane!', successMsg:'Dziękujemy za zainteresowanie. Skontaktujemy się wkrótce.', alert:'Proszę wypełnić Imię i Email.'},
@@ -352,7 +352,7 @@ var I18N = {
   },
   tr: {
     sidebar:['Müşteriler','Personel','Projeler','Alt Yükleniciler','Raporlar','İş Özeti','Profil','Destek'],
-    esci:'Çıkış', sectionLabel:'Temel Özellikler', demoCta:'Ücretsiz demo iste →',
+    esci:'Çıkış', sectionLabel:'Temel Özellikler', demoCta:'Kayıt ol →',
     footerRights:'Tüm hakları saklıdır', overlayTitle:"JobsReport'a Hoş Geldiniz",
     overlaySub:'Sunuma başlamak için dilinizi seçin',
     modal:{title:'Ücretsiz demo iste', sub:'Formu doldurun, en kısa sürede sizinle iletişime geçeceğiz.', nome:'Ad ve Soyad *', azienda:'Şirket', email:'Email *', tel:'Telefon', msg:'Mesaj', btn:'İstek gönder →', successTitle:'İstek gönderildi!', successMsg:'İlginiz için teşekkürler. En kısa sürede sizinle iletişime geçeceğiz.', alert:'Lütfen Ad ve Email alanlarını doldurun.'},
@@ -378,7 +378,7 @@ var I18N = {
   },
   da: {
     sidebar:['Klienter','Personale','Projekter','Underentreprenører','Rapporter','Oversigt','Profil','Support'],
-    esci:'Afslut', sectionLabel:'Nøglefunktioner', demoCta:'Anmod om gratis demo →',
+    esci:'Afslut', sectionLabel:'Nøglefunktioner', demoCta:'Registrer →',
     footerRights:'Alle rettigheder forbeholdes', overlayTitle:'Velkommen til JobsReport',
     overlaySub:'Vælg dit sprog for at starte',
     modal:{title:'Anmod om gratis demo', sub:'Udfyld formularen, så kontakter vi dig snarest.', nome:'Navn og Efternavn *', azienda:'Virksomhed', email:'Email *', tel:'Telefon', msg:'Besked', btn:'Send anmodning →', successTitle:'Anmodning sendt!', successMsg:'Tak for din interesse. Vi kontakter dig snarest.', alert:'Udfyld venligst Navn og Email.'},
@@ -592,7 +592,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('closePanelBtn').addEventListener('click', closePanel);
 
   // demo cta button
-  document.getElementById('demoCtaBtn').addEventListener('click', openModal);
+  document.getElementById('demoCtaBtn').addEventListener('click', function() {
+    window.location.href = 'https://app.jobs-report.app/#/richiesta-registrazione';
+  });
 
   // close modal button
   document.getElementById('closeModalBtn').addEventListener('click', closeModal);
