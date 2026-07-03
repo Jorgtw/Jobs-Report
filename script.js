@@ -1,5 +1,10 @@
 // Funzione globale per cambiare tab tramite i bottoni nella pagina
 function switchTab(targetId) {
+    if (targetId === 'registrazione') {
+        window.location.href = 'https://app.jobs-report.app/#/richiesta-registrazione';
+        return;
+    }
+
     const navItems = document.querySelectorAll('.nav-item');
     const sections = document.querySelectorAll('.content-section');
 
@@ -95,5 +100,25 @@ document.addEventListener('DOMContentLoaded', () => {
         langSelect.addEventListener('change', (e) => {
             changeLanguage(e.target.value);
         });
+    }
+
+    // --- Hijack Contattaci Form ---
+    const contattoForm = document.querySelector('#contatto form');
+    if (contattoForm) {
+        contattoForm.onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const msg = document.getElementById('contact-message').value;
+            
+            const subject = encodeURIComponent("Nuovo messaggio dal sito Jobs Report");
+            const body = encodeURIComponent(
+                "Nome: " + name + "\n" +
+                "Email: " + email + "\n\n" +
+                "Messaggio:\n" + msg
+            );
+            
+            window.location.href = "mailto:jtw@live.it?subject=" + subject + "&body=" + body;
+        };
     }
 });
