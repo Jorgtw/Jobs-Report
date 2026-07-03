@@ -414,7 +414,7 @@ export default async function handler(req: any, res: any) {
 
       console.log(`[API] Attempting to send email via Resend to: ${worker.email}`);
       const resendPayload = {
-        from: 'Jobs Report <noreply@jobs-report.app>',
+        from: 'Jobs Report <onboarding@resend.dev>',
         to: [worker.email],
         subject: 'Le tue istruzioni di accesso – Jobs Report',
         html: emailHtml,

@@ -87,7 +87,7 @@ Generato automaticamente da JobsReport
 
   try {
     const payload: any = {
-      from: 'JobsReport <onboarding@resend.dev>',
+      from: 'Jobs Report <onboarding@resend.dev>',
       to: to,
       subject: subject || `[JobsReport] Compliance Report — ${projectName} — ${date}`,
       text: textBody,
