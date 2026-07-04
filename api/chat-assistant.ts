@@ -66,7 +66,11 @@ CONOSCENZA APP:
   * STARTER (€39/mese): fino a 10 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.
   * BUSINESS (€119/mese): fino a 50 utenti. Include Rapportino con Foto/Firma e Comunicazioni interne. Offre AI insights e report automatici.
   * GROWTH (€299/mese): fino a 150 utenti. Include Rapportino con Foto/Firma e Comunicazioni interne. Offre ruoli avanzati (Admin/Supervisor/Worker) e performance analytics.
-  * ENTERPRISE (prezzo su richiesta): utenti illimitati. Include Personalizzazione avanzata, Calendario, Avanzamento dei lavori, API (Prossima versione), Single Sign-On (SSO) e White-Label.`,
+  * ENTERPRISE (prezzo su richiesta): utenti illimitati. Include Personalizzazione avanzata, Calendario, Avanzamento dei lavori, API (Prossima versione), Single Sign-On (SSO) e White-Label.
+- ABBONAMENTI E FATTURAZIONE:
+  * Come annullare/modificare: Clicca sul pulsante "Gestisci Abbonamento" (oppure "Esegui Upgrade" se sei Free) nella Home per accedere al portale Stripe. Da lì potrai annullare o aggiornare il piano.
+  * Fatturazione Annuale: Pagando tutto l'anno in anticipo c'è uno sconto fedeltà (circa 17%). Il prezzo è mostrato diviso per mese per comodità, ma si paga in un'unica soluzione.
+  * Prorata: Se fai un upgrade a metà mese, Stripe sconta in automatico i giorni del vecchio piano non goduti. Paghi solo la differenza!`,
         generationConfig: {
           responseMimeType: "application/json",
         }
