@@ -69,7 +69,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
 
     // 2. Enterprise plans redirect to direct sales/support email
     if (planCode === 'enterprise') {
-      window.location.href = 'mailto:assistenza@jobs-report.it?subject=Richiesta%20Informazioni%20Piano%20Enterprise%20-%20JobsReport';
+      window.location.href = 'mailto:jobsreportadmin@gmail.com?subject=Richiesta%20Informazioni%20Piano%20Enterprise%20-%20JobsReport';
       return;
     }
 

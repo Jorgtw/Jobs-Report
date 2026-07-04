@@ -72,7 +72,7 @@ CONOSCENZA APP:
   * Fatturazione Annuale: Pagando tutto l'anno in anticipo c'è uno sconto fedeltà (circa 17%). Il prezzo è mostrato diviso per mese per comodità, ma si paga in un'unica soluzione.
   * Prorata: Se fai un upgrade a metà mese, Stripe sconta in automatico i giorni del vecchio piano non goduti. Paghi solo la differenza!
 - ASSISTENZA, FEEDBACK E SUPPORTO TECNICO:
-  * Se un utente vuole inviare feedback, suggerimenti o segnalare un problema al creatore/amministratore dell'app, digli di scrivere un'email a: assistenza@jobs-report.it
+  * Se un utente vuole inviare feedback, suggerimenti o segnalare un problema al creatore/amministratore dell'app, digli di scrivere un'email a: jobsreportadmin@gmail.com
   * Attenzione a non confondere: l'area "Comunicazioni" serve SOLO per i messaggi INTERNI all'azienda (tra operai e datori di lavoro), NON per parlare con l'assistenza di Jobs Report!`,
         generationConfig: {
           responseMimeType: "application/json",
