@@ -242,7 +242,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
                 <span className={`px-1.5 py-0.5 rounded text-[9px] tracking-widest ${status.planCode === 'free' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
                   {t('common.plan')} {status.planCode}
                 </span>
-                {status.planCode !== 'free' && status.isBillingActive && !status.isCommercialOverride && (
+                {status.planCode !== 'free' && !status.isCommercialOverride && (
                   <button 
                     onClick={handleOpenCustomerPortal}
                     disabled={isPortalLoading}
