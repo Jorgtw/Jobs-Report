@@ -117,6 +117,8 @@ const CompaniesView: React.FC = () => {
           }
           if (formData.manualOverride && formData.commercialReason) {
             await db.setCommercialOverride(editingId, formData.planCode, formData.commercialReason);
+          } else if (!formData.manualOverride) {
+            await db.removeCommercialOverride(editingId);
           }
         }
       } else {
