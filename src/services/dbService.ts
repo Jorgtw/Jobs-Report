@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
 
 const getApiUrl = (url: string) => {
-  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNative) {
     return 'https://jobs-report.vercel.app' + url;
   }
   return url;

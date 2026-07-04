@@ -6,7 +6,7 @@ import { db } from './dbService';
 import { supabase } from './supabase';
 
 const getApiUrl = (url: string) => {
-  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNative) {
     return 'https://jobs-report.vercel.app' + url;
   }
   return url;
