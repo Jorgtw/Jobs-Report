@@ -24,6 +24,7 @@ import { User } from '../types';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { useSubscription } from '../hooks/useSubscription';
 import SuperAdminDashboard from '../components/SuperAdminDashboard';
+import { supabase } from '../services/supabase';
 
 // --- Compact Dashboard component ---
 const CompactDashboard: React.FC = () => {
@@ -158,7 +159,8 @@ interface HomeViewProps {
 }
 
 const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
     const isSA = user?.role?.toLowerCase() === 'superadmin';
@@ -207,6 +209,25 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
     }
   };
 
+  const handleOpenCustomerPortal = async () => {
+    setIsPortalLoading(true);
+    try {
+      const companyId = db.getCompanyIdSafe();
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        body: { company_id: companyId }
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Portal error:', err);
+      alert(t('dashboard.portalError'));
+    } finally {
+      setIsPortalLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-4 px-2 sm:px-4 animate-in fade-in duration-500">
       <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-slate-100 pb-2">
@@ -217,9 +238,21 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-2">
             <span>{isSuperAdmin ? 'System Administration Console' : t('reports.activityManagement')}</span>
             {!isSuperAdmin && authService.canAccessAdmin(user) && status?.planCode && (
-              <span className={`px-1.5 py-0.5 rounded text-[9px] tracking-widest ${status.planCode === 'free' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
-                {t('common.plan')} {status.planCode}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`px-1.5 py-0.5 rounded text-[9px] tracking-widest ${status.planCode === 'free' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
+                  {t('common.plan')} {status.planCode}
+                </span>
+                {status.planCode !== 'free' && (
+                  <button 
+                    onClick={handleOpenCustomerPortal}
+                    disabled={isPortalLoading}
+                    className="flex items-center gap-1 text-[9px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
+                  >
+                    {isPortalLoading ? <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /> : <Wallet size={10} />}
+                    {lang === 'it' ? 'Gestisci Abbonamento' : 'Manage Subscription'}
+                  </button>
+                )}
+              </div>
             )}
           </p>
         </div>
@@ -283,5 +316,3 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
 };
 
 export default HomeView;
-
-import { supabase } from '../services/supabase';

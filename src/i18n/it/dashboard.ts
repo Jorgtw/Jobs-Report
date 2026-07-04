@@ -18,6 +18,7 @@ export const dashboard = {
   pendingRequestsDesc: 'Ci sono nuove richieste di registrazione in attesa di approvazione.',
   quickSupport: 'Supporto Rapido',
   quickSupportDesc: 'Contatta il team tecnico per assistenza immediata sulla piattaforma.',
+  portalError: 'Non è stato possibile aprire il Customer Portal. Verifica di avere un abbonamento attivo.',
   
   // SaaS / Gestione Aziende
   companiesManagement: 'Gestione Aziende',

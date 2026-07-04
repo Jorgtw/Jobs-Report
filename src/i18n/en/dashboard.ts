@@ -14,6 +14,7 @@ export const dashboard = {
   pendingRequestsDesc: "There are new registration requests waiting for approval.",
   quickSupport: "Quick Support",
   quickSupportDesc: "Contact the technical team for immediate assistance on the platform.",
+  portalError: "Could not open the Customer Portal. Please verify that you have an active subscription.",
   companiesManagement: "Companies Management",
   createCompanyBtn: "Create New Company",
   editCompany: "Edit Company",

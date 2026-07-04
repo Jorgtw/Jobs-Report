@@ -14,6 +14,7 @@ export const dashboard = {
   pendingRequestsDesc: "Onay bekleyen yeni kayıt talepleri var.",
   quickSupport: "Hızlı Destek",
   quickSupportDesc: "Platformda anında yardım için teknik ekiple iletişime geçin.",
+  portalError: "Müşteri Portalı açılamadı. Lütfen aktif bir aboneliğiniz olduğunu doğrulayın.",
   companiesManagement: "Şirket Yönetimi",
   createCompanyBtn: "Yeni Şirket Oluştur",
   editCompany: "Şirketi Düzenle",

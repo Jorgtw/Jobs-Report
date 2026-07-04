@@ -73,21 +73,31 @@ serve(async (req) => {
           isBillingActive = false
         }
 
-        // 3. UPSERT (Causalmente ordinato dalla Stored Procedure `ORDER BY stripe_created_at`)
-        const { error: upsertError } = await supabaseAdmin
-          .from('company_entitlements')
-          .upsert({
-            company_id: companyId,
-            plan_code: planCode,
-            billing_status: stripeSubscription.status,
-            is_billing_active: isBillingActive,
-            stripe_subscription_id: stripeSubscription.id,
-            stripe_customer_id: stripeSubscription.customer,
-            current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'company_id'
-          })
+        let gracePeriodUntil = null;
+        if (stripeSubscription.status === 'past_due' || stripeSubscription.status === 'incomplete') {
+          // Grant 7 days of grace period
+          const graceDate = new Date();
+          graceDate.setDate(graceDate.getDate() + 7);
+          gracePeriodUntil = graceDate.toISOString();
+        }
+
+        const priceId = stripeSubscription.items?.data[0]?.price?.id || null;
+
+        // 3. UPSERT via Stored Procedure (with Audit Logging)
+        const { error: upsertError } = await supabaseAdmin.rpc('set_company_billing_state', {
+            p_company_id: companyId,
+            p_stripe_customer_id: stripeSubscription.customer,
+            p_stripe_subscription_id: stripeSubscription.id,
+            p_stripe_price_id: priceId,
+            p_billing_status: stripeSubscription.status,
+            p_is_billing_active: isBillingActive,
+            p_plan_code: planCode,
+            p_current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+            p_cancel_at_period_end: stripeSubscription.cancel_at_period_end || false,
+            p_grace_period_until: gracePeriodUntil,
+            p_triggered_by: 'system_webhook',
+            p_reason: `Stripe webhook event: ${event.type}`
+        });
 
         if (upsertError) throw upsertError;
 

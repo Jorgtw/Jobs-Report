@@ -14,6 +14,7 @@ export const dashboard = {
   pendingRequestsDesc: "Są nowe wnioski o rejestrację oczekujące na zatwierdzenie.",
   quickSupport: "Szybkie wsparcie",
   quickSupportDesc: "Skontaktuj się z zespołem technicznym w celu uzyskania natychmiastowej pomocy na platformie.",
+  portalError: "Nie można otworzyć portalu klienta. Sprawdź, czy masz aktywną subskrypcję.",
   companiesManagement: "Zarządzanie firmami",
   createCompanyBtn: "Utwórz nową firmę",
   editCompany: "Edytuj firmę",

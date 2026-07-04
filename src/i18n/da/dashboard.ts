@@ -14,6 +14,7 @@ export const dashboard = {
   pendingRequestsDesc: "Der er nye registreringsanmodninger, der venter på godkendelse.",
   quickSupport: "Hurtig support",
   quickSupportDesc: "Kontakt det tekniske team for øjeblikkelig hjælp på platformen.",
+  portalError: "Kunne ikke åbne kundeportalen. Bekræft venligst, at du har et aktivt abonnement.",
   companiesManagement: "Virksomhedsstyring",
   createCompanyBtn: "Opret ny virksomhed",
   editCompany: "Rediger virksomhed",
