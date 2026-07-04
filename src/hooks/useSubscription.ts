@@ -81,6 +81,7 @@ export const useSubscription = (manualCompanyId?: string | null) => {
         currentPeriodEnd: viewData.current_period_end,
         currentUsage: currentUsage,
         reportsLimit: planConfig.maxReports !== null ? planConfig.maxReports : 0,
+        isCommercialOverride: !!viewData.is_commercial_override,
         planFeatures: {
           compliance: planConfig.features.compliance,
           communications: planConfig.features.communications,

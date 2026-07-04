@@ -96,12 +96,38 @@ serve(async (req) => {
 
     const { data: billing, error: billingError } = await supabaseAdmin
       .from('company_billing')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, stripe_subscription_id')
       .eq('company_id', company_id)
       .single();
 
-    if (billingError || !billing || !billing.stripe_customer_id) {
-       return new Response(JSON.stringify({ error: "No active subscription found for this company" }), {
+    if (billingError || !billing) {
+       return new Response(JSON.stringify({ error: "No billing record found for this company" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let customerId = billing.stripe_customer_id;
+
+    // AUTO-HEALING: If customer ID is missing but we have a subscription ID (from legacy migration)
+    if (!customerId && billing.stripe_subscription_id) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(billing.stripe_subscription_id);
+        if (subscription && subscription.customer) {
+          customerId = subscription.customer as string;
+          // Heal the database
+          await supabaseAdmin
+            .from('company_billing')
+            .update({ stripe_customer_id: customerId })
+            .eq('company_id', company_id);
+        }
+      } catch (err) {
+        console.error("Failed to auto-heal Stripe Customer ID:", err);
+      }
+    }
+
+    if (!customerId) {
+       return new Response(JSON.stringify({ error: "No active Stripe customer found for this company. Please create a new subscription." }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -110,7 +136,7 @@ serve(async (req) => {
     // 4. Create Stripe Billing Portal Session
     const appUrl = Deno.env.get("APP_URL") || "https://jobs-report.vercel.app";
     const session = await stripe.billingPortal.sessions.create({
-      customer: billing.stripe_customer_id,
+      customer: customerId,
       return_url: `${appUrl}/companies`, // Return user to the companies dashboard
     });
 

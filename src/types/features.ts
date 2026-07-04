@@ -18,6 +18,7 @@ export interface SubscriptionStatus {
   currentPeriodEnd?: string;
   currentUsage: number;
   reportsLimit: number;
+  isCommercialOverride?: boolean;
 
   // --- Plan Features (static, what the plan INCLUDES) ---
   planFeatures: Record<PlanFeature, boolean>;
