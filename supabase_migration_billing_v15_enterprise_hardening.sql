@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS public.company_billing_audit_log (
 );
 
 ALTER TABLE public.company_billing_audit_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Audit logs readable by superadmins" ON public.company_billing_audit_log;
 CREATE POLICY "Audit logs readable by superadmins" ON public.company_billing_audit_log
 FOR SELECT TO authenticated USING (public.is_global_superadmin());
 
@@ -144,7 +145,8 @@ BEGIN
     FROM public.company_operational_state WHERE company_id = p_company_id;
     
     -- Billing State
-    SELECT * INTO v_plan_code, v_billing_status, v_grace_period_until
+    SELECT plan_code, billing_status, grace_period_until 
+    INTO v_plan_code, v_billing_status, v_grace_period_until
     FROM public.fn_get_company_billing_state(p_company_id);
     
     IF v_plan_code IS NULL THEN
