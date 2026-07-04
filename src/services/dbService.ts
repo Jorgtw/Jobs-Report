@@ -2432,7 +2432,14 @@ class DBService {
 
         const user = workerMap.get(r.userId);
         const reportOvertimeHours = r.overtimeHours || 0;
+        const reportOrdinaryHours = Math.max(0, r.totalHours - reportOvertimeHours);
         
+        const hourlyCost = Number(user?.hourlyRate) || 0;
+        const overtimeCost = Number(user?.overtimeHourlyRate) || 0;
+        const extraCost = Number(user?.extraCost) || 0;
+        const cost = (reportOrdinaryHours * hourlyCost) + (reportOvertimeHours * overtimeCost) + extraCost;
+        const isSubcontractor = !!user?.subcontractorId;
+
         const reportExpenses = Array.isArray(r.expenses)
           ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
           : 0;
@@ -2456,11 +2463,11 @@ class DBService {
           description: r.description,
           revenue: revenue,
           hourlyRevenue: isReportInternal ? 0 : sellingPrice,
-          cost: 0,
-          overtimeCost: 0,
-          hourlyCost: 0,
-          personnelCost: 0,
-          subcontractorCost: 0,
+          cost: cost,
+          overtimeCost: overtimeCost,
+          hourlyCost: hourlyCost,
+          personnelCost: isSubcontractor ? 0 : cost,
+          subcontractorCost: isSubcontractor ? cost : 0,
           invoiceStatus: r.invoiceStatus || 'Pending',
           activityType: r.activityType || 'work',
           isInternal: project?.isInternal || false,
@@ -2471,6 +2478,14 @@ class DBService {
         additionalWorkers.forEach((aw: any, idx: number) => {
           const awUser = workerMap.get(aw.userId);
           const awOvertimeHours = aw.overtimeHours || 0;
+          const awOrdinaryHours = Math.max(0, aw.totalHours - awOvertimeHours);
+          
+          const awHourlyCost = Number(awUser?.hourlyRate) || 0;
+          const awOvertimeCost = Number(awUser?.overtimeHourlyRate) || 0;
+          const awExtraCost = Number(awUser?.extraCost) || 0;
+          const awCost = (awOrdinaryHours * awHourlyCost) + (awOvertimeHours * awOvertimeCost) + awExtraCost;
+          const awIsSubcontractor = !!awUser?.subcontractorId;
+          
           const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
 
           summaries.push({
@@ -2489,11 +2504,11 @@ class DBService {
             description: r.description,
             revenue: awRevenue,
             hourlyRevenue: isReportInternal ? 0 : sellingPrice,
-            cost: 0,
-            overtimeCost: 0,
-            hourlyCost: 0,
-            personnelCost: 0,
-            subcontractorCost: 0,
+            cost: awCost,
+            overtimeCost: awOvertimeCost,
+            hourlyCost: awHourlyCost,
+            personnelCost: awIsSubcontractor ? 0 : awCost,
+            subcontractorCost: awIsSubcontractor ? awCost : 0,
             invoiceStatus: r.invoiceStatus || 'Pending',
             activityType: r.activityType || 'work',
             isInternal: project?.isInternal || false,
