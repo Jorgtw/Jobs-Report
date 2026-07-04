@@ -289,24 +289,24 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
             <Link
               key={link.path}
               to={link.path}
-              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-slate-50/50 border border-slate-100/50 rounded-2xl hover:bg-white hover:shadow-[0_12px_24px_rgba(0,0,0,0.04)] hover:border-slate-100 transition-all group active:scale-[0.98] p-2"
+              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-white border border-slate-100 rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all group cursor-pointer p-2"
             >
-              <div className={`w-12 h-12 ${link.color.replace('bg-', 'bg-').replace('500', '50').replace('600', '50')} ${link.color.replace('bg-', 'text-')} rounded-full flex items-center justify-center mb-2.5 transition-transform group-hover:scale-105`}>
-                <link.icon size={22} strokeWidth={2.5} />
+              <div className="mb-3 text-blue-600 group-hover:scale-110 transition-transform duration-300">
+                <link.icon size={36} strokeWidth={2} />
               </div>
-              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider text-center leading-tight group-hover:text-blue-600 transition-colors px-1 truncate w-full mt-1">{link.name}</span>
+              <span className="text-xs sm:text-[15px] font-semibold text-slate-800 capitalize text-center truncate w-full">{link.name.toLowerCase()}</span>
             </Link>
           ))}
 
           {!isOperator && (
             <button
               onClick={handleManualLogout}
-              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-slate-50/50 border border-slate-100/50 rounded-2xl hover:bg-white hover:shadow-[0_12px_24px_rgba(0,0,0,0.04)] hover:border-slate-100 transition-all group active:scale-[0.98] p-2"
+              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-white border border-slate-100 rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all group cursor-pointer p-2"
             >
-              <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center mb-2.5 transition-transform group-hover:scale-105 group-hover:text-red-500 group-hover:bg-red-50">
-                <LogOut size={22} strokeWidth={2.5} />
+              <div className="mb-3 text-slate-400 group-hover:text-red-500 group-hover:scale-110 transition-all duration-300">
+                <LogOut size={36} strokeWidth={2} />
               </div>
-              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider text-center leading-tight group-hover:text-red-600 transition-colors px-1 truncate w-full mt-1">{t('common.logout')}</span>
+              <span className="text-xs sm:text-[15px] font-semibold text-slate-800 capitalize text-center truncate w-full">{t('common.logout').toLowerCase()}</span>
             </button>
           )}
         </nav>
