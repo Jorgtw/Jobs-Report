@@ -4,31 +4,49 @@ import { utils, write } from 'xlsx';
 // --- DIZIONARIO DI TRADUZIONE MULTILINGUA ---
 const translations: Record<string, Record<string, string>> = {
   it: {
-    payrollSheet: 'Riepilogo Dipendenti',
-    invoiceSheet: 'Allegato Fatturazione',
+    payrollSheet: 'Payroll',
+    subSheet: 'Subappalti',
+    invoiceSheet: 'Fatturazione',
     rawSheet: 'Dati Completi',
-    worker: 'Dipendente / Operaio',
-    ordHours: 'Ore Ordinarie',
-    extHours: 'Ore Straordinarie',
-    festHours: 'Ore Festive',
-    nightHours: 'Ore Notturne',
-    totHours: 'Totale Ore',
-    hourlyCost: 'Costo Orario',
-    totCost: 'Totale Costo',
+    sintesiSheet: 'Sintesi',
+    worker: 'Dipendente',
+    subcontractor: 'Subappaltatore',
+    ordHours: 'Ore ordinarie',
+    extHours: 'Ore straordinarie',
+    festHours: 'Ore festive',
+    nightHours: 'Ore notturne',
+    totHours: 'Totale ore',
+    hourlyCost: 'Costo orario',
+    totCost: 'Totale costo',
     client: 'Cliente',
     project: 'Progetto',
     date: 'Data',
     description: 'Descrizione / Note',
-    billableHours: 'Ore Fatturabili',
-    hourlyRate: 'Tariffa Oraria',
-    totInvoice: 'Totale Riga',
-    activityType: 'Tipo Attività'
+    billableHours: 'Ore lavorate',
+    hourlyRate: 'Tariffa concordata',
+    totInvoice: 'Totale',
+    activityType: 'Tipo Attività',
+    dashboardTitle: 'CRUSCOTTO FINANZIARIO DIREZIONALE',
+    itemHeader: 'Voce di Bilancio',
+    valHeader: 'Valore',
+    unitHeader: 'Unità',
+    totalEmpHours: 'Totale ore dipendenti',
+    totalSubHours: 'Totale ore subappalti',
+    totalBillableHours: 'Totale ore fatturabili',
+    totalPersCost: 'Costi totali personale',
+    totalSubCost: 'Costi subappalti',
+    totalRevenue: 'Ricavi totali',
+    finalMargin: 'Margine finale',
+    hoursUnit: 'Ore'
   },
   en: {
-    payrollSheet: 'Payroll Summary',
-    invoiceSheet: 'Invoice Attachment',
+    payrollSheet: 'Payroll',
+    subSheet: 'Subcontractors',
+    invoiceSheet: 'Invoicing',
     rawSheet: 'Raw Data',
-    worker: 'Employee / Worker',
+    sintesiSheet: 'Summary',
+    worker: 'Employee',
+    subcontractor: 'Subcontractor',
     ordHours: 'Ordinary Hours',
     extHours: 'Overtime',
     festHours: 'Festive Hours',
@@ -40,10 +58,22 @@ const translations: Record<string, Record<string, string>> = {
     project: 'Project',
     date: 'Date',
     description: 'Description / Notes',
-    billableHours: 'Billable Hours',
-    hourlyRate: 'Hourly Rate',
+    billableHours: 'Hours Worked',
+    hourlyRate: 'Agreed Rate',
     totInvoice: 'Total',
-    activityType: 'Activity Type'
+    activityType: 'Activity Type',
+    dashboardTitle: 'EXECUTIVE FINANCIAL DASHBOARD',
+    itemHeader: 'Financial Item',
+    valHeader: 'Value',
+    unitHeader: 'Unit',
+    totalEmpHours: 'Total employee hours',
+    totalSubHours: 'Total subcontractor hours',
+    totalBillableHours: 'Total billable hours',
+    totalPersCost: 'Total personnel costs',
+    totalSubCost: 'Subcontractor costs',
+    totalRevenue: 'Total revenues',
+    finalMargin: 'Final margin',
+    hoursUnit: 'Hours'
   }
 };
 
@@ -110,42 +140,46 @@ export default async function handler(req: any, res: any) {
       .from('reports')
       .select(`
         id, date, description, total_hours, overtime_hours, festive_hours, night_hours, activity_type, created_by, project_id,
-        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, person_name)
+        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, person_name, subcontractor_id, membership_type)
       `)
       .eq('company_id', companyId);
 
     if (dateFrom) reportQuery = reportQuery.gte('date', dateFrom);
     if (dateTo) reportQuery = reportQuery.lte('date', dateTo);
 
-    const [reportsRes, projectsRes, clientsRes, workersRes] = await Promise.all([
+    const [reportsRes, projectsRes, clientsRes, workersRes, subcontractorsRes] = await Promise.all([
       reportQuery,
       supabaseAdmin.from('projects').select('id, title, client_id, is_internal').eq('company_id', companyId),
       supabaseAdmin.from('clients').select('id, name').eq('company_id', companyId),
-      supabaseAdmin.from('workers').select('id, name').eq('company_id', companyId)
+      supabaseAdmin.from('workers').select('id, name, subcontractor_id').eq('company_id', companyId),
+      supabaseAdmin.from('subcontractors').select('id, company_name').eq('company_id', companyId)
     ]);
 
     if (reportsRes.error) throw reportsRes.error;
     if (projectsRes.error) throw projectsRes.error;
     if (clientsRes.error) throw clientsRes.error;
     if (workersRes.error) throw workersRes.error;
+    if (subcontractorsRes.error) throw subcontractorsRes.error;
 
     const projectMap = new Map(projectsRes.data.map((p: any) => [p.id, p]));
     const clientMap = new Map(clientsRes.data.map((c: any) => [c.id, c]));
     const workerMapRaw = new Map((workersRes.data || []).map((w: any) => [w.id, w]));
+    const subMap = new Map((subcontractorsRes.data || []).map((s: any) => [s.id, s]));
 
     const mappedReports = (reportsRes.data || []).map((r: any) => {
       const proj = projectMap.get(r.project_id);
       const cli = proj ? clientMap.get(proj.client_id) : null;
       return { 
         ...r, 
-        projectName: proj?.title || '', 
-        clientName: cli?.name || '',
+        projectName: proj?.title || 'Sconosciuto', 
+        clientName: cli?.name || 'Sconosciuto',
         isInternal: proj?.is_internal || false
       };
     });
 
-    // Data structures for the 3 sheets
+    // Data structures for the 5 sheets
     const payrollMap = new Map<string, any>();
+    const subappaltiMap = new Map<string, any>();
     const invoiceRows: any[] = [];
     const rawDataRows: any[] = [];
 
@@ -153,23 +187,49 @@ export default async function handler(req: any, res: any) {
       if (projectId && r.project_id !== projectId) continue;
       if (clientId && projectMap.get(r.project_id)?.client_id !== clientId) continue;
 
-      const processWorker = (workerId: string, nameFallback: string, hours: number, ext: number, fest: number, night: number) => {
+      const processWorker = (
+        workerId: string, 
+        nameFallback: string, 
+        hours: number, 
+        ext: number, 
+        fest: number, 
+        night: number,
+        subIdFromRow?: string,
+        membershipType?: string
+      ) => {
         if (userId && workerId !== userId) return;
-        const workerName = workerMapRaw.get(workerId)?.name || nameFallback || '';
+        
+        const workerInfo = workerMapRaw.get(workerId);
+        const workerName = workerInfo?.name || nameFallback || '';
+        const subId = workerInfo?.subcontractor_id || subIdFromRow;
+        const isSubcontractor = !!subId || membershipType === 'Esterno';
+        
         const ord = Math.max(0, hours - ext - fest - night);
 
-        // 1. Aggrega in Payroll
-        if (!payrollMap.has(workerName)) {
-          payrollMap.set(workerName, { ord: 0, ext: 0, fest: 0, night: 0, tot: 0 });
+        if (isSubcontractor) {
+          // 2. Aggrega in Subappalti
+          const subDetails = subMap.get(subId);
+          const subName = subDetails?.company_name || workerName || 'Subappaltatore';
+          const sKey = `${subName}_${r.projectName}`;
+          
+          if (!subappaltiMap.has(sKey)) {
+            subappaltiMap.set(sKey, { subName: subName, projectName: r.projectName, hours: 0 });
+          }
+          subappaltiMap.get(sKey).hours += hours;
+        } else {
+          // 1. Aggrega in Payroll
+          if (!payrollMap.has(workerName)) {
+            payrollMap.set(workerName, { ord: 0, ext: 0, fest: 0, night: 0, tot: 0 });
+          }
+          const p = payrollMap.get(workerName);
+          p.ord += ord;
+          p.ext += ext;
+          p.fest += fest;
+          p.night += night;
+          p.tot += hours;
         }
-        const p = payrollMap.get(workerName);
-        p.ord += ord;
-        p.ext += ext;
-        p.fest += fest;
-        p.night += night;
-        p.tot += hours;
 
-        // 2. Aggiungi a Invoice (se fatturabile e non interno)
+        // 3. Aggiungi a Invoice (se fatturabile e non interno e tipo lavoro)
         if (!r.isInternal && r.activity_type === 'work') {
           invoiceRows.push({
             client: r.clientName,
@@ -181,7 +241,7 @@ export default async function handler(req: any, res: any) {
           });
         }
 
-        // 3. Aggiungi a Raw Data
+        // 4. Aggiungi a Raw Data
         rawDataRows.push([
           { v: formatDateEU(r.date, lang as string), t: 's' },
           { v: r.clientName, t: 's' },
@@ -214,7 +274,9 @@ export default async function handler(req: any, res: any) {
             Number(aw.hours) || 0, 
             Number(aw.overtime_hours) || 0, 
             Number(aw.festive_hours) || 0, 
-            Number(aw.night_hours) || 0
+            Number(aw.night_hours) || 0,
+            aw.subcontractor_id,
+            aw.membership_type
           );
         }
       }
@@ -235,8 +297,8 @@ export default async function handler(req: any, res: any) {
         { v: wData.fest, t: 'n', z: '#,##0.00' },
         { v: wData.night, t: 'n', z: '#,##0.00' },
         { v: wData.tot, t: 'n', z: '#,##0.00' },
-        { v: '', t: 's' }, // Costo Orario vuoto
-        { f: `${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx}`, t: 'n', z: '#,##0.00' } // Formula: Tot = Ore * Costo
+        { v: '', t: 's' }, // GUARDRAIL: Prezzi omessi dal DB
+        { f: `${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx}`, t: 'n', z: '#,##0.00' }
       ]);
       rIdx++;
     }
@@ -244,8 +306,26 @@ export default async function handler(req: any, res: any) {
     ws1['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
     utils.book_append_sheet(wb, ws1, t.payrollSheet);
 
-    // --- SHEET 2: INVOICE ---
-    // Ordina per Cliente -> Progetto -> Data
+    // --- SHEET 2: SUBAPPALTI ---
+    const sSubRows: any[] = [
+      [t.subcontractor, t.project, t.billableHours, t.hourlyRate, t.totCost]
+    ];
+    let rSubIdx = 2;
+    for (const s of Array.from(subappaltiMap.values())) {
+      sSubRows.push([
+        { v: s.subName, t: 's' },
+        { v: s.projectName, t: 's' },
+        { v: s.hours, t: 'n', z: '#,##0.00' },
+        { v: '', t: 's' }, // GUARDRAIL: Prezzi omessi
+        { f: `${getColLetter(2)}${rSubIdx}*${getColLetter(3)}${rSubIdx}`, t: 'n', z: '#,##0.00' }
+      ]);
+      rSubIdx++;
+    }
+    const wsSub = utils.aoa_to_sheet(sSubRows);
+    wsSub['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 22 }, { wch: 18 }];
+    utils.book_append_sheet(wb, wsSub, t.subSheet);
+
+    // --- SHEET 3: INVOICE ---
     invoiceRows.sort((a, b) => {
       if (a.client !== b.client) return a.client.localeCompare(b.client);
       if (a.project !== b.project) return a.project.localeCompare(b.project);
@@ -255,7 +335,7 @@ export default async function handler(req: any, res: any) {
     const s2Rows: any[] = [
       [t.client, t.project, t.date, t.worker, t.description, t.billableHours, t.hourlyRate, t.totInvoice]
     ];
-    rIdx = 2;
+    let rInvIdx = 2;
     for (const inv of invoiceRows) {
       s2Rows.push([
         { v: inv.client, t: 's' },
@@ -264,22 +344,41 @@ export default async function handler(req: any, res: any) {
         { v: inv.worker, t: 's' },
         { v: inv.desc, t: 's' },
         { v: inv.hours, t: 'n', z: '#,##0.00' },
-        { v: '', t: 's' }, // Tariffa Oraria vuota
-        { f: `${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx}`, t: 'n', z: '#,##0.00' } // Formula: Tot = Ore * Tariffa
+        { v: '', t: 's' }, // GUARDRAIL: Prezzi omessi
+        { f: `${getColLetter(5)}${rInvIdx}*${getColLetter(6)}${rInvIdx}`, t: 'n', z: '#,##0.00' }
       ]);
-      rIdx++;
+      rInvIdx++;
     }
     const ws2 = utils.aoa_to_sheet(s2Rows);
     ws2['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
     utils.book_append_sheet(wb, ws2, t.invoiceSheet);
 
-    // --- SHEET 3: RAW DATA ---
+    // --- SHEET 4: RAW DATA ---
     const s3Header: any[] = [
       [t.date, t.client, t.project, t.worker, t.activityType, t.description, t.ordHours, t.extHours, t.totHours]
     ];
     const ws3 = utils.aoa_to_sheet([...s3Header, ...rawDataRows]);
     ws3['!cols'] = [{ wch: 12 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
     utils.book_append_sheet(wb, ws3, t.rawSheet);
+
+    // --- SHEET 5: SINTESI ---
+    // Le formule puntano a range molto larghi, es F2:F1000 per evitare errori
+    const maxR = 10000;
+    const sintesiRows: any[] = [
+      [t.dashboardTitle],
+      [],
+      [t.itemHeader, t.valHeader, t.unitHeader],
+      [t.totalEmpHours, { f: `SUM('${t.payrollSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
+      [t.totalSubHours, { f: `SUM('${t.subSheet}'!C2:C${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
+      [t.totalBillableHours, { f: `SUM('${t.invoiceSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
+      [t.totalPersCost, { f: `SUM('${t.payrollSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, '€'],
+      [t.totalSubCost, { f: `SUM('${t.subSheet}'!E2:E${maxR})`, t: 'n', z: '#,##0.00' }, '€'],
+      [t.totalRevenue, { f: `SUM('${t.invoiceSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, '€'],
+      [t.finalMargin, { f: `B9-(B7+B8)`, t: 'n', z: '#,##0.00' }, '€']
+    ];
+    const wsSintesi = utils.aoa_to_sheet(sintesiRows);
+    wsSintesi['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 10 }];
+    utils.book_append_sheet(wb, wsSintesi, t.sintesiSheet);
 
     const fileBuffer = write(wb, { type: 'buffer', bookType: 'xlsx' });
 
