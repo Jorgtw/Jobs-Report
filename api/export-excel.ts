@@ -1,336 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 import { utils, write } from 'xlsx';
-import { calculateFinancials } from '../src/services/billingEngine';
 
-// --- CONFIGURAZIONE LAYOUT EXCEL (COLONNE E MAPPING) ---
-const PayrollCols = {
-  workerName: 0,
-  ordinaryHours: 1,
-  overtimeHours: 2,
-  festiveHours: 3,
-  nightHours: 4,
-  totalHours: 5,
-  hourlyRate: 6,
-  totalCost: 7
-};
-
-const SubappaltiCols = {
-  subName: 0,       // Column A
-  projectName: 1,   // Column B
-  hours: 2,         // Column C
-  rate: 3,          // Column D
-  totalCost: 4      // Column E
-};
-
-const FatturazioneCols = {
-  clientName: 0,    // Column A
-  projectName: 1,   // Column B
-  hours: 2,         // Column C
-  saleRate: 3,      // Column D
-  totalInvoice: 4   // Column E
-};
-
-const SintesiCols = {
-  label: 0,         // Column A
-  value: 1,         // Column B
-  unit: 2           // Column C
-};
-
-const RawDataCols = {
-  date: 0,          // Column A
-  workerName: 1,    // Column B
-  projectName: 2,   // Column C
-  ordinaryHours: 3,
-  overtimeHours: 4,
-  festiveHours: 5,
-  nightHours: 6,
-  additionalHours: 7,
-  totalHours: 8,
-  activityType: 9
-};
-
-// Helper per convertire un indice di colonna 0-based in lettera Excel (es. 0 -> A, 1 -> B, 26 -> AA)
-function getColLetter(colIdx: number): string {
-  let temp = colIdx;
-  let letter = '';
-  while (temp >= 0) {
-    letter = String.fromCharCode((temp % 26) + 65) + letter;
-    temp = Math.floor(temp / 26) - 1;
-  }
-  return letter;
-}
-
-// --- DIZIONARIO DI TRADUZIONE MULTILINGUA (VALUTA AGNOSTICA) ---
+// --- DIZIONARIO DI TRADUZIONE MULTILINGUA ---
 const translations: Record<string, Record<string, string>> = {
   it: {
-    payrollTitle: 'Dipendente',
-    ordinaryHours: 'Ore ordinarie',
-    overtimeHours: 'Ore straordinarie',
-    festiveHours: 'Ore festive',
-    nightHours: 'Ore notturne',
-    totalHours: 'Totale ore',
-    hourlyRate: 'Costo orario',
-    totalCost: 'Totale costo',
-    subcontractor: 'Subappaltatore',
-    project: 'Progetto',
-    hoursWorked: 'Ore lavorate',
-    agreedRate: 'Tariffa concordata',
-    client: 'Cliente',
-    billableHours: 'Ore fatturabili',
-    hourlySaleRate: 'Tariffa oraria',
-    totalInvoice: 'Totale fattura',
-    dashboardTitle: 'CRUSCOTTO FINANZIARIO DIREZIONALE',
-    itemHeader: 'Voce di Bilancio',
-    valHeader: 'Valore',
-    unitHeader: 'Unità',
-    totalEmpHours: 'Totale ore dipendenti',
-    totalSubHours: 'Totale ore subappalti',
-    totalBillableHours: 'Totale ore fatturabili',
-    totalPersCost: 'Costi totali personale',
-    totalSubCost: 'Costi subappalti',
-    totalRevenue: 'Ricavi totali',
-    finalMargin: 'Margine finale',
-    hoursUnit: 'Ore',
-    rawDataSheetName: 'Dati Completi',
+    rawDataSheetName: 'Allegato',
     rawDate: 'Data',
-    rawWorker: 'Dipendente / Operaio',
+    rawWorker: 'Operaio',
     rawProject: 'Progetto',
-    rawOrdinaryHours: 'Ore ordinarie',
-    rawOvertimeHours: 'Ore straordinarie',
-    rawFestiveHours: 'Ore festive',
-    rawNightHours: 'Ore notturne',
-    rawAdditionalHours: 'Ore aggiuntive (team)',
-    rawTotalHours: 'Totale ore',
-    rawActivityType: 'Tipo attività',
-    rawInvoiceStatus: 'Stato fatturazione',
-    statusPending: 'In Attesa',
-    statusInvoiced: 'Fatturato',
-    statusPaid: 'Pagato'
+    rawClient: 'Cliente',
+    rawOrdinaryHours: 'Ore Ord',
+    rawOvertimeHours: 'Ore Extra',
+    rawTotalHours: 'Totale Ore',
+    rawActivityType: 'Tipo Attività',
+    rawDescription: 'Note / Intervento',
+    hourlySaleRate: 'Tariffa Oraria',
+    totalInvoice: 'Totale Riga'
   },
   en: {
-    payrollTitle: 'Employee',
-    ordinaryHours: 'Ordinary hours',
-    overtimeHours: 'Overtime hours',
-    festiveHours: 'Festive hours',
-    nightHours: 'Night hours',
-    totalHours: 'Total hours',
-    hourlyRate: 'Hourly rate',
-    totalCost: 'Total cost',
-    subcontractor: 'Subcontractor',
-    project: 'Project',
-    hoursWorked: 'Hours worked',
-    agreedRate: 'Agreed rate',
-    client: 'Client',
-    billableHours: 'Billable hours',
-    hourlySaleRate: 'Hourly rate',
-    totalInvoice: 'Total invoice',
-    dashboardTitle: 'EXECUTIVE FINANCIAL DASHBOARD',
-    itemHeader: 'Financial Item',
-    valHeader: 'Value',
-    unitHeader: 'Unit',
-    totalEmpHours: 'Total employee hours',
-    totalSubHours: 'Total subcontractor hours',
-    totalBillableHours: 'Total billable hours',
-    totalPersCost: 'Total personnel costs',
-    totalSubCost: 'Subcontractor costs',
-    totalRevenue: 'Total revenues',
-    finalMargin: 'Final margin',
-    hoursUnit: 'Hours',
-    rawDataSheetName: 'Full Data',
+    rawDataSheetName: 'Attachment',
     rawDate: 'Date',
-    rawWorker: 'Employee / Worker',
+    rawWorker: 'Worker',
     rawProject: 'Project',
-    rawOrdinaryHours: 'Ordinary hours',
-    rawOvertimeHours: 'Overtime hours',
-    rawFestiveHours: 'Festive hours',
-    rawNightHours: 'Night hours',
-    rawAdditionalHours: 'Additional hours (team)',
-    rawTotalHours: 'Total hours',
-    rawActivityType: 'Activity type',
-    rawInvoiceStatus: 'Billing Status',
-    statusPending: 'Pending',
-    statusInvoiced: 'Invoiced',
-    statusPaid: 'Paid'
-  },
-  es: {
-    payrollTitle: 'Empleado',
-    ordinaryHours: 'Horas ordinarias',
-    overtimeHours: 'Horas extraordinarias',
-    festiveHours: 'Horas festivas',
-    nightHours: 'Horas nocturnas',
-    totalHours: 'Horas totales',
-    hourlyRate: 'Tarifa horaria',
-    totalCost: 'Coste total',
-    subcontractor: 'Subcontratista',
-    project: 'Proyecto',
-    hoursWorked: 'Horas trabajadas',
-    agreedRate: 'Tarifa acordada',
-    client: 'Cliente',
-    billableHours: 'Horas facturables',
-    hourlySaleRate: 'Tarifa horaria',
-    totalInvoice: 'Total factura',
-    dashboardTitle: 'CUADRO DE MANDO FINANCIERO DIRECCIONAL',
-    itemHeader: 'Partida de balance',
-    valHeader: 'Valor',
-    unitHeader: 'Unidad',
-    totalEmpHours: 'Horas totales empleados',
-    totalSubHours: 'Horas totales subcontratos',
-    totalBillableHours: 'Horas totales facturables',
-    totalPersCost: 'Costes totales personal',
-    totalSubCost: 'Costes subcontratos',
-    totalRevenue: 'Ingresos totales',
-    finalMargin: 'Margen final',
-    hoursUnit: 'Horas',
-    rawDataSheetName: 'Datos Completos',
-    rawDate: 'Fecha',
-    rawWorker: 'Empleado / Operario',
-    rawProject: 'Proyecto',
-    rawOrdinaryHours: 'Horas ordinarias',
-    rawOvertimeHours: 'Horas extraordinarias',
-    rawFestiveHours: 'Horas festivas',
-    rawNightHours: 'Horas nocturnas',
-    rawAdditionalHours: 'Horas adicionales (equipo)',
-    rawTotalHours: 'Horas totales',
-    rawActivityType: 'Tipo de actividad',
-    rawInvoiceStatus: 'Estado de facturación',
-    statusPending: 'Pendiente',
-    statusInvoiced: 'Facturado',
-    statusPaid: 'Pagado'
-  },
-  pl: {
-    payrollTitle: 'Pracownik',
-    ordinaryHours: 'Godziny zwykłe',
-    overtimeHours: 'Nadgodziny',
-    festiveHours: 'Godziny świąteczne',
-    nightHours: 'Godziny nocne',
-    totalHours: 'Suma godzin',
-    hourlyRate: 'Stawka godzinowa',
-    totalCost: 'Koszt całkowity',
-    subcontractor: 'Podwykonawca',
-    project: 'Projekt',
-    hoursWorked: 'Przepracowane godziny',
-    agreedRate: 'Uzgodniona stawka',
-    client: 'Klient',
-    billableHours: 'Godziny fakturowane',
-    hourlySaleRate: 'Stawka godzinowa',
-    totalInvoice: 'Suma faktury',
-    dashboardTitle: 'PANEL FINANSOWY DYREKCJI',
-    itemHeader: 'Pozycja bilansowa',
-    valHeader: 'Wartość',
-    unitHeader: 'Jednostka',
-    totalEmpHours: 'Suma godzin pracowników',
-    totalSubHours: 'Suma godzin podwykonawców',
-    totalBillableHours: 'Suma godzin fakturowanych',
-    totalPersCost: 'Koszty personelu całkowite',
-    totalSubCost: 'Koszty podwykonawców',
-    totalRevenue: 'Przychody całkowite',
-    finalMargin: 'Marża końcowa',
-    hoursUnit: 'Godzin',
-    rawDataSheetName: 'Pełne Dane',
-    rawDate: 'Data',
-    rawWorker: 'Pracownik / Operator',
-    rawProject: 'Projekt',
-    rawOrdinaryHours: 'Godziny zwykłe',
-    rawOvertimeHours: 'Nadgodziny',
-    rawFestiveHours: 'Godziny świąteczne',
-    rawNightHours: 'Godziny nocne',
-    rawAdditionalHours: 'Dodatkowe godziny (zespół)',
-    rawTotalHours: 'Suma godzin',
-    rawActivityType: 'Rodzaj aktywności',
-    rawInvoiceStatus: 'Status fakturowania',
-    statusPending: 'Oczekujący',
-    statusInvoiced: 'Zafakturowano',
-    statusPaid: 'Zapłacono'
-  },
-  tr: {
-    payrollTitle: 'Çalışan',
-    ordinaryHours: 'Normal çalışma saatleri',
-    overtimeHours: 'Fazla mesai saatleri',
-    festiveHours: 'Tatil saatleri',
-    nightHours: 'Gece saatleri',
-    totalHours: 'Toplam saat',
-    hourlyRate: 'Saatlik ücret',
-    totalCost: 'Toplam maliyet',
-    subcontractor: 'Alt yüklenici',
-    project: 'Proje',
-    hoursWorked: 'Çalışılan saatler',
-    agreedRate: 'Anlaşılan ücret',
-    client: 'Müşteri',
-    billableHours: 'Faturalandırılabilir saatler',
-    hourlySaleRate: 'Saatlik ücret',
-    totalInvoice: 'Toplam fatura',
-    dashboardTitle: 'YÖNETİCİ FİNANSAL PANELİ',
-    itemHeader: 'Bilanço kalemi',
-    valHeader: 'Değer',
-    unitHeader: 'Birim',
-    totalEmpHours: 'Toplam çalışan saatleri',
-    totalSubHours: 'Toplam alt yüklenici saatleri',
-    totalBillableHours: 'Toplam faturalandırılabilir saatler',
-    totalPersCost: 'Toplam personel maliyetleri',
-    totalSubCost: 'Alt yüklenici maliyetleri',
-    totalRevenue: 'Toplam gelirler',
-    finalMargin: 'Final marj',
-    hoursUnit: 'Saat',
-    rawDataSheetName: 'Tüm Veriler',
-    rawDate: 'Tarih',
-    rawWorker: 'Çalışan / İşçi',
-    rawProject: 'Proje',
-    rawOrdinaryHours: 'Normal saatler',
-    rawOvertimeHours: 'Fazla mesai',
-    rawFestiveHours: 'Tatil saatleri',
-    rawNightHours: 'Gece saatleri',
-    rawAdditionalHours: 'Ek saatler (ekip)',
-    rawTotalHours: 'Toplam saat',
-    rawActivityType: 'Faaliyet türü',
-    rawInvoiceStatus: 'Fatura Durumu',
-    statusPending: 'Beklemede',
-    statusInvoiced: 'Faturalandı',
-    statusPaid: 'Ödendi'
-  },
-  da: {
-    payrollTitle: 'Medarbejder',
-    ordinaryHours: 'Normale timer',
-    overtimeHours: 'Overtidstimer',
-    festiveHours: 'Helligdagstimer',
-    nightHours: 'Nattetimer',
-    totalHours: 'Samlet antal timer',
-    hourlyRate: 'Timeløn',
-    totalCost: 'Samlet omkostning',
-    subcontractor: 'Underentreprenør',
-    project: 'Projekt',
-    hoursWorked: 'Arbejdstimer',
-    agreedRate: 'Aftalt sats',
-    client: 'Kunde',
-    billableHours: 'Fakturerbare timer',
-    hourlySaleRate: 'Timeløn',
-    totalInvoice: 'Samlet fakturabeløb',
-    dashboardTitle: 'FINANSIELT LEDELSESDASHBOARD',
-    itemHeader: 'Finanspost',
-    valHeader: 'Værdi',
-    unitHeader: 'Enhed',
-    totalEmpHours: 'Samlet antal timer ansatte',
-    totalSubHours: 'Samlet antal underentreprenørtimer',
-    totalBillableHours: 'Samlet antal fakturerbare timer',
-    totalPersCost: 'Samlede personaleomkostninger',
-    totalSubCost: 'Underentreprenøromkostninger',
-    totalRevenue: 'Samlede indtægter',
-    finalMargin: 'Endelig margen',
-    hoursUnit: 'Timer',
-    rawDataSheetName: 'Alle Data',
-    rawDate: 'Dato',
-    rawWorker: 'Medarbejder / Arbejder',
-    rawProject: 'Projekt',
-    rawOrdinaryHours: 'Normale timer',
-    rawOvertimeHours: 'Overtidstimer',
-    rawFestiveHours: 'Helligdagstimer',
-    rawNightHours: 'Nattetimer',
-    rawAdditionalHours: 'Ekstra timer (team)',
-    rawTotalHours: 'Samlet antal timer',
-    rawActivityType: 'Aktivitetstype',
-    rawInvoiceStatus: 'Faktureringsstatus',
-    statusPending: 'Afventer',
-    statusInvoiced: 'Faktureret',
-    statusPaid: 'Betalt'
+    rawClient: 'Client',
+    rawOrdinaryHours: 'Ord Hours',
+    rawOvertimeHours: 'Overtime',
+    rawTotalHours: 'Total Hours',
+    rawActivityType: 'Activity',
+    rawDescription: 'Notes',
+    hourlySaleRate: 'Hourly Rate',
+    totalInvoice: 'Total'
   }
 };
 
@@ -344,287 +43,7 @@ const formatDateEU = (isoDate: string, lang: string) => {
   return isoDate;
 };
 
-// --- SERVIZI DI AGGREGAZIONE MODULARI (PRODUCTION-GRADE) ---
-
-interface AggregationParams {
-  reports: any[];
-  workers: any[];
-  projects: any[];
-  clients: any[];
-  subcontractors: any[];
-  filters: {
-    userId?: string;
-    projectId?: string;
-    clientId?: string;
-    subcontractorId?: string;
-  };
-}
-
-class PayrollService {
-  static aggregate({ reports, workers, projects, filters }: AggregationParams) {
-    const payrollMap = new Map<string, any>();
-    const workerMap = new Map(workers.map((w: any) => [w.id, w]));
-    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
-
-    for (const r of reports) {
-      if (filters.projectId && r.project_id !== filters.projectId) continue;
-      const proj = projectMap.get(r.project_id);
-      const isReportInternal = proj?.is_internal || r.activity_type !== 'work';
-
-      // 1. Elaborazione lavoratore principale
-      const mainWorker = workerMap.get(r.created_by);
-      if (mainWorker && (!filters.userId || mainWorker.id === filters.userId)) {
-        const isSub = !!mainWorker.subcontractor_id;
-        if (!isSub) {
-          const pKey = mainWorker.id;
-          if (!payrollMap.has(pKey)) {
-            payrollMap.set(pKey, {
-              workerName: mainWorker.name,
-              ordinaryHours: 0,
-              overtimeHours: 0,
-              festiveHours: 0,
-              nightHours: 0,
-              hourlyRate: Number(mainWorker.hourly_rate) || 0,
-              totalCost: 0 // Aggiunto per tracciare il costo reale
-            });
-          }
-          const pData = payrollMap.get(pKey);
-          const hours = Number(r.total_hours) || 0;
-          const overtime = Number(r.overtime_hours) || 0;
-          const festive = Number(r.festive_hours) || 0;
-          const night = Number(r.night_hours) || 0;
-          pData.ordinaryHours += Math.max(0, hours - overtime - festive - night);
-          pData.overtimeHours += overtime;
-          pData.festiveHours += festive;
-          pData.nightHours += night;
-
-          // BILLING ENGINE
-          const fin = calculateFinancials({
-            totalHours: hours,
-            overtimeHours: overtime,
-            totalExpenses: 0,
-            isInternal: isReportInternal,
-            sellingPrice: 0,
-            hourlyCost: Number(mainWorker.hourly_rate) || 0,
-            overtimeCost: Number(mainWorker.overtime_hourly_rate) || 0,
-            extraCost: Number(mainWorker.extra_cost) || 0,
-            isSubcontractor: false
-          });
-          pData.totalCost += fin.personnelCost;
-        }
-      }
-
-      // 2. Elaborazione lavoratori aggiuntivi
-      for (const aw of (r.additionalWorkers || [])) {
-        const awWorker = workerMap.get(aw.worker_id);
-        if (awWorker && (!filters.userId || awWorker.id === filters.userId)) {
-          const isSub = !!awWorker.subcontractor_id || aw.membership_type !== 'Interno';
-          if (!isSub) {
-            const pKey = awWorker.id;
-            if (!payrollMap.has(pKey)) {
-              payrollMap.set(pKey, {
-                workerName: awWorker.name,
-                ordinaryHours: 0,
-                overtimeHours: 0,
-                festiveHours: 0,
-                nightHours: 0,
-                hourlyRate: Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
-                totalCost: 0
-              });
-            }
-            const pData = payrollMap.get(pKey);
-            const hours = Number(aw.hours) || 0;
-            const overtime = Number(aw.overtime_hours) || 0;
-            const festive = Number(aw.festive_hours) || 0;
-            const night = Number(aw.night_hours) || 0;
-            pData.ordinaryHours += Math.max(0, hours - overtime - festive - night);
-            pData.overtimeHours += overtime;
-            pData.festiveHours += festive;
-            pData.nightHours += night;
-
-            // BILLING ENGINE
-            const fin = calculateFinancials({
-              totalHours: hours,
-              overtimeHours: overtime,
-              totalExpenses: 0,
-              isInternal: isReportInternal,
-              sellingPrice: 0,
-              hourlyCost: Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
-              overtimeCost: Number(awWorker.overtime_hourly_rate) || 0,
-              extraCost: Number(awWorker.extra_cost) || 0,
-              isSubcontractor: false
-            });
-            pData.totalCost += fin.personnelCost;
-          }
-        }
-      }
-    }
-
-    return Array.from(payrollMap.values());
-  }
-}
-
-class SubcontractorService {
-  static aggregate({ reports, workers, subcontractors, projects, filters }: AggregationParams) {
-    const subappaltiMap = new Map<string, any>();
-    const workerMap = new Map(workers.map((w: any) => [w.id, w]));
-    const subMap = new Map(subcontractors.map((s: any) => [s.id, s]));
-    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
-
-    for (const r of reports) {
-      if (filters.projectId && r.project_id !== filters.projectId) continue;
-      const proj = projectMap.get(r.project_id);
-      const isReportInternal = proj?.is_internal || r.activity_type !== 'work';
-
-      // 1. Lavoratore principale
-      const mainWorker = workerMap.get(r.created_by);
-      if (mainWorker && (!filters.userId || mainWorker.id === filters.userId)) {
-        const subId = mainWorker.subcontractor_id;
-        if (subId && (!filters.subcontractorId || subId === filters.subcontractorId)) {
-          const subDetails = subMap.get(subId);
-          const sKey = `${subId}_${r.project_id}`;
-          if (!subappaltiMap.has(sKey)) {
-            subappaltiMap.set(sKey, {
-              subName: subDetails?.company_name || 'Subappaltatore Esterno',
-              projectName: r.projectName || 'Sconosciuto',
-              hours: 0,
-              rate: Number(subDetails?.hourly_salary) || Number(mainWorker.hourly_rate) || 0,
-              totalCost: 0
-            });
-          }
-          const hours = Number(r.total_hours) || 0;
-          subappaltiMap.get(sKey).hours += hours;
-
-          // BILLING ENGINE
-          const fin = calculateFinancials({
-            totalHours: hours,
-            overtimeHours: Number(r.overtime_hours) || 0,
-            totalExpenses: 0,
-            isInternal: isReportInternal,
-            sellingPrice: 0,
-            hourlyCost: Number(subDetails?.hourly_salary) || Number(mainWorker.hourly_rate) || 0,
-            overtimeCost: Number(mainWorker.overtime_hourly_rate) || 0,
-            extraCost: Number(mainWorker.extra_cost) || 0,
-            isSubcontractor: true
-          });
-          subappaltiMap.get(sKey).totalCost += fin.subcontractorCost;
-        }
-      }
-
-      // 2. Lavoratori aggiuntivi
-      for (const aw of (r.additionalWorkers || [])) {
-        const awWorker = workerMap.get(aw.worker_id);
-        if (awWorker && (!filters.userId || awWorker.id === filters.userId)) {
-          const subId = awWorker.subcontractor_id || aw.subcontractor_id;
-          const isSub = !!subId || aw.membership_type !== 'Interno';
-          if (isSub && subId && (!filters.subcontractorId || subId === filters.subcontractorId)) {
-            const subDetails = subMap.get(subId);
-            const sKey = `${subId}_${r.project_id}`;
-            if (!subappaltiMap.has(sKey)) {
-              subappaltiMap.set(sKey, {
-                subName: subDetails?.company_name || aw.person_name || 'Subappaltatore Esterno',
-                projectName: r.projectName || 'Sconosciuto',
-                hours: 0,
-                rate: Number(subDetails?.hourly_salary) || Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
-                totalCost: 0
-              });
-            }
-            const hours = Number(aw.hours) || 0;
-            subappaltiMap.get(sKey).hours += hours;
-
-            // BILLING ENGINE
-            const fin = calculateFinancials({
-              totalHours: hours,
-              overtimeHours: Number(aw.overtime_hours) || 0,
-              totalExpenses: 0,
-              isInternal: isReportInternal,
-              sellingPrice: 0,
-              hourlyCost: Number(subDetails?.hourly_salary) || Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
-              overtimeCost: Number(awWorker.overtime_hourly_rate) || 0,
-              extraCost: Number(awWorker.extra_cost) || 0,
-              isSubcontractor: true
-            });
-            subappaltiMap.get(sKey).totalCost += fin.subcontractorCost;
-          }
-        }
-      }
-    }
-    return Array.from(subappaltiMap.values());
-  }
-}
-        }
-      }
-    }
-
-    return Array.from(subappaltiMap.values());
-  }
-}
-
-class BillingService {
-  static aggregate({ reports, projects, clients, filters }: AggregationParams) {
-    const fatturazioneMap = new Map<string, any>();
-    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
-    const clientMap = new Map(clients.map((c: any) => [c.id, c]));
-
-    for (const r of reports) {
-      if (filters.projectId && r.project_id !== filters.projectId) continue;
-      
-      const proj = projectMap.get(r.project_id);
-      if (proj && !proj.is_internal && r.activity_type === 'work') {
-        const clientId = proj.client_id;
-        if (filters.clientId && clientId !== filters.clientId) continue;
-
-        const cKey = `${clientId}_${proj.id}`;
-        if (!fatturazioneMap.has(cKey)) {
-          const clientDetails = clientMap.get(clientId);
-          fatturazioneMap.set(cKey, {
-            clientName: clientDetails?.name || 'Sconosciuto',
-            projectName: r.projectName || 'Sconosciuto',
-            hours: 0,
-            saleRate: Number(proj.hourly_sale_price) || 0,
-            totalInvoice: 0
-          });
-        }
-        
-        const fData = fatturazioneMap.get(cKey);
-        const sellingPrice = Number(proj.hourly_sale_price) || 0;
-        let invoiceTotal = 0;
-
-        // Lavoratore principale
-        const mainHours = Number(r.total_hours) || 0;
-        fData.hours += mainHours;
-        const mainFin = calculateFinancials({
-          totalHours: mainHours,
-          overtimeHours: 0, totalExpenses: 0,
-          isInternal: false,
-          sellingPrice: sellingPrice,
-          hourlyCost: 0, overtimeCost: 0, extraCost: 0, isSubcontractor: false
-        });
-        invoiceTotal += mainFin.revenue;
-
-        // Lavoratori aggiuntivi
-        for (const aw of (r.additionalWorkers || [])) {
-          const awHours = Number(aw.hours) || 0;
-          fData.hours += awHours;
-          const awFin = calculateFinancials({
-            totalHours: awHours,
-            overtimeHours: 0, totalExpenses: 0,
-            isInternal: false,
-            sellingPrice: sellingPrice,
-            hourlyCost: 0, overtimeCost: 0, extraCost: 0, isSubcontractor: false
-          });
-          invoiceTotal += awFin.revenue;
-        }
-
-        fData.totalInvoice += invoiceTotal;
-      }
-    }
-    return Array.from(fatturazioneMap.values());
-  }
-}
-
 // --- SERVERLESS ACTION CONTROLLER ---
-
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
@@ -647,308 +66,148 @@ export default async function handler(req: any, res: any) {
   }
 
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+    auth: { autoRefreshToken: false, persistSession: false }
   });
 
-  // Estrazione flessibile del token
   let token = '';
   const authHeader = req.headers.authorization;
-  if (authHeader) {
-    token = authHeader.replace('Bearer ', '');
-  } else if (req.query.token) {
-    token = req.query.token as string;
-  }
+  if (authHeader) token = authHeader.replace('Bearer ', '');
+  else if (req.query.token) token = req.query.token as string;
 
-  if (!token) {
-    return res.status(401).json({ error: 'Missing authorization token' });
-  }
+  if (!token) return res.status(401).json({ error: 'Missing authorization token' });
 
   const params = req.method === 'POST' ? req.body : req.query;
-  const { companyId, dateFrom, dateTo, clientId, projectId, userId, subcontractorId, adminStatus, lang = 'it' } = params;
+  const { companyId, dateFrom, dateTo, clientId, projectId, userId, lang = 'it' } = params;
 
-  // Risolvi il dizionario di traduzione
   const t = translations[lang] || translations.it;
-  const numFormat = '#,##0.00'; // Formattazione numerica universale e valuta-agnostica
 
-  if (!companyId) {
-    return res.status(400).json({ error: 'Missing companyId' });
-  }
+  if (!companyId) return res.status(400).json({ error: 'Missing companyId' });
 
   try {
-    // 1. Verifica autenticazione utente
     const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !authUser) {
-      console.error('API: Token verification failed:', authError);
-      return res.status(401).json({ error: 'Invalid or expired token' });
-    }
+    if (authError || !authUser) return res.status(401).json({ error: 'Invalid or expired token' });
 
-    // 2. Controllo multi-tenant (SSOT)
-    const { data: userRole } = await supabaseAdmin
-      .from('user_companies')
-      .select('role')
-      .eq('auth_id', authUser.id)
-      .eq('company_id', companyId)
-      .maybeSingle();
-
-    const { data: isGlobalSA } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', authUser.id)
-      .eq('role', 'superadmin')
-      .maybeSingle();
-
-    if (!userRole && !isGlobalSA) {
-      return res.status(403).json({ error: 'Access denied: Unauthorized company membership' });
-    }
-
-    // 3. Esecuzione query parallele altamente ottimizzate (Seleziona solo colonne target)
     let reportQuery = supabaseAdmin
       .from('reports')
       .select(`
-        id, date, total_hours, overtime_hours, festive_hours, night_hours, activity_type, invoice_status, created_by, project_id,
-        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, hourly_rate, person_name, membership_type, subcontractor_id)
+        id, date, description, total_hours, overtime_hours, festive_hours, night_hours, activity_type, created_by, project_id,
+        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, person_name)
       `)
       .eq('company_id', companyId);
 
     if (dateFrom) reportQuery = reportQuery.gte('date', dateFrom);
     if (dateTo) reportQuery = reportQuery.lte('date', dateTo);
-    if (adminStatus && adminStatus !== 'Tutti') {
-      if (adminStatus === 'Pending') {
-        reportQuery = reportQuery.or('invoice_status.eq.Pending,invoice_status.is.null');
-      } else {
-        reportQuery = reportQuery.eq('invoice_status', adminStatus);
-      }
-    }
 
-    const [reportsRes, projectsRes, clientsRes, workersRes, subcontractorsRes] = await Promise.all([
+    const [reportsRes, projectsRes, clientsRes, workersRes] = await Promise.all([
       reportQuery,
-      supabaseAdmin.from('projects').select('id, title, client_id, is_internal, hourly_sale_price').eq('company_id', companyId),
+      supabaseAdmin.from('projects').select('id, title, client_id').eq('company_id', companyId),
       supabaseAdmin.from('clients').select('id, name').eq('company_id', companyId),
-      supabaseAdmin.from('workers').select('id, name, hourly_rate, overtime_hourly_rate, extra_cost, subcontractor_id').eq('company_id', companyId),
-      supabaseAdmin.from('subcontractors').select('id, company_name, hourly_salary').eq('company_id', companyId)
+      supabaseAdmin.from('workers').select('id, name').eq('company_id', companyId)
     ]);
 
     if (reportsRes.error) throw reportsRes.error;
     if (projectsRes.error) throw projectsRes.error;
     if (clientsRes.error) throw clientsRes.error;
     if (workersRes.error) throw workersRes.error;
-    if (subcontractorsRes.error) throw subcontractorsRes.error;
 
-    // Risoluzione dei nomi progetto in-memory per evitare join SQL costosi
     const projectMap = new Map(projectsRes.data.map((p: any) => [p.id, p]));
+    const clientMap = new Map(clientsRes.data.map((c: any) => [c.id, c]));
+    const workerMapRaw = new Map((workersRes.data || []).map((w: any) => [w.id, w]));
+
     const mappedReports = (reportsRes.data || []).map((r: any) => {
       const proj = projectMap.get(r.project_id);
-      return {
-        ...r,
-        projectName: proj?.title || 'Sconosciuto'
-      };
+      const cli = proj ? clientMap.get(proj.client_id) : null;
+      return { ...r, projectName: proj?.title || '', clientName: cli?.name || '' };
     });
 
-    const aggregationParams: AggregationParams = {
-      reports: mappedReports,
-      workers: workersRes.data || [],
-      projects: projectsRes.data || [],
-      clients: clientsRes.data || [],
-      subcontractors: subcontractorsRes.data || [],
-      filters: { userId, projectId, clientId, subcontractorId }
-    };
-
-    // 4. Aggregazione dei dati tramite i servizi specializzati dedicati
-    const payroll = PayrollService.aggregate(aggregationParams);
-    const subappalti = SubcontractorService.aggregate(aggregationParams);
-    const fatturazione = BillingService.aggregate(aggregationParams);
-
-    // 5. Creazione della Cartella di Lavoro Excel (Workbook)
     const wb = utils.book_new();
 
-    // --- SHEET 1: Payroll ---
-    const payrollRows: any[] = [
+    const rawDataRows: any[] = [
       [
-        t.payrollTitle,
-        t.ordinaryHours,
-        t.overtimeHours,
-        t.festiveHours,
-        t.nightHours,
-        t.totalHours,
-        t.hourlyRate,
-        t.totalCost
-      ]
-    ];
-    payroll.forEach((p, idx) => {
-      const R = idx + 2;
-      payrollRows.push([
-        { v: p.workerName, t: 's' },
-        { v: p.ordinaryHours, t: 'n', z: '#,##0.00' },
-        { v: p.overtimeHours, t: 'n', z: '#,##0.00' },
-        { v: p.festiveHours, t: 'n', z: '#,##0.00' },
-        { v: p.nightHours, t: 'n', z: '#,##0.00' },
-        { f: `${getColLetter(PayrollCols.ordinaryHours)}${R}+${getColLetter(PayrollCols.overtimeHours)}${R}+${getColLetter(PayrollCols.festiveHours)}${R}+${getColLetter(PayrollCols.nightHours)}${R}`, t: 'n', z: '#,##0.00' },
-        { v: p.hourlyRate, t: 'n', z: numFormat },
-        { v: p.totalCost, t: 'n', z: numFormat } // BILLING ENGINE (Sostituita la formula Excel)
-      ]);
-    });
-    const wsPayroll = utils.aoa_to_sheet(payrollRows);
-    wsPayroll['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
-    utils.book_append_sheet(wb, wsPayroll, 'Payroll');
-
-    // --- SHEET 2: Subappalti ---
-    const subappaltiRows: any[] = [
-      [
-        t.subcontractor,
-        t.project,
-        t.hoursWorked,
-        t.agreedRate,
-        t.totalCost
-      ]
-    ];
-    subappalti.forEach((s, idx) => {
-      const R = idx + 2;
-      subappaltiRows.push([
-        { v: s.subName, t: 's' },
-        { v: s.projectName, t: 's' },
-        { v: s.hours, t: 'n', z: '#,##0.00' },
-        { v: s.rate, t: 'n', z: numFormat },
-        { v: s.totalCost, t: 'n', z: numFormat } // BILLING ENGINE (Sostituita la formula Excel)
-      ]);
-    });
-    const wsSub = utils.aoa_to_sheet(subappaltiRows);
-    wsSub['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 22 }, { wch: 18 }];
-    utils.book_append_sheet(wb, wsSub, 'Subappalti');
-
-    // --- SHEET 3: Fatturazione ---
-    const fatturazioneRows: any[] = [
-      [
-        t.client,
-        t.project,
-        t.billableHours,
+        t.rawDate,
+        t.rawClient,
+        t.rawProject,
+        t.rawWorker,
+        t.rawActivityType,
+        t.rawDescription,
+        t.rawOrdinaryHours,
+        t.rawOvertimeHours,
+        t.rawTotalHours,
         t.hourlySaleRate,
         t.totalInvoice
       ]
     ];
-    fatturazione.forEach((f, idx) => {
-      const R = idx + 2;
-      fatturazioneRows.push([
-        { v: f.clientName, t: 's' },
-        { v: f.projectName, t: 's' },
-        { v: f.hours, t: 'n', z: '#,##0.00' },
-        { v: f.saleRate, t: 'n', z: numFormat },
-        { v: f.totalInvoice, t: 'n', z: numFormat } // BILLING ENGINE (Sostituita formula Excel)
-      ]);
-    });
-    const wsFat = utils.aoa_to_sheet(fatturazioneRows);
-    wsFat['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 18 }];
-    utils.book_append_sheet(wb, wsFat, 'Fatturazione');
 
-    // --- SHEET 4: Dati Completi (Raw Timesheet) ---
-    const workerMapRaw = new Map((workersRes.data || []).map((w: any) => [w.id, w]));
-    const rawDataRows: any[] = [
-      [
-        t.rawDate,
-        t.rawWorker,
-        t.rawProject,
-        t.rawOrdinaryHours,
-        t.rawOvertimeHours,
-        t.rawFestiveHours,
-        t.rawNightHours,
-        t.rawTotalHours,
-        t.rawActivityType,
-        t.rawInvoiceStatus
-      ]
-    ];
     for (const r of mappedReports) {
-      // Main worker row
-      const mainWorker = workerMapRaw.get(r.created_by);
-      const workerName = mainWorker?.name || r.created_by || 'N/A';
-      
-      const overtimeHours = Number(r.overtime_hours) || 0;
-      const totalHours = Number(r.total_hours) || 0;
-      const festiveHours = Number(r.festive_hours) || 0;
-      const nightHours = Number(r.night_hours) || 0;
-      const ordinaryHours = Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
-      const invoiceStatusRaw = r.invoice_status || 'Pending';
-      const invoiceStatusTranslated = invoiceStatusRaw === 'Fatturato' ? t.statusInvoiced : invoiceStatusRaw === 'Pagato' ? t.statusPaid : t.statusPending;
-      
-      rawDataRows.push([
-        { v: formatDateEU(r.date, lang as string), t: 's' },
-        { v: workerName, t: 's' },
-        { v: r.projectName || 'N/A', t: 's' },
-        { v: ordinaryHours, t: 'n', z: '#,##0.00' },
-        { v: overtimeHours, t: 'n', z: '#,##0.00' },
-        { v: festiveHours, t: 'n', z: '#,##0.00' },
-        { v: nightHours, t: 'n', z: '#,##0.00' },
-        { v: totalHours, t: 'n', z: '#,##0.00' },
-        { v: r.activity_type || '', t: 's' },
-        { v: invoiceStatusTranslated, t: 's' }
-      ]);
+      if (projectId && r.project_id !== projectId) continue;
+      if (clientId && projectMap.get(r.project_id)?.client_id !== clientId) continue;
 
-      // Additional workers rows
+      const mainWorker = workerMapRaw.get(r.created_by);
+      if (!userId || mainWorker?.id === userId) {
+        const workerName = mainWorker?.name || r.created_by || '';
+        const overtimeHours = Number(r.overtime_hours) || 0;
+        const totalHours = Number(r.total_hours) || 0;
+        const ordinaryHours = Math.max(0, totalHours - overtimeHours - (Number(r.festive_hours)||0) - (Number(r.night_hours)||0));
+        
+        rawDataRows.push([
+          { v: formatDateEU(r.date, lang as string), t: 's' },
+          { v: r.clientName, t: 's' },
+          { v: r.projectName, t: 's' },
+          { v: workerName, t: 's' },
+          { v: r.activity_type || '', t: 's' },
+          { v: r.description || '', t: 's' },
+          { v: ordinaryHours, t: 'n', z: '#,##0.00' },
+          { v: overtimeHours, t: 'n', z: '#,##0.00' },
+          { v: totalHours, t: 'n', z: '#,##0.00' },
+          { v: '', t: 's' }, // Tariffa Oraria (vuota per l'amministrazione)
+          { v: '', t: 's' }  // Totale Riga (vuota per l'amministrazione)
+        ]);
+      }
+
       if (r.additionalWorkers && r.additionalWorkers.length > 0) {
         for (const aw of r.additionalWorkers) {
+          if (userId && aw.worker_id !== userId) continue;
           const awWorker = workerMapRaw.get(aw.worker_id);
-          const awName = awWorker?.name || aw.worker_id || 'N/A';
+          const awName = awWorker?.name || aw.person_name || '';
           
           const awTot = Number(aw.hours) || 0;
           const awExt = Number(aw.overtime_hours) || 0;
-          const awFst = Number(aw.festive_hours) || 0;
-          const awNgt = Number(aw.night_hours) || 0;
-          const awOrd = Math.max(0, awTot - awExt - awFst - awNgt);
+          const awOrd = Math.max(0, awTot - awExt - (Number(aw.festive_hours)||0) - (Number(aw.night_hours)||0));
 
           rawDataRows.push([
             { v: formatDateEU(r.date, lang as string), t: 's' },
+            { v: r.clientName, t: 's' },
+            { v: r.projectName, t: 's' },
             { v: awName, t: 's' },
-            { v: r.projectName || 'N/A', t: 's' },
+            { v: r.activity_type || '', t: 's' },
+            { v: r.description || '', t: 's' },
             { v: awOrd, t: 'n', z: '#,##0.00' },
             { v: awExt, t: 'n', z: '#,##0.00' },
-            { v: awFst, t: 'n', z: '#,##0.00' },
-            { v: awNgt, t: 'n', z: '#,##0.00' },
             { v: awTot, t: 'n', z: '#,##0.00' },
-            { v: r.activity_type || '', t: 's' },
-            { v: invoiceStatusTranslated, t: 's' }
+            { v: '', t: 's' },
+            { v: '', t: 's' }
           ]);
         }
       }
     }
+
     const wsRaw = utils.aoa_to_sheet(rawDataRows);
-    wsRaw['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 16 }];
+    wsRaw['!cols'] = [
+      { wch: 14 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, 
+      { wch: 14 }, { wch: 30 }, { wch: 16 }, { wch: 16 }, 
+      { wch: 16 }, { wch: 20 }, { wch: 20 }
+    ];
     utils.book_append_sheet(wb, wsRaw, t.rawDataSheetName);
 
-    // --- SHEET 5: Sintesi (Dashboard Direzionale) ---
-    const valCol = getColLetter(SintesiCols.value);
-    const sintesiRows: any[] = [
-      [t.dashboardTitle],
-      [],
-      [t.itemHeader, t.valHeader, t.unitHeader],
-      [t.totalEmpHours, { f: `SUM(Payroll!${getColLetter(PayrollCols.totalHours)}:${getColLetter(PayrollCols.totalHours)})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalSubHours, { f: `SUM(Subappalti!${getColLetter(SubappaltiCols.hours)}:${getColLetter(SubappaltiCols.hours)})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalBillableHours, { f: `SUM(Fatturazione!${getColLetter(FatturazioneCols.hours)}:${getColLetter(FatturazioneCols.hours)})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalPersCost, { f: `SUM(Payroll!${getColLetter(PayrollCols.totalCost)}:${getColLetter(PayrollCols.totalCost)})`, t: 'n', z: numFormat }, ''],
-      [t.totalSubCost, { f: `SUM(Subappalti!${getColLetter(SubappaltiCols.totalCost)}:${getColLetter(SubappaltiCols.totalCost)})`, t: 'n', z: numFormat }, ''],
-      [t.totalRevenue, { f: `SUM(Fatturazione!${getColLetter(FatturazioneCols.totalInvoice)}:${getColLetter(FatturazioneCols.totalInvoice)})`, t: 'n', z: numFormat }, ''],
-      [t.finalMargin, { f: `${valCol}9-(${valCol}7+${valCol}8)`, t: 'n', z: numFormat }, '']
-    ];
-    const wsSintesi = utils.aoa_to_sheet(sintesiRows);
-    wsSintesi['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 10 }];
-    utils.book_append_sheet(wb, wsSintesi, 'Sintesi');
-
-    // 6. Generazione ed invio del file binario XLSX
     const fileBuffer = write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=JobsReport_Direzionale_${new Date().toISOString().split('T')[0]}.xlsx`
-    );
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=JobsReport_Allegato_${new Date().toISOString().split('T')[0]}.xlsx`);
 
     return res.status(200).send(fileBuffer);
 
   } catch (err: any) {
-    console.error('API Error during production-grade Excel generation:', err);
+    console.error('API Error during Excel generation:', err);
     return res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
