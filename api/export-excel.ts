@@ -20,10 +20,15 @@ const translations: Record<string, Record<string, string>> = {
     totCost: 'Totale costo',
     client: 'Cliente',
     project: 'Progetto',
+    projectDesc: 'Descrizione Progetto',
+    isFixedPrice: 'Fatturazione (A Corpo / Oraria)',
+    fixedPriceText: 'A Corpo',
+    hourlyPriceText: 'Oraria',
     date: 'Data',
     description: 'Descrizione / Note',
     billableHours: 'Ore lavorate',
     hourlyRate: 'Tariffa concordata',
+    flatRate: 'Prezzo a Corpo',
     totInvoice: 'Totale',
     activityType: 'Tipo Attività',
     dashboardTitle: 'CRUSCOTTO FINANZIARIO DIREZIONALE',
@@ -56,10 +61,15 @@ const translations: Record<string, Record<string, string>> = {
     totCost: 'Total Cost',
     client: 'Client',
     project: 'Project',
+    projectDesc: 'Project Description',
+    isFixedPrice: 'Billing Type',
+    fixedPriceText: 'Fixed Price',
+    hourlyPriceText: 'Hourly',
     date: 'Date',
     description: 'Description / Notes',
     billableHours: 'Hours Worked',
     hourlyRate: 'Agreed Rate',
+    flatRate: 'Flat Price',
     totInvoice: 'Total',
     activityType: 'Activity Type',
     dashboardTitle: 'EXECUTIVE FINANCIAL DASHBOARD',
@@ -149,7 +159,7 @@ export default async function handler(req: any, res: any) {
 
     const [reportsRes, projectsRes, clientsRes, workersRes, subcontractorsRes] = await Promise.all([
       reportQuery,
-      supabaseAdmin.from('projects').select('id, title, client_id, is_internal').eq('company_id', companyId),
+      supabaseAdmin.from('projects').select('id, title, description, economic_type, client_id, is_internal').eq('company_id', companyId),
       supabaseAdmin.from('clients').select('id, name').eq('company_id', companyId),
       supabaseAdmin.from('workers').select('id, name, subcontractor_id').eq('company_id', companyId),
       supabaseAdmin.from('subcontractors').select('id, company_name').eq('company_id', companyId)
@@ -171,15 +181,17 @@ export default async function handler(req: any, res: any) {
       const cli = proj ? clientMap.get(proj.client_id) : null;
       return { 
         ...r, 
-        projectName: proj?.title || 'Sconosciuto', 
+        projectName: proj?.title || 'Sconosciuto',
+        projectDesc: proj?.description || '',
+        economicType: proj?.economic_type === 'fixed' ? t.fixedPriceText : t.hourlyPriceText,
         clientName: cli?.name || 'Sconosciuto',
         isInternal: proj?.is_internal || false
       };
     });
 
-    // Data structures for the 5 sheets
+    // Data structures
     const payrollMap = new Map<string, any>();
-    const subappaltiMap = new Map<string, any>();
+    const subappaltiRows: any[] = [];
     const invoiceRows: any[] = [];
     const rawDataRows: any[] = [];
 
@@ -207,15 +219,17 @@ export default async function handler(req: any, res: any) {
         const ord = Math.max(0, hours - ext - fest - night);
 
         if (isSubcontractor) {
-          // 2. Aggrega in Subappalti
+          // 2. Aggiungi a Subappalti (dettagliato)
           const subDetails = subMap.get(subId);
           const subName = subDetails?.company_name || workerName || 'Subappaltatore';
-          const sKey = `${subName}_${r.projectName}`;
-          
-          if (!subappaltiMap.has(sKey)) {
-            subappaltiMap.set(sKey, { subName: subName, projectName: r.projectName, hours: 0 });
-          }
-          subappaltiMap.get(sKey).hours += hours;
+          subappaltiRows.push({
+            date: formatDateEU(r.date, lang as string),
+            subName: subName,
+            worker: workerName,
+            project: r.projectName,
+            desc: r.description || '',
+            hours: hours
+          });
         } else {
           // 1. Aggrega in Payroll
           if (!payrollMap.has(workerName)) {
@@ -234,6 +248,8 @@ export default async function handler(req: any, res: any) {
           invoiceRows.push({
             client: r.clientName,
             project: r.projectName,
+            projectDesc: r.projectDesc,
+            economicType: r.economicType,
             date: formatDateEU(r.date, lang as string),
             worker: workerName,
             desc: r.description || '',
@@ -297,8 +313,8 @@ export default async function handler(req: any, res: any) {
         { v: wData.fest, t: 'n', z: '#,##0.00' },
         { v: wData.night, t: 'n', z: '#,##0.00' },
         { v: wData.tot, t: 'n', z: '#,##0.00' },
-        { v: '', t: 's' }, // GUARDRAIL: Prezzi omessi dal DB
-        { f: `${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx}`, t: 'n', z: '#,##0.00' }
+        { v: '', t: 's' }, // GUARDRAIL: Prezzo lasciato vuoto all'utente
+        { f: `IF(${getColLetter(6)}${rIdx}="","",${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx})`, t: 'n', z: '#,##0.00' }
       ]);
       rIdx++;
     }
@@ -306,23 +322,34 @@ export default async function handler(req: any, res: any) {
     ws1['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
     utils.book_append_sheet(wb, ws1, t.payrollSheet);
 
-    // --- SHEET 2: SUBAPPALTI ---
+    // --- SHEET 2: SUBAPPALTI (Dettagliato) ---
+    subappaltiRows.sort((a, b) => {
+      if (a.subName !== b.subName) return a.subName.localeCompare(b.subName);
+      if (a.project !== b.project) return a.project.localeCompare(b.project);
+      return a.date.localeCompare(b.date);
+    });
+
     const sSubRows: any[] = [
-      [t.subcontractor, t.project, t.billableHours, t.hourlyRate, t.totCost]
+      [t.date, t.subcontractor, t.worker, t.project, t.description, t.billableHours, t.hourlyRate, t.flatRate, t.totCost]
     ];
     let rSubIdx = 2;
-    for (const s of Array.from(subappaltiMap.values())) {
+    for (const s of subappaltiRows) {
       sSubRows.push([
+        { v: s.date, t: 's' },
         { v: s.subName, t: 's' },
-        { v: s.projectName, t: 's' },
+        { v: s.worker, t: 's' },
+        { v: s.project, t: 's' },
+        { v: s.desc, t: 's' },
         { v: s.hours, t: 'n', z: '#,##0.00' },
-        { v: '', t: 's' }, // GUARDRAIL: Prezzi omessi
-        { f: `${getColLetter(2)}${rSubIdx}*${getColLetter(3)}${rSubIdx}`, t: 'n', z: '#,##0.00' }
+        { v: '', t: 's' }, // Tariffa Oraria (vuota)
+        { v: '', t: 's' }, // Prezzo a Corpo (vuoto)
+        // Formula: se c'è prezzo a corpo usa quello, altrimenti Ore * Tariffa Oraria
+        { f: `IF(${getColLetter(7)}${rSubIdx}<>"",${getColLetter(7)}${rSubIdx},IF(${getColLetter(6)}${rSubIdx}="","",${getColLetter(5)}${rSubIdx}*${getColLetter(6)}${rSubIdx}))`, t: 'n', z: '#,##0.00' }
       ]);
       rSubIdx++;
     }
     const wsSub = utils.aoa_to_sheet(sSubRows);
-    wsSub['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 22 }, { wch: 18 }];
+    wsSub['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
     utils.book_append_sheet(wb, wsSub, t.subSheet);
 
     // --- SHEET 3: INVOICE ---
@@ -333,24 +360,28 @@ export default async function handler(req: any, res: any) {
     });
 
     const s2Rows: any[] = [
-      [t.client, t.project, t.date, t.worker, t.description, t.billableHours, t.hourlyRate, t.totInvoice]
+      [t.client, t.project, t.projectDesc, t.isFixedPrice, t.date, t.worker, t.description, t.billableHours, t.hourlyRate, t.flatRate, t.totInvoice]
     ];
     let rInvIdx = 2;
     for (const inv of invoiceRows) {
       s2Rows.push([
         { v: inv.client, t: 's' },
         { v: inv.project, t: 's' },
+        { v: inv.projectDesc, t: 's' },
+        { v: inv.economicType, t: 's' },
         { v: inv.date, t: 's' },
         { v: inv.worker, t: 's' },
         { v: inv.desc, t: 's' },
         { v: inv.hours, t: 'n', z: '#,##0.00' },
-        { v: '', t: 's' }, // GUARDRAIL: Prezzi omessi
-        { f: `${getColLetter(5)}${rInvIdx}*${getColLetter(6)}${rInvIdx}`, t: 'n', z: '#,##0.00' }
+        { v: '', t: 's' }, // Tariffa Oraria vuota
+        { v: '', t: 's' }, // Prezzo a Corpo vuoto
+        // Formula: se c'è prezzo a corpo usa quello, altrimenti Ore * Tariffa Oraria
+        { f: `IF(${getColLetter(9)}${rInvIdx}<>"",${getColLetter(9)}${rInvIdx},IF(${getColLetter(8)}${rInvIdx}="","",${getColLetter(7)}${rInvIdx}*${getColLetter(8)}${rInvIdx}))`, t: 'n', z: '#,##0.00' }
       ]);
       rInvIdx++;
     }
     const ws2 = utils.aoa_to_sheet(s2Rows);
-    ws2['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
+    ws2['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 35 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 15 }];
     utils.book_append_sheet(wb, ws2, t.invoiceSheet);
 
     // --- SHEET 4: RAW DATA ---
@@ -362,18 +393,17 @@ export default async function handler(req: any, res: any) {
     utils.book_append_sheet(wb, ws3, t.rawSheet);
 
     // --- SHEET 5: SINTESI ---
-    // Le formule puntano a range molto larghi, es F2:F1000 per evitare errori
     const maxR = 10000;
     const sintesiRows: any[] = [
       [t.dashboardTitle],
       [],
       [t.itemHeader, t.valHeader, t.unitHeader],
       [t.totalEmpHours, { f: `SUM('${t.payrollSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalSubHours, { f: `SUM('${t.subSheet}'!C2:C${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalBillableHours, { f: `SUM('${t.invoiceSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
-      [t.totalPersCost, { f: `SUM('${t.payrollSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, '€'],
-      [t.totalSubCost, { f: `SUM('${t.subSheet}'!E2:E${maxR})`, t: 'n', z: '#,##0.00' }, '€'],
-      [t.totalRevenue, { f: `SUM('${t.invoiceSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, '€'],
+      [t.totalSubHours, { f: `SUM('${t.subSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit], // Col F = Ore
+      [t.totalBillableHours, { f: `SUM('${t.invoiceSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit], // Col H = Ore
+      [t.totalPersCost, { f: `SUM('${t.payrollSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, '€'], // Col H = Tot Costo
+      [t.totalSubCost, { f: `SUM('${t.subSheet}'!I2:I${maxR})`, t: 'n', z: '#,##0.00' }, '€'], // Col I = Tot Costo Sub
+      [t.totalRevenue, { f: `SUM('${t.invoiceSheet}'!K2:K${maxR})`, t: 'n', z: '#,##0.00' }, '€'], // Col K = Tot Riga
       [t.finalMargin, { f: `B9-(B7+B8)`, t: 'n', z: '#,##0.00' }, '€']
     ];
     const wsSintesi = utils.aoa_to_sheet(sintesiRows);
