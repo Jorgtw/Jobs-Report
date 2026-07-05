@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { utils, write } from 'xlsx';
+import { calculateFinancials } from '../src/services/billingEngine';
 
 // --- CONFIGURAZIONE LAYOUT EXCEL (COLONNE E MAPPING) ---
 const PayrollCols = {
@@ -360,12 +361,15 @@ interface AggregationParams {
 }
 
 class PayrollService {
-  static aggregate({ reports, workers, filters }: AggregationParams) {
+  static aggregate({ reports, workers, projects, filters }: AggregationParams) {
     const payrollMap = new Map<string, any>();
     const workerMap = new Map(workers.map((w: any) => [w.id, w]));
+    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
 
     for (const r of reports) {
       if (filters.projectId && r.project_id !== filters.projectId) continue;
+      const proj = projectMap.get(r.project_id);
+      const isReportInternal = proj?.is_internal || r.activity_type !== 'work';
 
       // 1. Elaborazione lavoratore principale
       const mainWorker = workerMap.get(r.created_by);
@@ -380,7 +384,8 @@ class PayrollService {
               overtimeHours: 0,
               festiveHours: 0,
               nightHours: 0,
-              hourlyRate: Number(mainWorker.hourly_rate) || 0
+              hourlyRate: Number(mainWorker.hourly_rate) || 0,
+              totalCost: 0 // Aggiunto per tracciare il costo reale
             });
           }
           const pData = payrollMap.get(pKey);
@@ -392,6 +397,20 @@ class PayrollService {
           pData.overtimeHours += overtime;
           pData.festiveHours += festive;
           pData.nightHours += night;
+
+          // BILLING ENGINE
+          const fin = calculateFinancials({
+            totalHours: hours,
+            overtimeHours: overtime,
+            totalExpenses: 0,
+            isInternal: isReportInternal,
+            sellingPrice: 0,
+            hourlyCost: Number(mainWorker.hourly_rate) || 0,
+            overtimeCost: Number(mainWorker.overtime_hourly_rate) || 0,
+            extraCost: Number(mainWorker.extra_cost) || 0,
+            isSubcontractor: false
+          });
+          pData.totalCost += fin.personnelCost;
         }
       }
 
@@ -406,10 +425,11 @@ class PayrollService {
               payrollMap.set(pKey, {
                 workerName: awWorker.name,
                 ordinaryHours: 0,
-              overtimeHours: 0,
-              festiveHours: 0,
-              nightHours: 0,
-                hourlyRate: Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0
+                overtimeHours: 0,
+                festiveHours: 0,
+                nightHours: 0,
+                hourlyRate: Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
+                totalCost: 0
               });
             }
             const pData = payrollMap.get(pKey);
@@ -421,6 +441,20 @@ class PayrollService {
             pData.overtimeHours += overtime;
             pData.festiveHours += festive;
             pData.nightHours += night;
+
+            // BILLING ENGINE
+            const fin = calculateFinancials({
+              totalHours: hours,
+              overtimeHours: overtime,
+              totalExpenses: 0,
+              isInternal: isReportInternal,
+              sellingPrice: 0,
+              hourlyCost: Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
+              overtimeCost: Number(awWorker.overtime_hourly_rate) || 0,
+              extraCost: Number(awWorker.extra_cost) || 0,
+              isSubcontractor: false
+            });
+            pData.totalCost += fin.personnelCost;
           }
         }
       }
@@ -431,13 +465,16 @@ class PayrollService {
 }
 
 class SubcontractorService {
-  static aggregate({ reports, workers, subcontractors, filters }: AggregationParams) {
+  static aggregate({ reports, workers, subcontractors, projects, filters }: AggregationParams) {
     const subappaltiMap = new Map<string, any>();
     const workerMap = new Map(workers.map((w: any) => [w.id, w]));
     const subMap = new Map(subcontractors.map((s: any) => [s.id, s]));
+    const projectMap = new Map(projects.map((p: any) => [p.id, p]));
 
     for (const r of reports) {
       if (filters.projectId && r.project_id !== filters.projectId) continue;
+      const proj = projectMap.get(r.project_id);
+      const isReportInternal = proj?.is_internal || r.activity_type !== 'work';
 
       // 1. Lavoratore principale
       const mainWorker = workerMap.get(r.created_by);
@@ -451,10 +488,26 @@ class SubcontractorService {
               subName: subDetails?.company_name || 'Subappaltatore Esterno',
               projectName: r.projectName || 'Sconosciuto',
               hours: 0,
-              rate: Number(subDetails?.hourly_salary) || Number(mainWorker.hourly_rate) || 0
+              rate: Number(subDetails?.hourly_salary) || Number(mainWorker.hourly_rate) || 0,
+              totalCost: 0
             });
           }
-          subappaltiMap.get(sKey).hours += Number(r.total_hours) || 0;
+          const hours = Number(r.total_hours) || 0;
+          subappaltiMap.get(sKey).hours += hours;
+
+          // BILLING ENGINE
+          const fin = calculateFinancials({
+            totalHours: hours,
+            overtimeHours: Number(r.overtime_hours) || 0,
+            totalExpenses: 0,
+            isInternal: isReportInternal,
+            sellingPrice: 0,
+            hourlyCost: Number(subDetails?.hourly_salary) || Number(mainWorker.hourly_rate) || 0,
+            overtimeCost: Number(mainWorker.overtime_hourly_rate) || 0,
+            extraCost: Number(mainWorker.extra_cost) || 0,
+            isSubcontractor: true
+          });
+          subappaltiMap.get(sKey).totalCost += fin.subcontractorCost;
         }
       }
 
@@ -472,11 +525,33 @@ class SubcontractorService {
                 subName: subDetails?.company_name || aw.person_name || 'Subappaltatore Esterno',
                 projectName: r.projectName || 'Sconosciuto',
                 hours: 0,
-                rate: Number(subDetails?.hourly_salary) || Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0
+                rate: Number(subDetails?.hourly_salary) || Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
+                totalCost: 0
               });
             }
-            subappaltiMap.get(sKey).hours += Number(aw.hours) || 0;
+            const hours = Number(aw.hours) || 0;
+            subappaltiMap.get(sKey).hours += hours;
+
+            // BILLING ENGINE
+            const fin = calculateFinancials({
+              totalHours: hours,
+              overtimeHours: Number(aw.overtime_hours) || 0,
+              totalExpenses: 0,
+              isInternal: isReportInternal,
+              sellingPrice: 0,
+              hourlyCost: Number(subDetails?.hourly_salary) || Number(aw.hourly_rate) || Number(awWorker.hourly_rate) || 0,
+              overtimeCost: Number(awWorker.overtime_hourly_rate) || 0,
+              extraCost: Number(awWorker.extra_cost) || 0,
+              isSubcontractor: true
+            });
+            subappaltiMap.get(sKey).totalCost += fin.subcontractorCost;
           }
+        }
+      }
+    }
+    return Array.from(subappaltiMap.values());
+  }
+}
         }
       }
     }
@@ -487,38 +562,64 @@ class SubcontractorService {
 
 class BillingService {
   static aggregate({ reports, projects, clients, filters }: AggregationParams) {
-    const billingMap = new Map<string, any>();
+    const fatturazioneMap = new Map<string, any>();
     const projectMap = new Map(projects.map((p: any) => [p.id, p]));
     const clientMap = new Map(clients.map((c: any) => [c.id, c]));
 
     for (const r of reports) {
       if (filters.projectId && r.project_id !== filters.projectId) continue;
+      
+      const proj = projectMap.get(r.project_id);
+      if (proj && !proj.is_internal && r.activity_type === 'work') {
+        const clientId = proj.client_id;
+        if (filters.clientId && clientId !== filters.clientId) continue;
 
-      const project = projectMap.get(r.project_id);
-      if (!project) continue;
+        const cKey = `${clientId}_${proj.id}`;
+        if (!fatturazioneMap.has(cKey)) {
+          const clientDetails = clientMap.get(clientId);
+          fatturazioneMap.set(cKey, {
+            clientName: clientDetails?.name || 'Sconosciuto',
+            projectName: r.projectName || 'Sconosciuto',
+            hours: 0,
+            saleRate: Number(proj.hourly_sale_price) || 0,
+            totalInvoice: 0
+          });
+        }
+        
+        const fData = fatturazioneMap.get(cKey);
+        const sellingPrice = Number(proj.hourly_sale_price) || 0;
+        let invoiceTotal = 0;
 
-      const isInternal = project.is_internal || r.activity_type !== 'work';
-      if (isInternal) continue;
-
-      if (filters.clientId && project.client_id !== filters.clientId) continue;
-
-      const client = clientMap.get(project.client_id);
-      const totalProjectHours = (Number(r.total_hours) || 0) + 
-        (r.additionalWorkers || []).reduce((acc: number, cur: any) => acc + (Number(cur.hours) || 0), 0);
-
-      const fKey = `${project.client_id}_${project.id}`;
-      if (!billingMap.has(fKey)) {
-        billingMap.set(fKey, {
-          clientName: client?.name || 'Sconosciuto',
-          projectName: project.title,
-          hours: 0,
-          saleRate: Number(project.hourly_sale_price) || 0
+        // Lavoratore principale
+        const mainHours = Number(r.total_hours) || 0;
+        fData.hours += mainHours;
+        const mainFin = calculateFinancials({
+          totalHours: mainHours,
+          overtimeHours: 0, totalExpenses: 0,
+          isInternal: false,
+          sellingPrice: sellingPrice,
+          hourlyCost: 0, overtimeCost: 0, extraCost: 0, isSubcontractor: false
         });
-      }
-      billingMap.get(fKey).hours += totalProjectHours;
-    }
+        invoiceTotal += mainFin.revenue;
 
-    return Array.from(billingMap.values());
+        // Lavoratori aggiuntivi
+        for (const aw of (r.additionalWorkers || [])) {
+          const awHours = Number(aw.hours) || 0;
+          fData.hours += awHours;
+          const awFin = calculateFinancials({
+            totalHours: awHours,
+            overtimeHours: 0, totalExpenses: 0,
+            isInternal: false,
+            sellingPrice: sellingPrice,
+            hourlyCost: 0, overtimeCost: 0, extraCost: 0, isSubcontractor: false
+          });
+          invoiceTotal += awFin.revenue;
+        }
+
+        fData.totalInvoice += invoiceTotal;
+      }
+    }
+    return Array.from(fatturazioneMap.values());
   }
 }
 
@@ -626,7 +727,7 @@ export default async function handler(req: any, res: any) {
       reportQuery,
       supabaseAdmin.from('projects').select('id, title, client_id, is_internal, hourly_sale_price').eq('company_id', companyId),
       supabaseAdmin.from('clients').select('id, name').eq('company_id', companyId),
-      supabaseAdmin.from('workers').select('id, name, hourly_rate, subcontractor_id').eq('company_id', companyId),
+      supabaseAdmin.from('workers').select('id, name, hourly_rate, overtime_hourly_rate, extra_cost, subcontractor_id').eq('company_id', companyId),
       supabaseAdmin.from('subcontractors').select('id, company_name, hourly_salary').eq('company_id', companyId)
     ]);
 
@@ -686,7 +787,7 @@ export default async function handler(req: any, res: any) {
         { v: p.nightHours, t: 'n', z: '#,##0.00' },
         { f: `${getColLetter(PayrollCols.ordinaryHours)}${R}+${getColLetter(PayrollCols.overtimeHours)}${R}+${getColLetter(PayrollCols.festiveHours)}${R}+${getColLetter(PayrollCols.nightHours)}${R}`, t: 'n', z: '#,##0.00' },
         { v: p.hourlyRate, t: 'n', z: numFormat },
-        { f: `(${getColLetter(PayrollCols.ordinaryHours)}${R}*${getColLetter(PayrollCols.hourlyRate)}${R})+(${getColLetter(PayrollCols.overtimeHours)}${R}*(${getColLetter(PayrollCols.hourlyRate)}${R}*1.2))`, t: 'n', z: numFormat }
+        { v: p.totalCost, t: 'n', z: numFormat } // BILLING ENGINE (Sostituita la formula Excel)
       ]);
     });
     const wsPayroll = utils.aoa_to_sheet(payrollRows);
@@ -710,7 +811,7 @@ export default async function handler(req: any, res: any) {
         { v: s.projectName, t: 's' },
         { v: s.hours, t: 'n', z: '#,##0.00' },
         { v: s.rate, t: 'n', z: numFormat },
-        { f: `${getColLetter(SubappaltiCols.hours)}${R}*${getColLetter(SubappaltiCols.rate)}${R}`, t: 'n', z: numFormat }
+        { v: s.totalCost, t: 'n', z: numFormat } // BILLING ENGINE (Sostituita la formula Excel)
       ]);
     });
     const wsSub = utils.aoa_to_sheet(subappaltiRows);
@@ -734,7 +835,7 @@ export default async function handler(req: any, res: any) {
         { v: f.projectName, t: 's' },
         { v: f.hours, t: 'n', z: '#,##0.00' },
         { v: f.saleRate, t: 'n', z: numFormat },
-        { f: `${getColLetter(FatturazioneCols.hours)}${R}*${getColLetter(FatturazioneCols.saleRate)}${R}`, t: 'n', z: numFormat }
+        { v: f.totalInvoice, t: 'n', z: numFormat } // BILLING ENGINE (Sostituita formula Excel)
       ]);
     });
     const wsFat = utils.aoa_to_sheet(fatturazioneRows);

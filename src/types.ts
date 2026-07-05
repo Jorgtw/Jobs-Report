@@ -12,6 +12,7 @@ export interface Company {
   name: string;
   status: 'active' | 'inactive';
   subscription?: Subscription;
+  billingNumberPattern?: string;
   createdAt: number;
 }
 
@@ -131,7 +132,7 @@ export interface WorkReport {
   expenses: Expense[];
   additionalWorkers: AdditionalWorker[];
   activityType?: 'work' | 'sickness' | 'holiday' | 'internal';
-  invoiceStatus?: string;
+  exportStatus?: 'new' | 'exported';
   overtimeHours?: number;
   festiveHours?: number;
   nightHours?: number;
@@ -153,7 +154,6 @@ export interface ReportSummary {
   overtimeHours: number;
   overtimeCost: number;
   projectId: string;
-  invoiceStatus?: string;
   activityType?: string;
   isInternal?: boolean;
   createdAt: number;

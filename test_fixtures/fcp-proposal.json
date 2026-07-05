@@ -1,0 +1,504 @@
+{
+  "fcp_list": [
+    {
+      "fcp_id": "FCP-003424f7-0681-4473-968a-b46f10e52499",
+      "scenario": "Report #003424f7-0681-4473-968a-b46f10e52499 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-8f114279-6588-40e9-b5eb-45d029ffa74d",
+      "scenario": "Report #8f114279-6588-40e9-b5eb-45d029ffa74d - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-071e986c-c0c2-46ae-a4e5-60e9d8055b9b",
+      "scenario": "Report #071e986c-c0c2-46ae-a4e5-60e9d8055b9b - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-07c53817-32f8-4e97-973a-3a2f63e329af",
+      "scenario": "Report #07c53817-32f8-4e97-973a-3a2f63e329af - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-40541f39-f08d-48b3-9682-e2f300784345",
+      "scenario": "Report #40541f39-f08d-48b3-9682-e2f300784345 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-4ea41362-2fb1-4135-b013-d5a5c6e58448",
+      "scenario": "Report #4ea41362-2fb1-4135-b013-d5a5c6e58448 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-781620ef-7873-419c-9a57-b4190798c06a",
+      "scenario": "Report #781620ef-7873-419c-9a57-b4190798c06a - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-47c25499-1a78-4acf-b634-7f1b77dc85e9",
+      "scenario": "Report #47c25499-1a78-4acf-b634-7f1b77dc85e9 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-e22c9eb0-4d1c-4735-a98d-e21c42a1952a",
+      "scenario": "Report #e22c9eb0-4d1c-4735-a98d-e21c42a1952a - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-ac1a164e-b409-4929-bd2e-b1ae080f566d",
+      "scenario": "Report #ac1a164e-b409-4929-bd2e-b1ae080f566d - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-81c60c58-8431-49c0-b24f-fd67c11f2cb5",
+      "scenario": "Report #81c60c58-8431-49c0-b24f-fd67c11f2cb5 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-25d9fac6-0f5b-4afc-88db-cda3a54b5adb",
+      "scenario": "Report #25d9fac6-0f5b-4afc-88db-cda3a54b5adb - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-12a07190-f31e-4ee1-9212-7dfbce4a2b23",
+      "scenario": "Report #12a07190-f31e-4ee1-9212-7dfbce4a2b23 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-836101b0-0a86-4416-8a6b-6031fb932bc6",
+      "scenario": "Report #836101b0-0a86-4416-8a6b-6031fb932bc6 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-af6e2883-d3cb-41aa-b4f6-9ecd06bf501e",
+      "scenario": "Report #af6e2883-d3cb-41aa-b4f6-9ecd06bf501e - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-c19ca13e-8e14-49d1-9f72-712c8d54eb20",
+      "scenario": "Report #c19ca13e-8e14-49d1-9f72-712c8d54eb20 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-cbddf70f-cf33-41bd-9c40-2c58af8acaa7",
+      "scenario": "Report #cbddf70f-cf33-41bd-9c40-2c58af8acaa7 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-9a4e7b6a-241f-47b9-a5a4-b2c706df5c95",
+      "scenario": "Report #9a4e7b6a-241f-47b9-a5a4-b2c706df5c95 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-179c79d1-9c69-4533-bf97-0604365922bc",
+      "scenario": "Report #179c79d1-9c69-4533-bf97-0604365922bc - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-bef51901-1fd5-4da9-9681-bf8f7ad98ae8",
+      "scenario": "Report #bef51901-1fd5-4da9-9681-bf8f7ad98ae8 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-5bdfddaf-316a-44cd-ae48-605f646c9ef6",
+      "scenario": "Report #5bdfddaf-316a-44cd-ae48-605f646c9ef6 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-aa2c6817-7686-43ba-b006-1f147b118f31",
+      "scenario": "Report #aa2c6817-7686-43ba-b006-1f147b118f31 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-676d0424-7056-4a34-8a7a-df26a13bd72c",
+      "scenario": "Report #676d0424-7056-4a34-8a7a-df26a13bd72c - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-40e800e0-9374-45a0-b362-50f32bbc3e7d",
+      "scenario": "Report #40e800e0-9374-45a0-b362-50f32bbc3e7d - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-c4d09680-23f2-42e9-b90b-3a1965557458",
+      "scenario": "Report #c4d09680-23f2-42e9-b90b-3a1965557458 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-4f365240-c3ad-484a-880a-7f8329f7ab7f",
+      "scenario": "Report #4f365240-c3ad-484a-880a-7f8329f7ab7f - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-4fa28dfb-954e-456d-a90f-9092b1aef085",
+      "scenario": "Report #4fa28dfb-954e-456d-a90f-9092b1aef085 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-0f00482c-7ab0-4147-b54a-1bd9851a5f89",
+      "scenario": "Report #0f00482c-7ab0-4147-b54a-1bd9851a5f89 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-b62ee2a8-335f-48ab-a66c-96e832247d00",
+      "scenario": "Report #b62ee2a8-335f-48ab-a66c-96e832247d00 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-e77edfca-035a-4a99-8617-c3fe96d25be0",
+      "scenario": "Report #e77edfca-035a-4a99-8617-c3fe96d25be0 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-84d036e1-5dfd-4119-af75-dd43b33eeb4a",
+      "scenario": "Report #84d036e1-5dfd-4119-af75-dd43b33eeb4a - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-d17df3f0-956b-40f0-b35b-b3f1c91b5277",
+      "scenario": "Report #d17df3f0-956b-40f0-b35b-b3f1c91b5277 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-99b55fd0-5bd5-4393-a5b3-864a12dcf996",
+      "scenario": "Report #99b55fd0-5bd5-4393-a5b3-864a12dcf996 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-c846b3da-82b2-4b97-acd6-f5f01907b545",
+      "scenario": "Report #c846b3da-82b2-4b97-acd6-f5f01907b545 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-98a4178a-b334-4c04-95c2-dcd3bffbef5d",
+      "scenario": "Report #98a4178a-b334-4c04-95c2-dcd3bffbef5d - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-06312901-5701-4c21-b1af-f4c8d564067a",
+      "scenario": "Report #06312901-5701-4c21-b1af-f4c8d564067a - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-c72d1694-764b-46a3-93c6-92c6abdbb203",
+      "scenario": "Report #c72d1694-764b-46a3-93c6-92c6abdbb203 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-c96c2c4b-6029-4075-a39d-32dd31aba84b",
+      "scenario": "Report #c96c2c4b-6029-4075-a39d-32dd31aba84b - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-0f3e4207-8780-4b64-90ce-0376fea024ae",
+      "scenario": "Report #0f3e4207-8780-4b64-90ce-0376fea024ae - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-d922f03a-fc50-4d0d-994e-3e30588ae0ca",
+      "scenario": "Report #d922f03a-fc50-4d0d-994e-3e30588ae0ca - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-109bec59-dc0e-46d6-b74b-e13bef241a31",
+      "scenario": "Report #109bec59-dc0e-46d6-b74b-e13bef241a31 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-60f862f5-83fa-4a6a-a3e0-58e4458c347c",
+      "scenario": "Report #60f862f5-83fa-4a6a-a3e0-58e4458c347c - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-d261387e-b0f8-4446-9297-397be4fbff4a",
+      "scenario": "Report #d261387e-b0f8-4446-9297-397be4fbff4a - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-e14ff7b8-bd46-4f78-a847-5ab257648a5d",
+      "scenario": "Report #e14ff7b8-bd46-4f78-a847-5ab257648a5d - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-96a97536-f35b-4108-bfc4-a79fa42466db",
+      "scenario": "Report #96a97536-f35b-4108-bfc4-a79fa42466db - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-11264296-f6a2-4f03-bf9b-4c45703f0c4a",
+      "scenario": "Report #11264296-f6a2-4f03-bf9b-4c45703f0c4a - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-39373368-6102-4401-b91f-c43a9d3b2d4e",
+      "scenario": "Report #39373368-6102-4401-b91f-c43a9d3b2d4e - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-3e86f92f-4fe3-475b-a30b-cceebc652f7b",
+      "scenario": "Report #3e86f92f-4fe3-475b-a30b-cceebc652f7b - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-df4d3e48-8053-40d7-9dda-ba48a5ac4261",
+      "scenario": "Report #df4d3e48-8053-40d7-9dda-ba48a5ac4261 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    },
+    {
+      "fcp_id": "FCP-cb258c34-c265-4e90-8581-3f3011dffb90",
+      "scenario": "Report #cb258c34-c265-4e90-8581-3f3011dffb90 - undefined",
+      "status": "proposed",
+      "old_margin": null,
+      "new_revenue": 0,
+      "new_cost": 0,
+      "new_margin": 0,
+      "delta": 0
+    }
+  ]
+}

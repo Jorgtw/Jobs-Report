@@ -89,7 +89,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       group.hours += row.totalHours || 0;
       group.totalExpenses += row.totalExpenses || 0;
       group.revenue += row.revenue || 0;
-      group.margin += row.revenue || 0;
+      group.margin += row.margin || 0;
     });
     return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [filteredData]);
@@ -102,7 +102,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       acc.totalExpenses += row.totalExpenses || 0;
       acc.totalCost += (row.personnelCost || 0) + (row.subcontractorCost || 0) + (row.totalExpenses || 0);
       acc.revenue += row.revenue || 0;
-      acc.margin += (row.revenue || 0) - ((row.personnelCost || 0) + (row.subcontractorCost || 0) + (row.totalExpenses || 0));
+      acc.margin += row.margin || 0;
       return acc;
     }, {
       hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0, margin: 0

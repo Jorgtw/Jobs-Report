@@ -612,6 +612,167 @@ export const exportReportExcel = async (companyId: string, filters: any, lang: L
                     (lang === 'tr' ? "Excel indirilirken hata oluştu: " :
                     (lang === 'da' ? "Fejl under download af Excel: " :
                     "Error downloading Excel: "))));
-    alert(alertMsg + err.message);
   }
+  }
+};
+
+// --- BILLING REPORTS EXPORTS ---
+
+export const exportInvoiceToPDF = (
+  reports: any[],
+  client: any,
+  project: any,
+  lang: Language
+) => {
+  const locale = localeMap[lang] || 'it-IT';
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const reportNumber = `ALL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  doc.setFontSize(20);
+  doc.setTextColor(30, 64, 175);
+  doc.text(`Allegato Fatturazione`, 14, 20);
+
+  doc.setFontSize(12);
+  doc.setTextColor(50);
+  doc.text(`Allegato N°: ${reportNumber}`, 14, 30);
+  doc.text(`Data Emissione: ${new Date().toLocaleDateString(locale)}`, 14, 36);
+  
+  doc.text(`Cliente: ${client?.name || ''}`, 14, 46);
+  if (client?.vatNumber) {
+    doc.text(`P.IVA: ${client.vatNumber}`, 14, 52);
+  }
+  if (project) {
+    doc.text(`Progetto: ${project.name}`, 14, 58);
+  }
+
+  // Dettagli Interventi
+  doc.setFontSize(14);
+  doc.text(`Dettaglio Interventi`, 14, 70);
+
+  const tableData: any[] = [];
+  
+  let totalHoursSum = 0;
+  let totalMatsSum = 0;
+  let totalExpSum = 0;
+  
+  reports.forEach((r: any) => {
+    let mats = 0;
+    let exp = 0;
+    r.expenses?.forEach((e: any) => {
+      // Per V1: tutte le spese vengono sommate in base al tipo (o tutto in extra se non distinguiamo)
+      // Senza category, sommiamo tutto in "Altre spese" per semplicità
+      exp += Number(e.amount) || 0;
+    });
+
+    let hours = r.totalHours || 0;
+    r.additionalWorkers?.forEach((aw: any) => {
+      hours += aw.totalHours || 0;
+    });
+
+    totalHoursSum += hours;
+    totalMatsSum += mats;
+    totalExpSum += exp;
+
+    tableData.push([
+      new Date(r.date).toLocaleDateString(locale),
+      r.description || '',
+      NumberFormat.format(r.ordinaryHours || 0),
+      NumberFormat.format((r.overtimeHours || 0) + (r.festiveHours || 0) + (r.nightHours || 0)),
+      NumberFormat.format(exp),
+      '', // Tariffa Oraria (vuoto per compilazione manuale)
+      ''  // Totale (vuoto per compilazione manuale)
+    ]);
+  });
+
+  autoTable(doc, {
+    startY: 75,
+    head: [['Data', 'Descrizione', 'Ore Ord.', 'Ore Extra', 'Spese', 'Tariffa', 'Totale']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255] },
+    styles: { fontSize: 9, cellPadding: 3 },
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 15;
+
+  doc.setFontSize(12);
+  doc.setTextColor(30, 64, 175);
+  doc.text(`Riepilogo Totali`, 14, finalY);
+  
+  doc.setTextColor(50);
+  doc.text(`Totale Ore: ${NumberFormat.format(totalHoursSum)}`, 14, finalY + 8);
+  // doc.text(`Totale Materiali: € ${NumberFormat.format(totalMatsSum)}`, 14, finalY + 14);
+  doc.text(`Totale Spese: ${NumberFormat.format(totalExpSum)}`, 14, finalY + 14);
+
+  doc.save(`${reportNumber}.pdf`);
+};
+
+export const exportInvoiceToExcel = (
+  reports: any[],
+  client: any,
+  project: any,
+  lang: Language
+) => {
+  const locale = localeMap[lang] || 'it-IT';
+
+  const rows = [];
+  const reportNumber = `ALL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  
+  rows.push(['Allegato N°', reportNumber]);
+  rows.push(['Data Emissione', new Date().toLocaleDateString(locale)]);
+  rows.push(['Cliente', client?.name || '']);
+  if (client?.vatNumber) {
+    rows.push(['P.IVA', client.vatNumber]);
+  }
+  if (project) {
+    rows.push(['Progetto', project.name]);
+  }
+  rows.push([]);
+  
+  rows.push(['Data', 'Cliente', 'Progetto', 'Descrizione', 'Ore Ord.', 'Ore Extra', 'Spese', 'Tariffa Oraria', 'Totale Riga']);
+  
+  let totalHoursSum = 0;
+  let totalMatsSum = 0;
+  let totalExpSum = 0;
+  
+  reports.forEach((r: any) => {
+    let mats = 0;
+    let exp = 0;
+    r.expenses?.forEach((e: any) => {
+      exp += Number(e.amount) || 0;
+    });
+
+    let hours = r.totalHours || 0;
+    r.additionalWorkers?.forEach((aw: any) => {
+      hours += aw.totalHours || 0;
+    });
+
+    totalHoursSum += hours;
+    totalMatsSum += mats;
+    totalExpSum += exp;
+
+    rows.push([
+      new Date(r.date).toLocaleDateString(locale),
+      client?.name || '',
+      project?.name || '',
+      r.description || '',
+      r.ordinaryHours || 0,
+      (r.overtimeHours || 0) + (r.festiveHours || 0) + (r.nightHours || 0),
+      exp,
+      '', // Tariffa Oraria (vuota)
+      ''  // Totale Riga (vuota)
+    ]);
+  });
+  
+  rows.push([]);
+  rows.push(['Riepilogo']);
+  rows.push(['Totale Ore', totalHoursSum]);
+  rows.push(['Totale Spese', totalExpSum]);
+
+  const ws = utils.aoa_to_sheet(rows);
+  const wb = utils.book_new();
+  utils.book_append_sheet(wb, ws, "Allegato");
+  writeFile(wb, `${reportNumber}.xlsx`);
 };

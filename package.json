@@ -7,7 +7,11 @@
     "check-i18n": "npx --yes tsx scripts/check-i18n.ts",
     "prebuild": "npx --yes tsx scripts/check-i18n.ts --strict",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:financial": "npx --yes tsx scripts/test-billingEngine.ts",
+    "export:financial": "npx --yes tsx scripts/export-financial-snapshots.ts",
+    "report:financial": "npx --yes tsx scripts/financial-diff-report.ts",
+    "promote:financial": "npx --yes tsx scripts/promote-financial-snapshots.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",

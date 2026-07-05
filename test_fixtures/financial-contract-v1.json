@@ -1,0 +1,2345 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-07-04T16:39:48.435Z",
+  "description": "Export Diretto per MK EL-TEKNIK APS",
+  "snapshots": [
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.434Z",
+        "scenario": "Report #003424f7-0681-4473-968a-b46f10e52499 - undefined"
+      },
+      "inputRecord": {
+        "id": "003424f7-0681-4473-968a-b46f10e52499",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #8f114279-6588-40e9-b5eb-45d029ffa74d - undefined"
+      },
+      "inputRecord": {
+        "id": "8f114279-6588-40e9-b5eb-45d029ffa74d",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #071e986c-c0c2-46ae-a4e5-60e9d8055b9b - undefined"
+      },
+      "inputRecord": {
+        "id": "071e986c-c0c2-46ae-a4e5-60e9d8055b9b",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #07c53817-32f8-4e97-973a-3a2f63e329af - undefined"
+      },
+      "inputRecord": {
+        "id": "07c53817-32f8-4e97-973a-3a2f63e329af",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #40541f39-f08d-48b3-9682-e2f300784345 - undefined"
+      },
+      "inputRecord": {
+        "id": "40541f39-f08d-48b3-9682-e2f300784345",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #4ea41362-2fb1-4135-b013-d5a5c6e58448 - undefined"
+      },
+      "inputRecord": {
+        "id": "4ea41362-2fb1-4135-b013-d5a5c6e58448",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": []
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #781620ef-7873-419c-9a57-b4190798c06a - undefined"
+      },
+      "inputRecord": {
+        "id": "781620ef-7873-419c-9a57-b4190798c06a",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #47c25499-1a78-4acf-b634-7f1b77dc85e9 - undefined"
+      },
+      "inputRecord": {
+        "id": "47c25499-1a78-4acf-b634-7f1b77dc85e9",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #e22c9eb0-4d1c-4735-a98d-e21c42a1952a - undefined"
+      },
+      "inputRecord": {
+        "id": "e22c9eb0-4d1c-4735-a98d-e21c42a1952a",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #ac1a164e-b409-4929-bd2e-b1ae080f566d - undefined"
+      },
+      "inputRecord": {
+        "id": "ac1a164e-b409-4929-bd2e-b1ae080f566d",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #81c60c58-8431-49c0-b24f-fd67c11f2cb5 - undefined"
+      },
+      "inputRecord": {
+        "id": "81c60c58-8431-49c0-b24f-fd67c11f2cb5",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #25d9fac6-0f5b-4afc-88db-cda3a54b5adb - undefined"
+      },
+      "inputRecord": {
+        "id": "25d9fac6-0f5b-4afc-88db-cda3a54b5adb",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #12a07190-f31e-4ee1-9212-7dfbce4a2b23 - undefined"
+      },
+      "inputRecord": {
+        "id": "12a07190-f31e-4ee1-9212-7dfbce4a2b23",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #836101b0-0a86-4416-8a6b-6031fb932bc6 - undefined"
+      },
+      "inputRecord": {
+        "id": "836101b0-0a86-4416-8a6b-6031fb932bc6",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #af6e2883-d3cb-41aa-b4f6-9ecd06bf501e - undefined"
+      },
+      "inputRecord": {
+        "id": "af6e2883-d3cb-41aa-b4f6-9ecd06bf501e",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #c19ca13e-8e14-49d1-9f72-712c8d54eb20 - undefined"
+      },
+      "inputRecord": {
+        "id": "c19ca13e-8e14-49d1-9f72-712c8d54eb20",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": []
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #cbddf70f-cf33-41bd-9c40-2c58af8acaa7 - undefined"
+      },
+      "inputRecord": {
+        "id": "cbddf70f-cf33-41bd-9c40-2c58af8acaa7",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": []
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #9a4e7b6a-241f-47b9-a5a4-b2c706df5c95 - undefined"
+      },
+      "inputRecord": {
+        "id": "9a4e7b6a-241f-47b9-a5a4-b2c706df5c95",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": []
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #179c79d1-9c69-4533-bf97-0604365922bc - undefined"
+      },
+      "inputRecord": {
+        "id": "179c79d1-9c69-4533-bf97-0604365922bc",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": []
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #bef51901-1fd5-4da9-9681-bf8f7ad98ae8 - undefined"
+      },
+      "inputRecord": {
+        "id": "bef51901-1fd5-4da9-9681-bf8f7ad98ae8",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #5bdfddaf-316a-44cd-ae48-605f646c9ef6 - undefined"
+      },
+      "inputRecord": {
+        "id": "5bdfddaf-316a-44cd-ae48-605f646c9ef6",
+        "is_internal": false,
+        "total_hours": 7,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #aa2c6817-7686-43ba-b006-1f147b118f31 - undefined"
+      },
+      "inputRecord": {
+        "id": "aa2c6817-7686-43ba-b006-1f147b118f31",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #676d0424-7056-4a34-8a7a-df26a13bd72c - undefined"
+      },
+      "inputRecord": {
+        "id": "676d0424-7056-4a34-8a7a-df26a13bd72c",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #40e800e0-9374-45a0-b362-50f32bbc3e7d - undefined"
+      },
+      "inputRecord": {
+        "id": "40e800e0-9374-45a0-b362-50f32bbc3e7d",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #c4d09680-23f2-42e9-b90b-3a1965557458 - undefined"
+      },
+      "inputRecord": {
+        "id": "c4d09680-23f2-42e9-b90b-3a1965557458",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #4f365240-c3ad-484a-880a-7f8329f7ab7f - undefined"
+      },
+      "inputRecord": {
+        "id": "4f365240-c3ad-484a-880a-7f8329f7ab7f",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #4fa28dfb-954e-456d-a90f-9092b1aef085 - undefined"
+      },
+      "inputRecord": {
+        "id": "4fa28dfb-954e-456d-a90f-9092b1aef085",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #0f00482c-7ab0-4147-b54a-1bd9851a5f89 - undefined"
+      },
+      "inputRecord": {
+        "id": "0f00482c-7ab0-4147-b54a-1bd9851a5f89",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #b62ee2a8-335f-48ab-a66c-96e832247d00 - undefined"
+      },
+      "inputRecord": {
+        "id": "b62ee2a8-335f-48ab-a66c-96e832247d00",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #e77edfca-035a-4a99-8617-c3fe96d25be0 - undefined"
+      },
+      "inputRecord": {
+        "id": "e77edfca-035a-4a99-8617-c3fe96d25be0",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #84d036e1-5dfd-4119-af75-dd43b33eeb4a - undefined"
+      },
+      "inputRecord": {
+        "id": "84d036e1-5dfd-4119-af75-dd43b33eeb4a",
+        "is_internal": false,
+        "total_hours": 7,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #d17df3f0-956b-40f0-b35b-b3f1c91b5277 - undefined"
+      },
+      "inputRecord": {
+        "id": "d17df3f0-956b-40f0-b35b-b3f1c91b5277",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #99b55fd0-5bd5-4393-a5b3-864a12dcf996 - undefined"
+      },
+      "inputRecord": {
+        "id": "99b55fd0-5bd5-4393-a5b3-864a12dcf996",
+        "is_internal": false,
+        "total_hours": 4.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #c846b3da-82b2-4b97-acd6-f5f01907b545 - undefined"
+      },
+      "inputRecord": {
+        "id": "c846b3da-82b2-4b97-acd6-f5f01907b545",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #98a4178a-b334-4c04-95c2-dcd3bffbef5d - undefined"
+      },
+      "inputRecord": {
+        "id": "98a4178a-b334-4c04-95c2-dcd3bffbef5d",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #06312901-5701-4c21-b1af-f4c8d564067a - undefined"
+      },
+      "inputRecord": {
+        "id": "06312901-5701-4c21-b1af-f4c8d564067a",
+        "is_internal": false,
+        "total_hours": 7,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #c72d1694-764b-46a3-93c6-92c6abdbb203 - undefined"
+      },
+      "inputRecord": {
+        "id": "c72d1694-764b-46a3-93c6-92c6abdbb203",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #c96c2c4b-6029-4075-a39d-32dd31aba84b - undefined"
+      },
+      "inputRecord": {
+        "id": "c96c2c4b-6029-4075-a39d-32dd31aba84b",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #0f3e4207-8780-4b64-90ce-0376fea024ae - undefined"
+      },
+      "inputRecord": {
+        "id": "0f3e4207-8780-4b64-90ce-0376fea024ae",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #d922f03a-fc50-4d0d-994e-3e30588ae0ca - undefined"
+      },
+      "inputRecord": {
+        "id": "d922f03a-fc50-4d0d-994e-3e30588ae0ca",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #109bec59-dc0e-46d6-b74b-e13bef241a31 - undefined"
+      },
+      "inputRecord": {
+        "id": "109bec59-dc0e-46d6-b74b-e13bef241a31",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #60f862f5-83fa-4a6a-a3e0-58e4458c347c - undefined"
+      },
+      "inputRecord": {
+        "id": "60f862f5-83fa-4a6a-a3e0-58e4458c347c",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 0,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #d261387e-b0f8-4446-9297-397be4fbff4a - undefined"
+      },
+      "inputRecord": {
+        "id": "d261387e-b0f8-4446-9297-397be4fbff4a",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #e14ff7b8-bd46-4f78-a847-5ab257648a5d - undefined"
+      },
+      "inputRecord": {
+        "id": "e14ff7b8-bd46-4f78-a847-5ab257648a5d",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #96a97536-f35b-4108-bfc4-a79fa42466db - undefined"
+      },
+      "inputRecord": {
+        "id": "96a97536-f35b-4108-bfc4-a79fa42466db",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #11264296-f6a2-4f03-bf9b-4c45703f0c4a - undefined"
+      },
+      "inputRecord": {
+        "id": "11264296-f6a2-4f03-bf9b-4c45703f0c4a",
+        "is_internal": true,
+        "total_hours": 0,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": []
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #39373368-6102-4401-b91f-c43a9d3b2d4e - undefined"
+      },
+      "inputRecord": {
+        "id": "39373368-6102-4401-b91f-c43a9d3b2d4e",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #3e86f92f-4fe3-475b-a30b-cceebc652f7b - undefined"
+      },
+      "inputRecord": {
+        "id": "3e86f92f-4fe3-475b-a30b-cceebc652f7b",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #df4d3e48-8053-40d7-9dda-ba48a5ac4261 - undefined"
+      },
+      "inputRecord": {
+        "id": "df4d3e48-8053-40d7-9dda-ba48a5ac4261",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    },
+    {
+      "_meta": {
+        "exportedAt": "2026-07-04T16:39:48.435Z",
+        "scenario": "Report #cb258c34-c265-4e90-8581-3f3011dffb90 - undefined"
+      },
+      "inputRecord": {
+        "id": "cb258c34-c265-4e90-8581-3f3011dffb90",
+        "is_internal": false,
+        "total_hours": 7.5,
+        "overtime_hours": 0,
+        "expenses": 0,
+        "selling_price": 0,
+        "main_worker": {
+          "is_subcontractor": false,
+          "hourly_cost": 0,
+          "overtime_cost": 0,
+          "extra_cost": 0
+        },
+        "additional_workers": [
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          },
+          {
+            "hours": 7.5,
+            "overtime_hours": 0,
+            "is_subcontractor": false,
+            "hourly_cost": 0,
+            "overtime_cost": 0,
+            "extra_cost": 0
+          }
+        ]
+      },
+      "legacyExpected": {
+        "status": null,
+        "margin": null,
+        "revenue": null,
+        "cost": null
+      }
+    }
+  ]
+}

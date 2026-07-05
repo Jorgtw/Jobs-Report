@@ -1,6 +1,7 @@
 import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus } from '../types';
 import { supabase } from './supabase';
 import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
+import { calculateFinancials } from './billingEngine';
 
 const getApiUrl = (url: string) => {
   if (typeof window !== 'undefined' && (window as any).Capacitor?.isNative) {
@@ -1353,6 +1354,7 @@ class DBService {
       email: c.email || '',
       notes: c.internal_note || '',
       status: c.status,
+      defaultHourlyRate: c.default_hourly_rate != null ? Number(c.default_hourly_rate) : undefined,
       createdAt: new Date(c.created_at).getTime()
     };
   }
@@ -1366,7 +1368,8 @@ class DBService {
       phone: client.mainContactPhone,
       email: client.email,
       internal_note: client.notes,
-      status: client.status
+      status: client.status,
+      default_hourly_rate: client.defaultHourlyRate === '' ? null : client.defaultHourlyRate
     };
   }
 
@@ -1996,7 +1999,10 @@ class DBService {
           notes: e.description || '', // per retrocompatibilità UI finché non l'aggiorniamo
           km: e.km !== null ? Number(e.km) : undefined,
           workerId: e.worker_id,
-          createdBy: e.created_by
+          createdBy: e.created_by,
+          category: e.category || 'internal',
+          isBillable: e.is_billable || false,
+          billableAmount: e.billable_amount != null ? Number(e.billable_amount) : undefined
         }))
       : [];
 
@@ -2059,9 +2065,9 @@ class DBService {
           isManualOverride: aw.is_manual_override || false
         };
       }),
-      activityType: r.activity_type || 'work',
-      invoiceStatus: r.invoice_status || 'Pending',
-      createdAt: new Date(r.created_at).getTime()
+      exportStatus: r.export_status || 'new',
+      activityType: r.activityType,
+      createdAt: new Date(r.created_at).getTime(),
     };
   }
   async getReports(dateFrom?: string, dateTo?: string) {
@@ -2129,7 +2135,11 @@ class DBService {
         type: e.type && ['CANTIERE', 'RIMBORSO', 'KM'].includes(e.type.toUpperCase()) ? e.type.toUpperCase() : 'CANTIERE',
         description: e.description || e.notes || '',
         amount: Number(e.amount) || 0,
-        km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null
+        km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null,
+        category: e.category || 'other',
+        vat_rate: e.vatRate != null ? Number(e.vatRate) : 0,
+        is_billable: e.isBillable || false,
+        billable_amount: e.billableAmount != null ? Number(e.billableAmount) : null
       }));
       const { error: expErr } = await supabase.from('rapportini_expenses').insert(expensesToAdd);
       if (expErr) { console.error('Error inserting expenses:', expErr); throw expErr; }
@@ -2266,7 +2276,11 @@ class DBService {
           type: e.type && ['CANTIERE', 'RIMBORSO', 'KM'].includes(e.type.toUpperCase()) ? e.type.toUpperCase() : 'CANTIERE',
           description: e.description || e.notes || '',
           amount: Number(e.amount) || 0,
-          km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null
+          km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null,
+          category: e.category || 'other',
+          vat_rate: e.vatRate != null ? Number(e.vatRate) : 0,
+          is_billable: e.isBillable || false,
+          billable_amount: e.billableAmount != null ? Number(e.billableAmount) : null
         }));
         const { error: insExpErr } = await supabase.from('rapportini_expenses').insert(expensesToAdd);
         if (insExpErr) { console.error('Error inserting new expenses:', insExpErr); throw insExpErr; }
@@ -2437,15 +2451,24 @@ class DBService {
         const hourlyCost = Number(user?.hourlyRate) || 0;
         const overtimeCost = Number(user?.overtimeHourlyRate) || 0;
         const extraCost = Number(user?.extraCost) || 0;
-        const cost = (reportOrdinaryHours * hourlyCost) + (reportOvertimeHours * overtimeCost) + extraCost;
-        const isSubcontractor = !!user?.subcontractorId;
+        const isReportInternal = r.activityType !== 'work' || project?.isInternal;
 
         const reportExpenses = Array.isArray(r.expenses)
           ? r.expenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
           : 0;
 
-        const isReportInternal = r.activityType !== 'work' || project?.isInternal;
-        const revenue = isReportInternal ? 0 : r.totalHours * sellingPrice;
+        // Billing Engine: delega tutto il calcolo al guardrail finanziario
+        const financials = calculateFinancials({
+          totalHours: r.totalHours || 0,
+          overtimeHours: reportOvertimeHours,
+          totalExpenses: reportExpenses,
+          isInternal: isReportInternal,
+          sellingPrice: Number(project?.sellingPrice) || Number(project?.hourlyRate) || 0,
+          hourlyCost: Number(user?.hourlyRate) || 0,
+          overtimeCost: Number(user?.overtimeHourlyRate) || 0,
+          extraCost: Number(user?.extraCost) || 0,
+          isSubcontractor: !!user?.subcontractorId
+        });
 
         summaries.push({
           id: r.id + '_main',
@@ -2463,14 +2486,15 @@ class DBService {
           description: r.description,
           revenue: revenue,
           hourlyRevenue: isReportInternal ? 0 : sellingPrice,
-          cost: cost,
-          overtimeCost: overtimeCost,
-          hourlyCost: hourlyCost,
-          personnelCost: isSubcontractor ? 0 : cost,
-          subcontractorCost: isSubcontractor ? cost : 0,
+          cost: financials.cost,
+          overtimeCost: Number(user?.overtimeHourlyRate) || 0,
+          hourlyCost: Number(user?.hourlyRate) || 0,
+          personnelCost: financials.personnelCost,
+          subcontractorCost: financials.subcontractorCost,
           invoiceStatus: r.invoiceStatus || 'Pending',
           activityType: r.activityType || 'work',
           isInternal: project?.isInternal || false,
+          margin: financials.margin,
           createdAt: r.createdAt
         });
 
@@ -2480,13 +2504,20 @@ class DBService {
           const awOvertimeHours = aw.overtimeHours || 0;
           const awOrdinaryHours = Math.max(0, aw.totalHours - awOvertimeHours);
           
-          const awHourlyCost = Number(awUser?.hourlyRate) || 0;
-          const awOvertimeCost = Number(awUser?.overtimeHourlyRate) || 0;
-          const awExtraCost = Number(awUser?.extraCost) || 0;
-          const awCost = (awOrdinaryHours * awHourlyCost) + (awOvertimeHours * awOvertimeCost) + awExtraCost;
-          const awIsSubcontractor = !!awUser?.subcontractorId;
-          
           const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
+
+          // Billing Engine per gli AW
+          const awFinancials = calculateFinancials({
+            totalHours: aw.totalHours || 0,
+            overtimeHours: awOvertimeHours,
+            totalExpenses: 0,
+            isInternal: isReportInternal,
+            sellingPrice: sellingPrice,
+            hourlyCost: Number(awUser?.hourlyRate) || 0,
+            overtimeCost: Number(awUser?.overtimeHourlyRate) || 0,
+            extraCost: Number(awUser?.extraCost) || 0,
+            isSubcontractor: !!awUser?.subcontractorId
+          });
 
           summaries.push({
             id: r.id + '_aw_' + idx,
@@ -2500,18 +2531,18 @@ class DBService {
             subcontractorId: awUser?.subcontractorId || null,
             totalHours: aw.totalHours,
             overtimeHours: awOvertimeHours,
-            totalExpenses: 0,
+            totalExpenses: totalExpenses,
             description: r.description,
             revenue: awRevenue,
             hourlyRevenue: isReportInternal ? 0 : sellingPrice,
-            cost: awCost,
-            overtimeCost: awOvertimeCost,
-            hourlyCost: awHourlyCost,
-            personnelCost: awIsSubcontractor ? 0 : awCost,
-            subcontractorCost: awIsSubcontractor ? awCost : 0,
-            invoiceStatus: r.invoiceStatus || 'Pending',
+            cost: awFinancials.cost,
+            overtimeCost: Number(awUser?.overtimeHourlyRate) || 0,
+            hourlyCost: Number(awUser?.hourlyRate) || 0,
+            personnelCost: awFinancials.personnelCost,
+            subcontractorCost: awFinancials.subcontractorCost,
             activityType: r.activityType || 'work',
             isInternal: project?.isInternal || false,
+            margin: awFinancials.margin,
             createdAt: r.createdAt
           });
         });
@@ -2519,6 +2550,36 @@ class DBService {
         return summaries;
       }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
-  }
 
-  export const db = new DBService();
+      // METODI EXPORT TRACKING
+      
+      async markReportsAsExported(reportIds: string[]) {
+        if (!reportIds || reportIds.length === 0) return;
+        await this.checkAuthSession();
+        const compId = this.requireCompanyId();
+
+        const { error } = await supabase
+          .from('reports')
+          .update({ export_status: 'exported' })
+          .in('id', reportIds)
+          .eq('company_id', compId);
+
+        if (error) throw error;
+      }
+
+      async toggleReportExportStatus(reportId: string, status: 'new' | 'exported') {
+        await this.checkAuthSession();
+        const compId = this.requireCompanyId();
+
+        const { error } = await supabase
+          .from('reports')
+          .update({ export_status: status })
+          .eq('id', reportId)
+          .eq('company_id', compId);
+
+        if (error) throw error;
+      }
+
+}
+
+export const db = new DBService();

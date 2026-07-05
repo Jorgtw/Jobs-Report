@@ -93,8 +93,8 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
             purchasePrice: s.cost / (s.totalHours || 1),
             extra: s.totalExpenses,
             extraDescription: '',
-            sellingPrice: 0,
-            margin: 0,
+            sellingPrice: s.revenue || 0,
+            margin: s.margin || 0,
             paid: adminStatus
         }));
         exportToPDF(rows, lang, user.name);
@@ -111,8 +111,8 @@ const WorkSummaryView: React.FC<{ user: User }> = ({ user }) => {
             purchasePrice: s.cost / (s.totalHours || 1),
             extra: s.totalExpenses,
             extraDescription: '',
-            sellingPrice: 0,
-            margin: 0,
+            sellingPrice: s.revenue || 0,
+            margin: s.margin || 0,
             paid: adminStatus
         }));
         exportToExcel(rows, lang);
