@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { FileText, Download, CheckCircle, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { db } from '../services/dbService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from '../contexts/LanguageContext';
 import { Client, Project, WorkReport } from '../types';
 import { exportInvoiceToPDF, exportInvoiceToExcel } from '../services/exportService';
 
@@ -12,7 +12,7 @@ const localeMap: Record<string, string> = {
 };
 
 const BillingView: React.FC = () => {
-  const { language } = useLanguage();
+  const { lang: language } = useTranslation();
   const queryClient = useQueryClient();
   
   const [selectedClientId, setSelectedClientId] = useState<string>('');

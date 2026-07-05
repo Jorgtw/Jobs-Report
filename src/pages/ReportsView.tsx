@@ -71,8 +71,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     description: '',
     expenses: [] as Expense[],
     additionalWorkers: [] as AdditionalWorker[],
-    activityType: 'work' as 'work' | 'sickness' | 'holiday' | 'internal',
-    invoiceStatus: 'Pending'
+    activityType: 'work' as 'work' | 'sickness' | 'holiday' | 'internal'
   });
 
   const handleNewReport = () => {
@@ -103,8 +102,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       description: '',
       expenses: [],
       additionalWorkers: [],
-      activityType: 'work',
-      invoiceStatus: 'Pending'
+      activityType: 'work'
     });
     setIsModalOpen(true);
   };
@@ -271,8 +269,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       description: r.description,
       expenses: [...(r.expenses || [])],
       additionalWorkers: [...(r.additionalWorkers || [])],
-      activityType: r.activityType || 'work',
-      invoiceStatus: r.invoiceStatus || 'Pending'
+      activityType: r.activityType || 'work'
     });
     setIsModalOpen(true);
   };
@@ -385,8 +382,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       description: r.description,
       expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
       additionalWorkers: newAdditionalWorkers,
-      activityType: r.activityType || 'work',
-      invoiceStatus: 'Pending'
+      activityType: r.activityType || 'work'
     });
     setIsModalOpen(true);
   };
@@ -411,7 +407,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                       description: r.description || '',
                       hours: pours,
                       hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
-                      paid: r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : (r.invoiceStatus === 'Pagato' ? t('common.statusPaid') : (r.invoiceStatus || t('common.statusPending'))))
+                      paid: null
                     };
                   });
                   exportToPDF(personalRows, lang, user.name);
@@ -433,7 +429,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                       description: r.description || '',
                       hours: pours,
                       hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
-                      paid: r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : (r.invoiceStatus === 'Pagato' ? t('common.statusPaid') : (r.invoiceStatus || t('common.statusPending'))))
+                      paid: null
                     };
                   });
                   exportToExcel(personalRows, lang);
@@ -548,7 +544,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                   {personalHours > 0 && (
                     <div className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100" title={t('reports.personalHours')}><Clock size={12} /> <span className="font-bold">{t('reports.personalHours')}: {personalHours.toFixed(2)}h</span></div>
                   )}
-                  {r.invoiceStatus && <div className={`ml-auto px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tight border ${r.invoiceStatus === 'Pagato' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : r.invoiceStatus === 'Fatturato' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>{r.invoiceStatus === 'Pending' ? t('common.statusPending') : (r.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'))}</div>}
+                  <div className="ml-auto"></div>
                 </div>
               </div>
             );
@@ -626,7 +622,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                 <FullWidthField label={t('reports.activityType')} className="md:col-span-2">
                   <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
-                    <button type="button" onClick={() => { if (formData.activityType !== 'work') setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined, invoiceStatus: 'Pending' }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityWork')}</button>
+                    <button type="button" onClick={() => { if (formData.activityType !== 'work') setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityWork')}</button>
                     <button type="button" onClick={() => { const intProj = projects.find(p => p.isInternal); setFormData({ ...formData, activityType: 'internal', projectId: intProj?.id || '', startTime: '', endTime: '', breakHours: 0, manualTotalHours: 0 }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType !== 'work' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityInternal')} / {t('reports.activityAbsence')}</button>
                   </div>
                 </FullWidthField>
@@ -645,8 +641,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                 <FullWidthField label={t('reports.headerDate')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
                 <div className="md:col-span-2"><FullWidthField label={t('reports.description')}><textarea required rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
                 {user.role === 'admin' && (
-                  <div className="md:col-span-2 bg-blue-50 border border-blue-100 p-4 rounded-xl">
-                    <FullWidthField label={t('reports.adminStatusLabel')}><select value={formData.invoiceStatus} onChange={e => setFormData({ ...formData, invoiceStatus: e.target.value })} className={inputClasses}><option value="Pending">{t('common.statusPending')}</option><option value="Fatturato">{t('common.statusInvoiced')}</option><option value="Pagato">{t('common.statusPaid')}</option></select></FullWidthField>
+                  <div className="hidden">
                   </div>
                 )}
                 <div className="md:col-span-2 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">

@@ -612,7 +612,7 @@ export const exportReportExcel = async (companyId: string, filters: any, lang: L
                     (lang === 'tr' ? "Excel indirilirken hata oluştu: " :
                     (lang === 'da' ? "Fejl under download af Excel: " :
                     "Error downloading Excel: "))));
-  }
+    alert(alertMsg + (err.message || ""));
   }
 };
 

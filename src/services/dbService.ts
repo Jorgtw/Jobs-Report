@@ -1354,7 +1354,6 @@ class DBService {
       email: c.email || '',
       notes: c.internal_note || '',
       status: c.status,
-      defaultHourlyRate: c.default_hourly_rate != null ? Number(c.default_hourly_rate) : undefined,
       createdAt: new Date(c.created_at).getTime()
     };
   }
@@ -2446,11 +2445,6 @@ class DBService {
 
         const user = workerMap.get(r.userId);
         const reportOvertimeHours = r.overtimeHours || 0;
-        const reportOrdinaryHours = Math.max(0, r.totalHours - reportOvertimeHours);
-        
-        const hourlyCost = Number(user?.hourlyRate) || 0;
-        const overtimeCost = Number(user?.overtimeHourlyRate) || 0;
-        const extraCost = Number(user?.extraCost) || 0;
         const isReportInternal = r.activityType !== 'work' || project?.isInternal;
 
         const reportExpenses = Array.isArray(r.expenses)
@@ -2484,14 +2478,13 @@ class DBService {
           overtimeHours: reportOvertimeHours,
           totalExpenses: reportExpenses,
           description: r.description,
-          revenue: revenue,
+          revenue: financials.revenue,
           hourlyRevenue: isReportInternal ? 0 : sellingPrice,
           cost: financials.cost,
           overtimeCost: Number(user?.overtimeHourlyRate) || 0,
           hourlyCost: Number(user?.hourlyRate) || 0,
           personnelCost: financials.personnelCost,
           subcontractorCost: financials.subcontractorCost,
-          invoiceStatus: r.invoiceStatus || 'Pending',
           activityType: r.activityType || 'work',
           isInternal: project?.isInternal || false,
           margin: financials.margin,
@@ -2502,7 +2495,6 @@ class DBService {
         additionalWorkers.forEach((aw: any, idx: number) => {
           const awUser = workerMap.get(aw.userId);
           const awOvertimeHours = aw.overtimeHours || 0;
-          const awOrdinaryHours = Math.max(0, aw.totalHours - awOvertimeHours);
           
           const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
 
@@ -2531,7 +2523,7 @@ class DBService {
             subcontractorId: awUser?.subcontractorId || null,
             totalHours: aw.totalHours,
             overtimeHours: awOvertimeHours,
-            totalExpenses: totalExpenses,
+            totalExpenses: 0,
             description: r.description,
             revenue: awRevenue,
             hourlyRevenue: isReportInternal ? 0 : sellingPrice,

@@ -369,7 +369,87 @@
     "reports.signaturePlaceholder",
     "reports.signatureRequired",
     "reports.upgradeRequired",
+    "reports.adminStatusLabel",
     "reports.complianceSatisfactionRequired"
   ],
-  "hardcoded": []
+  "hardcoded": [
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 81,
+      "text": "Seleziona almeno un rapportino e un cliente",
+      "type": "alert"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 93,
+      "text": "Seleziona almeno un rapportino e un cliente",
+      "type": "alert"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 107,
+      "text": "Report Interventi",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 109,
+      "text": "Genera l'allegato dei lavori per l'amministrazione o per il cliente.",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 118,
+      "text": "Cliente",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 124,
+      "text": "-- Seleziona Cliente --",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 131,
+      "text": "Progetto (Opzionale)",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 138,
+      "text": "-- Tutti i progetti --",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 157,
+      "text": "Seleziona Tutti (",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 183,
+      "text": "Excel",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 219,
+      "text": "Nuovo",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 216,
+      "text": "Esportato",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
+      "line": 190,
+      "text": "Nessun rapportino trovato per questa selezione.",
+      "type": "JSXText"
+    }
+  ]
 }
