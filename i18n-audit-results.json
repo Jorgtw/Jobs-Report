@@ -341,6 +341,7 @@
     "reports.endTime",
     "reports.breakHours",
     "reports.manualHours",
+    "reports.margin",
     "reports.placeholderActivity",
     "reports.expenseTypePlaceholder",
     "reports.expenseNotesPlaceholder",

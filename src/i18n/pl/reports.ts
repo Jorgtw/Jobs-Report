@@ -15,6 +15,8 @@ export const reports = {
   totalExpenses: "ŁĄCZNE WYDATKI",
   totalRevenue: "ŁĄCZNY PRZYCHÓD",
   margin: "MARŻA",
+  workValue: "WARTOŚĆ PRACY",
+  valueCostDiff: "RÓŻNICA",
   adminStatusTitle: "Status fakturowania",
   archiveAndDelete: "Archiwizuj i usuń",
   exportAndProceed: "Eksportuj i kontynuuj",

@@ -15,6 +15,8 @@ export const reports = {
   totalExpenses: "SAMLEDE UDGIFTER",
   totalRevenue: "SAMLET INDTÆGT",
   margin: "MARGIN",
+  workValue: "ARBEJDSVÆRDI",
+  valueCostDiff: "DIFFERENCE",
   adminStatusTitle: "Faktureringsstatus",
   archiveAndDelete: "Arkiver og fjern",
   exportAndProceed: "Eksporter og fortsæt",

@@ -15,6 +15,8 @@ export const reports = {
   totalExpenses: "SPESE TOTALI",
   totalRevenue: "RICAVO TOTALE",
   margin: "MARGINE",
+  workValue: "VALORE LAVORO",
+  valueCostDiff: "DIFFERENZA",
   adminStatusTitle: "Stato Fatturazione",
   archiveAndDelete: "Archivia e Rimuovi",
   exportAndProceed: "Esporta e Procedi",

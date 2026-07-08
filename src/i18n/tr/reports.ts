@@ -15,6 +15,8 @@ export const reports = {
   totalExpenses: "TOPLAM GİDERLER",
   totalRevenue: "TOPLAM GELİR",
   margin: "MARJ",
+  workValue: "İŞ DEĞERİ",
+  valueCostDiff: "FARK",
   adminStatusTitle: "Faturalandırma Durumu",
   archiveAndDelete: "Arşivle ve Kaldır",
   exportAndProceed: "Dışa Aktar ve Devam Et",

@@ -424,12 +424,12 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
-          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">VALORE LAVORO</span>
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{t('reports.workValue')}</span>
           <span className="text-base font-semibold text-indigo-600">{formatCurrency(totals.revenue)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>DIFFERENZA</span>
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{t('reports.valueCostDiff')}</span>
           <span className={`text-xl font-bold ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(totals.margin)}</span>
         </div>
       </div>
@@ -466,7 +466,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                   <span className="font-black text-slate-700">{formatCurrency(p.totalCost)}</span>
                 </div>
                 <div className="flex justify-between items-center p-2 bg-indigo-50/50 rounded-lg border border-indigo-100 col-span-2">
-                  <span className="font-bold text-indigo-400 uppercase tracking-tight">VALORE LAVORO</span>
+                  <span className="font-bold text-indigo-400 uppercase tracking-tight">{t('reports.workValue')}</span>
                   <span className="font-black text-indigo-600">{formatCurrency(p.revenue)}</span>
                 </div>
               </div>
@@ -485,8 +485,8 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                 <th className="px-3 py-2">{t('reports.headerClient')}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap">{t('reports.totalHoursLabel')}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap">{t('reports.summaryTotalCost')}</th>
-                <th className="px-3 py-2 text-indigo-400 text-right whitespace-nowrap font-bold uppercase tracking-widest">VALORE LAVORO</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap font-bold uppercase tracking-widest">DIFFERENZA</th>
+                <th className="px-3 py-2 text-indigo-400 text-right whitespace-nowrap font-bold uppercase tracking-widest">{t('reports.workValue')}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap font-bold uppercase tracking-widest">{t('reports.valueCostDiff')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
