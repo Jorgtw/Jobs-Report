@@ -15,7 +15,8 @@ import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
 import { useUsers } from '../hooks/useUsers';
 import { useSubcontractors } from '../hooks/useSubcontractors';
-import { exportToPDF, exportReportExcel, exportProjectSummaryToPDF } from '../services/exportService';
+import { WorkSummaryExportService } from '../services/export/WorkSummaryExport';
+import { ReportBuilderConfig, WorkSession } from '../services/export/ReportBuilder';
 import { filterInputClasses, canUserAccessProject } from '../App';
 
 interface WorkSummaryViewProps {
@@ -111,26 +112,60 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
 
   const formatCurrency = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  const handleExport = async (format: 'pdf' | 'excel') => {
+    try {
+      const activeFilters: Record<string, string> = {};
+      if (filters.dateFrom) activeFilters['Dal'] = new Date(filters.dateFrom).toLocaleDateString(localeMap[lang] || 'it-IT');
+      if (filters.dateTo) activeFilters['Al'] = new Date(filters.dateTo).toLocaleDateString(localeMap[lang] || 'it-IT');
+      if (filters.clientId) {
+        const c = clients.find((c: any) => c.id === filters.clientId);
+        if (c) activeFilters['Cliente'] = c.name;
+      }
+      if (filters.projectId) {
+        const p = projects.find((p: any) => p.id === filters.projectId);
+        if (p) activeFilters['Progetto'] = p.name;
+      }
+      if (adminStatus !== 'Tutti') {
+        activeFilters['Stato Fatturazione'] = adminStatus;
+      }
+
+      const config: ReportBuilderConfig = {
+        companyName: user.companyId || 'Azienda', // Use appropriate company name if available
+        generatedBy: user.name || 'Operatore',
+        filtersApplied: activeFilters,
+        includeEconomicData: user.role?.toLowerCase() === 'superadmin' || user.role?.toLowerCase() === 'admin'
+      };
+
+      const exportData: WorkSession[] = filteredData.map(s => ({
+        date: s.date,
+        clientName: s.clientName || '',
+        projectName: s.projectName || '',
+        workerName: s.userName || '',
+        description: s.description || '',
+        hours: s.totalHours || 0,
+        cost: s.personnelCost || s.cost || 0,
+        expenses: s.totalExpenses || 0,
+        revenue: s.revenue || 0
+      }));
+
+      if (format === 'pdf') {
+        await WorkSummaryExportService.exportToPdf(exportData, config);
+      } else {
+        await WorkSummaryExportService.exportToExcel(exportData, config);
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert('Errore durante l\\'esportazione: ' + e.message);
+    }
+  };
+
   const handleDeleteOperation = async (exportType: 'pdf' | 'excel' | 'none') => {
     setIsDeleting(true);
     try {
       if (exportType === 'pdf') {
-        const rows = filteredData.map(s => ({
-          date: new Date(s.date).toLocaleDateString(localeMap[lang]),
-          projectName: s.projectName,
-          clientName: s.clientName,
-          workerName: s.userName,
-          description: s.description || '',
-          hours: s.totalHours,
-          hourlyCost: 0, cost: s.cost, expenses: s.totalExpenses || 0,
-          hourlyRevenue: 0, revenue: s.revenue || 0, 
-          paid: s.invoiceStatus === 'Fatturato' ? t('common.statusInvoiced') : 
-                s.invoiceStatus === 'Pagato' ? t('common.statusPaid') : 
-                t('common.statusPending')
-        }));
-        exportToPDF(rows, lang, user.name, { hours: totals.hours, cost: 0, revenue: totals.revenue, expenses: 0 });
+        await handleExport('pdf');
       } else if (exportType === 'excel') {
-        await exportReportExcel(user.companyId || '', filters, lang);
+        await handleExport('excel');
       }
       
       const idsToDelete = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
@@ -150,17 +185,13 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         <h1 className="text-2xl font-bold text-slate-900">{t('reports.summaryTitle')}</h1>
         <div className="flex gap-2">
           <button
-            onClick={() => {
-              exportProjectSummaryToPDF(groupedByProject, totals, lang, user.name);
-            }}
+            onClick={() => handleExport('pdf')}
             className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-indigo-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >
             <FileDown size={14} /> PDF
           </button>
           <button
-            onClick={() => {
-              exportReportExcel(user.companyId || '', { ...filters, adminStatus: adminStatus === 'Tutti' ? undefined : adminStatus }, lang);
-            }}
+            onClick={() => handleExport('excel')}
             className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-emerald-700 transition-all uppercase tracking-tight flex items-center gap-1.5"
           >
             <FileSpreadsheet size={14} /> EXCEL
