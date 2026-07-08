@@ -73,15 +73,15 @@ export class WorkSummaryReportBuilder {
       totalExpenses += r.expenses || 0;
     });
 
-    const kpis = [
-      { label: 'Ore Lavorate', value: totalHours, type: 'hours' as const }
+    const kpis: DashboardBlock['kpis'] = [
+      { label: 'Ore Lavorate', value: totalHours, type: 'hours' }
     ];
 
     if (this.config.includeEconomicData) {
-      kpis.push({ label: 'Spese Totali', value: totalExpenses, type: 'decimal' as const });
-      kpis.push({ label: 'Costo Personale', value: totalCost, type: 'decimal' as const });
-      kpis.push({ label: 'Ricavo Totale', value: totalRevenue, type: 'decimal' as const });
-      kpis.push({ label: 'Margine', value: totalRevenue - totalCost - totalExpenses, type: 'decimal' as const });
+      kpis.push({ label: 'Spese Totali', value: totalExpenses, type: 'decimal' });
+      kpis.push({ label: 'Costo Personale', value: totalCost, type: 'decimal' });
+      kpis.push({ label: 'Ricavo Totale', value: totalRevenue, type: 'decimal' });
+      kpis.push({ label: 'Margine', value: totalRevenue - totalCost - totalExpenses, type: 'decimal' });
     }
 
     const dashboardBlock: DashboardBlock = {

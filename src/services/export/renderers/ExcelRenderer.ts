@@ -1,5 +1,5 @@
 import { utils, writeFile } from 'xlsx';
-import { ReportDocument, ReportBlockType, ReportBlock, ReportSection } from '../types';
+import { ReportDocument, ReportBlockType, ReportBlock } from '../types';
 import { ReportRenderer } from './ReportRenderer';
 
 export class ExcelRenderer implements ReportRenderer {

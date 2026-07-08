@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ReportDocument, ReportBlockType, ReportBlock, ReportSection } from '../types';
+import { ReportDocument, ReportBlockType, ReportBlock } from '../types';
 import { ReportRenderer } from './ReportRenderer';
 
 export class PdfRenderer implements ReportRenderer {
@@ -33,9 +33,9 @@ export class PdfRenderer implements ReportRenderer {
     const filterEntries = Object.entries(document.metadata.filtersApplied);
     if (filterEntries.length > 0) {
       startY += 2;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Filtri applicati:', 14, startY);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       startY += 5;
       
       const filterText = filterEntries.map(([k, v]) => `${k}: ${v}`).join(' | ');
@@ -60,9 +60,9 @@ export class PdfRenderer implements ReportRenderer {
 
       doc.setFontSize(14);
       doc.setTextColor(50);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text(section.title, 14, startY);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       startY += 8;
 
       section.blocks.forEach(block => {

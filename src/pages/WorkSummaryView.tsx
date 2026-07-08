@@ -155,7 +155,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       }
     } catch (e: any) {
       console.error(e);
-      alert('Errore durante l\\'esportazione: ' + e.message);
+      alert("Errore durante l'esportazione: " + e.message);
     }
   };
 
