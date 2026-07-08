@@ -10,6 +10,7 @@ import {
 // Questi tipi simulano ciò che riceve dalla UI
 export interface WorkSession {
   date: string | Date;
+  projectId?: string;
   clientName: string;
   projectName: string;
   workerName: string;
@@ -21,11 +22,17 @@ export interface WorkSession {
   nightHours?: number;
   holidayHours?: number;
   cost?: number;
-  revenue?: number;
+  revenue?: number; // kept for backwards compatibility but we will compute teorico from projectsPricing
   expenses?: number;
   materialsCost?: number;
   subcontractorCost?: number;
   [key: string]: any;
+}
+
+export interface ReportProjectConfig {
+  financialAgreement?: 'hourly' | 'fixed';
+  sellingPrice?: number;
+  isInternal?: boolean;
 }
 
 export interface ReportBuilderConfig {
@@ -36,6 +43,7 @@ export interface ReportBuilderConfig {
   filtersApplied: Record<string, string>;
   includeEconomicData: boolean;
   groupBy?: 'none' | 'project' | 'worker'; // Supported aggregations
+  projectsPricing?: Record<string, ReportProjectConfig>;
 }
 
 export class WorkSummaryReportBuilder {
@@ -78,6 +86,11 @@ export class WorkSummaryReportBuilder {
     let totalOrd = 0, totalExt = 0, totalNight = 0, totalHol = 0, totalHours = 0;
     let totalCost = 0, totalMat = 0, totalSub = 0, totalExp = 0;
     const workers = new Set<string>();
+    
+    // Per il valore teorico
+    let theoreticalValue = 0;
+    const processedFixedProjects = new Set<string>();
+    let hasPricedProjects = false;
 
     this.rawData.forEach(r => {
       totalOrd += r.ordinaryHours || 0;
@@ -91,6 +104,26 @@ export class WorkSummaryReportBuilder {
       totalSub += r.subcontractorCost || 0;
       totalExp += r.expenses || 0;
       if (r.workerName) workers.add(r.workerName);
+
+      if (this.config.projectsPricing && r.projectId) {
+        const pConfig = this.config.projectsPricing[r.projectId];
+        if (pConfig && !pConfig.isInternal && pConfig.sellingPrice != null && pConfig.sellingPrice > 0) {
+          hasPricedProjects = true;
+          if (pConfig.financialAgreement === 'fixed') {
+            if (!processedFixedProjects.has(r.projectId)) {
+              theoreticalValue += pConfig.sellingPrice;
+              processedFixedProjects.add(r.projectId);
+            }
+          } else {
+             // hourly
+             theoreticalValue += (r.hours || 0) * pConfig.sellingPrice;
+          }
+        }
+      } else if (!this.config.projectsPricing) {
+        // Fallback al revenue se projectsPricing non è fornito
+        theoreticalValue += r.revenue || 0;
+        if (r.revenue && r.revenue > 0) hasPricedProjects = true;
+      }
     });
 
     const groups: any[] = [];
@@ -117,15 +150,27 @@ export class WorkSummaryReportBuilder {
 
     // Gruppo Costi
     if (this.config.includeEconomicData) {
+      const totalOperativeCosts = totalCost + totalMat + totalSub + totalExp;
       groups.push({
         title: 'Costi Operativi',
         items: [
           { label: 'Personale', value: totalCost, type: 'decimal' },
           { label: 'Materiali', value: totalMat, type: 'decimal' },
           { label: 'Subappalti', value: totalSub, type: 'decimal' },
-          { label: 'Altre Spese', value: totalExp, type: 'decimal' }
+          { label: 'Altre Spese', value: totalExp, type: 'decimal' },
+          { label: 'TOTALE COSTI', value: totalOperativeCosts, type: 'decimal' }
         ]
       });
+
+      if (hasPricedProjects || theoreticalValue > 0) {
+        groups.push({
+          title: 'Analisi Finanziaria',
+          items: [
+            { label: 'Valore Lavoro (Teorico)', value: theoreticalValue, type: 'decimal' },
+            { label: 'Differenza Valore/Costi', value: theoreticalValue - totalOperativeCosts, type: 'decimal' }
+          ]
+        });
+      }
     }
 
     return {
@@ -142,16 +187,36 @@ export class WorkSummaryReportBuilder {
   private buildDashboardSection(): ReportSection {
     let totalHours = 0;
     let totalCost = 0;
-    let totalRevenue = 0;
-    let totalExpenses = 0;
+    let totalExp = 0;
+    let theoreticalValue = 0;
     const workers = new Set<string>();
+    const processedFixedProjects = new Set<string>();
+    let hasPricedProjects = false;
 
     this.rawData.forEach(r => {
       totalHours += r.hours || 0;
       totalCost += r.cost || 0;
-      totalRevenue += r.revenue || 0;
-      totalExpenses += r.expenses || 0;
+      totalExp += r.expenses || 0;
+      
       if (r.workerName) workers.add(r.workerName);
+
+      if (this.config.projectsPricing && r.projectId) {
+        const pConfig = this.config.projectsPricing[r.projectId];
+        if (pConfig && !pConfig.isInternal && pConfig.sellingPrice != null && pConfig.sellingPrice > 0) {
+          hasPricedProjects = true;
+          if (pConfig.financialAgreement === 'fixed') {
+            if (!processedFixedProjects.has(r.projectId)) {
+              theoreticalValue += pConfig.sellingPrice;
+              processedFixedProjects.add(r.projectId);
+            }
+          } else {
+             theoreticalValue += (r.hours || 0) * pConfig.sellingPrice;
+          }
+        }
+      } else if (!this.config.projectsPricing) {
+        theoreticalValue += r.revenue || 0;
+        if (r.revenue && r.revenue > 0) hasPricedProjects = true;
+      }
     });
 
     const kpis: DashboardBlock['kpis'] = [
@@ -160,10 +225,15 @@ export class WorkSummaryReportBuilder {
     ];
 
     if (this.config.includeEconomicData) {
-      kpis.push({ label: 'Spese Totali', value: totalExpenses, type: 'decimal' });
-      kpis.push({ label: 'Costo Personale', value: totalCost, type: 'decimal' });
-      kpis.push({ label: 'Ricavo Totale', value: totalRevenue, type: 'decimal' });
-      kpis.push({ label: 'Margine', value: totalRevenue - totalCost - totalExpenses, type: 'decimal' });
+      const totalOperativeCosts = totalCost + totalExp; // simplified for dashboard
+      
+      if (hasPricedProjects || theoreticalValue > 0) {
+         kpis.push({ label: 'Valore Lavoro', value: theoreticalValue, type: 'decimal' });
+         kpis.push({ label: 'Costi Operativi', value: totalOperativeCosts, type: 'decimal' });
+         kpis.push({ label: 'Differenza', value: theoreticalValue - totalOperativeCosts, type: 'decimal' });
+      } else {
+         kpis.push({ label: 'Costi Operativi', value: totalOperativeCosts, type: 'decimal' });
+      }
     }
 
     const dashboardBlock: DashboardBlock = {
@@ -193,8 +263,8 @@ export class WorkSummaryReportBuilder {
 
     if (this.config.includeEconomicData) {
       columns.push({ key: 'expenses', header: 'Spese', type: 'decimal' });
-      columns.push({ key: 'cost', header: 'Costo', type: 'decimal' });
-      columns.push({ key: 'revenue', header: 'Ricavo', type: 'decimal' });
+      columns.push({ key: 'cost', header: 'Costi Op.', type: 'decimal' });
+      columns.push({ key: 'revenue', header: 'Valore Lavoro', type: 'decimal' });
     }
 
     let totalHours = 0, totalOrd = 0, totalExt = 0, totalNight = 0, totalHol = 0;
@@ -243,7 +313,25 @@ export class WorkSummaryReportBuilder {
       if (this.config.includeEconomicData) {
         row.expenses = r.expenses || 0;
         row.cost = r.cost || 0;
-        row.revenue = r.revenue || 0;
+        
+        let valLavoro = 0;
+        if (this.config.projectsPricing && r.projectId) {
+          const pConfig = this.config.projectsPricing[r.projectId];
+          if (pConfig && !pConfig.isInternal && pConfig.sellingPrice != null) {
+            // Se a corpo, in tabella dettaglio stampiamo 0 per evitare duplicazioni o se si vuole stampare lo mostriamo solo nei totali. 
+            // Mostriamo solo per ore
+            if (pConfig.financialAgreement === 'hourly') {
+              valLavoro = (r.hours || 0) * pConfig.sellingPrice;
+            } else if (pConfig.financialAgreement === 'fixed') {
+              // Nel dettaglio intervento di un progetto a corpo, il valore del singolo intervento non si quantifica (o è ND).
+              // Lo lascio 0 e il totale verrà gestito dal summary.
+              valLavoro = 0; 
+            }
+          }
+        } else {
+           valLavoro = r.revenue || 0;
+        }
+        row.revenue = valLavoro;
       }
 
       return row;

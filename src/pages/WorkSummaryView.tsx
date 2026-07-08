@@ -129,15 +129,26 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         activeFilters['Stato Fatturazione'] = adminStatus;
       }
 
+      const projectsPricing: Record<string, any> = {};
+      projects.forEach((p: any) => {
+        projectsPricing[p.id] = {
+          financialAgreement: p.financialAgreement,
+          sellingPrice: p.sellingPrice,
+          isInternal: p.isInternal
+        };
+      });
+
       const config: ReportBuilderConfig = {
         companyName: user.companyName || 'Azienda',
         generatedBy: user.name || 'Operatore',
         filtersApplied: activeFilters,
-        includeEconomicData: user.role?.toLowerCase() === 'superadmin' || user.role?.toLowerCase() === 'admin'
+        includeEconomicData: user.role?.toLowerCase() === 'superadmin' || user.role?.toLowerCase() === 'admin',
+        projectsPricing
       };
 
       const exportData: WorkSession[] = filteredData.map((s: any) => ({
         date: s.date,
+        projectId: s.projectId,
         clientName: s.clientName || '',
         projectName: s.projectName || '',
         workerName: s.userName || '',
