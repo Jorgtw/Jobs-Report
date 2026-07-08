@@ -88,27 +88,59 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       }
       const group = grouped.get(row.projectId);
       group.hours += row.totalHours || 0;
+      group.totalCost += (row.personnelCost || 0) + (row.subcontractorCost || 0) + (row.totalExpenses || 0);
       group.totalExpenses += row.totalExpenses || 0;
-      group.revenue += row.revenue || 0;
-      group.margin += row.margin || 0;
     });
+
+    Array.from(grouped.values()).forEach(group => {
+      const p = projects.find(proj => proj.id === group.id);
+      if (p && !p.isInternal && p.sellingPrice != null && p.sellingPrice > 0) {
+        if (p.financialAgreement === 'fixed') {
+          group.revenue = p.sellingPrice;
+        } else {
+          group.revenue = group.hours * p.sellingPrice;
+        }
+        group.margin = group.revenue - group.totalCost;
+      } else {
+        group.revenue = 0;
+        group.margin = 0;
+      }
+    });
+
     return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredData]);
+  }, [filteredData, projects]);
 
   const totals = useMemo(() => {
-    return filteredData.reduce((acc, row) => {
+    let revenue = 0;
+    let hasPricedProjects = false;
+    
+    groupedByProject.forEach(g => {
+       if (g.revenue > 0) {
+           revenue += g.revenue;
+           hasPricedProjects = true;
+       }
+    });
+
+    const acc = filteredData.reduce((acc, row) => {
       acc.hours += row.totalHours || 0;
       acc.personnelCost += row.personnelCost || 0;
       acc.subcontractCost += row.subcontractorCost || 0;
       acc.totalExpenses += row.totalExpenses || 0;
       acc.totalCost += (row.personnelCost || 0) + (row.subcontractorCost || 0) + (row.totalExpenses || 0);
-      acc.revenue += row.revenue || 0;
-      acc.margin += row.margin || 0;
       return acc;
     }, {
       hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0, margin: 0
     });
-  }, [filteredData]);
+    
+    acc.revenue = revenue;
+    if (hasPricedProjects || revenue > 0) {
+       acc.margin = revenue - acc.totalCost;
+    } else {
+       acc.margin = 0;
+    }
+
+    return acc;
+  }, [filteredData, groupedByProject]);
 
   const formatCurrency = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -392,12 +424,12 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
-          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{t('reports.totalRevenue')}</span>
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">VALORE LAVORO</span>
           <span className="text-base font-semibold text-indigo-600">{formatCurrency(totals.revenue)}</span>
         </div>
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
         <div className="flex flex-col flex-1">
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{t('reports.margin')}</span>
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>DIFFERENZA</span>
           <span className={`text-xl font-bold ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(totals.margin)}</span>
         </div>
       </div>
@@ -434,7 +466,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                   <span className="font-black text-slate-700">{formatCurrency(p.totalCost)}</span>
                 </div>
                 <div className="flex justify-between items-center p-2 bg-indigo-50/50 rounded-lg border border-indigo-100 col-span-2">
-                  <span className="font-bold text-indigo-400 uppercase tracking-tight">{t('reports.totalRevenue')}</span>
+                  <span className="font-bold text-indigo-400 uppercase tracking-tight">VALORE LAVORO</span>
                   <span className="font-black text-indigo-600">{formatCurrency(p.revenue)}</span>
                 </div>
               </div>
@@ -453,25 +485,25 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                 <th className="px-3 py-2">{t('reports.headerClient')}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap">{t('reports.totalHoursLabel')}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap">{t('reports.summaryTotalCost')}</th>
-                <th className="px-3 py-2 text-indigo-400 text-right whitespace-nowrap">{t('reports.totalRevenue')}</th>
-                <th className="px-3 py-2 text-emerald-500 text-right whitespace-nowrap">{t('reports.margin')}</th>
+                <th className="px-3 py-2 text-indigo-400 text-right whitespace-nowrap font-bold uppercase tracking-widest">VALORE LAVORO</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap font-bold uppercase tracking-widest">DIFFERENZA</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-slate-100 text-sm">
               {groupedByProject.length > 0 ? groupedByProject.map((p, idx) => (
-                <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-3 py-1.5 font-bold text-blue-600 whitespace-nowrap capitalize">
+                <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-3 py-2.5 font-bold text-blue-600 whitespace-nowrap">
                     {p.dateDisplay !== 'Periodo'
                       ? new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.dateDisplay as string))
                       : t('reports.summaryPeriod')}
                   </td>
-                  <td className="px-3 py-1.5 font-bold text-slate-900 truncate max-w-[150px]" title={p.name}>{p.name}</td>
-                  <td className="px-3 py-1.5 text-slate-500 font-medium truncate max-w-[120px]" title={p.clientName}>{p.clientName}</td>
-                  <td className="px-3 py-1.5 font-black text-slate-700 text-right whitespace-nowrap">{p.hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 1 })} h</td>
-                  <td className="px-3 py-1.5 font-black text-slate-900 text-right whitespace-nowrap">{formatCurrency(p.totalCost)}</td>
+                  <td className="px-3 py-2.5 font-bold text-slate-900">{p.name}</td>
+                  <td className="px-3 py-2.5 text-xs text-slate-500">{p.clientName}</td>
+                  <td className="px-3 py-2.5 font-black text-slate-700 text-right whitespace-nowrap">{p.hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 1 })} h</td>
+                  <td className="px-3 py-2.5 font-bold text-slate-700 text-right whitespace-nowrap">{formatCurrency(p.totalCost)}</td>
                   <td className="px-3 py-1.5 font-black text-indigo-600 text-right whitespace-nowrap">{formatCurrency(p.revenue)}</td>
-                  <td className="px-3 py-1.5 font-black text-right whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black ${p.margin > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : p.margin < 0 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-slate-100 text-slate-500'}`}>
+                  <td className="px-3 py-1.5 text-right whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded-lg text-[11px] font-black ${p.margin > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : p.margin < 0 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
                       {p.margin > 0 ? '+' : ''}{formatCurrency(p.margin)}
                     </span>
                   </td>
