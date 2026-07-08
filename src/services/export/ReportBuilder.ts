@@ -6,6 +6,7 @@ import {
   ReportTableColumn,
   ReportSection
 } from './types';
+import { Language, resolveKey } from '../../i18n';
 
 // Questi tipi simulano ciò che riceve dalla UI
 export interface WorkSession {
@@ -44,6 +45,7 @@ export interface ReportBuilderConfig {
   includeEconomicData: boolean;
   groupBy?: 'none' | 'project' | 'worker'; // Supported aggregations
   projectsPricing?: Record<string, ReportProjectConfig>;
+  lang?: Language;
 }
 
 export class WorkSummaryReportBuilder {
@@ -51,6 +53,10 @@ export class WorkSummaryReportBuilder {
     private rawData: WorkSession[],
     private config: ReportBuilderConfig
   ) {}
+
+  private t(key: string): string {
+    return resolveKey(this.config.lang || 'it', key);
+  }
 
   build(): ReportDocument {
     const document: ReportDocument = {
@@ -140,11 +146,11 @@ export class WorkSummaryReportBuilder {
     groups.push({
       title: 'Ore',
       items: [
-        { label: 'Ordinarie', value: totalOrd, type: 'hours' },
-        { label: 'Extra', value: totalExt, type: 'hours' },
-        { label: 'Notturne', value: totalNight, type: 'hours' },
-        { label: 'Festive', value: totalHol, type: 'hours' },
-        { label: 'Totale Ore', value: totalHours, type: 'hours' }
+        { label: this.t('reports.ordinaryHours'), value: totalOrd, type: 'hours' },
+        { label: this.t('reports.extraHours'), value: totalExt, type: 'hours' },
+        { label: this.t('reports.nightHours'), value: totalNight, type: 'hours' },
+        { label: this.t('reports.holidayHours'), value: totalHol, type: 'hours' },
+        { label: this.t('reports.totalHours'), value: totalHours, type: 'hours' }
       ]
     });
 
@@ -152,12 +158,12 @@ export class WorkSummaryReportBuilder {
     if (this.config.includeEconomicData) {
       const totalOperativeCosts = totalCost + totalMat + totalSub + totalExp;
       groups.push({
-        title: 'Costi Operativi',
+        title: this.t('reports.operativeCosts'),
         items: [
-          { label: 'Personale', value: totalCost, type: 'decimal' },
-          { label: 'Materiali', value: totalMat, type: 'decimal' },
-          { label: 'Subappalti', value: totalSub, type: 'decimal' },
-          { label: 'Altre Spese', value: totalExp, type: 'decimal' },
+          { label: this.t('reports.personnel'), value: totalCost, type: 'decimal' },
+          { label: this.t('reports.materials'), value: totalMat, type: 'decimal' },
+          { label: this.t('reports.subcontracting'), value: totalSub, type: 'decimal' },
+          { label: this.t('reports.otherExpenses'), value: totalExp, type: 'decimal' },
           { label: 'TOTALE COSTI', value: totalOperativeCosts, type: 'decimal' }
         ]
       });
@@ -166,8 +172,8 @@ export class WorkSummaryReportBuilder {
         groups.push({
           title: 'Analisi Finanziaria',
           items: [
-            { label: 'Valore Lavoro (Teorico)', value: theoreticalValue, type: 'decimal' },
-            { label: 'Differenza Valore/Costi', value: theoreticalValue - totalOperativeCosts, type: 'decimal' }
+            { label: this.t('reports.workValue'), value: theoreticalValue, type: 'decimal' },
+            { label: this.t('reports.valueCostDiff'), value: theoreticalValue - totalOperativeCosts, type: 'decimal' }
           ]
         });
       }
@@ -229,10 +235,10 @@ export class WorkSummaryReportBuilder {
       
       if (hasPricedProjects || theoreticalValue > 0) {
          kpis.push({ label: 'Valore Lavoro', value: theoreticalValue, type: 'decimal' });
-         kpis.push({ label: 'Costi Operativi', value: totalOperativeCosts, type: 'decimal' });
+         kpis.push({ label: this.t('reports.operativeCosts'), value: totalOperativeCosts, type: 'decimal' });
          kpis.push({ label: 'Differenza', value: theoreticalValue - totalOperativeCosts, type: 'decimal' });
       } else {
-         kpis.push({ label: 'Costi Operativi', value: totalOperativeCosts, type: 'decimal' });
+         kpis.push({ label: this.t('reports.operativeCosts'), value: totalOperativeCosts, type: 'decimal' });
       }
     }
 
@@ -254,10 +260,10 @@ export class WorkSummaryReportBuilder {
       { key: 'projectName', header: 'Progetto', type: 'text' },
       { key: 'workerName', header: 'Collaboratore', type: 'text' },
       { key: 'description', header: 'Descrizione', type: 'text' },
-      { key: 'ordinaryHours', header: 'Ordinarie', type: 'hours' },
-      { key: 'extraHours', header: 'Extra', type: 'hours' },
-      { key: 'nightHours', header: 'Notturne', type: 'hours' },
-      { key: 'holidayHours', header: 'Festive', type: 'hours' },
+      { key: 'ordinaryHours', header: this.t('reports.ordinaryHours'), type: 'hours' },
+      { key: 'extraHours', header: this.t('reports.extraHours'), type: 'hours' },
+      { key: 'nightHours', header: this.t('reports.nightHours'), type: 'hours' },
+      { key: 'holidayHours', header: this.t('reports.holidayHours'), type: 'hours' },
       { key: 'hours', header: 'Tot. Ore', type: 'hours' }
     ];
 
@@ -367,8 +373,8 @@ export class WorkSummaryReportBuilder {
   private buildAggregatedSection(groupBy: 'project' | 'worker'): ReportSection {
     const columns: ReportTableColumn[] = [
       { key: 'groupName', header: groupBy === 'project' ? 'Progetto' : 'Collaboratore', type: 'text' },
-      { key: 'ordinaryHours', header: 'Ordinarie', type: 'hours' },
-      { key: 'extraHours', header: 'Extra', type: 'hours' },
+      { key: 'ordinaryHours', header: this.t('reports.ordinaryHours'), type: 'hours' },
+      { key: 'extraHours', header: this.t('reports.extraHours'), type: 'hours' },
       { key: 'hours', header: 'Tot. Ore', type: 'hours' }
     ];
 

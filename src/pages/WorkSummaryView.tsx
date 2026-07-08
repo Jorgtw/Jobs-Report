@@ -175,7 +175,8 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         generatedBy: user.name || 'Operatore',
         filtersApplied: activeFilters,
         includeEconomicData: user.role?.toLowerCase() === 'superadmin' || user.role?.toLowerCase() === 'admin',
-        projectsPricing
+        projectsPricing,
+        lang: lang as any
       };
 
       const exportData: WorkSession[] = filteredData.map((s: any) => ({
