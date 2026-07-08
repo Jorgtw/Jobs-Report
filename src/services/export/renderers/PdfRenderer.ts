@@ -84,14 +84,36 @@ export class PdfRenderer implements ReportRenderer {
         return startY + (splitText.length * 5);
 
       case ReportBlockType.SUMMARY:
+        const summaryBlock = block as any; // Cast to bypass strict type if needed, but it has groups
+        summaryBlock.groups.forEach((group: any) => {
+          if (group.title) {
+            doc.setFontSize(11);
+            doc.setTextColor(60);
+            doc.setFont('helvetica', 'bold');
+            doc.text(group.title, 14, startY);
+            startY += 5;
+          }
+          const body = group.items.map((item: any) => [item.label, this.formatValue(item.value, item.type)]);
+          autoTable(doc, {
+            startY: startY,
+            body: body,
+            theme: 'plain',
+            bodyStyles: { fontSize: 10, cellPadding: 1.5, textColor: [80, 80, 80] },
+            columnStyles: { 0: { fontStyle: 'normal' }, 1: { halign: 'right', fontStyle: 'bold', textColor: [30, 30, 30] } },
+            margin: { left: 14 }
+          });
+          startY = (doc as any).lastAutoTable.finalY + 6;
+        });
+        return startY;
+
       case ReportBlockType.DASHBOARD:
-        const items = block.type === ReportBlockType.SUMMARY ? block.items : block.kpis;
-        const body = items.map(item => [item.label, this.formatValue(item.value, item.type)]);
+        const kpis = (block as any).kpis;
+        const dashboardBody = kpis.map((item: any) => [item.label, this.formatValue(item.value, item.type)]);
         
         autoTable(doc, {
           startY: startY,
-          head: [[block.type === ReportBlockType.SUMMARY ? 'Riepilogo' : 'Indicatore', 'Valore']],
-          body: body,
+          head: [['Indicatore', 'Valore']],
+          body: dashboardBody,
           theme: 'grid',
           headStyles: { fillColor: [240, 240, 240], textColor: [50, 50, 50], fontStyle: 'bold' },
           bodyStyles: { fontSize: 9, cellPadding: 3 },

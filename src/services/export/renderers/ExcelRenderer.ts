@@ -50,11 +50,22 @@ export class ExcelRenderer implements ReportRenderer {
         break;
 
       case ReportBlockType.SUMMARY:
+        const summaryBlock = block as any;
+        summaryBlock.groups.forEach((group: any) => {
+          if (group.title) {
+            aoa.push([group.title]);
+          }
+          group.items.forEach((item: any) => {
+            aoa.push([item.label, item.value]);
+          });
+          aoa.push([]); // riga vuota
+        });
+        break;
+
       case ReportBlockType.DASHBOARD:
-        const title = block.type === ReportBlockType.SUMMARY ? 'Riepilogo' : 'Dashboard';
-        aoa.push([title, 'Valore']);
-        const items = block.type === ReportBlockType.SUMMARY ? block.items : block.kpis;
-        items.forEach(item => {
+        aoa.push(['Indicatore', 'Valore']);
+        const kpis = (block as any).kpis;
+        kpis.forEach((item: any) => {
           aoa.push([item.label, item.value]);
         });
         break;

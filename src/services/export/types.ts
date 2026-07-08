@@ -29,7 +29,11 @@ export type ReportBlock = SummaryBlock | DashboardBlock | TableBlock | TextBlock
 
 export interface SummaryBlock {
   type: ReportBlockType.SUMMARY;
-  items: { label: string; value: number | string; type?: 'text' | 'number' | 'decimal' | 'hours' }[];
+  title?: string;
+  groups: {
+    title?: string;
+    items: { label: string; value: number | string; type?: 'text' | 'number' | 'decimal' | 'hours' }[];
+  }[];
 }
 
 export interface DashboardBlock {

@@ -130,20 +130,26 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       }
 
       const config: ReportBuilderConfig = {
-        companyName: user.companyId || 'Azienda', // Use appropriate company name if available
+        companyName: user.companyName || 'Azienda',
         generatedBy: user.name || 'Operatore',
         filtersApplied: activeFilters,
         includeEconomicData: user.role?.toLowerCase() === 'superadmin' || user.role?.toLowerCase() === 'admin'
       };
 
-      const exportData: WorkSession[] = filteredData.map(s => ({
+      const exportData: WorkSession[] = filteredData.map((s: any) => ({
         date: s.date,
         clientName: s.clientName || '',
         projectName: s.projectName || '',
         workerName: s.userName || '',
         description: s.description || '',
+        ordinaryHours: s.ordinaryHours || 0,
+        extraHours: s.extraHours || 0,
+        nightHours: s.nightHours || 0,
+        holidayHours: s.holidayHours || 0,
         hours: s.totalHours || 0,
         cost: s.personnelCost || s.cost || 0,
+        materialsCost: s.materialsCost || 0,
+        subcontractorCost: s.subcontractorCost || 0,
         expenses: s.totalExpenses || 0,
         revenue: s.revenue || 0
       }));
