@@ -135,7 +135,7 @@ export class DashboardCommesse implements ReportTemplate {
       // SUBAPPALTI: FORMULA SUMIFS
       // 'Costi Esterni'!F:F (Importo), 'Costi Esterni'!C:C (Cliente), A[Row], 'Costi Esterni'!D:D (Progetto), B[Row]
       const subCell = row.getCell(5);
-      subCell.value = { formula: `SUMIFS('Costi Esterni'!F:F, 'Costi Esterni'!C:C, A${currentRowDash}, 'Costi Esterni'!D:D, B${currentRowDash})` };
+      subCell.value = { formula: `SUMIFS('Costi Esterni'!F:F, 'Costi Esterni'!C:C, A${currentRowDash}, 'Costi Esterni'!D:D, B${currentRowDash})`, date1904: false } as any;
       applyDataStyle(subCell);
       subCell.numFmt = ReportStyles.currencyFormat;
 
@@ -196,7 +196,7 @@ export class DashboardCommesse implements ReportTemplate {
 
     // Totale Margine %: Totale Margine (H) / Totale Ricavo (G)
     const totPercCell = sheetDash.getCell(`I${currentRowDash}`);
-    totPercCell.value = { formula: `IFERROR(H${currentRowDash}/G${currentRowDash}, 0)` };
+    totPercCell.value = { formula: `IFERROR(H${currentRowDash}/G${currentRowDash}, 0)`, date1904: false } as any;
     totPercCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
     totPercCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
     totPercCell.border = ReportStyles.borders.standard;
@@ -324,7 +324,7 @@ export class DashboardCommesse implements ReportTemplate {
 
     const totExtAmt = sheetExt.getCell(`F${extRow}`);
     if (firstExtDataRow <= lastExtDataRow) {
-      totExtAmt.value = { formula: `SUM(F${firstExtDataRow}:F${lastExtDataRow})` };
+      totExtAmt.value = { formula: `SUM(F${firstExtDataRow}:F${lastExtDataRow})`, date1904: false } as any;
     } else {
       totExtAmt.value = 0;
     }

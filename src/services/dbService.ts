@@ -2507,8 +2507,7 @@ class DBService {
           const awUser = workerMap.get(aw.userId);
           const awOvertimeHours = aw.overtimeHours || 0;
           
-          const awRevenue = isReportInternal ? 0 : aw.totalHours * sellingPrice;
-
+          // Revenue calculations are handled inside awFinancials
           // Billing Engine per gli AW
           const awFinancials = calculateFinancials({
             totalHours: aw.totalHours || 0,

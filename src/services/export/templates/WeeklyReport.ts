@@ -34,7 +34,7 @@ export class WeeklyReport implements ReportTemplate {
 
     // Group reports by Week -> Project
     // Map<YearWeek, Map<ProjectId, {hours, count}>>
-    const weeksMap = new Map<string, Map<string, { hours: number, count: number, clientId: string }>>();
+    const weeksMap = new Map<string, Map<string, { hours: number, count: number, clientName: string }>>();
 
     let minWeekKey = "9999-W99";
     let maxWeekKey = "0000-W00";

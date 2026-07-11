@@ -1,6 +1,5 @@
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { WorkReport, Project, AdditionalWorker, Expense } from '../../types';
 
 import { ReportSummary } from '../../types';
 

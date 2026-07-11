@@ -1,5 +1,5 @@
 import * as ExcelJS from 'exceljs';
-import { ProfessionalReportEngine, ReportData } from './services/export/ReportEngine';
+import { ReportData } from './services/export/ReportEngine';
 import { CustomerWorkReport } from './services/export/templates/CustomerWorkReport';
 import { DashboardCommesse } from './services/export/templates/DashboardCommesse';
 import { WeeklyReport } from './services/export/templates/WeeklyReport';
@@ -7,8 +7,7 @@ import { EmployeeMonthlyReport } from './services/export/templates/EmployeeMonth
 import { BillingAttachment } from './services/export/templates/BillingAttachment';
 import { WorkEntriesRegister } from './services/export/templates/WorkEntriesRegister';
 import { ProjectRevenueRegister } from './services/export/templates/ProjectRevenueRegister';
-import * as fs from 'fs';
-import * as path from 'path';
+// Mock imports removed
 
 async function generateCatalog() {
   const workbook = new ExcelJS.Workbook();
