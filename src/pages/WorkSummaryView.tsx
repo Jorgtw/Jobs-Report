@@ -17,6 +17,14 @@ import { useUsers } from '../hooks/useUsers';
 import { useSubcontractors } from '../hooks/useSubcontractors';
 import { WorkSummaryExportService } from '../services/export/WorkSummaryExport';
 import { ReportBuilderConfig, WorkSession } from '../services/export/ReportBuilder';
+import { ProfessionalReportEngine } from '../services/export/ReportEngine';
+import { DashboardCommesse } from '../services/export/templates/DashboardCommesse';
+import { CustomerWorkReport } from '../services/export/templates/CustomerWorkReport';
+import { WeeklyReport } from '../services/export/templates/WeeklyReport';
+import { EmployeeMonthlyReport } from '../services/export/templates/EmployeeMonthlyReport';
+import { BillingAttachment } from '../services/export/templates/BillingAttachment';
+import { WorkEntriesRegister } from '../services/export/templates/WorkEntriesRegister';
+import { ProjectRevenueRegister } from '../services/export/templates/ProjectRevenueRegister';
 import { filterInputClasses, canUserAccessProject } from '../App';
 
 interface WorkSummaryViewProps {
@@ -201,7 +209,25 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       if (format === 'pdf') {
         await WorkSummaryExportService.exportToPdf(exportData, config);
       } else {
-        await WorkSummaryExportService.exportToExcel(exportData, config);
+        const engine = new ProfessionalReportEngine();
+        engine.registerTemplate('dashboard', new DashboardCommesse());
+        engine.registerTemplate('customer', new CustomerWorkReport());
+        engine.registerTemplate('weekly', new WeeklyReport());
+        engine.registerTemplate('monthly', new EmployeeMonthlyReport());
+        engine.registerTemplate('billing', new BillingAttachment());
+        engine.registerTemplate('entries', new WorkEntriesRegister());
+        engine.registerTemplate('revenue', new ProjectRevenueRegister());
+
+        const reportData = {
+          companyName: user.companyName || 'Azienda',
+          summaries: filteredData,
+          projects: projects.filter((p: any) => filteredData.some((s: any) => s.projectId === p.id)),
+          workers: users,
+          clients: clients,
+          filters: activeFilters as any
+        };
+
+        await engine.generateCatalog(reportData, 'JobsReport_Export');
       }
     } catch (e: any) {
       console.error(e);

@@ -144,10 +144,15 @@ export interface ReportSummary {
   date: string;
   projectName: string;
   clientName: string;
+  clientId: string;
   userName: string;
   userId: string;
+  startTime?: string;
+  endTime?: string;
+  breakHours?: number;
   totalHours: number;
   totalExpenses: number;
+  expenses?: Expense[];
   description: string;
   revenue: number;
   cost: number;
@@ -156,7 +161,16 @@ export interface ReportSummary {
   projectId: string;
   activityType?: string;
   isInternal?: boolean;
+  financialAgreement?: string;
+  invoiceStatus?: string;
+  subcontractorCost?: number;
+  personnelCost?: number;
+  festiveHours?: number;
+  nightHours?: number;
+  exportStatus?: string;
+  notes?: string;
   createdAt: number;
+  margin?: number;
 }
 
 export type CommStatus =
