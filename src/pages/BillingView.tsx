@@ -4,7 +4,9 @@ import { db } from '../services/dbService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '../contexts/LanguageContext';
 import { Client, Project, WorkReport } from '../types';
-import { exportInvoiceToPDF, exportInvoiceToExcel } from '../services/exportService';
+import { exportInvoiceToPDF } from '../services/exportService';
+import { ProfessionalReportEngine } from '../services/export/ReportEngine';
+import { BillingAttachment } from '../services/export/templates/BillingAttachment';
 
 const localeMap: Record<string, string> = {
   it: 'it-IT',
@@ -95,8 +97,37 @@ const BillingView: React.FC = () => {
     }
     const client = clients.find(c => c.id === selectedClientId);
     const project = projects.find(p => p.id === selectedProjectId);
-    exportInvoiceToExcel(selectedReports, client, project, language);
-    await markExportedMutation.mutateAsync(selectedReportIds);
+    
+    try {
+      // Dobbiamo caricare i worker e i summary per il motore
+      const users = await db.getUsers();
+      const allSummaries = await db.getSummary();
+      
+      const selectedSummaries = allSummaries.filter((s: any) => 
+        selectedReportIds.some(id => s.id.startsWith(id))
+      );
+
+      const engine = new ProfessionalReportEngine();
+      engine.registerTemplate('billing', new BillingAttachment());
+
+      const reportData = {
+        companyName: 'Azienda',
+        summaries: selectedSummaries,
+        projects: projects.filter(p => selectedSummaries.some((s: any) => s.projectId === p.id)),
+        workers: users,
+        clients: clients,
+        filters: {
+          'Cliente': client?.name || '',
+          'Progetto': project?.name || 'Tutti i progetti'
+        } as any
+      };
+
+      await engine.generateCatalog(reportData, 'Allegato_Fatturazione');
+      await markExportedMutation.mutateAsync(selectedReportIds);
+    } catch (e: any) {
+      console.error(e);
+      alert("Errore durante l'esportazione Excel: " + e.message);
+    }
   };
 
   return (
