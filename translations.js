@@ -5,6 +5,7 @@ const translations = {
         "nav.problem": "Il Problema",
         "nav.solution": "La Soluzione",
         "nav.features": "Funzionalità",
+        "nav.examples": "Report Excel",
         "nav.benefits": "Benefici",
         "nav.target": "A chi è rivolto",
         "nav.register": "Registrazione",
@@ -100,6 +101,20 @@ const translations = {
         "tgt.cta.desc": "Richiedi una demo o inizia a usare Jobs Report oggi stesso.",
         "tgt.btn": "Contattaci Ora",
 
+        // Esempi
+        "esempi.title": "Export Professionali in Excel",
+        "esempi.sub": "Visualizza i dati esattamente come ti servono con i nostri template pronti all'uso.",
+        "esempi.dashboard": "Dashboard Commesse",
+        "esempi.dashboard_desc": "Analisi economica immediata con calcolo dei margini per l'amministrazione.",
+        "esempi.billing": "Allegato Fatturazione",
+        "esempi.billing_desc": "L'elenco degli interventi pronto per essere allegato alla fattura del cliente.",
+        "esempi.customer": "Rapporto Lavori Svolti",
+        "esempi.customer_desc": "Dettaglio cronologico delle attività per singolo cliente o progetto.",
+        "esempi.weekly": "Report Settimanale",
+        "esempi.weekly_desc": "Riepilogo delle ore lavorate suddivise per settimane (ISO 8601).",
+        "esempi.employee": "Report Mensile Dipendente",
+        "esempi.employee_desc": "Dettaglio ore e spese sostenute dal dipendente per elaborazione busta paga.",
+
         // Forms
         "reg.title": "Attiva la tua Azienda",
         "reg.sub": "Inizia subito a usare Jobs Report. Compila il modulo per richiedere l'attivazione della tua impresa.",
@@ -122,6 +137,7 @@ const translations = {
         "nav.problem": "The Problem",
         "nav.solution": "The Solution",
         "nav.features": "Features",
+        "nav.examples": "Report Excel",
         "nav.benefits": "Benefits",
         "nav.target": "Who is it for",
         "nav.register": "Register",
@@ -217,6 +233,20 @@ const translations = {
         "tgt.cta.desc": "Request a demo or start using Jobs Report today.",
         "tgt.btn": "Contact Us Now",
 
+        // Esempi
+        "esempi.title": "Export Professionali in Excel",
+        "esempi.sub": "Visualizza i dati esattamente come ti servono con i nostri template pronti all'uso.",
+        "esempi.dashboard": "Dashboard Commesse",
+        "esempi.dashboard_desc": "Analisi economica immediata con calcolo dei margini per l'amministrazione.",
+        "esempi.billing": "Allegato Fatturazione",
+        "esempi.billing_desc": "L'elenco degli interventi pronto per essere allegato alla fattura del cliente.",
+        "esempi.customer": "Rapporto Lavori Svolti",
+        "esempi.customer_desc": "Dettaglio cronologico delle attività per singolo cliente o progetto.",
+        "esempi.weekly": "Report Settimanale",
+        "esempi.weekly_desc": "Riepilogo delle ore lavorate suddivise per settimane (ISO 8601).",
+        "esempi.employee": "Report Mensile Dipendente",
+        "esempi.employee_desc": "Dettaglio ore e spese sostenute dal dipendente per elaborazione busta paga.",
+
         // Forms
         "reg.title": "Activate your Company",
         "reg.sub": "Start using Jobs Report now. Fill out the form to request your company's activation.",
@@ -239,6 +269,7 @@ const translations = {
         "nav.problem": "El Problema",
         "nav.solution": "La Solución",
         "nav.features": "Funciones",
+        "nav.examples": "Report Excel",
         "nav.benefits": "Beneficios",
         "nav.target": "¿Para quién?",
         "nav.register": "Registro",
@@ -334,6 +365,20 @@ const translations = {
         "tgt.cta.desc": "Solicita una demo o empieza a usar Jobs Report hoy mismo.",
         "tgt.btn": "Contáctanos Ahora",
 
+        // Esempi
+        "esempi.title": "Export Professionali in Excel",
+        "esempi.sub": "Visualizza i dati esattamente come ti servono con i nostri template pronti all'uso.",
+        "esempi.dashboard": "Dashboard Commesse",
+        "esempi.dashboard_desc": "Analisi economica immediata con calcolo dei margini per l'amministrazione.",
+        "esempi.billing": "Allegato Fatturazione",
+        "esempi.billing_desc": "L'elenco degli interventi pronto per essere allegato alla fattura del cliente.",
+        "esempi.customer": "Rapporto Lavori Svolti",
+        "esempi.customer_desc": "Dettaglio cronologico delle attività per singolo cliente o progetto.",
+        "esempi.weekly": "Report Settimanale",
+        "esempi.weekly_desc": "Riepilogo delle ore lavorate suddivise per settimane (ISO 8601).",
+        "esempi.employee": "Report Mensile Dipendente",
+        "esempi.employee_desc": "Dettaglio ore e spese sostenute dal dipendente per elaborazione busta paga.",
+
         // Forms
         "reg.title": "Activa tu Empresa",
         "reg.sub": "Empieza a usar Jobs Report ahora. Rellena el formulario para solicitar la activación de tu empresa.",
@@ -356,6 +401,7 @@ const translations = {
         "nav.problem": "Problemet",
         "nav.solution": "Løsningen",
         "nav.features": "Funktioner",
+        "nav.examples": "Report Excel",
         "nav.benefits": "Fordele",
         "nav.target": "Hvem er det til?",
         "nav.register": "Registrering",
@@ -450,6 +496,20 @@ const translations = {
         "tgt.cta.title": "Klar til at reducere det operationelle kaos?",
         "tgt.cta.desc": "Anmod om en demo eller begynd at bruge Jobs Report i dag.",
         "tgt.btn": "Kontakt os nu",
+
+        // Esempi
+        "esempi.title": "Export Professionali in Excel",
+        "esempi.sub": "Visualizza i dati esattamente come ti servono con i nostri template pronti all'uso.",
+        "esempi.dashboard": "Dashboard Commesse",
+        "esempi.dashboard_desc": "Analisi economica immediata con calcolo dei margini per l'amministrazione.",
+        "esempi.billing": "Allegato Fatturazione",
+        "esempi.billing_desc": "L'elenco degli interventi pronto per essere allegato alla fattura del cliente.",
+        "esempi.customer": "Rapporto Lavori Svolti",
+        "esempi.customer_desc": "Dettaglio cronologico delle attività per singolo cliente o progetto.",
+        "esempi.weekly": "Report Settimanale",
+        "esempi.weekly_desc": "Riepilogo delle ore lavorate suddivise per settimane (ISO 8601).",
+        "esempi.employee": "Report Mensile Dipendente",
+        "esempi.employee_desc": "Dettaglio ore e spese sostenute dal dipendente per elaborazione busta paga.",
 
         // Forms
         "reg.title": "Aktivér din virksomhed",
