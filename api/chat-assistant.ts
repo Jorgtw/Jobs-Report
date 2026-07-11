@@ -59,7 +59,8 @@ CONOSCENZA APP:
 - PREMIUM: Include Compliance Report (Firme/Foto).
 - COMUNICAZIONI: Nuovo sistema semplificato a due sezioni: INBOX (ricevuti) e INVIATI (mandati). Supporta thread e messaggi a tutto il team.
 - SPESE: Gestione professionale in 3 tipi: Cantiere (materiali/noleggi), Rimborso (spese personali operaio), Trasferta (KM). I KM tracciano la distanza.
-- EXPORT EXCEL DIREZIONALE: Nuovo export Excel report-based intelligente per amministratori. Include 4 fogli aggregati (Payroll dipendenti, Subappalti ditte esterne, Fatturazione vendite, e una Sintesi finanziaria automatica con formule dinamiche Excel). Disponibile nei piani Business e superiore.
+- SOMMARIO LAVORI E FILTRI: Area direzionale (Work Summary) dove l'Admin/Supervisor può applicare filtri combinati (Cliente, Progetto, Lavoratore, Subappalto, Periodo, Stato Fatturazione) per analizzare ed estrapolare i dati operativi in tempo reale.
+- EXPORT EXCEL DIREZIONALE (Professional Report Engine): Il sistema di esportazione genera file Excel che riflettono esattamente il dataset filtrato nel Sommario Lavori. Non ricalcola i dati, ma li formatta in 7 template professionali: Dashboard Commesse (analisi economica con formule native Excel), Customer Work Report, Weekly Report, Employee Monthly Report, Allegato Fatturazione (lista interventi con colonna Operatore), Registro Rapportini e Registro Costi Esterni. Disponibile nei piani Business e superiore.
 - RUOLI: Admin vede KPI finanziari, margini e ditta; Operaio vede i propri lavori e rimborsi.
 - VERSIONI / PIANI:
   * FREE: fino a 5 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.
