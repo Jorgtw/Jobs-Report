@@ -79,6 +79,7 @@ export class DashboardCommesse implements ReportTemplate {
         projectName: p.name,
         hours: 0,
         personnelCost: 0,
+        subcontractorCost: 0,
         expenses: 0,
         ricavo: 0,
         financialAgreement: p.financialAgreement,
@@ -93,6 +94,7 @@ export class DashboardCommesse implements ReportTemplate {
 
       stats.hours += (r.totalHours || 0);
       stats.personnelCost += (r.personnelCost || 0);
+      stats.subcontractorCost += (r.subcontractorCost || 0);
       stats.expenses += (r.totalExpenses || 0);
     }
 
@@ -132,10 +134,11 @@ export class DashboardCommesse implements ReportTemplate {
         hasMissingPersonnelCost = true;
       }
 
-      // SUBAPPALTI: FORMULA SUMIFS
+      // SUBAPPALTI: FORMULA SUMIFS + costi subappalti orari calcolati dai rapportini
       // 'Costi Esterni'!F:F (Importo), 'Costi Esterni'!C:C (Cliente), A[Row], 'Costi Esterni'!D:D (Progetto), B[Row]
       const subCell = row.getCell(5);
-      subCell.value = { formula: `SUMIFS('Costi Esterni'!F:F, 'Costi Esterni'!C:C, A${currentRowDash}, 'Costi Esterni'!D:D, B${currentRowDash})`, date1904: false } as any;
+      const subCost = stats.subcontractorCost || 0;
+      subCell.value = { formula: `SUMIFS('Costi Esterni'!F:F, 'Costi Esterni'!C:C, A${currentRowDash}, 'Costi Esterni'!D:D, B${currentRowDash}) + ${subCost}`, date1904: false } as any;
       applyDataStyle(subCell);
       subCell.numFmt = ReportStyles.currencyFormat;
 
