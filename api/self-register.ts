@@ -29,6 +29,8 @@ export default async function handler(req: any, res: any) {
     vatNumber 
   } = req.body;
 
+  let companyId: string | null = null;
+
   try {
     // 1. Pre-check: unique name, vat, username
     const { data: existingComp } = await supabaseAdmin
@@ -62,7 +64,7 @@ export default async function handler(req: any, res: any) {
       .from('companies')
       .insert([{ 
         name: companyName, 
-        status: 'active',
+        status: 'pending',
         email: email || null,
         phone: phone || null,
         address: address || null,
@@ -73,7 +75,7 @@ export default async function handler(req: any, res: any) {
       .select();
       
     if (companyError) throw companyError;
-    const companyId = companyData[0].id;
+    companyId = companyData[0].id;
 
     // 3. Create or Link Auth User
     const finalEmail = email || `${username.toLowerCase()}@jobsreport.it`;
@@ -174,6 +176,23 @@ export default async function handler(req: any, res: any) {
 
   } catch (err: any) {
     console.error('Self-Registration Error:', err);
+    
+    if (companyId) {
+      // Attempt to save the error to the database so it's not lost
+      try {
+        const { error: dbUpdateError } = await supabaseAdmin.from('companies').update({
+          setup_error: err.message || JSON.stringify(err),
+          setup_failed_at: new Date().toISOString()
+        }).eq('id', companyId);
+        
+        if (dbUpdateError) {
+          console.error('Failed to save setup_error to DB:', dbUpdateError);
+        }
+      } catch (e) {
+        console.error('Failed to save setup_error to DB due to exception:', e);
+      }
+    }
+
     return res.status(500).json({ error: err.message });
   }
 }

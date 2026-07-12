@@ -189,7 +189,12 @@ const CompaniesView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {companies.map(c => (
                 <tr key={c.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0">
-                  <td className="px-4 py-2 font-bold text-slate-900 text-xs">{c.name}</td>
+                  <td className="px-4 py-2">
+                    <div className="font-bold text-slate-900 text-xs">{c.name}</div>
+                    <div className="text-[9px] text-slate-400 mt-0.5" title="Data di registrazione">
+                      {new Date(c.createdAt).toLocaleString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </td>
                   <td className="px-4 py-2 text-slate-500 text-[11px]">{c.email || '-'}</td>
                   <td className="px-4 py-2 text-slate-500 text-[11px]">{c.phone || '-'}</td>
                   <td className="px-4 py-2">
@@ -203,14 +208,16 @@ const CompaniesView: React.FC = () => {
                   <td className="px-4 py-2 flex items-center gap-2">
                     <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
                       c.computed?.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 
-                      (c.computed?.status === 'pending' || c.computed?.status === 'repair_pending') ? 'bg-amber-100 text-amber-700' : 
+                      c.computed?.status === 'repair_pending' ? 'bg-red-100 text-red-700' : 
+                      c.computed?.status === 'pending' ? 'bg-amber-100 text-amber-700' : 
                       'bg-slate-100 text-slate-600'
                     }`}>
                       {c.computed?.status === 'active' ? t('common.statusActive') : 
-                       (c.computed?.status === 'pending' || c.computed?.status === 'repair_pending') ? 'IN SETUP' : t('common.statusInactive')}
+                       c.computed?.status === 'repair_pending' ? 'NEEDS REPAIR' : 
+                       c.computed?.status === 'pending' ? 'IN SETUP' : t('common.statusInactive')}
                     </span>
                     {c.computed?.error && (
-                      <span className="text-red-500 cursor-help" title={`Error at step ${c.setupStep}: ${c.computed.error}`}>
+                      <span className="text-red-500 cursor-help" title={`Error at step ${c.setupStep || '?'}: ${c.computed.error}`}>
                         ⚠️
                       </span>
                     )}

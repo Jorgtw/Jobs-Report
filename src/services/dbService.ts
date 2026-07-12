@@ -635,8 +635,21 @@ class DBService {
 
     // Single reconciliation rule: prevent retry if DB truth is already active
     const { data: compCheck } = await supabase.from('companies').select('status').eq('id', companyId).single();
-    compCheckData = compCheck;
-    if (!canPerformAction(compCheck, 'retry_setup')) {
+    
+    const { count: workerCount } = await supabase
+      .from('workers')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .eq('role', 'admin');
+
+    const needsRepair = compCheck?.status === 'active' && workerCount === 0;
+
+    compCheckData = {
+      ...compCheck,
+      computed: { needsRepair }
+    };
+
+    if (!canPerformAction(compCheckData, 'retry_setup')) {
        throw new Error('Impossibile eseguire il retry: la ditta non è in uno stato idoneo o è già ACTIVE nel sistema.');
     }
 
@@ -2064,6 +2077,7 @@ class DBService {
           isManualOverride: aw.is_manual_override || false
         };
       }),
+      invoiceStatus: r.invoice_status || 'Pending',
       exportStatus: r.export_status || 'new',
       activityType: r.activityType,
       createdAt: new Date(r.created_at).getTime(),

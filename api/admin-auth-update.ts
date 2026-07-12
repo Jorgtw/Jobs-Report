@@ -64,7 +64,7 @@ export default async function handler(req: any, res: any) {
     const { companyId } = updates || {};
     
     // --- CREATE NEW USER ---
-    if (action === 'create') {
+    if (action === 'create' || action === 'create_idempotent') {
       const { name, username, password, email, role, status } = updates;
       
       const targetCompanyId = companyId;
