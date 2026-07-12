@@ -2079,7 +2079,7 @@ class DBService {
       }),
       invoiceStatus: r.invoice_status || 'Pending',
       exportStatus: r.export_status || 'new',
-      activityType: r.activityType,
+      activityType: r.activity_type || 'work',
       createdAt: new Date(r.created_at).getTime(),
     };
   }

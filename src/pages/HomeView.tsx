@@ -34,8 +34,8 @@ const CompactDashboard: React.FC = () => {
     activeProjects: 0,
     pendingReports: 0,
     pendingHours: 0,
-    pendingExpenses: 0,
-    pendingToInvoice: 0,
+    totalExpenses: 0,
+    totalWorkValue: 0,
     pendingMargin: 0
   });
 
@@ -56,17 +56,19 @@ const CompactDashboard: React.FC = () => {
 
         const pendingReports = new Set(pendingData.map((s: any) => s.id.split('_')[0])).size;
         const pendingHours = pendingData.reduce((acc: number, s: any) => acc + (s.totalHours || 0), 0);
-        const pendingExpenses = pendingData.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
-        const pendingToInvoice = pendingData.reduce((acc: number, s: any) => acc + (s.revenue || 0), 0);
-        const pendingMargin = pendingToInvoice - pendingExpenses;
+        
+        // MARGINE: Calcolato su TUTTO il lavoro effettivamente svolto
+        const totalExpenses = summary.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
+        const totalWorkValue = summary.reduce((acc: number, s: any) => acc + (s.revenue || 0), 0);
+        const totalMargin = totalWorkValue - totalExpenses;
 
         setStats({
           activeProjects: activeProjectsCount,
           pendingReports,
           pendingHours,
-          pendingExpenses,
-          pendingToInvoice,
-          pendingMargin
+          totalExpenses,
+          totalWorkValue,
+          pendingMargin: totalMargin
         });
       } catch (err) {
         console.error("Error loading stats:", err);
@@ -105,8 +107,8 @@ const CompactDashboard: React.FC = () => {
         <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" icon={Briefcase} isLoading={loading} />
         <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" icon={FileText} isLoading={loading} />
         <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" icon={Clock} isLoading={loading} />
-        <SmallStat label={t('dashboard.estimatedExpenses')} value={formatNum(stats.pendingExpenses)} to="/work-summary" valueColor="text-rose-600" icon={TrendingDown} isLoading={loading} />
-        <SmallStat label={t('dashboard.toInvoice')} value={formatNum(stats.pendingToInvoice)} to="/work-summary" valueColor="text-blue-600" icon={Wallet} isLoading={loading} />
+        <SmallStat label={t('reports.totalExpenses')} value={formatNum(stats.totalExpenses)} to="/work-summary" valueColor="text-rose-600" icon={TrendingDown} isLoading={loading} />
+        <SmallStat label={t('reports.workValue')} value={formatNum(stats.totalWorkValue)} to="/work-summary" valueColor="text-blue-600" icon={Wallet} isLoading={loading} />
         <SmallStat label={t('dashboard.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} icon={TrendingUp} isLoading={loading} />
       </div>
     </div>
