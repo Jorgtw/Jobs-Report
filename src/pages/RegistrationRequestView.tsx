@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ArrowLeft, Building2, User, Mail, MapPin, Hash, Lock, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -26,9 +26,24 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
   const [errorMessage, setErrorMessage] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  const isFormValid = 
+    acceptedTerms &&
+    form.companyName.trim() !== '' &&
+    form.adminName.trim() !== '' &&
+    form.email.trim() !== '' &&
+    form.address.trim() !== '' &&
+    form.city.trim() !== '' &&
+    form.vatNumber.trim() !== '' &&
+    form.username.trim() !== '' &&
+    form.password.trim() !== '';
+
+  const isSubmittingRef = useRef(false);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!acceptedTerms) return;
+    if (!isFormValid) return;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     
     setStatus('loading');
     setErrorMessage('');
@@ -50,6 +65,7 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
       console.error(err);
       setStatus('error');
       setErrorMessage(err.message || t('auth.registrationErrorConnection'));
+      isSubmittingRef.current = false;
     }
   };
 
@@ -176,7 +192,7 @@ export const RegistrationRequestView: React.FC<RegistrationRequestViewProps> = (
               )}
 
               <button 
-                disabled={status === 'loading' || !acceptedTerms} 
+                disabled={status === 'loading' || !isFormValid} 
                 type="submit" 
                 className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black text-sm hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 active:scale-[0.98] mt-4 flex items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale-[50%] disabled:cursor-not-allowed group"
               >

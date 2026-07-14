@@ -519,7 +519,15 @@ class DBService {
       }])
       .select();
       
-    if (companyError) throw companyError;
+    if (companyError) {
+      if (companyError.code === '23505') {
+        const errMsg = companyError.message || '';
+        if (errMsg.includes('vat_number') || errMsg.includes('companies_vat_number_key')) {
+          throw new Error('La Partita IVA risulta già registrata.');
+        }
+      }
+      throw companyError;
+    }
     const newCompanyId = companyData[0].id;
 
     try {
@@ -605,7 +613,21 @@ class DBService {
       return this.mapSupabaseWorker(userData);
       
     } catch (err: any) {
-      /* setup_error update skipped */
+      // MVP Phase 1 Rollback
+      try {
+        if (newCompanyId) {
+          await supabase.from('projects').delete().eq('company_id', newCompanyId);
+          await supabase.from('clients').delete().eq('company_id', newCompanyId);
+          await supabase.from('workers').delete().eq('company_id', newCompanyId);
+          await supabase.from('companies').delete().eq('id', newCompanyId);
+        }
+      } catch (rollbackErr: any) {
+        console.error(`CRITICAL: Rollback failed for Company ${newCompanyId} during registerCompany cleanup. Original Error: ${err.message}. Rollback Error:`, rollbackErr);
+      }
+
+      if (err?.message?.includes('23505') || err?.message?.includes('Username')) {
+        throw new Error('Questo username è già in uso.');
+      }
       throw err;
     } finally {
       if (newCompanyId) {

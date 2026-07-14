@@ -30,6 +30,8 @@ export default async function handler(req: any, res: any) {
   } = req.body;
 
   let companyId: string | null = null;
+  let authIdCreatedByUs: string | null = null;
+  let authId: string | null = null;
 
   try {
     // 1. Pre-check: unique name, vat, username
@@ -99,6 +101,7 @@ export default async function handler(req: any, res: any) {
       });
       if (authError) throw authError;
       authId = authData.user.id;
+      authIdCreatedByUs = authId;
     }
 
     // 4. Create Worker
@@ -177,19 +180,33 @@ export default async function handler(req: any, res: any) {
   } catch (err: any) {
     console.error('Self-Registration Error:', err);
     
-    if (companyId) {
-      // Attempt to save the error to the database so it's not lost
-      try {
-        const { error: dbUpdateError } = await supabaseAdmin.from('companies').update({
-          setup_error: err.message || JSON.stringify(err),
-          setup_failed_at: new Date().toISOString()
-        }).eq('id', companyId);
-        
-        if (dbUpdateError) {
-          console.error('Failed to save setup_error to DB:', dbUpdateError);
+    // Explicit Rollback
+    try {
+      if (companyId) {
+        await supabaseAdmin.from('projects').delete().eq('company_id', companyId);
+        await supabaseAdmin.from('clients').delete().eq('company_id', companyId);
+        if (authId) {
+          await supabaseAdmin.from('user_companies').delete().match({ auth_id: authId, company_id: companyId });
         }
-      } catch (e) {
-        console.error('Failed to save setup_error to DB due to exception:', e);
+        await supabaseAdmin.from('workers').delete().eq('company_id', companyId);
+        await supabaseAdmin.from('companies').delete().eq('id', companyId);
+      }
+      if (authIdCreatedByUs) {
+        await supabaseAdmin.auth.admin.deleteUser(authIdCreatedByUs);
+      }
+    } catch (rollbackErr: any) {
+      console.error(`CRITICAL: Rollback failed for Company ${companyId} during self-register cleanup. Original Error: ${err.message}. Rollback Error:`, rollbackErr);
+    }
+
+    // 23505 Unique Violation translation
+    if (err.code === '23505') {
+      const errMsg = err.message || '';
+      if (errMsg.includes('companies_vat_number_key') || errMsg.includes('vat_number')) {
+        return res.status(400).json({ error: 'La Partita IVA risulta già registrata.' });
+      } else if (errMsg.includes('workers_username_key') || errMsg.includes('username')) {
+        return res.status(400).json({ error: 'Questo username è già in uso.' });
+      } else {
+        return res.status(400).json({ error: 'Un elemento fornito è già registrato nel sistema.' });
       }
     }
 
