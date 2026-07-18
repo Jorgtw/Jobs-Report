@@ -11,6 +11,7 @@ const translations = {
         "nav.register": "Registrazione",
         "nav.contact": "Contattaci",
         "nav.login": "Accedi",
+        "nav.signup": "Prova Gratis",
         "nav.theme_to_dark": "Attiva tema scuro",
         "nav.theme_to_light": "Attiva tema chiaro",
 
@@ -143,6 +144,7 @@ const translations = {
         "nav.register": "Register",
         "nav.contact": "Contact Us",
         "nav.login": "Log In",
+        "nav.signup": "Try for Free",
         "nav.theme_to_dark": "Switch to dark mode",
         "nav.theme_to_light": "Switch to light mode",
 
@@ -275,6 +277,7 @@ const translations = {
         "nav.register": "Registro",
         "nav.contact": "Contáctanos",
         "nav.login": "Acceder",
+        "nav.signup": "Prueba Gratis",
         "nav.theme_to_dark": "Activar tema oscuro",
         "nav.theme_to_light": "Activar tema claro",
 
@@ -407,6 +410,7 @@ const translations = {
         "nav.register": "Registrering",
         "nav.contact": "Kontakt os",
         "nav.login": "Log ind",
+        "nav.signup": "Prøv Gratis",
         "nav.theme_to_dark": "Skift til mørkt tema",
         "nav.theme_to_light": "Skift til lyst tema",
 
