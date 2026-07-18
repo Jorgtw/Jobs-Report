@@ -66,7 +66,7 @@ export default async function handler(req: any, res: any) {
       .from('companies')
       .insert([{ 
         name: companyName, 
-        status: 'pending',
+        status: 'active',
         email: email || null,
         phone: phone || null,
         address: address || null,
