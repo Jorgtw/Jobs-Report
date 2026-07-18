@@ -105,7 +105,7 @@ export default async function handler(req: any, res: any) {
     }
 
     // 4. Create Worker
-    const { error: workerError } = await supabaseAdmin.from('workers').insert({
+    const { error: workerError } = await supabaseAdmin.from('workers').upsert({
       name: adminName,
       username,
       email: email || `${username.toLowerCase()}@jobsreport.it`,
@@ -114,16 +114,16 @@ export default async function handler(req: any, res: any) {
       auth_id: authId,
       role: 'admin',
       status: 'active'
-    });
+    }, { onConflict: 'auth_id' });
 
     if (workerError) throw workerError;
 
     // 5. Create Bridge
-    await supabaseAdmin.from('user_companies').insert({
+    await supabaseAdmin.from('user_companies').upsert({
       auth_id: authId,
       company_id: companyId,
       role: 'admin'
-    });
+    }, { onConflict: 'auth_id,company_id' });
 
     // 6. Create Default Data
     const { data: clientData } = await supabaseAdmin
