@@ -319,6 +319,8 @@
     "communications.push_status_disabled",
     "communications.push_deactivate",
     "communications.push_reset_hint",
+    "dashboard.estimatedExpenses",
+    "dashboard.toInvoice",
     "dashboard.pendingRequestsReminder",
     "dashboard.pendingRequestsDesc",
     "dashboard.quickSupport",
@@ -490,81 +492,87 @@
   "hardcoded": [
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 81,
+      "line": 83,
       "text": "Seleziona almeno un rapportino e un cliente",
       "type": "alert"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 93,
+      "line": 95,
       "text": "Seleziona almeno un rapportino e un cliente",
       "type": "alert"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 107,
+      "line": 138,
       "text": "Report Interventi",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 109,
+      "line": 140,
       "text": "Genera l'allegato dei lavori per l'amministrazione o per il cliente.",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 118,
+      "line": 149,
       "text": "Cliente",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 124,
+      "line": 155,
       "text": "-- Seleziona Cliente --",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 131,
+      "line": 162,
       "text": "Progetto (Opzionale)",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 138,
+      "line": 169,
       "text": "-- Tutti i progetti --",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 157,
+      "line": 188,
       "text": "Seleziona Tutti (",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 183,
+      "line": 214,
       "text": "Excel",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 219,
+      "line": 250,
       "text": "Nuovo",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 216,
+      "line": 247,
       "text": "Esportato",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 190,
+      "line": 221,
       "text": "Nessun rapportino trovato per questa selezione.",
       "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\CompaniesView.tsx",
+      "line": 194,
+      "text": "Data di registrazione",
+      "type": "JSXAttribute: title"
     }
   ]
 }

@@ -109,7 +109,8 @@ async function run() {
             ordinary_hours: totalHours,
             description: DESCRIPTIONS[Math.floor(Math.random() * DESCRIPTIONS.length)],
             worker_type: 'internal',
-            activity_type: 'work'
+            activity_type: 'work',
+            invoice_status: 'Pending'
         };
         reportsToInsert.push(report);
 

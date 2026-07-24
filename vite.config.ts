@@ -42,6 +42,11 @@ export default defineConfig(({ mode }) => ({
     })
   ],
   base: '/',
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3001'
+    }
+  },
   build: {
     outDir: 'dist',
     sourcemap: false
