@@ -146,6 +146,44 @@ export default async function handler(req: any, res: any) {
     const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
     if (authError || !authUser) return res.status(401).json({ error: 'Invalid or expired token' });
 
+    // --- 1) CONTROLLO SUPERADMIN (SSOT: user_roles) ---
+    const { data: superRole } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', authUser.id)
+      .eq('role', 'superadmin')
+      .maybeSingle();
+
+    if (superRole) {
+      return res.status(403).json({ error: 'Forbidden: Superadmin access denied to operational export' });
+    }
+
+    // --- 2) SICUREZZA TENANT E RUOLO AZIENDALE (SSOT: user_companies) ---
+    const { data: membership, error: memberErr } = await supabaseAdmin
+      .from('user_companies')
+      .select('role')
+      .eq('auth_id', authUser.id)
+      .eq('company_id', companyId)
+      .maybeSingle();
+
+    if (memberErr || !membership) {
+      return res.status(403).json({ error: 'Forbidden: Unauthorized tenant access' });
+    }
+
+    const userRole = membership.role?.toLowerCase() || 'worker';
+
+    // --- 3) TROVARE WORKERS.ID TRAMITE AUTH_ID (per Supervisor e Worker) ---
+    let currentWorkerId: string | null = null;
+    if (userRole === 'supervisor' || userRole === 'worker') {
+      const { data: workerData } = await supabaseAdmin
+        .from('workers')
+        .select('id')
+        .eq('auth_id', authUser.id)
+        .eq('company_id', companyId)
+        .maybeSingle();
+      currentWorkerId = workerData?.id || null;
+    }
+
     let reportQuery = supabaseAdmin
       .from('reports')
       .select(`
@@ -159,7 +197,7 @@ export default async function handler(req: any, res: any) {
 
     const [reportsRes, projectsRes, clientsRes, workersRes, subcontractorsRes] = await Promise.all([
       reportQuery,
-      supabaseAdmin.from('projects').select('id, title, description, economic_type, client_id, is_internal').eq('company_id', companyId),
+      supabaseAdmin.from('projects').select('id, title, description, economic_type, client_id, is_internal, assigned_worker_ids').eq('company_id', companyId),
       supabaseAdmin.from('clients').select('id, name').eq('company_id', companyId),
       supabaseAdmin.from('workers').select('id, name, subcontractor_id').eq('company_id', companyId),
       supabaseAdmin.from('subcontractors').select('id, company_name').eq('company_id', companyId)
@@ -175,6 +213,17 @@ export default async function handler(req: any, res: any) {
     const clientMap = new Map(clientsRes.data.map((c: any) => [c.id, c]));
     const workerMapRaw = new Map((workersRes.data || []).map((w: any) => [w.id, w]));
     const subMap = new Map((subcontractorsRes.data || []).map((s: any) => [s.id, s]));
+
+    // --- 4) FILTRAGGIO PROGETTI PER SUPERVISOR ---
+    const allowedProjectIds = new Set<string>();
+    if (userRole === 'supervisor') {
+      for (const p of (projectsRes.data || [])) {
+        const assigned = p.assigned_worker_ids;
+        if (!assigned || assigned.length === 0 || (currentWorkerId && assigned.includes(currentWorkerId))) {
+          allowedProjectIds.add(p.id);
+        }
+      }
+    }
 
     const mappedReports = (reportsRes.data || []).map((r: any) => {
       const proj = projectMap.get(r.project_id);
@@ -199,6 +248,12 @@ export default async function handler(req: any, res: any) {
       if (projectId && r.project_id !== projectId) continue;
       if (clientId && projectMap.get(r.project_id)?.client_id !== clientId) continue;
 
+      // Filtro Supervisor: esclude progetti non autorizzati
+      if (userRole === 'supervisor' && !allowedProjectIds.has(r.project_id)) continue;
+
+      // Filtro Worker: esclude rapportini non di propria titolarità
+      if (userRole === 'worker' && r.created_by !== currentWorkerId) continue;
+
       const processWorker = (
         workerId: string, 
         nameFallback: string, 
@@ -210,6 +265,7 @@ export default async function handler(req: any, res: any) {
         membershipType?: string
       ) => {
         if (userId && workerId !== userId) return;
+        if (userRole === 'worker' && workerId !== currentWorkerId) return;
         
         const workerInfo = workerMapRaw.get(workerId);
         const workerName = workerInfo?.name || nameFallback || '';
@@ -314,7 +370,7 @@ export default async function handler(req: any, res: any) {
         { v: wData.night, t: 'n', z: '#,##0.00' },
         { v: wData.tot, t: 'n', z: '#,##0.00' },
         { v: '', t: 's' }, // GUARDRAIL: Prezzo lasciato vuoto all'utente
-        { f: `IF(${getColLetter(6)}${rIdx}="","",${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx})`, t: 'n', z: '#,##0.00' }
+        (userRole === 'admin') ? { f: `IF(${getColLetter(6)}${rIdx}="","",${getColLetter(5)}${rIdx}*${getColLetter(6)}${rIdx})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }
       ]);
       rIdx++;
     }
@@ -344,7 +400,7 @@ export default async function handler(req: any, res: any) {
         { v: '', t: 's' }, // Tariffa Oraria (vuota)
         { v: '', t: 's' }, // Prezzo a Corpo (vuoto)
         // Formula: se c'è prezzo a corpo usa quello, altrimenti Ore * Tariffa Oraria
-        { f: `IF(${getColLetter(7)}${rSubIdx}<>"",${getColLetter(7)}${rSubIdx},IF(${getColLetter(6)}${rSubIdx}="","",${getColLetter(5)}${rSubIdx}*${getColLetter(6)}${rSubIdx}))`, t: 'n', z: '#,##0.00' }
+        (userRole === 'admin') ? { f: `IF(${getColLetter(7)}${rSubIdx}<>"",${getColLetter(7)}${rSubIdx},IF(${getColLetter(6)}${rSubIdx}="","",${getColLetter(5)}${rSubIdx}*${getColLetter(6)}${rSubIdx}))`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }
       ]);
       rSubIdx++;
     }
@@ -376,7 +432,7 @@ export default async function handler(req: any, res: any) {
         { v: '', t: 's' }, // Tariffa Oraria vuota
         { v: '', t: 's' }, // Prezzo a Corpo vuoto
         // Formula: se c'è prezzo a corpo usa quello, altrimenti Ore * Tariffa Oraria
-        { f: `IF(${getColLetter(9)}${rInvIdx}<>"",${getColLetter(9)}${rInvIdx},IF(${getColLetter(8)}${rInvIdx}="","",${getColLetter(7)}${rInvIdx}*${getColLetter(8)}${rInvIdx}))`, t: 'n', z: '#,##0.00' }
+        (userRole === 'admin') ? { f: `IF(${getColLetter(9)}${rInvIdx}<>"",${getColLetter(9)}${rInvIdx},IF(${getColLetter(8)}${rInvIdx}="","",${getColLetter(7)}${rInvIdx}*${getColLetter(8)}${rInvIdx}))`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }
       ]);
       rInvIdx++;
     }
@@ -401,10 +457,10 @@ export default async function handler(req: any, res: any) {
       [t.totalEmpHours, { f: `SUM('${t.payrollSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit],
       [t.totalSubHours, { f: `SUM('${t.subSheet}'!F2:F${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit], // Col F = Ore
       [t.totalBillableHours, { f: `SUM('${t.invoiceSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit], // Col H = Ore
-      [t.totalPersCost, { f: `SUM('${t.payrollSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, '€'], // Col H = Tot Costo
-      [t.totalSubCost, { f: `SUM('${t.subSheet}'!I2:I${maxR})`, t: 'n', z: '#,##0.00' }, '€'], // Col I = Tot Costo Sub
-      [t.totalRevenue, { f: `SUM('${t.invoiceSheet}'!K2:K${maxR})`, t: 'n', z: '#,##0.00' }, '€'], // Col K = Tot Riga
-      [t.finalMargin, { f: `B9-(B7+B8)`, t: 'n', z: '#,##0.00' }, '€']
+      [t.totalPersCost, (userRole === 'admin') ? { f: `SUM('${t.payrollSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col H = Tot Costo
+      [t.totalSubCost, (userRole === 'admin') ? { f: `SUM('${t.subSheet}'!I2:I${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col I = Tot Costo Sub
+      [t.totalRevenue, (userRole === 'admin') ? { f: `SUM('${t.invoiceSheet}'!K2:K${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col K = Tot Riga
+      [t.finalMargin, (userRole === 'admin') ? { f: `B9-(B7+B8)`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€']
     ];
     const wsSintesi = utils.aoa_to_sheet(sintesiRows);
     wsSintesi['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 10 }];
