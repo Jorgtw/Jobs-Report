@@ -1,5 +1,6 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
+import { getCatalogT } from '../i18n-catalog';
 import { applyHeaderStyle, applySubHeaderStyle, applyTableHeaderStyle, applyDataStyle, ReportStyles } from '../utils/formatters';
 
 export class BillingAttachment implements ReportTemplate {
@@ -7,7 +8,8 @@ export class BillingAttachment implements ReportTemplate {
   type = 'ECONOMIC' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
-    const sheet = workbook.addWorksheet('Allegato Fatturazione', {
+    const t = getCatalogT(data.language);
+    const sheet = workbook.addWorksheet(t.sheetBilling, {
       pageSetup: {
         paperSize: 9, // A4
         orientation: 'portrait',
@@ -35,7 +37,7 @@ export class BillingAttachment implements ReportTemplate {
     // Riga 1: Titolo
     sheet.mergeCells('A1:F1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value = 'ALLEGATO DI FATTURAZIONE';
+    titleCell.value = t.billingTitle;
     applyHeaderStyle(titleCell);
     sheet.getRow(1).height = 30;
 
@@ -46,24 +48,24 @@ export class BillingAttachment implements ReportTemplate {
 
     const projectId = firstSummary.projectId;
     const project = data.projects.find(p => p.id === projectId);
-    const clientName = firstSummary.clientName || 'Cliente non specificato';
-    const projectName = project?.name || 'Multipli';
+    const clientName = firstSummary.clientName || t.unspecifiedClient;
+    const projectName = project?.name || t.multipleClients;
 
     const dateRange = (data.filters?.['Dal'] && data.filters?.['Al']) 
       ? `${data.filters['Dal']} - ${data.filters['Al']}`
-      : 'Tutto il periodo';
+      : t.allPeriod;
 
     // Riga 2: Sottotitolo
     sheet.mergeCells('A2:F2');
     const subTitleCell = sheet.getCell('A2');
-    subTitleCell.value = `Cliente: ${clientName}  |  Progetto: ${projectName}  |  Periodo: ${dateRange}`;
+    subTitleCell.value = `${t.clientPrefix}${clientName}  |  ${t.projectPrefix}${projectName}  |  ${t.periodPrefix}${dateRange}`;
     applySubHeaderStyle(subTitleCell);
     sheet.getRow(2).height = 20;
 
     sheet.getRow(3).height = 10;
 
     // Intestazioni tabella
-    const headers = ['Data', 'Operatore', 'Descrizione intervento', 'Ore', 'Materiali', 'Importo'];
+    const headers = t.billingHeaders;
     let currentRow = 4;
     headers.forEach((h, i) => {
       const cell = sheet.getCell(currentRow, i + 1);
@@ -86,10 +88,10 @@ export class BillingAttachment implements ReportTemplate {
       row.getCell(1).value = new Date(r.date).toLocaleDateString();
       applyDataStyle(row.getCell(1));
 
-      row.getCell(2).value = r.userName || 'Sconosciuto';
+      row.getCell(2).value = r.userName || t.unspecifiedWorker;
       applyDataStyle(row.getCell(2), 'left');
 
-      row.getCell(3).value = r.description || 'Intervento';
+      row.getCell(3).value = r.description || t.genericIntervention;
       applyDataStyle(row.getCell(3), 'left');
 
       const hoursCell = row.getCell(4);
@@ -131,7 +133,7 @@ export class BillingAttachment implements ReportTemplate {
     // Riga Totale Generale
     sheet.mergeCells(`A${currentRow}:C${currentRow}`);
     const totLabel = sheet.getCell(`A${currentRow}`);
-    totLabel.value = 'TOTALE DA FATTURARE';
+    totLabel.value = t.billingTotal;
     totLabel.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
     totLabel.alignment = { vertical: 'middle', horizontal: 'right' };
     totLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
@@ -163,7 +165,7 @@ export class BillingAttachment implements ReportTemplate {
 
     // Footer note
     const noteCell = sheet.getCell(`A${currentRow}`);
-    noteCell.value = 'Documento a supporto della fattura n. ________ — non sostituisce la fattura fiscale';
+    noteCell.value = t.billingNote;
     noteCell.font = { name: 'Arial', size: 9, italic: true };
   }
 }

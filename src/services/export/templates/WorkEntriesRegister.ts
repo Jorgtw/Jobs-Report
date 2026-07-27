@@ -1,5 +1,6 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
+import { getCatalogT } from '../i18n-catalog';
 import { getISOWeek } from '../utils/dateUtils';
 
 export class WorkEntriesRegister implements ReportTemplate {
@@ -7,7 +8,8 @@ export class WorkEntriesRegister implements ReportTemplate {
   type = 'OPERATIVE' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
-    const sheet = workbook.addWorksheet('Registro Rapportini', {
+    const t = getCatalogT(data.language);
+    const sheet = workbook.addWorksheet(t.sheetEntries, {
       pageSetup: {
         paperSize: 8 as ExcelJS.PaperSize, // A3 = 8 in exceljs standard mappings (approx)
         orientation: 'landscape',
@@ -29,7 +31,7 @@ export class WorkEntriesRegister implements ReportTemplate {
     // Riga 1: Titolo
     sheet.mergeCells('A1:V1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value = 'REGISTRO RAPPORTINI (WORK ENTRIES REGISTER)';
+    titleCell.value = t.entriesTitle;
     titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
     titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } }; // Primary Blue
     titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -38,7 +40,7 @@ export class WorkEntriesRegister implements ReportTemplate {
     // Riga 2: Sottotitolo (uso interno)
     sheet.mergeCells('A2:V2');
     const subTitleCell = sheet.getCell('A2');
-    subTitleCell.value = `USO INTERNO AMMINISTRAZIONE — Non da inviare al cliente  |  Azienda: ${data.companyName}  |  Generato il: ${new Date().toLocaleDateString()}`;
+    subTitleCell.value = `${t.internalUseOnly}  |  ${t.companyPrefix}${data.companyName}  |  ${t.generatedPrefix}${new Date().toLocaleDateString()}`;
     subTitleCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FFFFFFFF' } };
     subTitleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F75B5' } }; // Secondary Blue
     subTitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -57,7 +59,7 @@ export class WorkEntriesRegister implements ReportTemplate {
       const year = new Date(r.date).getFullYear();
       const rif = `RPT-${year}-${index.toString().padStart(4, '0')}`;
       
-      const workerName = r.userName || r.userId || 'Sconosciuto';
+      const workerName = r.userName || r.userId || t.unspecifiedWorker;
       const clientName = r.clientName || r.clientId || '';
       
       // Calcolo spese aggregate e dettaglio testuale
@@ -121,30 +123,7 @@ export class WorkEntriesRegister implements ReportTemplate {
         theme: 'TableStyleMedium2', // Stile pulito Excel nativo
         showRowStripes: true,
       },
-      columns: [
-        { name: 'Rif. Rapportino', filterButton: true },
-        { name: 'Data', filterButton: true },
-        { name: 'Settimana (ISO)', filterButton: true },
-        { name: 'Ora Inizio', filterButton: true },
-        { name: 'Ora Fine', filterButton: true },
-        { name: 'Ore Pausa', filterButton: true },
-        { name: 'Ore Totali', filterButton: true },
-        { name: 'Ore Ordinarie', filterButton: true },
-        { name: 'Straordinario', filterButton: true },
-        { name: 'Notturne', filterButton: true },
-        { name: 'Festive', filterButton: true },
-        { name: 'Cliente', filterButton: true },
-        { name: 'Progetto/Commessa', filterButton: true },
-        { name: 'Descrizione Attività', filterButton: true },
-        { name: 'Tipo Attività', filterButton: true },
-        { name: 'Dipendente', filterButton: true },
-        { name: 'Colleghi Aggiuntivi', filterButton: true },
-        { name: 'Km Percorsi', filterButton: true },
-        { name: 'Spese', filterButton: true },
-        { name: 'Dettaglio Spese', filterButton: true },
-        { name: 'Stato', filterButton: true },
-        { name: 'Note', filterButton: true }
-      ],
+      columns: t.entriesHeaders.map(name => ({ name, filterButton: true })),
       rows: tableRows
     });
 

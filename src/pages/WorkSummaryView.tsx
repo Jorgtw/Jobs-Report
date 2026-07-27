@@ -224,7 +224,8 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
           projects: projects.filter((p: any) => filteredData.some((s: any) => s.projectId === p.id)),
           workers: users,
           clients: clients,
-          filters: activeFilters as any
+          filters: activeFilters as any,
+          language: lang
         };
 
         await engine.generateCatalog(reportData, 'JobsReport_Export');

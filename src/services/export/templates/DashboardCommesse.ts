@@ -1,5 +1,6 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
+import { getCatalogT } from '../i18n-catalog';
 import { applyHeaderStyle, applySubHeaderStyle, applyTableHeaderStyle, applyDataStyle, ReportStyles } from '../utils/formatters';
 
 export class DashboardCommesse implements ReportTemplate {
@@ -7,8 +8,9 @@ export class DashboardCommesse implements ReportTemplate {
   type = 'ECONOMIC' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
+    const t = getCatalogT(data.language);
     // --- FOGLIO 1: DASHBOARD COMMESSE ---
-    const sheetDash = workbook.addWorksheet('Dashboard', {
+    const sheetDash = workbook.addWorksheet(t.sheetDashboard, {
       pageSetup: {
         paperSize: 9, // A4
         orientation: 'landscape',
@@ -40,7 +42,7 @@ export class DashboardCommesse implements ReportTemplate {
     // Riga 1: Titolo
     sheetDash.mergeCells('A1:I1');
     const titleCell = sheetDash.getCell('A1');
-    titleCell.value = 'DASHBOARD COMMESSE — Vista Titolare';
+    titleCell.value = t.dashTitle;
     applyHeaderStyle(titleCell);
     sheetDash.getRow(1).height = 30;
 
@@ -50,19 +52,16 @@ export class DashboardCommesse implements ReportTemplate {
     
     const dateRange = (data.filters?.startDate && data.filters?.endDate) 
       ? `${new Date(data.filters.startDate).toLocaleDateString()} - ${new Date(data.filters.endDate).toLocaleDateString()}`
-      : 'Tutto il periodo';
+      : t.allPeriod;
 
-    subTitleCell.value = `Periodo: ${dateRange}  |  Azienda: ${data.companyName}  |  Generato il: ${new Date().toLocaleDateString()}`;
+    subTitleCell.value = `${t.periodPrefix}${dateRange}  |  ${t.companyPrefix}${data.companyName}  |  ${t.generatedPrefix}${new Date().toLocaleDateString()}`;
     applySubHeaderStyle(subTitleCell);
     sheetDash.getRow(2).height = 20;
 
     sheetDash.getRow(3).height = 10;
 
     // Intestazioni tabella
-    const headersDash = [
-      'Cliente', 'Progetto', 'Ore interne', 'Costo personale', 
-      'Subappalti', 'Spese', 'Ricavo', 'Margine', 'Margine %'
-    ];
+    const headersDash = t.dashHeaders;
     let currentRowDash = 4;
     headersDash.forEach((h, i) => {
       const cell = sheetDash.getCell(currentRowDash, i + 1);
@@ -138,7 +137,7 @@ export class DashboardCommesse implements ReportTemplate {
       // 'Costi Esterni'!F:F (Importo), 'Costi Esterni'!C:C (Cliente), A[Row], 'Costi Esterni'!D:D (Progetto), B[Row]
       const subCell = row.getCell(5);
       const subCost = stats.subcontractorCost || 0;
-      subCell.value = { formula: `SUMIFS('Costi Esterni'!F:F, 'Costi Esterni'!C:C, A${currentRowDash}, 'Costi Esterni'!D:D, B${currentRowDash}) + ${subCost}`, date1904: false } as any;
+      subCell.value = { formula: `SUMIFS('${t.sheetExtCosts}'!F:F, '${t.sheetExtCosts}'!C:C, A${currentRowDash}, '${t.sheetExtCosts}'!D:D, B${currentRowDash}) + ${subCost}`, date1904: false } as any;
       applyDataStyle(subCell);
       subCell.numFmt = ReportStyles.currencyFormat;
 
@@ -173,7 +172,7 @@ export class DashboardCommesse implements ReportTemplate {
     // RIGA TOTALE GENERALE
     sheetDash.mergeCells(`A${currentRowDash}:B${currentRowDash}`);
     const totLabelCell = sheetDash.getCell(`A${currentRowDash}`);
-    totLabelCell.value = 'TOTALE COMMESSE';
+    totLabelCell.value = t.dashTotal;
     totLabelCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
     totLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
     totLabelCell.alignment = { vertical: 'middle', horizontal: 'left' };
@@ -210,9 +209,9 @@ export class DashboardCommesse implements ReportTemplate {
 
     // Footer note
     const noteCell = sheetDash.getCell(`A${currentRowDash}`);
-    let footerText = "Margine = Ricavo - Costo personale - Subappalti - Spese. Subappalti collegati in automatico al foglio 'Costi Esterni' (SUMIFS per Cliente + Progetto). Documento ad uso interno: non destinato al cliente.";
+    let footerText = t.dashNote.replace('{extSheet}', t.sheetExtCosts);
     if (hasMissingPersonnelCost) {
-      footerText += "\nATTENZIONE: Margine calcolato senza costo personale per alcune commesse (costo interno non disponibile).";
+      footerText += t.dashWarning;
     }
     noteCell.value = footerText;
     noteCell.font = { name: 'Arial', size: 9, italic: true };
@@ -224,7 +223,7 @@ export class DashboardCommesse implements ReportTemplate {
 
 
     // --- FOGLIO 2: COSTI ESTERNI / SUBAPPALTI ---
-    const sheetExt = workbook.addWorksheet('Costi Esterni', {
+    const sheetExt = workbook.addWorksheet(t.sheetExtCosts, {
       pageSetup: {
         paperSize: 9, 
         orientation: 'landscape',
@@ -252,14 +251,14 @@ export class DashboardCommesse implements ReportTemplate {
     // Riga 1: Titolo
     sheetExt.mergeCells('A1:F1');
     const extTitleCell = sheetExt.getCell('A1');
-    extTitleCell.value = 'COSTI ESTERNI / SUBAPPALTI';
+    extTitleCell.value = t.extTitle;
     applyHeaderStyle(extTitleCell);
     sheetExt.getRow(1).height = 30;
 
     // Riga 2: Info
     sheetExt.mergeCells('A2:F2');
     const extSubTitleCell = sheetExt.getCell('A2');
-    extSubTitleCell.value = 'Registro costi di terzi (subappaltatori, tecnici esterni, artigiani) — non tracciati a ore';
+    extSubTitleCell.value = t.extSubtitle;
     extSubTitleCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FFFFFFFF' } };
     extSubTitleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryBlue } };
     extSubTitleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
@@ -268,7 +267,7 @@ export class DashboardCommesse implements ReportTemplate {
     sheetExt.getRow(3).height = 10;
 
     // Intestazioni
-    const extHeaders = ['Data', 'Fornitore / Subappaltatore', 'Cliente', 'Progetto / Commessa', 'Descrizione', 'Importo'];
+    const extHeaders = t.extHeaders;
     let extRow = 4;
     extHeaders.forEach((h, i) => {
       const cell = sheetExt.getCell(extRow, i + 1);
@@ -319,7 +318,7 @@ export class DashboardCommesse implements ReportTemplate {
     // Totale Costi Esterni
     sheetExt.mergeCells(`A${extRow}:E${extRow}`);
     const totExtLabel = sheetExt.getCell(`A${extRow}`);
-    totExtLabel.value = 'TOTALE COSTI ESTERNI';
+    totExtLabel.value = t.extTotal;
     totExtLabel.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
     totExtLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
     totExtLabel.alignment = { vertical: 'middle', horizontal: 'right' };

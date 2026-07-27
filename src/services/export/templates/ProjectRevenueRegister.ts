@@ -1,12 +1,14 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
+import { getCatalogT } from '../i18n-catalog';
 
 export class ProjectRevenueRegister implements ReportTemplate {
   name = 'Project Revenue Register';
   type = 'ECONOMIC' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
-    const sheet = workbook.addWorksheet('Registro Ricavi', {
+    const t = getCatalogT(data.language);
+    const sheet = workbook.addWorksheet(t.sheetRevenue, {
       pageSetup: {
         paperSize: 9, // A4
         orientation: 'landscape',
@@ -28,7 +30,7 @@ export class ProjectRevenueRegister implements ReportTemplate {
     // Riga 1: Titolo
     sheet.mergeCells('A1:F1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value = 'REGISTRO RICAVI / COMMESSE (PROJECT REVENUE REGISTER)';
+    titleCell.value = t.revTitle;
     titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
     titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } }; 
     titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -37,7 +39,7 @@ export class ProjectRevenueRegister implements ReportTemplate {
     // Riga 2: Sottotitolo (uso interno)
     sheet.mergeCells('A2:F2');
     const subTitleCell = sheet.getCell('A2');
-    subTitleCell.value = `USO INTERNO AMMINISTRAZIONE — Non da inviare al cliente  |  Sorgente dati per Dashboard Commesse`;
+    subTitleCell.value = t.revSubtitle;
     subTitleCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FFFFFFFF' } };
     subTitleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F75B5' } }; 
     subTitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -48,14 +50,14 @@ export class ProjectRevenueRegister implements ReportTemplate {
     for (const p of data.projects) {
       const clientName = data.clients?.find((c: any) => c.id === p.clientId)?.name || p.clientId || '';
       
-      let financialMethod = p.financialAgreement === 'fixed' ? 'Forfait (Fixed)' : 
-                           (p.financialAgreement === 'hourly' ? 'A consuntivo (Hourly)' : (p.financialAgreement || ''));
+      let financialMethod = p.financialAgreement === 'fixed' ? t.revMethodFixed : 
+                           (p.financialAgreement === 'hourly' ? t.revMethodHourly : (p.financialAgreement || ''));
       
       let period = '';
       if (p.startDate && p.endDate) {
         period = `${new Date(p.startDate).toLocaleDateString()} - ${new Date(p.endDate).toLocaleDateString()}`;
       } else if (p.startDate) {
-        period = `Dal ${new Date(p.startDate).toLocaleDateString()}`;
+        period = `${t.periodPrefix}${new Date(p.startDate).toLocaleDateString()}`;
       }
 
       tableRows.push([
@@ -64,7 +66,7 @@ export class ProjectRevenueRegister implements ReportTemplate {
         financialMethod,
         p.sellingPrice || 0,
         period,
-        p.status || 'Attivo'
+        p.status || t.revStatusActive
       ]);
     }
 
@@ -77,14 +79,7 @@ export class ProjectRevenueRegister implements ReportTemplate {
         theme: 'TableStyleMedium2',
         showRowStripes: true,
       },
-      columns: [
-        { name: 'Cliente', filterButton: true },
-        { name: 'Progetto / Commessa', filterButton: true },
-        { name: 'Metodo Fatturazione', filterButton: true },
-        { name: 'Valore Concordato / Ricavo', filterButton: true },
-        { name: 'Periodo', filterButton: true },
-        { name: 'Stato Commessa', filterButton: true }
-      ],
+      columns: t.revHeaders.map(name => ({ name, filterButton: true })),
       rows: tableRows
     });
 

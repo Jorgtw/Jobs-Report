@@ -1,5 +1,6 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
+import { getCatalogT } from '../i18n-catalog';
 import { applyHeaderStyle, applySubHeaderStyle, applyTableHeaderStyle, applyDataStyle, ReportStyles } from '../utils/formatters';
 
 export class EmployeeMonthlyReport implements ReportTemplate {
@@ -7,6 +8,7 @@ export class EmployeeMonthlyReport implements ReportTemplate {
   type = 'ECONOMIC' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
+    const t = getCatalogT(data.language);
     const reportsByWorker = new Map<string, any[]>();
     for (const r of data.summaries) {
       if (!reportsByWorker.has(r.userId)) {
@@ -18,7 +20,7 @@ export class EmployeeMonthlyReport implements ReportTemplate {
     for (const [workerId, reports] of Array.from(reportsByWorker.entries())) {
       const workerName = reports[0]?.userName || data.workers?.find(w => w.id === workerId)?.name || workerId;
       
-      const sheetName = `Report ${workerName.substring(0, 20)}`;
+      const sheetName = `${t.sheetMonthly.substring(0, 10)} ${workerName.substring(0, 15)}`;
       const sheet = workbook.addWorksheet(sheetName, {
         pageSetup: {
           paperSize: 9, // A4
@@ -48,7 +50,7 @@ export class EmployeeMonthlyReport implements ReportTemplate {
       // Riga 1: Titolo
       sheet.mergeCells('A1:F1');
       const titleCell = sheet.getCell('A1');
-      titleCell.value = 'REPORT MENSILE DIPENDENTE';
+      titleCell.value = t.monthTitle;
       applyHeaderStyle(titleCell);
       sheet.getRow(1).height = 30;
 
@@ -58,16 +60,16 @@ export class EmployeeMonthlyReport implements ReportTemplate {
       
       const dateRange = (data.filters?.['Dal'] && data.filters?.['Al']) 
         ? `${data.filters['Dal']} - ${data.filters['Al']}`
-        : 'Tutto il periodo';
+        : t.allPeriod;
 
-      subTitleCell.value = `Dipendente: ${workerName}  |  Periodo: ${dateRange}  |  ${data.companyName}`;
+      subTitleCell.value = `${t.workerPrefixReport}${workerName}  |  ${t.periodPrefix}${dateRange}  |  ${t.companyPrefix}${data.companyName}`;
       applySubHeaderStyle(subTitleCell);
       sheet.getRow(2).height = 20;
 
       sheet.getRow(3).height = 10;
 
       // Intestazioni tabella
-      const headers = ['Data', 'Cliente', 'Progetto / Attività', 'Ore ord.', 'Straord.', 'Spese sostenute'];
+      const headers = t.monthHeaders;
       let currentRow = 4;
       headers.forEach((h, i) => {
         const cell = sheet.getCell(currentRow, i + 1);
@@ -96,7 +98,7 @@ export class EmployeeMonthlyReport implements ReportTemplate {
 
         // Cliente
         const clientCell = row.getCell(2);
-        clientCell.value = r.clientName || r.clientId || 'Multipli';
+        clientCell.value = r.clientName || r.clientId || t.multipleClients;
         applyDataStyle(row.getCell(2), 'left');
 
         // Progetto / Attività concatenati
@@ -134,7 +136,7 @@ export class EmployeeMonthlyReport implements ReportTemplate {
       // Riga Totali (Blu scura)
       sheet.mergeCells(`A${currentRow}:C${currentRow}`);
       const totLabel = sheet.getCell(`A${currentRow}`);
-      totLabel.value = 'TOTALE MESE';
+      totLabel.value = t.monthTotalPrefix;
       totLabel.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
       totLabel.alignment = { vertical: 'middle', horizontal: 'right' };
       totLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
@@ -170,8 +172,8 @@ export class EmployeeMonthlyReport implements ReportTemplate {
 
       // Spazio firme
       const signRow = sheet.getRow(currentRow);
-      signRow.getCell(1).value = 'Firma dipendente: ___________________________';
-      signRow.getCell(4).value = 'Firma responsabile: ___________________________';
+      signRow.getCell(1).value = t.signEmployee;
+      signRow.getCell(4).value = t.signManager;
     }
   }
 }

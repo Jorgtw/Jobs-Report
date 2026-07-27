@@ -30,6 +30,7 @@ export interface ReportData {
   externalCosts?: ExternalCost[];
   filters?: ReportFilters;
   companyName: string;
+  language?: string;
 }
 
 export interface ReportTemplate {

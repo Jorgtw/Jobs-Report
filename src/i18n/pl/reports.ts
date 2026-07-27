@@ -1,5 +1,5 @@
 export const reports = {
-  summaryTitle: "Sommario Lavori",
+  summaryTitle: "Podsumowanie Pracy",
   title: "Raporty pracy",
   new: "Nowy raport",
   newInternal: "Nowy raport wewnętrzny",

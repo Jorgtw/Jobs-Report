@@ -1,5 +1,6 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
+import { getCatalogT } from '../i18n-catalog';
 import { applyHeaderStyle, applySubHeaderStyle, applyTableHeaderStyle, applyDataStyle, ReportStyles } from '../utils/formatters';
 
 export class CustomerWorkReport implements ReportTemplate {
@@ -7,7 +8,8 @@ export class CustomerWorkReport implements ReportTemplate {
   type = 'OPERATIVE' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
-    const sheet = workbook.addWorksheet('Rapporto Lavori', {
+    const t = getCatalogT(data.language);
+    const sheet = workbook.addWorksheet(t.sheetCustomerWork, {
       pageSetup: {
         paperSize: 9, // A4
         orientation: 'portrait',
@@ -35,23 +37,23 @@ export class CustomerWorkReport implements ReportTemplate {
     ];
 
     // Build Header
-    const clientName = data.filters?.['Cliente'] || 'Tutti i Clienti';
+    const clientName = data.filters?.['Cliente'] || t.allClients;
       
     const dateRange = (data.filters?.['Dal'] && data.filters?.['Al']) 
       ? `${data.filters['Dal']} - ${data.filters['Al']}`
-      : 'Tutto il periodo';
+      : t.allPeriod;
 
     // Riga 1: Titolo principale
     sheet.mergeCells('A1:G1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value = 'RAPPORTO LAVORI SVOLTI';
+    titleCell.value = t.custTitle;
     applyHeaderStyle(titleCell);
     sheet.getRow(1).height = 30;
 
     // Riga 2: Sottotitolo (Cliente | Periodo)
     sheet.mergeCells('A2:G2');
     const subTitleCell = sheet.getCell('A2');
-    subTitleCell.value = `Cliente: ${clientName}  |  Periodo: ${dateRange}`;
+    subTitleCell.value = `${t.clientPrefix}${clientName}  |  ${t.periodPrefix}${dateRange}`;
     applySubHeaderStyle(subTitleCell);
     sheet.getRow(2).height = 20;
 
@@ -77,7 +79,7 @@ export class CustomerWorkReport implements ReportTemplate {
     // Iterate projects
     for (const [projectId, reports] of Array.from(reportsByProject.entries())) {
       const project = data.projects.find(p => p.id === projectId);
-      const projectName = project ? project.name : 'Progetto Sconosciuto';
+      const projectName = project ? project.name : t.unknownProject;
 
       // Titolo progetto (Blu scuro)
       sheet.mergeCells(`A${currentRow}:G${currentRow}`);
@@ -90,7 +92,7 @@ export class CustomerWorkReport implements ReportTemplate {
       currentRow++;
 
       // Intestazioni tabella
-      const headers = ['Data', 'Operatore', 'Attività', 'Ore', 'Inizio', 'Fine', 'Pausa'];
+      const headers = t.custHeaders;
       headers.forEach((h, i) => {
         const cell = sheet.getCell(currentRow, i + 1);
         cell.value = h;
@@ -108,11 +110,11 @@ export class CustomerWorkReport implements ReportTemplate {
         applyDataStyle(dateCell);
 
         const workerCell = row.getCell(2);
-        workerCell.value = r.userName || r.userId || 'Non specificato';
+        workerCell.value = r.userName || r.userId || t.unspecifiedWorker;
         applyDataStyle(workerCell, 'left');
 
         const descCell = row.getCell(3);
-        descCell.value = r.description || 'Intervento generico';
+        descCell.value = r.description || t.genericIntervention;
         applyDataStyle(descCell, 'left');
 
         const hoursCell = row.getCell(4);
@@ -141,7 +143,7 @@ export class CustomerWorkReport implements ReportTemplate {
       // Totale Progetto
       sheet.mergeCells(`A${currentRow}:C${currentRow}`);
       const totLabelCell = sheet.getCell(`A${currentRow}`);
-      totLabelCell.value = `Totale ore — ${projectName}`;
+      totLabelCell.value = `${t.custProjTotalPrefix}${projectName}`;
       totLabelCell.font = { name: 'Arial', size: 10, bold: true };
       totLabelCell.alignment = { vertical: 'middle', horizontal: 'right' };
       totLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.lightGray } };
@@ -161,7 +163,7 @@ export class CustomerWorkReport implements ReportTemplate {
     // Totale Generale
     sheet.mergeCells(`A${currentRow}:C${currentRow}`);
     const grandLabelCell = sheet.getCell(`A${currentRow}`);
-    grandLabelCell.value = 'TOTALE ORE PERIODO';
+    grandLabelCell.value = t.custGrandTotal;
     grandLabelCell.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
     grandLabelCell.alignment = { vertical: 'middle', horizontal: 'right' };
     grandLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
@@ -178,7 +180,7 @@ export class CustomerWorkReport implements ReportTemplate {
 
     // Firme
     const signRow = sheet.getRow(currentRow);
-    signRow.getCell(1).value = 'Firma responsabile: ___________________________';
-    signRow.getCell(3).value = 'Data: ____________________';
+    signRow.getCell(1).value = t.signManager;
+    signRow.getCell(3).value = t.signDate;
   }
 }

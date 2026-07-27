@@ -1,6 +1,7 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
 import { applyHeaderStyle, applySubHeaderStyle, applyTableHeaderStyle, applyDataStyle, ReportStyles } from '../utils/formatters';
+import { getCatalogT } from '../i18n-catalog';
 import { getISOWeek, getISOWeekYear, getISOWeekDateRange } from '../utils/dateUtils';
 
 export class WeeklyReport implements ReportTemplate {
@@ -8,7 +9,8 @@ export class WeeklyReport implements ReportTemplate {
   type = 'OPERATIVE' as const;
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
-    const sheet = workbook.addWorksheet('Report Settimanale', {
+    const t = getCatalogT(data.language);
+    const sheet = workbook.addWorksheet(t.sheetWeekly, {
       pageSetup: {
         paperSize: 9, // A4
         orientation: 'portrait',
@@ -57,7 +59,7 @@ export class WeeklyReport implements ReportTemplate {
 
       const projectsInWeek = weeksMap.get(weekKey)!;
       if (!projectsInWeek.has(r.projectId)) {
-        projectsInWeek.set(r.projectId, { hours: 0, count: 0, clientName: r.clientName || r.clientId || 'Sconosciuto' });
+        projectsInWeek.set(r.projectId, { hours: 0, count: 0, clientName: r.clientName || r.clientId || t.unspecifiedClient });
       }
 
       const pStats = projectsInWeek.get(r.projectId)!;
@@ -68,7 +70,7 @@ export class WeeklyReport implements ReportTemplate {
     // Riga 1: Titolo
     sheet.mergeCells('A1:D1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value = 'REPORT SETTIMANALE';
+    titleCell.value = t.weekTitle;
     applyHeaderStyle(titleCell);
     sheet.getRow(1).height = 30;
 
@@ -76,14 +78,14 @@ export class WeeklyReport implements ReportTemplate {
     sheet.mergeCells('A2:D2');
     const subTitleCell = sheet.getCell('A2');
     
-    let periodText = 'Periodo non definito';
+    let periodText = t.periodUndefined;
     if (minWeekKey !== "9999-W99") {
       const startW = minWeekKey.split('-W')[1];
       const endW = maxWeekKey.split('-W')[1];
-      periodText = startW === endW ? `Week ${startW}, ${periodYear}` : `Week ${startW} — Week ${endW}, ${periodYear}`;
+      periodText = startW === endW ? `${t.weekNumberPrefix}${startW}, ${periodYear}` : `${t.weekNumberPrefix}${startW} — ${t.weekNumberPrefix}${endW}, ${periodYear}`;
     }
 
-    subTitleCell.value = `Periodo: ${periodText}  |  ${data.companyName}`;
+    subTitleCell.value = `${t.periodPrefix}${periodText}  |  ${t.companyPrefix}${data.companyName}`;
     applySubHeaderStyle(subTitleCell);
     sheet.getRow(2).height = 20;
 
@@ -104,7 +106,7 @@ export class WeeklyReport implements ReportTemplate {
       // Intestazione Settimana (Blocco visivo separato)
       sheet.mergeCells(`A${currentRow}:D${currentRow}`);
       const weekHeader = sheet.getCell(`A${currentRow}`);
-      weekHeader.value = `Week ${week}  (${dateRange})`;
+      weekHeader.value = `${t.weekNumberPrefix}${week}  (${dateRange})`;
       weekHeader.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
       weekHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
       weekHeader.alignment = { vertical: 'middle', horizontal: 'left' };
@@ -112,7 +114,7 @@ export class WeeklyReport implements ReportTemplate {
       currentRow++;
 
       // Intestazioni colonne per la settimana
-      const headers = ['Cliente', 'Progetto', 'Interventi', 'Ore'];
+      const headers = t.weekHeaders;
       headers.forEach((h, i) => {
         const cell = sheet.getCell(currentRow, i + 1);
         cell.value = h;
@@ -126,7 +128,7 @@ export class WeeklyReport implements ReportTemplate {
       const projectsInWeek = weeksMap.get(weekKey)!;
       for (const [projectId, stats] of Array.from(projectsInWeek.entries())) {
         const project = data.projects.find(p => p.id === projectId);
-        const projectName = project ? project.name : 'Sconosciuto';
+        const projectName = project ? project.name : t.unknownProject;
         const clientName = stats.clientName;
         const row = sheet.getRow(currentRow);
         
@@ -157,7 +159,7 @@ export class WeeklyReport implements ReportTemplate {
       // Totale Settimana
       sheet.mergeCells(`A${currentRow}:B${currentRow}`);
       const totLabel = sheet.getCell(`A${currentRow}`);
-      totLabel.value = `Totale — Week ${week}`;
+      totLabel.value = `${t.weekTotalPrefix}${week}`;
       totLabel.font = { name: 'Arial', size: 10, bold: true };
       totLabel.alignment = { vertical: 'middle', horizontal: 'right' };
       totLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.lightGray } };
@@ -184,7 +186,7 @@ export class WeeklyReport implements ReportTemplate {
     // TOTALE PERIODO
     sheet.mergeCells(`A${currentRow}:B${currentRow}`);
     const gTotLabel = sheet.getCell(`A${currentRow}`);
-    gTotLabel.value = `TOTALE PERIODO`;
+    gTotLabel.value = t.weekPeriodTotal;
     gTotLabel.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
     gTotLabel.alignment = { vertical: 'middle', horizontal: 'center' };
     gTotLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };

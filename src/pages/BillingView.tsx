@@ -119,7 +119,8 @@ const BillingView: React.FC = () => {
         filters: {
           'Cliente': client?.name || '',
           'Progetto': project?.name || 'Tutti i progetti'
-        } as any
+        } as any,
+        language: language
       };
 
       await engine.generateCatalog(reportData, 'Allegato_Fatturazione');
