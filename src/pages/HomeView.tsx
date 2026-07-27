@@ -34,7 +34,9 @@ const CompactDashboard: React.FC = () => {
     activeProjects: 0,
     pendingReports: 0,
     pendingHours: 0,
+    totalPersonnelCost: 0,
     totalExpenses: 0,
+    totalCost: 0,
     totalWorkValue: 0,
     pendingMargin: 0
   });
@@ -58,15 +60,19 @@ const CompactDashboard: React.FC = () => {
         const pendingHours = pendingData.reduce((acc: number, s: any) => acc + (s.totalHours || 0), 0);
         
         // MARGINE: Calcolato su TUTTO il lavoro effettivamente svolto
-        const totalExpenses = summary.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
+        const totalPersonnelCost = summary.reduce((acc: number, s: any) => acc + (s.personnelCost || s.cost || 0), 0);
+        const totalExpenses = summary.reduce((acc: number, s: any) => acc + (s.totalExpenses || 0), 0);
+        const totalCost = summary.reduce((acc: number, s: any) => acc + (s.cost || 0) + (s.totalExpenses || 0), 0);
         const totalWorkValue = summary.reduce((acc: number, s: any) => acc + (s.revenue || 0), 0);
-        const totalMargin = totalWorkValue - totalExpenses;
+        const totalMargin = totalWorkValue - totalCost;
 
         setStats({
           activeProjects: activeProjectsCount,
           pendingReports,
           pendingHours,
+          totalPersonnelCost,
           totalExpenses,
+          totalCost,
           totalWorkValue,
           pendingMargin: totalMargin
         });
@@ -103,12 +109,14 @@ const CompactDashboard: React.FC = () => {
         <h2 className="text-[11px] font-black text-slate-700 uppercase tracking-wider">{t('dashboard.worksInProgress')}</h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
         <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" icon={Briefcase} isLoading={loading} />
         <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" icon={FileText} isLoading={loading} />
         <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" icon={Clock} isLoading={loading} />
+        <SmallStat label={t('reports.summaryPersonnelCost')} value={formatNum(stats.totalPersonnelCost)} to="/work-summary" valueColor="text-amber-600" icon={Users} isLoading={loading} />
         <SmallStat label={t('reports.totalExpenses')} value={formatNum(stats.totalExpenses)} to="/work-summary" valueColor="text-rose-600" icon={TrendingDown} isLoading={loading} />
-        <SmallStat label={t('reports.workValue')} value={formatNum(stats.totalWorkValue)} to="/work-summary" valueColor="text-blue-600" icon={Wallet} isLoading={loading} />
+        <SmallStat label={t('reports.summaryTotalGeneral')} value={formatNum(stats.totalCost)} to="/work-summary" valueColor="text-red-600" icon={Wallet} isLoading={loading} />
+        <SmallStat label={t('reports.workValue')} value={formatNum(stats.totalWorkValue)} to="/work-summary" valueColor="text-blue-600" icon={Briefcase} isLoading={loading} />
         <SmallStat label={t('dashboard.margin')} value={formatNum(stats.pendingMargin)} to="/work-summary" valueColor={stats.pendingMargin >= 0 ? "text-emerald-600" : "text-rose-600"} icon={TrendingUp} isLoading={loading} />
       </div>
     </div>

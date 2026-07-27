@@ -40,9 +40,13 @@ const translations: Record<string, Record<string, string>> = {
     totalBillableHours: 'Totale ore fatturabili',
     totalPersCost: 'Costi totali personale',
     totalSubCost: 'Costi subappalti',
+    totalExpenses: 'Spese vive totali',
     totalRevenue: 'Ricavi totali',
     finalMargin: 'Margine finale',
-    hoursUnit: 'Ore'
+    hoursUnit: 'Ore',
+    expensesSheet: 'Spese',
+    expenseType: 'Tipo Spesa',
+    amount: 'Importo'
   },
   en: {
     payrollSheet: 'Payroll',
@@ -81,9 +85,13 @@ const translations: Record<string, Record<string, string>> = {
     totalBillableHours: 'Total billable hours',
     totalPersCost: 'Total personnel costs',
     totalSubCost: 'Subcontractor costs',
+    totalExpenses: 'Total expenses',
     totalRevenue: 'Total revenues',
     finalMargin: 'Final margin',
-    hoursUnit: 'Hours'
+    hoursUnit: 'Hours',
+    expensesSheet: 'Expenses',
+    expenseType: 'Expense Type',
+    amount: 'Amount'
   }
 };
 
@@ -188,7 +196,8 @@ export default async function handler(req: any, res: any) {
       .from('reports')
       .select(`
         id, date, description, total_hours, overtime_hours, festive_hours, night_hours, activity_type, created_by, project_id,
-        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, person_name, subcontractor_id, membership_type)
+        additionalWorkers:rapportini_workers(worker_id, hours, overtime_hours, festive_hours, night_hours, person_name, subcontractor_id, membership_type),
+        expenses:rapportini_expenses(id, amount, type, description, km, is_billable, billable_amount)
       `)
       .eq('company_id', companyId);
 
@@ -243,6 +252,7 @@ export default async function handler(req: any, res: any) {
     const subappaltiRows: any[] = [];
     const invoiceRows: any[] = [];
     const rawDataRows: any[] = [];
+    const expensesRows: any[] = [];
 
     for (const r of mappedReports) {
       if (projectId && r.project_id !== projectId) continue;
@@ -352,6 +362,27 @@ export default async function handler(req: any, res: any) {
           );
         }
       }
+
+      // 5. Spese vive
+      if (r.expenses && Array.isArray(r.expenses)) {
+        for (const exp of r.expenses) {
+          const expAmount = Number(exp.amount) || 0;
+          if (expAmount > 0 || Number(exp.km) > 0) {
+            const workerInfo = workerMapRaw.get(r.created_by);
+            const workerName = workerInfo?.name || '';
+            expensesRows.push([
+              { v: formatDateEU(r.date, lang as string), t: 's' },
+              { v: r.clientName || '', t: 's' },
+              { v: r.projectName || '', t: 's' },
+              { v: workerName, t: 's' },
+              { v: exp.type || 'CANTIERE', t: 's' },
+              { v: exp.description || '', t: 's' },
+              { v: exp.km ? Number(exp.km) : '', t: exp.km ? 'n' : 's' },
+              { v: expAmount, t: 'n', z: '#,##0.00' }
+            ]);
+          }
+        }
+      }
     }
 
     const wb = utils.book_new();
@@ -448,6 +479,14 @@ export default async function handler(req: any, res: any) {
     ws3['!cols'] = [{ wch: 12 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
     utils.book_append_sheet(wb, ws3, t.rawSheet);
 
+    // --- SHEET 4.5: SPESE ---
+    const sExpHeader: any[] = [
+      [t.date, t.client, t.project, t.worker, t.expenseType, t.description, 'KM', t.amount]
+    ];
+    const wsExp = utils.aoa_to_sheet([...sExpHeader, ...expensesRows]);
+    wsExp['!cols'] = [{ wch: 12 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 35 }, { wch: 10 }, { wch: 15 }];
+    utils.book_append_sheet(wb, wsExp, t.expensesSheet);
+
     // --- SHEET 5: SINTESI ---
     const maxR = 10000;
     const sintesiRows: any[] = [
@@ -459,8 +498,9 @@ export default async function handler(req: any, res: any) {
       [t.totalBillableHours, { f: `SUM('${t.invoiceSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' }, t.hoursUnit], // Col H = Ore
       [t.totalPersCost, (userRole === 'admin') ? { f: `SUM('${t.payrollSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col H = Tot Costo
       [t.totalSubCost, (userRole === 'admin') ? { f: `SUM('${t.subSheet}'!I2:I${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col I = Tot Costo Sub
+      [t.totalExpenses, (userRole === 'admin') ? { f: `SUM('${t.expensesSheet}'!H2:H${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col H = Importo Spesa
       [t.totalRevenue, (userRole === 'admin') ? { f: `SUM('${t.invoiceSheet}'!K2:K${maxR})`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€'], // Col K = Tot Riga
-      [t.finalMargin, (userRole === 'admin') ? { f: `B9-(B7+B8)`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€']
+      [t.finalMargin, (userRole === 'admin') ? { f: `B10-(B7+B8+B9)`, t: 'n', z: '#,##0.00' } : { v: '', t: 's' }, '€']
     ];
     const wsSintesi = utils.aoa_to_sheet(sintesiRows);
     wsSintesi['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 10 }];
