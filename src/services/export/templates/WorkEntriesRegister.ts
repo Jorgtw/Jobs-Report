@@ -140,7 +140,7 @@ export class WorkEntriesRegister implements ReportTemplate {
         { name: 'Dipendente', filterButton: true },
         { name: 'Colleghi Aggiuntivi', filterButton: true },
         { name: 'Km Percorsi', filterButton: true },
-        { name: 'Spese (€)', filterButton: true },
+        { name: 'Spese', filterButton: true },
         { name: 'Dettaglio Spese', filterButton: true },
         { name: 'Stato', filterButton: true },
         { name: 'Note', filterButton: true }

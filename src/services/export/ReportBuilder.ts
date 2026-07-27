@@ -64,10 +64,11 @@ export class WorkSummaryReportBuilder {
         companyName: this.config.companyName,
         clientName: this.config.clientName,
         projectName: this.config.projectName,
-        reportContext: 'Sommario Lavori',
+        reportContext: this.t('reports.workSummary'),
         generatedBy: this.config.generatedBy,
         generatedAt: new Date(),
-        filtersApplied: this.config.filtersApplied
+        filtersApplied: this.config.filtersApplied,
+        language: this.config.lang || 'it'
       },
       sections: []
     };
@@ -137,14 +138,14 @@ export class WorkSummaryReportBuilder {
     // Gruppo generale
     groups.push({
       items: [
-        { label: 'Collaboratori', value: workers.size, type: 'number' },
-        { label: 'Totale Interventi', value: this.rawData.length, type: 'number' }
+        { label: this.t('common.personnel'), value: workers.size, type: 'number' },
+        { label: this.t('common.reports'), value: this.rawData.length, type: 'number' }
       ]
     });
 
     // Gruppo Ore
     groups.push({
-      title: 'Ore',
+      title: this.t('common.hours'),
       items: [
         { label: this.t('reports.ordinaryHours'), value: totalOrd, type: 'hours' },
         { label: this.t('reports.extraHours'), value: totalExt, type: 'hours' },
@@ -164,7 +165,7 @@ export class WorkSummaryReportBuilder {
           { label: this.t('reports.materials'), value: totalMat, type: 'decimal' },
           { label: this.t('reports.subcontracting'), value: totalSub, type: 'decimal' },
           { label: this.t('reports.otherExpenses'), value: totalExp, type: 'decimal' },
-          { label: 'TOTALE COSTI', value: totalOperativeCosts, type: 'decimal' }
+          { label: this.t('reports.totalExpenses').toUpperCase(), value: totalOperativeCosts, type: 'decimal' }
         ]
       });
 
@@ -226,17 +227,17 @@ export class WorkSummaryReportBuilder {
     });
 
     const kpis: DashboardBlock['kpis'] = [
-      { label: 'Collaboratori', value: workers.size, type: 'number' },
-      { label: 'Ore Lavorate', value: totalHours, type: 'hours' }
+      { label: this.t('common.personnel'), value: workers.size, type: 'number' },
+      { label: this.t('reports.summaryHoursWorked'), value: totalHours, type: 'hours' }
     ];
 
     if (this.config.includeEconomicData) {
       const totalOperativeCosts = totalCost + totalExp; // simplified for dashboard
       
       if (hasPricedProjects || theoreticalValue > 0) {
-         kpis.push({ label: 'Valore Lavoro', value: theoreticalValue, type: 'decimal' });
+         kpis.push({ label: this.t('reports.workValue'), value: theoreticalValue, type: 'decimal' });
          kpis.push({ label: this.t('reports.operativeCosts'), value: totalOperativeCosts, type: 'decimal' });
-         kpis.push({ label: 'Differenza', value: theoreticalValue - totalOperativeCosts, type: 'decimal' });
+         kpis.push({ label: this.t('reports.valueCostDiff'), value: theoreticalValue - totalOperativeCosts, type: 'decimal' });
       } else {
          kpis.push({ label: this.t('reports.operativeCosts'), value: totalOperativeCosts, type: 'decimal' });
       }
@@ -248,29 +249,29 @@ export class WorkSummaryReportBuilder {
     };
 
     return {
-      title: 'Dashboard Totali',
+      title: this.t('common.dashboard'),
       blocks: [dashboardBlock]
     };
   }
 
   private buildDetailsSection(): ReportSection {
     const columns: ReportTableColumn[] = [
-      { key: 'date', header: 'Data', type: 'date' },
-      { key: 'clientName', header: 'Cliente', type: 'text' },
-      { key: 'projectName', header: 'Progetto', type: 'text' },
-      { key: 'workerName', header: 'Collaboratore', type: 'text' },
-      { key: 'description', header: 'Descrizione', type: 'text' },
+      { key: 'date', header: this.t('reports.date'), type: 'date' },
+      { key: 'clientName', header: this.t('common.clients'), type: 'text' },
+      { key: 'projectName', header: this.t('common.projects'), type: 'text' },
+      { key: 'workerName', header: this.t('common.personnel'), type: 'text' },
+      { key: 'description', header: this.t('reports.description'), type: 'text' },
       { key: 'ordinaryHours', header: this.t('reports.ordinaryHours'), type: 'hours' },
       { key: 'extraHours', header: this.t('reports.extraHours'), type: 'hours' },
       { key: 'nightHours', header: this.t('reports.nightHours'), type: 'hours' },
       { key: 'holidayHours', header: this.t('reports.holidayHours'), type: 'hours' },
-      { key: 'hours', header: 'Tot. Ore', type: 'hours' }
+      { key: 'hours', header: this.t('reports.totalHoursLabel'), type: 'hours' }
     ];
 
     if (this.config.includeEconomicData) {
-      columns.push({ key: 'expenses', header: 'Spese', type: 'decimal' });
-      columns.push({ key: 'cost', header: 'Costi Op.', type: 'decimal' });
-      columns.push({ key: 'revenue', header: 'Valore Lavoro', type: 'decimal' });
+      columns.push({ key: 'expenses', header: this.t('reports.totalExpenses'), type: 'decimal' });
+      columns.push({ key: 'cost', header: this.t('reports.operativeCosts'), type: 'decimal' });
+      columns.push({ key: 'revenue', header: this.t('reports.workValue'), type: 'decimal' });
     }
 
     let totalHours = 0, totalOrd = 0, totalExt = 0, totalNight = 0, totalHol = 0;
@@ -372,15 +373,15 @@ export class WorkSummaryReportBuilder {
 
   private buildAggregatedSection(groupBy: 'project' | 'worker'): ReportSection {
     const columns: ReportTableColumn[] = [
-      { key: 'groupName', header: groupBy === 'project' ? 'Progetto' : 'Collaboratore', type: 'text' },
+      { key: 'groupName', header: groupBy === 'project' ? this.t('common.projects') : this.t('common.personnel'), type: 'text' },
       { key: 'ordinaryHours', header: this.t('reports.ordinaryHours'), type: 'hours' },
       { key: 'extraHours', header: this.t('reports.extraHours'), type: 'hours' },
-      { key: 'hours', header: 'Tot. Ore', type: 'hours' }
+      { key: 'hours', header: this.t('reports.totalHoursLabel'), type: 'hours' }
     ];
 
     if (this.config.includeEconomicData) {
-      columns.push({ key: 'cost', header: 'Costo', type: 'decimal' });
-      columns.push({ key: 'revenue', header: 'Ricavo', type: 'decimal' });
+      columns.push({ key: 'cost', header: this.t('reports.operativeCosts'), type: 'decimal' });
+      columns.push({ key: 'revenue', header: this.t('reports.workValue'), type: 'decimal' });
     }
 
     const grouped = new Map<string, any>();
@@ -431,7 +432,7 @@ export class WorkSummaryReportBuilder {
     };
 
     return {
-      title: `Riepilogo per ${groupBy === 'project' ? 'Progetto' : 'Collaboratore'}`,
+      title: `${this.t('reports.workSummary')} (${groupBy === 'project' ? this.t('common.projects') : this.t('common.personnel')})`,
       blocks: [tableBlock]
     };
   }

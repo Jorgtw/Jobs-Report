@@ -11,6 +11,7 @@ export interface ReportMetadata {
   generatedBy: string;
   generatedAt: Date;
   filtersApplied: Record<string, string>;
+  language?: string;
 }
 
 export interface ReportSection {

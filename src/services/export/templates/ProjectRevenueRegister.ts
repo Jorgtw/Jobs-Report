@@ -81,7 +81,7 @@ export class ProjectRevenueRegister implements ReportTemplate {
         { name: 'Cliente', filterButton: true },
         { name: 'Progetto / Commessa', filterButton: true },
         { name: 'Metodo Fatturazione', filterButton: true },
-        { name: 'Valore Concordato / Ricavo (€)', filterButton: true },
+        { name: 'Valore Concordato / Ricavo', filterButton: true },
         { name: 'Periodo', filterButton: true },
         { name: 'Stato Commessa', filterButton: true }
       ],
