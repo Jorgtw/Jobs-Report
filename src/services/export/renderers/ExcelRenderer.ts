@@ -1,7 +1,8 @@
-import { utils, writeFile } from 'xlsx';
+import { utils, write } from 'xlsx';
 import { ReportDocument, ReportBlockType, ReportBlock } from '../types';
 import { ReportRenderer } from './ReportRenderer';
 import { Language } from '../../../i18n';
+import { saveAndShareFile } from '../../../utils/fileDownloader';
 
 export class ExcelRenderer implements ReportRenderer {
   async render(document: ReportDocument, filename: string): Promise<void> {
@@ -43,7 +44,9 @@ export class ExcelRenderer implements ReportRenderer {
       utils.book_append_sheet(wb, ws, sheetName);
     });
 
-    writeFile(wb, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+    const excelFilename = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+    const excelBuffer = write(wb, { bookType: 'xlsx', type: 'array' });
+    await saveAndShareFile(excelBuffer, excelFilename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   }
 
   private renderBlock(block: ReportBlock, aoa: any[][], lang: Language) {

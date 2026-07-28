@@ -23,6 +23,7 @@ import { InternalCommunication, CommType, User as AppUser, Project } from '../ty
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
+import { saveAndShareFile } from '../utils/fileDownloader';
 import 'jspdf-autotable';
 
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -445,7 +446,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasA
     }
   };
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (!selectedThread) return;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -512,7 +513,9 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasA
       }
     });
 
-    doc.save(`Comunicazione_${selectedThread.id.substring(0,8)}.pdf`);
+    const pdfFileName = `Comunicazione_${selectedThread.id.substring(0,8)}.pdf`;
+    const pdfBlob = doc.output('blob');
+    await saveAndShareFile(pdfBlob, pdfFileName, 'application/pdf');
   };
 
 

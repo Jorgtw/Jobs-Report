@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { ReportDocument, ReportBlockType, ReportBlock } from '../types';
 import { ReportRenderer } from './ReportRenderer';
 import { Language } from '../../../i18n';
+import { saveAndShareFile } from '../../../utils/fileDownloader';
 
 export class PdfRenderer implements ReportRenderer {
   async render(document: ReportDocument, filename: string): Promise<void> {
@@ -73,7 +74,9 @@ export class PdfRenderer implements ReportRenderer {
       });
     });
 
-    doc.save(filename.endsWith('.pdf') ? filename : `${filename}.pdf`);
+    const pdfFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+    const pdfBlob = doc.output('blob');
+    await saveAndShareFile(pdfBlob, pdfFilename, 'application/pdf');
   }
 
   private renderBlock(doc: jsPDF, block: ReportBlock, startY: number, lang: Language): number {

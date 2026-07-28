@@ -1,9 +1,10 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { utils, writeFile } from 'xlsx';
+import { utils, write } from 'xlsx';
 import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
 import { supabase } from './supabase';
+import { saveAndShareFile } from '../utils/fileDownloader';
 
 const getApiUrl = (url: string) => {
   if (typeof window !== 'undefined' && (window as any).Capacitor?.isNative) {
@@ -23,7 +24,7 @@ const localeMap: Record<string, string> = {
 
 const getT = (lang: Language) => (key: TranslationKey | string) => resolveKey(lang, key);
 
-export const exportToPDF = (
+export const exportToPDF = async (
   exportRows: any[], 
   lang: Language, 
   userName: string,
@@ -108,10 +109,12 @@ export const exportToPDF = (
   });
 
   const cleanSummaryName = t('common.workSummary').replace(/\s+/g, '_');
-  doc.save(`JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`);
+  const fileName = `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`;
+  const pdfBlob = doc.output('blob');
+  await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
 };
 
-export const exportProjectSummaryToPDF = (
+export const exportProjectSummaryToPDF = async (
   summaryRows: any[],
   totals: { hours: number; revenue: number },
   lang: Language,
@@ -167,11 +170,13 @@ export const exportProjectSummaryToPDF = (
   });
 
   const cleanSummaryName = t('reports.summaryByProject').replace(/\s+/g, '_');
-  doc.save(`JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`);
+  const fileName = `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`;
+  const pdfBlob = doc.output('blob');
+  await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
 };
 
 
-export const exportToExcel = (exportRows: any[], lang: Language) => {
+export const exportToExcel = async (exportRows: any[], lang: Language) => {
   try {
     const t = getT(lang);
 
@@ -247,7 +252,9 @@ export const exportToExcel = (exportRows: any[], lang: Language) => {
     utils.book_append_sheet(workbook, worksheet, t('common.workSummary'));
 
     const cleanSummaryName = t('common.workSummary').replace(/\s+/g, '_');
-    writeFile(workbook, `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const fileName = `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const excelBuffer = write(workbook, { bookType: 'xlsx', type: 'array' });
+    await saveAndShareFile(excelBuffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   } catch (err: any) {
     console.error("Excel export error:", err);
     const alertMsg = lang === 'it' ? "Errore scaricando l'Excel: " :
@@ -266,6 +273,7 @@ export const generateCompliancePDF = async (
   signature: string,
   lang: Language
 ) => {
+  console.log('[DEBUG-PDF] 1. Ingresso in generateCompliancePDF()', { reportId: report?.id, photosCount: photos?.length, hasSignature: !!signature });
   const t = getT(lang);
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageW = doc.internal.pageSize.getWidth();
@@ -521,9 +529,9 @@ export const generateCompliancePDF = async (
   }
 
   const fileName = `Compliance_${reportDateEU.replace(/\//g, '-')}_${(report.projectName || 'Report').replace(/\s+/g, '_')}.pdf`;
-
-  doc.save(fileName);
-  return doc.output('blob');
+  const pdfBlob = doc.output('blob');
+  await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
+  return pdfBlob;
 };
 
 export const sendComplianceReportEmail = async (
@@ -596,14 +604,8 @@ export const exportReportExcel = async (companyId: string, filters: any, lang: L
     }
 
     const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `JobsReport_Direzionale_${new Date().toISOString().split('T')[0]}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    const fileName = `JobsReport_Direzionale_${new Date().toISOString().split('T')[0]}.xlsx`;
+    await saveAndShareFile(blob, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   } catch (err: any) {
     console.error("Backend Excel export error:", err);
     const alertMsg = lang === 'it' ? "Errore scaricando il report Excel: " :
@@ -618,7 +620,7 @@ export const exportReportExcel = async (companyId: string, filters: any, lang: L
 
 // --- BILLING REPORTS EXPORTS ---
 
-export const exportInvoiceToPDF = (
+export const exportInvoiceToPDF = async (
   reports: any[],
   client: any,
   project: any,
@@ -706,10 +708,12 @@ export const exportInvoiceToPDF = (
   // doc.text(`Totale Materiali: € ${NumberFormat.format(totalMatsSum)}`, 14, finalY + 14);
   doc.text(`Totale Spese: ${NumberFormat.format(totalExpSum)}`, 14, finalY + 14);
 
-  doc.save(`${reportNumber}.pdf`);
+  const fileName = `${reportNumber}.pdf`;
+  const pdfBlob = doc.output('blob');
+  await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
 };
 
-export const exportInvoiceToExcel = (
+export const exportInvoiceToExcel = async (
   reports: any[],
   client: any,
   project: any,
@@ -774,5 +778,7 @@ export const exportInvoiceToExcel = (
   const ws = utils.aoa_to_sheet(rows);
   const wb = utils.book_new();
   utils.book_append_sheet(wb, ws, "Allegato");
-  writeFile(wb, `${reportNumber}.xlsx`);
+  const fileName = `${reportNumber}.xlsx`;
+  const excelBuffer = write(wb, { bookType: 'xlsx', type: 'array' });
+  await saveAndShareFile(excelBuffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };
