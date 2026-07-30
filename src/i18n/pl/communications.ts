@@ -91,5 +91,7 @@ export const communications = {
   push_deactivate: "Wyłącz powiadomienia",
   push_reset_hint: "Odblokuj powiadomienia w ustawieniach przeglądarki",
   push_sound: "Dźwięk powiadomienia",
-  push_sound_desc: "Odtwórz sygnał dźwiękowy przy odbiorze"
+  push_sound_desc: "Odtwórz sygnał dźwiękowy przy odbiorze",
+  testSound: "Test",
+  testSoundTitle: "Testuj dźwięk powiadomienia"
 } as const;

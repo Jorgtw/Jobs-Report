@@ -111,5 +111,7 @@ export const communications = {
   push_deactivate: 'Disattiva Notifiche',
   push_reset_hint: 'Sblocca le notifiche dalle impostazioni del browser',
   push_sound: 'Suono Notifiche',
-  push_sound_desc: 'Riproduci un avviso sonoro alla ricezione'
+  push_sound_desc: 'Riproduci un avviso sonoro alla ricezione',
+  testSound: 'Test',
+  testSoundTitle: 'Prova la suoneria'
 } as const;

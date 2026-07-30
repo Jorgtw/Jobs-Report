@@ -50,15 +50,25 @@ export const usePushNotifications = (user: User | null) => {
       if (error) throw error;
       
       const sub = subs && subs.length > 0 ? subs[0] : null;
+
+      const isPermissionGranted = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
+
+      if (isPermissionGranted && !sub) {
+        console.log('[PUSH] Permesso accordato ma token non presente nel DB. Auto-iscrizione in corso...');
+        await subscribeUser();
+        return;
+      }
+
       setIsSubscribed(!!sub);
 
-      // Se il token non viene aggiornato da più di 7 giorni, lo aggiorniamo
-      if (sub) {
+      // Se il token non viene aggiornato da più di 3 giorni o è mancante, lo aggiorniamo
+      if (sub && isPermissionGranted) {
         const lastUpdate = new Date(sub.updated_at).getTime();
         const now = new Date().getTime();
         const daysSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60 * 24);
         
-        if (daysSinceUpdate > 7) {
+        if (daysSinceUpdate > 3) {
+          console.log('[PUSH] Token risalente a più di 3 giorni fa. Aggiornamento in corso...');
           await subscribeUser();
         }
       }

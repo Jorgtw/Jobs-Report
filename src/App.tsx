@@ -27,6 +27,7 @@ import { Language } from './i18n';
 import { useTranslation } from './contexts/LanguageContext';
 import logoImg from './assets/logo.png';
 import { useSubscription } from './hooks/useSubscription';
+import { audioService } from './services/audioService';
 
 // --- Lazy-loaded Pages ---
 const HomeView = React.lazy(() => import('./pages/HomeView'));
@@ -451,9 +452,41 @@ const App: React.FC = () => {
       }
     };
     updateUnread();
+
+    // Global realtime listener for incoming communications sound alert
+    const channel = supabase
+      .channel('global_internal_comms_audio')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'internal_communications',
+          filter: `company_id=eq.${user.companyId}`
+        },
+        (payload) => {
+          const newData = payload.new as any;
+          if (newData && newData.sender_id !== user.id) {
+            const isForMe = 
+              newData.target_type === 'all' || 
+              (newData.target_type === 'user' && (newData.target_id === user.id || (Array.isArray(newData.target_ids) && newData.target_ids.includes(user.id)))) ||
+              (newData.target_type === 'role' && newData.target_id === user.role);
+
+            if (isForMe) {
+              audioService.play();
+              updateUnread();
+            }
+          }
+        }
+      )
+      .subscribe();
+
     window.addEventListener('refresh-unread-count', updateUnread);
-    return () => window.removeEventListener('refresh-unread-count', updateUnread);
-  }, [user?.id, isReady]);
+    return () => {
+      window.removeEventListener('refresh-unread-count', updateUnread);
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, user?.companyId, user?.role, isReady]);
 
   const handleLogin = async (u: User) => {
     console.log("[App] Handling login for user:", u.name);

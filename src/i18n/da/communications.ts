@@ -91,5 +91,7 @@ export const communications = {
   push_deactivate: "Deaktiver meddelelser",
   push_reset_hint: "Fjern blokering af meddelelser i browserindstillingerne",
   push_sound: "Besked-lyd",
-  push_sound_desc: "Afspil en lydalarm, når den modtages"
+  push_sound_desc: "Afspil en lydalarm, når den modtages",
+  testSound: "Test",
+  testSoundTitle: "Test notifikationslyd"
 } as const;

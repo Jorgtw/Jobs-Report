@@ -28,12 +28,12 @@
       "communications.feature_teamsync_title",
       "communications.feature_pdf_title",
       "communications.tab_inbox",
+      "communications.testSound",
       "dashboard.upgradeModal.twoMonthsFree",
       "landing.title",
       "landing.diff5Title",
       "landing.sandbox.guestId",
       "projects.personPassword",
-      "reports.summaryTitle",
       "reports.headerTotal",
       "reports.headerExtra",
       "reports.headerFestive",
@@ -59,7 +59,6 @@
       "landing.diff5Title",
       "landing.sandbox.guestId",
       "projects.client",
-      "reports.summaryTitle",
       "reports.breakHours",
       "reports.headerClient",
       "reports.summaryPeriod",
@@ -78,11 +77,11 @@
       "common.date",
       "communications.feature_ticket_title",
       "communications.feature_teamsync_title",
+      "communications.testSound",
       "dashboard.upgradeModal.twoMonthsFree",
       "landing.title",
       "landing.diff5Title",
       "landing.sandbox.guestId",
-      "reports.summaryTitle",
       "reports.date",
       "reports.headerDate",
       "reports.headerExtra"
@@ -91,11 +90,11 @@
       "auth.phonePlaceholder",
       "auth.resetPassword",
       "communications.feature_ticket_title",
+      "communications.testSound",
       "dashboard.upgradeModal.twoMonthsFree",
       "landing.title",
       "landing.diff5Title",
-      "landing.sandbox.guestId",
-      "reports.summaryTitle"
+      "landing.sandbox.guestId"
     ],
     "da": [
       "auth.email",
@@ -104,13 +103,13 @@
       "common.personnel",
       "communications.feature_ticket_title",
       "communications.feature_teamsync_title",
+      "communications.testSound",
       "dashboard.upgradeModal.twoMonthsFree",
       "landing.title",
       "landing.diff5Title",
       "landing.sandbox.guestId",
       "presentation.sidebar.personale",
       "projects.personnelTitle",
-      "reports.summaryTitle",
       "reports.headerWorker",
       "reports.headerTotal",
       "reports.personnel"
@@ -208,14 +207,10 @@
     "communications.tab_completed",
     "communications.workingTooltip",
     "communications.push_banner_title",
-    "communications.push_banner_desc",
     "communications.push_dismiss",
     "communications.push_enabled",
     "communications.push_settings_title",
-    "communications.push_notifications",
-    "communications.push_status_blocked",
     "communications.push_status_disabled",
-    "communications.push_deactivate",
     "communications.push_reset_hint",
     "dashboard.estimatedExpenses",
     "dashboard.toInvoice",
@@ -401,67 +396,67 @@
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 138,
+      "line": 139,
       "text": "Report Interventi",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 140,
+      "line": 141,
       "text": "Genera l'allegato dei lavori per l'amministrazione o per il cliente.",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 149,
+      "line": 150,
       "text": "Cliente",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 155,
+      "line": 156,
       "text": "-- Seleziona Cliente --",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 162,
+      "line": 163,
       "text": "Progetto (Opzionale)",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 169,
+      "line": 170,
       "text": "-- Tutti i progetti --",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 188,
+      "line": 189,
       "text": "Seleziona Tutti (",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 214,
+      "line": 215,
       "text": "Excel",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 250,
+      "line": 251,
       "text": "Nuovo",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 247,
+      "line": 248,
       "text": "Esportato",
       "type": "JSXText"
     },
     {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
-      "line": 221,
+      "line": 222,
       "text": "Nessun rapportino trovato per questa selezione.",
       "type": "JSXText"
     },

@@ -91,5 +91,7 @@ export const communications = {
   push_deactivate: "Bildirimleri Devre Dışı Bırak",
   push_reset_hint: "Tarayıcı ayarlarından bildirimlerin engelini kaldırın",
   push_sound: "Bildirim Sesi",
-  push_sound_desc: "Alındığında bir sesli uyarı çal"
+  push_sound_desc: "Alındığında bir sesli uyarı çal",
+  testSound: "Test",
+  testSoundTitle: "Bildirim sesini test et"
 } as const;
