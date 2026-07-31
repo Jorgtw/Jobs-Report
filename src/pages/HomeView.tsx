@@ -86,17 +86,17 @@ const CompactDashboard: React.FC = () => {
   }, [db.getCompanyIdSafe()]);
 
   const SmallStat = ({ label, value, to, valueColor = "text-slate-900", isLoading, icon: Icon }: { label: string, value: string | number, to: string, valueColor?: string, isLoading?: boolean, icon: React.ElementType }) => (
-    <Link to={to} className="flex flex-col justify-between p-3.5 sm:p-4 bg-white border border-slate-200 rounded-2xl hover:border-blue-400 shadow-sm hover:shadow-md transition-all group active:scale-[0.98]">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="p-1.5 bg-slate-50 text-slate-400 rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors shrink-0">
-          <Icon size={16} />
+    <Link to={to} className="flex flex-col justify-between p-2.5 sm:p-3 bg-white border border-slate-200 rounded-xl sm:rounded-2xl hover:border-blue-400 shadow-sm hover:shadow-md transition-all group active:scale-[0.98]">
+      <div className="flex items-center gap-1.5 mb-1">
+        <div className="p-1 bg-slate-50 text-slate-400 rounded-md sm:rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors shrink-0">
+          <Icon size={14} />
         </div>
-        <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-tight leading-snug">{label}</span>
+        <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-tight leading-tight">{label}</span>
       </div>
       {isLoading ? (
-        <span className="inline-block w-16 h-6 bg-slate-100 animate-pulse rounded mt-1" />
+        <span className="inline-block w-16 h-5 bg-slate-100 animate-pulse rounded mt-0.5" />
       ) : (
-        <span className={`text-lg sm:text-xl font-bold tracking-tight truncate ${valueColor}`} title={String(value)}>{value}</span>
+        <span className={`text-base sm:text-lg font-bold tracking-tight truncate ${valueColor}`} title={String(value)}>{value}</span>
       )}
     </Link>
   );
@@ -104,12 +104,12 @@ const CompactDashboard: React.FC = () => {
   const formatNum = (val: number) => val.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex items-center gap-2 mb-3 ml-1">
+    <div className="mb-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center gap-2 mb-1.5 ml-1">
         <h2 className="text-[11px] font-black text-slate-700 uppercase tracking-wider">{t('dashboard.worksInProgress')}</h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5">
         <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" icon={Briefcase} isLoading={loading} />
         <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" icon={FileText} isLoading={loading} />
         <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" icon={Clock} isLoading={loading} />
@@ -145,17 +145,17 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
   if (hours === null) return null;
 
   return (
-    <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-100/50 mb-4 flex items-center justify-between group hover:bg-slate-50 transition-all">
+    <div className="bg-slate-50/70 p-3 rounded-2xl border border-slate-100/50 mb-3 flex items-center justify-between group hover:bg-slate-50 transition-all">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-600 transition-transform group-hover:scale-105">
-          <Clock size={18} />
+        <div className="w-9 h-9 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-600 transition-transform group-hover:scale-105">
+          <Clock size={16} />
         </div>
         <div>
           <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.pendingHoursSummary')}</h3>
           <p className="text-[11px] font-medium text-slate-400 mt-0.5 leading-tight">{t('reports.pendingStatusSubtitle')}</p>
         </div>
       </div>
-      <div className="text-2xl font-black text-amber-600">
+      <div className="text-xl font-black text-amber-600">
         {hours.toLocaleString(localeMap[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         <span className="text-[11px] font-bold ml-0.5 text-slate-400 uppercase">h</span>
       </div>
@@ -239,10 +239,10 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-4 px-2 sm:px-4 animate-in fade-in duration-500">
-      <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-slate-100 pb-2">
+    <div className="max-w-5xl mx-auto py-2 sm:py-3 px-2 sm:px-4 animate-in fade-in duration-500">
+      <div className="mb-2.5 sm:mb-3 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-slate-100 pb-1.5">
         <div>
-          <h1 className="text-lg font-black text-slate-800 tracking-tight">
+          <h1 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">
             {t('common.welcome')}, {user.name}
           </h1>
           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-2">
@@ -269,54 +269,54 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
       </div>
 
       {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <PendingHoursCard user={user} />
           <Link 
             to="/reports" 
-            className="bg-blue-600 p-4 rounded-2xl text-white shadow-md shadow-blue-500/5 flex items-center justify-between group hover:bg-blue-700 transition-all mb-6 active:scale-[0.99]"
+            className="bg-blue-600 p-3 rounded-2xl text-white shadow-md shadow-blue-500/5 flex items-center justify-between group hover:bg-blue-700 transition-all mb-4 active:scale-[0.99]"
           >
-            <div className="flex items-center gap-4.5">
-              <div className="w-11 h-11 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform group-hover:scale-105">
-                <Plus size={22} />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform group-hover:scale-105">
+                <Plus size={18} />
               </div>
               <div className="flex flex-col">
-                <h3 className="text-[13px] font-extrabold uppercase tracking-wider leading-tight">{t('reports.new')}</h3>
-                <p className="text-[9px] font-bold text-blue-100/80 uppercase tracking-widest leading-none mt-1">{t('reports.activityManagement')}</p>
+                <h3 className="text-[12px] font-extrabold uppercase tracking-wider leading-tight">{t('reports.new')}</h3>
+                <p className="text-[9px] font-bold text-blue-100/80 uppercase tracking-widest leading-none mt-0.5">{t('reports.activityManagement')}</p>
               </div>
             </div>
-            <ChevronRight size={18} className="text-blue-200/80 group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight size={16} className="text-blue-200/80 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
       ))}
 
-      <div className="mt-8">
+      <div className="mt-3 sm:mt-4">
         <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">
           {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
 
-        <nav className="grid grid-cols-3 sm:flex sm:flex-wrap gap-3 sm:gap-6 mt-4">
+        <nav className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2.5 sm:gap-3 mt-2">
           {actions.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-white border border-slate-100 rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all group cursor-pointer p-2"
+              className="flex flex-col items-center justify-center w-full h-22 sm:w-28 sm:h-28 bg-white border border-slate-100 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all group cursor-pointer p-2"
             >
-              <div className="mb-3 text-blue-600 group-hover:scale-110 transition-transform duration-300">
-                <link.icon size={36} strokeWidth={2} />
+              <div className="mb-1.5 text-blue-600 group-hover:scale-110 transition-transform duration-300">
+                <link.icon size={26} strokeWidth={2} />
               </div>
-              <span className="text-xs sm:text-[15px] font-semibold text-slate-800 capitalize text-center truncate w-full">{link.name.toLowerCase()}</span>
+              <span className="text-xs sm:text-[13px] font-bold text-slate-800 capitalize text-center truncate w-full">{link.name.toLowerCase()}</span>
             </Link>
           ))}
 
           {!isOperator && (
             <button
               onClick={handleManualLogout}
-              className="flex flex-col items-center justify-center w-full h-26 sm:w-36 sm:h-36 bg-white border border-slate-100 rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all group cursor-pointer p-2"
+              className="flex flex-col items-center justify-center w-full h-22 sm:w-28 sm:h-28 bg-white border border-slate-100 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all group cursor-pointer p-2"
             >
-              <div className="mb-3 text-slate-400 group-hover:text-red-500 group-hover:scale-110 transition-all duration-300">
-                <LogOut size={36} strokeWidth={2} />
+              <div className="mb-1.5 text-slate-400 group-hover:text-red-500 group-hover:scale-110 transition-all duration-300">
+                <LogOut size={26} strokeWidth={2} />
               </div>
-              <span className="text-xs sm:text-[15px] font-semibold text-slate-800 capitalize text-center truncate w-full">{t('common.logout').toLowerCase()}</span>
+              <span className="text-xs sm:text-[13px] font-bold text-slate-800 capitalize text-center truncate w-full">{t('common.logout').toLowerCase()}</span>
             </button>
           )}
         </nav>
