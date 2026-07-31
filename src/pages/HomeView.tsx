@@ -86,12 +86,12 @@ const CompactDashboard: React.FC = () => {
   }, [db.getCompanyIdSafe()]);
 
   const SmallStat = ({ label, value, to, valueColor = "text-slate-900", isLoading, icon: Icon }: { label: string, value: string | number, to: string, valueColor?: string, isLoading?: boolean, icon: React.ElementType }) => (
-    <Link to={to} className="flex flex-col p-4 bg-white border border-slate-200 rounded-2xl hover:border-blue-400 shadow-sm hover:shadow-md transition-all group active:scale-[0.98]">
+    <Link to={to} className="flex flex-col justify-between p-3.5 sm:p-4 bg-white border border-slate-200 rounded-2xl hover:border-blue-400 shadow-sm hover:shadow-md transition-all group active:scale-[0.98]">
       <div className="flex items-center gap-2 mb-2">
-        <div className="p-1.5 bg-slate-50 text-slate-400 rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
+        <div className="p-1.5 bg-slate-50 text-slate-400 rounded-lg group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors shrink-0">
           <Icon size={16} />
         </div>
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{label}</span>
+        <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-tight leading-snug">{label}</span>
       </div>
       {isLoading ? (
         <span className="inline-block w-16 h-6 bg-slate-100 animate-pulse rounded mt-1" />
@@ -109,7 +109,7 @@ const CompactDashboard: React.FC = () => {
         <h2 className="text-[11px] font-black text-slate-700 uppercase tracking-wider">{t('dashboard.worksInProgress')}</h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <SmallStat label={t('common.projects')} value={stats.activeProjects} to="/projects" icon={Briefcase} isLoading={loading} />
         <SmallStat label={t('common.reports')} value={stats.pendingReports} to="/reports" icon={FileText} isLoading={loading} />
         <SmallStat label={t('common.hours')} value={stats.pendingHours.toLocaleString(localeMap[lang], { maximumFractionDigits: 1 })} to="/reports" icon={Clock} isLoading={loading} />
