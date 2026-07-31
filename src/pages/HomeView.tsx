@@ -294,7 +294,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           {isSuperAdmin ? 'Strumenti Rapidi' : t('common.quickMenu')}
         </h3>
 
-        <nav className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3 mt-2">
+        <nav className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 gap-2.5 sm:gap-3 mt-2">
           {actions.map((link) => (
             <Link
               key={link.path}
