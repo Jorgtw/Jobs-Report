@@ -875,16 +875,36 @@ class DBService {
     return data.map((w: any) => w.email).filter(Boolean);
   }
 
-  async updateCompanyDetails(id: string, details: { address?: string; phone?: string; email?: string; vatNumber?: string; city?: string; country?: string }) {
-    const { error } = await supabase.from('companies').update({
-      address: details.address,
-      phone: details.phone,
-      email: details.email,
-      vat_number: details.vatNumber,
-      city: details.city,
-      country: details.country,
-    }).eq('id', id);
-    if (error) throw error;
+  async updateCompanyDetails(id: string, details: { name?: string; address?: string; phone?: string; email?: string; vatNumber?: string; city?: string; country?: string }) {
+    // Primary hardened path: Call secure RPC function with strict field whitelist
+    const { error: rpcError } = await supabase.rpc('update_company_details_v1', {
+      p_company_id: id,
+      p_name: details.name !== undefined ? details.name : null,
+      p_email: details.email !== undefined ? details.email : null,
+      p_phone: details.phone !== undefined ? details.phone : null,
+      p_address: details.address !== undefined ? details.address : null,
+      p_city: details.city !== undefined ? details.city : null,
+      p_country: details.country !== undefined ? details.country : null,
+    });
+
+    if (!rpcError) return;
+
+    // Fallback for SuperAdmin if RPC migration is pending
+    if (this.isSuperAdminRole) {
+      const payload: any = {};
+      if (details.name !== undefined) payload.name = details.name.trim();
+      if (details.address !== undefined) payload.address = details.address.trim();
+      if (details.phone !== undefined) payload.phone = details.phone.trim();
+      if (details.email !== undefined) payload.email = details.email.trim();
+      if (details.vatNumber !== undefined) payload.vat_number = details.vatNumber.trim();
+      if (details.city !== undefined) payload.city = details.city.trim();
+      if (details.country !== undefined) payload.country = details.country.trim();
+
+      const { error: fallbackError } = await supabase.from('companies').update(payload).eq('id', id);
+      if (fallbackError) throw fallbackError;
+    } else {
+      throw rpcError;
+    }
   }
 
   async getAllCompanies() {

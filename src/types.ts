@@ -11,6 +11,12 @@ export interface Company {
   id: string;
   name: string;
   status: 'active' | 'inactive';
+  vatNumber?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
   subscription?: Subscription;
   billingNumberPattern?: string;
   createdAt: number;
