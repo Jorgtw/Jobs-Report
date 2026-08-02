@@ -76,5 +76,20 @@ export const auth = {
   placeholderVatExample: "e.g. GB123456789",
   placeholderContactExample: "John Doe",
   placeholderEmailExample: "john@company.com",
-  placeholderUsernameExample: "Choose username"
+  placeholderUsernameExample: "Choose username",
+  userProfile: "Brugerprofil",
+  companyDetails: "Virksomhedsoplysninger",
+  companySettingsTitle: "Virksomhedens Operationelle Indstillinger",
+  editableFieldsSection: "Redigerbare Oplysninger",
+  readOnlyFieldsSection: "Skatte- og Identifikationsdata (Skrivebeskyttet)",
+  companyEmail: "Virksomheds-e-mail",
+  companyUpdated: "Virksomhedsoplysninger opdateret med succes!",
+  companyUpdating: "Gemmer ændringer...",
+  saveCompanyBtn: "Gem Virksomhedsoplysninger",
+  fixedLabel: "Fast",
+  systemLabel: "System",
+  immutableLabel: "Uforanderlig",
+  country: "Land",
+  companyStatusLabel: "Virksomhedsstatus",
+  companyIdLabel: "Virksomheds-ID (Tenant UUID)"
 } as const;

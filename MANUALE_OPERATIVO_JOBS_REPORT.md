@@ -26,6 +26,7 @@ Jobs-Report è uno strumento di time tracking e raccolta dati operativi sul camp
 1. **Creazione Cliente**: Inserisci i dati base del cliente (Nome, referente, indirizzo).
 2. **Creazione Progetto/Commessa**: Associa il progetto al cliente e seleziona i tecnici/operatori assegnati al cantiere.
 3. **Gestione Team e Subappalti**: Aggiungi i collaboratori interni o le ditte in subappalto.
+4. **Dati Aziendali e Intestazione PDF**: Da *Profilo → Dati Aziendali*, l'Admin può aggiornare Ragione sociale, email, telefono e indirizzo ditta che compariranno negli export PDF.
 
 ### Passaggio 2: Compilazione del Rapportino sul Campo (Tecnico)
 1. **Selezione Commessa e Data**: Il tecnico seleziona il cantiere su cui ha lavorato.

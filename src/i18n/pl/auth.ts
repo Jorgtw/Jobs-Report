@@ -76,5 +76,20 @@ export const auth = {
   placeholderVatExample: "e.g. GB123456789",
   placeholderContactExample: "John Doe",
   placeholderEmailExample: "john@company.com",
-  placeholderUsernameExample: "Choose username"
+  placeholderUsernameExample: "Choose username",
+  userProfile: "Profil Użytkownika",
+  companyDetails: "Dane Firmy",
+  companySettingsTitle: "Ustawienia Operacyjne Firmy",
+  editableFieldsSection: "Edytowalne Informacje",
+  readOnlyFieldsSection: "Dane Podatkowe i Identyfikacyjne (Tylko do odczytu)",
+  companyEmail: "E-mail Firmowy",
+  companyUpdated: "Dane firmy zostały pomyślnie zaktualizowane!",
+  companyUpdating: "Zapisywanie zmian...",
+  saveCompanyBtn: "Zapisz Dane Firmy",
+  fixedLabel: "Stałe",
+  systemLabel: "System",
+  immutableLabel: "Niezmienne",
+  country: "Kraj",
+  companyStatusLabel: "Status Firmy",
+  companyIdLabel: "ID Firmy (UUID Tenanta)"
 } as const;

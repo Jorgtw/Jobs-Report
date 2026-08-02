@@ -76,5 +76,20 @@ export const auth = {
   placeholderVatExample: "e.g. GB123456789",
   placeholderContactExample: "John Doe",
   placeholderEmailExample: "john@company.com",
-  placeholderUsernameExample: "Choose username"
+  placeholderUsernameExample: "Choose username",
+  userProfile: "Perfil de Usuario",
+  companyDetails: "Datos de la Empresa",
+  companySettingsTitle: "Configuración Operativa de la Empresa",
+  editableFieldsSection: "Información Modificable",
+  readOnlyFieldsSection: "Datos Fiscales e Identificativos (Solo Lectura)",
+  companyEmail: "Correo de la Empresa",
+  companyUpdated: "¡Datos de la empresa me actualizados con éxito!",
+  companyUpdating: "Guardando cambios...",
+  saveCompanyBtn: "Guardar Datos de la Empresa",
+  fixedLabel: "Fijo",
+  systemLabel: "Sistema",
+  immutableLabel: "Inmutable",
+  country: "País",
+  companyStatusLabel: "Estado de la Empresa",
+  companyIdLabel: "ID de la Empresa (UUID)"
 } as const;

@@ -165,7 +165,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
       await refreshContext();
 
       setCompanyMessage({
-        text: 'Dati aziendali aggiornati con successo!',
+        text: t('auth.companyUpdated') || 'Dati aziendali aggiornati con successo!',
         type: 'success'
       });
     } catch (err: any) {
@@ -194,7 +194,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
             }`}
           >
             <UserIcon size={16} />
-            <span>Profilo Utente</span>
+            <span>{t('auth.userProfile') || 'Profilo Utente'}</span>
           </button>
           <button
             type="button"
@@ -206,7 +206,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
             }`}
           >
             <Building2 size={16} />
-            <span>Dati Aziendali</span>
+            <span>{t('auth.companyDetails') || 'Dati Aziendali'}</span>
           </button>
         </div>
       )}
@@ -364,10 +364,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
             </div>
             <div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-                {companyForm.name || user.companyName || 'Dati Aziendali'}
+                {companyForm.name || user.companyName || t('auth.companyDetails')}
               </h1>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                Impostazioni Operative Ditta
+                {t('auth.companySettingsTitle') || 'Impostazioni Operative Ditta'}
               </p>
             </div>
           </div>
@@ -375,13 +375,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
           <form onSubmit={handleCompanyUpdate} className="space-y-6">
             <div>
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-4 text-blue-600">
-                Informazioni Modificabili
+                {t('auth.editableFieldsSection') || 'Informazioni Modificabili'}
               </h2>
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                    Ragione Sociale
+                    {t('auth.companyName') || 'Ragione Sociale'}
                   </label>
                   <input
                     type="text"
@@ -396,7 +396,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                      Email Aziendale
+                      {t('auth.companyEmail') || 'Email Aziendale'}
                     </label>
                     <input
                       type="email"
@@ -409,7 +409,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
 
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                      Telefono
+                      {t('workers.phone') || t('auth.phone') || 'Telefono'}
                     </label>
                     <input
                       type="text"
@@ -423,7 +423,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
 
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                    Indirizzo Completo
+                    {t('auth.address') || 'Indirizzo Completo'}
                   </label>
                   <input
                     type="text"
@@ -437,7 +437,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                      Città
+                      {t('auth.city') || 'Città'}
                     </label>
                     <input
                       type="text"
@@ -450,7 +450,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
 
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                      Paese
+                      {t('auth.country') || 'Paese'}
                     </label>
                     <input
                       type="text"
@@ -469,7 +469,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
               <div className="flex items-center gap-2 mb-4">
                 <ShieldAlert size={16} className="text-amber-500" />
                 <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                  Dati Fiscali e Identificativi (Non Modificabili)
+                  {t('auth.readOnlyFieldsSection') || 'Dati Fiscali e Identificativi (Non Modificabili)'}
                 </h2>
               </div>
 
@@ -477,10 +477,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-500">
-                      Partita IVA / CVR
+                      {t('auth.vatNumber') || 'Partita IVA / CVR'}
                     </label>
                     <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100 flex items-center gap-1">
-                      <Lock size={10} /> Fisso
+                      <Lock size={10} /> {t('auth.fixedLabel') || 'Fisso'}
                     </span>
                   </div>
                   <input
@@ -495,10 +495,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-500">
-                      Stato Azienda
+                      {t('auth.companyStatusLabel') || 'Stato Azienda'}
                     </label>
                     <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
-                      <Lock size={10} /> Sistema
+                      <Lock size={10} /> {t('auth.systemLabel') || 'Sistema'}
                     </span>
                   </div>
                   <input
@@ -513,10 +513,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                 <div className="md:col-span-2">
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-500">
-                      ID Azienda (Tenant UUID)
+                      {t('auth.companyIdLabel') || 'ID Azienda (Tenant UUID)'}
                     </label>
                     <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
-                      <Lock size={10} /> Immutabile
+                      <Lock size={10} /> {t('auth.immutableLabel') || 'Immutabile'}
                     </span>
                   </div>
                   <input
@@ -542,9 +542,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
               className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {companyLoading ? (
-                <span>Salvataggio in corso...</span>
+                <span>{t('auth.companyUpdating') || 'Salvataggio in corso...'}</span>
               ) : (
-                <span>Salva Dati Aziendali</span>
+                <span>{t('auth.saveCompanyBtn') || 'Salva Dati Aziendali'}</span>
               )}
             </button>
 

@@ -99,6 +99,11 @@ Visualizzazione analitica dei costi e ricavi. Riservato agli **Admin**, permette
 ### Profilo Utente
 Ogni utente può aggiornare i propri dati di contatto e visualizzare il riepilogo delle proprie ore mensili.
 
+### Dati Aziendali (Solo per Amministratori)
+Gli Amministratori di ditta e i SuperAdmin possono accedere alla scheda **Dati Aziendali** presente nella pagina Profilo per aggiornare le informazioni operative della propria impresa.
+- **Campi modificabili**: Ragione sociale, Email aziendale, Telefono, Indirizzo completo, Città e Paese.
+- **Dati fiscali e di sistema (Sola lettura)**: Partita IVA / CVR, Stato azienda e ID Azienda (Tenant UUID) per garantire la massima sicurezza e integrità fiscale.
+
 ### Lingua
 L'applicazione supporta Italiano, Inglese, Spagnolo, Polacco, Turco e Danese. Cambia la lingua dall'icona del mondo nella testata.
 

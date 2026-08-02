@@ -76,5 +76,20 @@ export const auth = {
   placeholderVatExample: "e.g. GB123456789",
   placeholderContactExample: "John Doe",
   placeholderEmailExample: "john@company.com",
-  placeholderUsernameExample: "Choose username"
+  placeholderUsernameExample: "Choose username",
+  userProfile: "Kullanıcı Profili",
+  companyDetails: "Firma Bilgileri",
+  companySettingsTitle: "Firma Operasyonel Ayarları",
+  editableFieldsSection: "Düzenlenebilir Bilgiler",
+  readOnlyFieldsSection: "Mali ve Kimlik Bilgileri (Salt Okunur)",
+  companyEmail: "Firma E-postası",
+  companyUpdated: "Firma bilgileri başarıyla güncellendi!",
+  companyUpdating: "Değişiklikler kaydediliyor...",
+  saveCompanyBtn: "Firma Bilgilerini Kaydet",
+  fixedLabel: "Sabit",
+  systemLabel: "Sistem",
+  immutableLabel: "Değiştirilemez",
+  country: "Ülke",
+  companyStatusLabel: "Firma Durumu",
+  companyIdLabel: "Firma ID (Kiracı UUID)"
 } as const;
