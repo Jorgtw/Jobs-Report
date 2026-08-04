@@ -56,6 +56,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
 
     interface DailyWorkerRow {
       dateFormatted: string;
+      isFirstRowOfDate: boolean;
       workerName: string;
       ordinary: number;
       extra: number;
@@ -65,6 +66,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
     }
 
     const dailyRows: DailyWorkerRow[] = [];
+    let lastDate = '';
 
     sortedReports.forEach(r => {
       const dateFormatted = formatDateEU(r.date);
@@ -80,8 +82,12 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
         ? Number((r as any).ordinaryHours)
         : Math.max(0, mainTot - mainEx - mainF - mainN);
 
+      const isFirstMain = dateFormatted !== lastDate;
+      if (isFirstMain) lastDate = dateFormatted;
+
       dailyRows.push({
         dateFormatted,
+        isFirstRowOfDate: isFirstMain,
         workerName: mainName,
         ordinary: mainOrd,
         extra: mainEx,
@@ -102,8 +108,12 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
           ? Number(aw.ordinaryHours)
           : Math.max(0, awTot - awEx - awF - awN);
 
+        const isFirstAw = dateFormatted !== lastDate;
+        if (isFirstAw) lastDate = dateFormatted;
+
         dailyRows.push({
           dateFormatted,
+          isFirstRowOfDate: isFirstAw,
           workerName: awName,
           ordinary: awOrd,
           extra: awEx,
@@ -319,7 +329,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                     {dailyRows.map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
-                        <td className="p-2 font-bold text-blue-600 whitespace-nowrap">{row.dateFormatted}</td>
+                        <td className="p-2 font-bold text-blue-600 whitespace-nowrap">{row.isFirstRowOfDate ? row.dateFormatted : ''}</td>
                         <td className="p-2 font-semibold text-slate-900">{row.workerName}</td>
                         <td className="p-2 text-center">{row.ordinary.toFixed(2)}h</td>
                         <td className="p-2 text-center text-amber-600 font-medium">{row.extra > 0 ? `${row.extra.toFixed(2)}h` : '-'}</td>

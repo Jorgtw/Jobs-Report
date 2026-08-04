@@ -914,6 +914,7 @@ export const generateInterventionPDF = async (
 
   const teamTableData: any[] = [];
   let sumOrd = 0, sumEx = 0, sumF = 0, sumN = 0, sumTot = 0;
+  let lastDate = '';
 
   sortedReports.forEach(r => {
     const dateFormatted = formatDateEU(r.date);
@@ -935,8 +936,11 @@ export const generateInterventionPDF = async (
     sumN += mainN;
     sumTot += mainTot;
 
+    const displayDateMain = dateFormatted !== lastDate ? dateFormatted : '';
+    if (dateFormatted !== lastDate) lastDate = dateFormatted;
+
     teamTableData.push([
-      dateFormatted,
+      displayDateMain,
       mainName,
       `${mainOrd.toFixed(2)} h`,
       `${mainEx.toFixed(2)} h`,
@@ -963,8 +967,11 @@ export const generateInterventionPDF = async (
       sumN += awN;
       sumTot += awTot;
 
+      const displayDateAw = dateFormatted !== lastDate ? dateFormatted : '';
+      if (dateFormatted !== lastDate) lastDate = dateFormatted;
+
       teamTableData.push([
-        dateFormatted,
+        displayDateAw,
         awName,
         `${awOrd.toFixed(2)} h`,
         `${awEx.toFixed(2)} h`,
