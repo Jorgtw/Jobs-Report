@@ -782,3 +782,405 @@ export const exportInvoiceToExcel = async (
   const excelBuffer = write(wb, { bookType: 'xlsx', type: 'array' });
   await saveAndShareFile(excelBuffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };
+
+export const generateInterventionPDF = async (
+  reports: any[],
+  project: any,
+  client: any,
+  companyDetails: any,
+  personnel: any[],
+  modalData: {
+    description: string;
+    notes: string;
+    isCompleted: boolean;
+    signature: string;
+  },
+  lang: Language
+) => {
+  const t = getT(lang);
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const pageW = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  const contentW = pageW - margin * 2;
+  const locale = localeMap[lang] || 'it-IT';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+
+  const formatDateEU = (isoDate: string) => {
+    if (!isoDate) return '---';
+    const parts = isoDate.split('-');
+    if (parts.length === 3) {
+      if (lang === 'en') return `${parts[1]}/${parts[2]}/${parts[0]}`;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return isoDate;
+  };
+
+  const sortedDates = reports.map(r => r.date).filter(Boolean).sort();
+  const minDateStr = sortedDates[0] ? formatDateEU(sortedDates[0]) : '---';
+  const maxDateStr = sortedDates[sortedDates.length - 1] ? formatDateEU(sortedDates[sortedDates.length - 1]) : '---';
+  const periodStr = minDateStr === maxDateStr ? minDateStr : `${minDateStr} — ${maxDateStr}`;
+
+  // Header Banner
+  doc.setFillColor(79, 70, 229);
+  doc.rect(0, 0, pageW, 28, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text((t('reports.interventionReport') || 'RAPPORTO INTERVENTO').toUpperCase(), margin, 11);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text(`${dateStr}  •  ${timeStr}`, margin, 19);
+  doc.text(`#INT-${(project?.id || '').substring(0, 6).toUpperCase()}`, pageW - margin, 19, { align: 'right' });
+
+  let y = 34;
+
+  const hasCompanyData = companyDetails && (companyDetails.name || companyDetails.address || companyDetails.phone || companyDetails.email);
+  if (hasCompanyData) {
+    doc.setFillColor(248, 250, 252);
+    doc.rect(0, y - 2, pageW, 26, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text(companyDetails.name || '', margin, y + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    const addrParts = [companyDetails.address, companyDetails.city, companyDetails.country].filter(Boolean).join(', ');
+    if (addrParts) doc.text(addrParts, margin, y + 11);
+    const contactParts = [
+      companyDetails.phone ? `Tel: ${companyDetails.phone}` : '',
+      companyDetails.email ? `Email: ${companyDetails.email}` : '',
+      companyDetails.vatNumber ? `P.IVA/CVR: ${companyDetails.vatNumber}` : '',
+    ].filter(Boolean).join('   ');
+    if (contactParts) doc.text(contactParts, margin, y + 17);
+    y += 30;
+  } else {
+    y += 6;
+  }
+
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+
+  const drawLabelValue = (label: string, value: string, x: number, yPos: number, maxW = 88) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text(label.toUpperCase(), x, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    const lines = doc.splitTextToSize(value || '---', maxW);
+    doc.text(lines, x, yPos + 5);
+    return yPos + 5 + lines.length * 5;
+  };
+
+  drawLabelValue(t('reports.workPeriod') || 'Periodo Lavori', periodStr, margin, y);
+  drawLabelValue(t('common.clients') || 'Cliente', client?.name || '---', margin, y + 14);
+  drawLabelValue(t('common.projects') || 'Progetto', project?.name || '---', margin + contentW / 2, y);
+  if (project?.address) drawLabelValue(t('projects.address') || 'Indirizzo', project.address, margin + contentW / 2, y + 14);
+  y += 32;
+
+  // Description
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(79, 70, 229);
+  doc.text((t('reports.interventionDescription') || 'Descrizione Intervento').toUpperCase(), margin, y);
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(51, 65, 85);
+  const descLines = doc.splitTextToSize(modalData.description || project?.description || '---', contentW);
+  doc.text(descLines, margin, y);
+  y += descLines.length * 5 + 6;
+
+  // Team Personnel Hours Aggregation
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(79, 70, 229);
+  doc.text((t('reports.workTeam') || 'Squadra di Lavoro').toUpperCase(), margin, y);
+  y += 4;
+
+  const workerStatsMap = new Map<string, {
+    name: string;
+    ordinary: number;
+    extra: number;
+    festive: number;
+    night: number;
+    total: number;
+  }>();
+
+  reports.forEach(r => {
+    const mainId = r.userId || 'main';
+    const mainName = personnel?.find(u => u.id === r.userId)?.name || r.userName || t('reports.mainWorker');
+    const mainTot = r.manualTotalHours !== undefined && r.manualTotalHours !== null
+      ? Number(r.manualTotalHours)
+      : Number(r.totalHours) || 0;
+    const mainEx = Number(r.overtimeHours) || 0;
+    const mainF = Number(r.festiveHours) || 0;
+    const mainN = Number(r.nightHours) || 0;
+    const mainOrd = r.ordinaryHours !== undefined && r.ordinaryHours !== null
+      ? Number(r.ordinaryHours)
+      : Math.max(0, mainTot - mainEx - mainF - mainN);
+
+    if (!workerStatsMap.has(mainId)) {
+      workerStatsMap.set(mainId, { name: mainName, ordinary: 0, extra: 0, festive: 0, night: 0, total: 0 });
+    }
+    const mainStat = workerStatsMap.get(mainId)!;
+    mainStat.ordinary += mainOrd;
+    mainStat.extra += mainEx;
+    mainStat.festive += mainF;
+    mainStat.night += mainN;
+    mainStat.total += mainTot;
+
+    (r.additionalWorkers || []).forEach((aw: any) => {
+      const awId = aw.userId || aw.personName || 'helper';
+      const awName = aw.personName || personnel?.find(u => u.id === aw.userId)?.name || '---';
+      const awTot = aw.manualTotalHours !== undefined && aw.manualTotalHours !== null
+        ? Number(aw.manualTotalHours)
+        : Number(aw.totalHours) || 0;
+      const awEx = Number(aw.overtimeHours) || 0;
+      const awF = Number(aw.festiveHours) || 0;
+      const awN = Number(aw.nightHours) || 0;
+      const awOrd = aw.ordinaryHours !== undefined && aw.ordinaryHours !== null
+        ? Number(aw.ordinaryHours)
+        : Math.max(0, awTot - awEx - awF - awN);
+
+      if (!workerStatsMap.has(awId)) {
+        workerStatsMap.set(awId, { name: awName, ordinary: 0, extra: 0, festive: 0, night: 0, total: 0 });
+      }
+      const awStat = workerStatsMap.get(awId)!;
+      awStat.ordinary += awOrd;
+      awStat.extra += awEx;
+      awStat.festive += awF;
+      awStat.night += awN;
+      awStat.total += awTot;
+    });
+  });
+
+  const teamTableData: any[] = [];
+  let sumOrd = 0, sumEx = 0, sumF = 0, sumN = 0, sumTot = 0;
+
+  workerStatsMap.forEach(w => {
+    sumOrd += w.ordinary;
+    sumEx += w.extra;
+    sumF += w.festive;
+    sumN += w.night;
+    sumTot += w.total;
+
+    teamTableData.push([
+      w.name,
+      `${w.ordinary.toFixed(2)} h`,
+      `${w.extra.toFixed(2)} h`,
+      `${w.festive.toFixed(2)} h`,
+      `${w.night.toFixed(2)} h`,
+      `${w.total.toFixed(2)} h`
+    ]);
+  });
+
+  autoTable(doc, {
+    startY: y,
+    head: [[
+      t('reports.workerCol') || 'Operaio',
+      t('reports.ordinaryHours') || 'Ordinarie',
+      t('reports.headerExtra') || 'Extra',
+      t('reports.headerFestive') || 'Festive',
+      t('reports.headerNight') || 'Notturne',
+      t('common.hours') || 'Totale'
+    ]],
+    body: teamTableData,
+    foot: [[
+      (t('reports.totalTeamHours') || 'TOTALE SQUADRA').toUpperCase(),
+      `${sumOrd.toFixed(2)} h`,
+      `${sumEx.toFixed(2)} h`,
+      `${sumF.toFixed(2)} h`,
+      `${sumN.toFixed(2)} h`,
+      `${sumTot.toFixed(2)} h`
+    ]],
+    theme: 'grid',
+    headStyles: { fillColor: [79, 70, 229], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 2 },
+    bodyStyles: { fontSize: 8.5, cellPadding: 2, textColor: [30, 41, 59] },
+    footStyles: { fillColor: [241, 245, 249], textColor: [79, 70, 229], fontSize: 8.5, fontStyle: 'bold', cellPadding: 2 },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: 70 },
+      1: { cellWidth: 22, halign: 'center' },
+      2: { cellWidth: 22, halign: 'center' },
+      3: { cellWidth: 22, halign: 'center' },
+      4: { cellWidth: 22, halign: 'center' },
+      5: { cellWidth: 24, halign: 'center' }
+    }
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 8;
+
+  // Materials & Expenses Section (NO PRICES, NO COSTS)
+  const allExpenses: any[] = [];
+  reports.forEach(r => {
+    if (r.expenses && r.expenses.length > 0) {
+      r.expenses.forEach((exp: any) => {
+        allExpenses.push(exp);
+      });
+    }
+  });
+
+  if (allExpenses.length > 0) {
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(79, 70, 229);
+    doc.text((t('reports.expensesAndMaterials') || 'Materiali / Spese').toUpperCase(), margin, y);
+    y += 4;
+
+    const expenseTableData = allExpenses.map((exp: any) => {
+      let catLabel = exp.type || 'CANTIERE';
+      if (exp.type === 'CANTIERE') catLabel = t('reports.expenseCantiere') || 'Spesa Cantiere';
+      else if (exp.type === 'RIMBORSO') catLabel = t('reports.expenseRimborso') || 'Rimborso Personale';
+      else if (exp.type === 'KM') catLabel = t('reports.expenseKm') || 'Trasferta (KM)';
+
+      const kmText = (exp.type === 'KM' || exp.km) && Number(exp.km) > 0 ? `${exp.km} Km` : '---';
+
+      return [
+        catLabel,
+        exp.description || exp.notes || '---',
+        kmText
+      ];
+    });
+
+    autoTable(doc, {
+      startY: y,
+      head: [[
+        t('reports.category') || 'Categoria',
+        t('reports.description') || 'Descrizione',
+        t('reports.kmShort') || 'Km'
+      ]],
+      body: expenseTableData,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 2 },
+      bodyStyles: { fontSize: 8.5, cellPadding: 2, textColor: [30, 41, 59] },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 102 },
+        2: { cellWidth: 30, halign: 'center' }
+      }
+    });
+
+    y = (doc as any).lastAutoTable.finalY + 8;
+  }
+
+  // Final Notes Section
+  if (modalData.notes && modalData.notes.trim().length > 0) {
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(79, 70, 229);
+    doc.text((t('reports.interventionFinalNotes') || 'Note Finali').toUpperCase(), margin, y);
+    y += 5;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(51, 65, 85);
+    const noteLines = doc.splitTextToSize(modalData.notes, contentW);
+    doc.text(noteLines, margin, y);
+    y += noteLines.length * 4.5 + 6;
+  }
+
+  // Intervention Completed Section
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(79, 70, 229);
+  doc.text((t('reports.interventionCompleted') || 'Intervento Concluso').toUpperCase(), margin, y);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(15, 23, 42);
+
+  const yesBoxX = margin + 65;
+  doc.setDrawColor(100, 116, 139);
+  doc.setLineWidth(0.3);
+  doc.rect(yesBoxX, y - 3, 3.5, 3.5);
+  if (modalData.isCompleted) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('X', yesBoxX + 0.8, y - 0.3);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text((t('common.yes') || 'SÌ').toUpperCase(), yesBoxX + 5.5, y);
+
+  const noBoxX = yesBoxX + 25;
+  doc.rect(noBoxX, y - 3, 3.5, 3.5);
+  if (!modalData.isCompleted) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('X', noBoxX + 0.8, y - 0.3);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text((t('common.no') || 'NO').toUpperCase(), noBoxX + 5.5, y);
+
+  y += 8;
+
+  // Signature Section
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+
+  const sigW = contentW * 0.55;
+  const sigH = 30;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(79, 70, 229);
+  doc.text((t('reports.clientSignature') || 'Firma Cliente').toUpperCase(), margin, y);
+  y += 4;
+
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(margin, y, sigW, sigH, 2, 2);
+  if (modalData.signature) {
+    doc.addImage(modalData.signature, 'PNG', margin + 2, y + 2, sigW - 4, sigH - 4);
+  }
+
+  y += sigH + 4;
+  doc.setDrawColor(203, 213, 225);
+  doc.line(margin, y, margin + sigW, y);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`${client?.name || 'Cliente'}  —  ${maxDateStr}`, margin, y + 4);
+
+  // Footer
+  const totalPages = doc.internal.pages.length - 1;
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    const footerY = doc.internal.pageSize.getHeight() - 7;
+    const compFooter = companyDetails?.name ? `${companyDetails.name}  •  ` : '';
+    doc.text(`${compFooter}JobsReport  •  ${project?.name || 'Rapporto Intervento'}  •  ${dateStr}`, margin, footerY);
+    doc.text(`${i} / ${totalPages}`, pageW - margin, footerY, { align: 'right' });
+  }
+
+  const cleanProjName = (project?.name || 'Intervento').replace(/\s+/g, '_');
+  const fileName = `Rapporto_Intervento_${periodStr.replace(/\//g, '-').replace(/\s+—\s+/g, '_a_')}_${cleanProjName}.pdf`;
+  const pdfBlob = doc.output('blob');
+  await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
+  return pdfBlob;
+};

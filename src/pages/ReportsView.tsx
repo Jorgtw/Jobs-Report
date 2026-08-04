@@ -27,7 +27,7 @@ import { useClients } from '../hooks/useClients';
 import { useSubcontractors } from '../hooks/useSubcontractors';
 import { useComplianceReportController } from '../hooks/useComplianceReportController';
 import { useSubscription } from '../hooks/useSubscription';
-import { exportToPDF, exportToExcel } from '../services/exportService';
+import { exportToPDF, exportToExcel, generateInterventionPDF } from '../services/exportService';
 import { 
   inputClasses, 
   filterInputClasses, 
@@ -38,6 +38,7 @@ import {
 import { UpgradeModal } from '../components/UpgradeModal';
 import { analyticsService } from '../services/analyticsService';
 import { ComplianceReportModal } from '../components/ComplianceReportModal';
+import { InterventionReportModal } from '../components/InterventionReportModal';
 
 interface ReportsViewProps {
   user: User;
@@ -56,6 +57,53 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
   const { status, isLimitReached, hasFeature } = useSubscription();
+
+  const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
+  const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
+
+  const selectedReports = useMemo(() => {
+    return reports.filter(r => selectedReportIds.includes(r.id));
+  }, [reports, selectedReportIds]);
+
+  const activeInterventionProject = useMemo(() => {
+    if (selectedReports.length === 0) return undefined;
+    return projects.find(p => p.id === selectedReports[0].projectId);
+  }, [selectedReports, projects]);
+
+  const activeInterventionClient = useMemo(() => {
+    if (!activeInterventionProject) return undefined;
+    return clients.find(c => c.id === activeInterventionProject.clientId);
+  }, [activeInterventionProject, clients]);
+
+  const toggleSelectReport = (reportId: string) => {
+    if (selectedReportIds.includes(reportId)) {
+      setSelectedReportIds(prev => prev.filter(id => id !== reportId));
+    } else {
+      if (selectedReportIds.length > 0) {
+        const currentProjectId = selectedReports[0]?.projectId;
+        const targetReport = reports.find(r => r.id === reportId);
+        if (targetReport && targetReport.projectId !== currentProjectId) {
+          alert(t('reports.selectSameProjectWarning'));
+          return;
+        }
+      }
+      setSelectedReportIds(prev => [...prev, reportId]);
+    }
+  };
+
+  const toggleSelectAll = (visibleReports: WorkReport[]) => {
+    if (visibleReports.length === 0) return;
+    const currentProjectId = selectedReports.length > 0 ? selectedReports[0].projectId : visibleReports[0].projectId;
+    const eligibleReports = visibleReports.filter(r => r.projectId === currentProjectId);
+    const eligibleIds = eligibleReports.map(r => r.id);
+
+    const allSelected = eligibleIds.length > 0 && eligibleIds.every(id => selectedReportIds.includes(id));
+    if (allSelected) {
+      setSelectedReportIds(prev => prev.filter(id => !eligibleIds.includes(id)));
+    } else {
+      setSelectedReportIds(prev => Array.from(new Set([...prev, ...eligibleIds])));
+    }
+  };
 
   const [formData, setFormData] = useState({
     projectId: '',
@@ -452,6 +500,29 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           <button onClick={() => setFilters({ ...filters, dateRange: 'custom' })} className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('common.customRange')}</button>
         </div>
         <button onClick={() => setShowFilters(!showFilters)} className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`} title={t('reports.filters')}><Filter size={20} /></button>
+        <button
+          onClick={() => {
+            if (selectedReportIds.length === 0) {
+              alert(t('reports.selectAtLeastOneReport'));
+              return;
+            }
+            setIsInterventionModalOpen(true);
+          }}
+          className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm border ${
+            selectedReportIds.length > 0
+              ? 'bg-indigo-600 text-white border-indigo-700 hover:bg-indigo-700 shadow-indigo-100'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+          }`}
+          title={t('reports.generateInterventionReport')}
+        >
+          <FileText size={16} className={selectedReportIds.length > 0 ? 'text-white' : 'text-indigo-600'} />
+          <span className="hidden sm:inline">{t('reports.interventionReport')}</span>
+          {selectedReportIds.length > 0 && (
+            <span className="bg-indigo-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-black">
+              {selectedReportIds.length}
+            </span>
+          )}
+        </button>
         <button onClick={handleNewReport} data-onboarding="new-report-btn" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all"><Plus size={16} className="mr-2 inline" /><span className="hidden sm:inline">{t('reports.new')}</span><span className="sm:hidden">{t('common.addBtn')}</span></button>
       </div>
 
@@ -524,11 +595,19 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
             return (
               <div key={r.id} className="p-4 space-y-3 active:bg-slate-50 transition-colors">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-blue-600 capitalize flex items-center gap-2">{formattedDate}{r.activityType && r.activityType !== 'work' && <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-black uppercase">{t(`reports.activity${r.activityType.charAt(0).toUpperCase() + r.activityType.slice(1)}` as any)}</span>}</div>
-                    <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
-                    <div className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1"><UserIcon size={12} className="text-slate-400" />{personnel.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}{totalWorkersCount > 1 && <span className="text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}</div>
-                    {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-1" title={r.description}>{r.description}</div>}
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedReportIds.includes(r.id)}
+                      onChange={() => toggleSelectReport(r.id)}
+                      className="mt-1 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-4 h-4"
+                    />
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-blue-600 capitalize flex items-center gap-2">{formattedDate}{r.activityType && r.activityType !== 'work' && <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-black uppercase">{t(`reports.activity${r.activityType.charAt(0).toUpperCase() + r.activityType.slice(1)}` as any)}</span>}</div>
+                      <div className="text-sm font-bold text-slate-900">{proj?.name || '---'}</div>
+                      <div className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1"><UserIcon size={12} className="text-slate-400" />{personnel.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}{totalWorkersCount > 1 && <span className="text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}</div>
+                      {r.description && <div className="text-xs text-slate-500 line-clamp-2 mt-1" title={r.description}>{r.description}</div>}
+                    </div>
                   </div>
                   <div className="flex gap-1.5">
                     <button onClick={() => handleComplianceClick(r)} className="p-2 text-indigo-600 bg-indigo-50 active:bg-indigo-100 rounded-lg transition-colors border border-indigo-100" title={t('reports.complianceReport')}><CheckCircle2 size={16} /></button>
@@ -538,7 +617,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                     )}
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-xs pl-7">
                   <div className="flex items-center gap-1.5 text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100"><Users size={12} /> <span className="font-bold">{totalWorkersCount}</span></div>
                   <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100"><Clock size={12} /> <span className="font-bold">{teamTotalHours}h</span></div>
                   {personalHours > 0 && (
@@ -556,6 +635,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest">
+                <th className="px-2 py-2 text-center w-8">
+                  <input
+                    type="checkbox"
+                    checked={filteredReports.length > 0 && selectedReportIds.length > 0 && filteredReports.filter(r => r.projectId === (selectedReports[0]?.projectId || filteredReports[0]?.projectId)).every(r => selectedReportIds.includes(r.id))}
+                    onChange={() => toggleSelectAll(filteredReports)}
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    title={t('reports.selectReportsForIntervention')}
+                  />
+                </th>
                 <th className="px-3 py-2 font-black w-32">{t('reports.headerDate')}</th>
                 <th className="px-3 py-2 font-black">{t('reports.headerProject')}</th>
                 <th className="px-3 py-2 font-black">{t('reports.worker')}</th>
@@ -576,6 +664,14 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                   : (r.additionalWorkers?.find((aw: any) => aw.userId === user.id)?.totalHours || 0);
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-2 py-1.5 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedReportIds.includes(r.id)}
+                        onChange={() => toggleSelectReport(r.id)}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="px-3 py-1.5 text-xs font-bold text-blue-600 whitespace-nowrap capitalize">{formattedDate}</td>
                     <td className="px-3 py-1.5 text-xs font-medium text-slate-900 truncate max-w-[150px]" title={proj?.name}>{proj?.name || '---'}</td>
                     <td className="px-3 py-1.5 text-xs text-slate-700 truncate max-w-[120px]">{personnel.find(u => u.id === r.userId)?.name || t('reports.mainWorker')}{totalWorkersCount > 1 && <span className="ml-1 text-[10px] bg-slate-100 px-1 rounded text-slate-500">+{totalWorkersCount - 1}</span>}</td>
@@ -719,6 +815,26 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       )}
       {isUpgradeModalOpen && <UpgradeModal feature={upgradeFeature} onClose={() => { setIsUpgradeModalOpen(false); setUpgradeFeature('generic'); }} />}
       {complianceReportToSign && <ComplianceReportModal report={complianceReportToSign} onClose={closeComplianceReport} onGenerate={handleGenerateCompliance} />}
+      {isInterventionModalOpen && (
+        <InterventionReportModal
+          selectedReports={selectedReports}
+          project={activeInterventionProject}
+          client={activeInterventionClient}
+          onClose={() => setIsInterventionModalOpen(false)}
+          onGenerate={async (modalData) => {
+            const companyDetails = await db.getCompanyDetails(user.companyId || '');
+            await generateInterventionPDF(
+              selectedReports,
+              activeInterventionProject,
+              activeInterventionClient,
+              companyDetails,
+              personnel,
+              modalData,
+              lang
+            );
+          }}
+        />
+      )}
     </div>
   );
 };

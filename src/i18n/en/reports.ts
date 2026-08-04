@@ -159,5 +159,15 @@ export const reports = {
   nightShort: "Night",
   holidayShort: "Hol.",
   cost: "Cost",
-  value: "Value"
+  value: "Value",
+  interventionReport: "Intervention Report",
+  generateInterventionReport: "Generate Intervention Report",
+  selectReportsForIntervention: "Select reports to include",
+  interventionDescription: "Intervention Description",
+  interventionFinalNotes: "Final Notes",
+  interventionCompleted: "Intervention Completed",
+  workPeriod: "Work Period",
+  expensesAndMaterials: "Materials / Expenses",
+  selectSameProjectWarning: "Please select reports belonging to the same project",
+  selectAtLeastOneReport: "Select at least one report"
 } as const;

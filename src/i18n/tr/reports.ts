@@ -159,5 +159,15 @@ export const reports = {
   nightShort: "Gec.",
   holidayShort: "Tat.",
   cost: "Maliyet",
-  value: "Değer"
+  value: "Değer",
+  interventionReport: "Müdahale Raporu",
+  generateInterventionReport: "Müdahale Raporu Oluştur",
+  selectReportsForIntervention: "Dahil edilecek raporları seçin",
+  interventionDescription: "Müdahale Açıklaması",
+  interventionFinalNotes: "Son Notlar",
+  interventionCompleted: "Müdahale Tamamlandı",
+  workPeriod: "Çalışma Periyodu",
+  expensesAndMaterials: "Malzemeler / Harcamalar",
+  selectSameProjectWarning: "Lütfen sadece aynı projeye ait raporları seçin",
+  selectAtLeastOneReport: "En az bir rapor seçin"
 } as const;
