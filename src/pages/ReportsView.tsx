@@ -820,6 +820,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           selectedReports={selectedReports}
           project={activeInterventionProject}
           client={activeInterventionClient}
+          personnel={personnel}
           onClose={() => setIsInterventionModalOpen(false)}
           onGenerate={async (modalData) => {
             const companyDetails = await db.getCompanyDetails(user.companyId || '');
