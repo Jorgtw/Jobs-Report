@@ -169,5 +169,7 @@ export const reports = {
   workPeriod: "Çalışma Periyodu",
   expensesAndMaterials: "Malzemeler / Harcamalar",
   selectSameProjectWarning: "Lütfen sadece aynı projeye ait raporları seçin",
-  selectAtLeastOneReport: "En az bir rapor seçin"
+  selectAtLeastOneReport: "En az bir rapor seçin",
+  category: "Kategori",
+  kmShort: "Km"
 } as const;

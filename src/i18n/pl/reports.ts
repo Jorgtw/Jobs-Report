@@ -168,6 +168,8 @@ export const reports = {
   interventionCompleted: "Zakończona Interwencja",
   workPeriod: "Okres Prac",
   expensesAndMaterials: "Materiały / Wydatki",
-  selectSameProjectWarning: "Wybierz tylko raporty z tego samego projektu",
-  selectAtLeastOneReport: "Wybierz co najmniej jeden raport"
+  selectSameProjectWarning: "Wybierz tylko raporty należące do tego samego projektu",
+  selectAtLeastOneReport: "Wybierz co najmniej jeden raport",
+  category: "Kategoria",
+  kmShort: "Km"
 } as const;

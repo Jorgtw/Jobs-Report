@@ -169,4 +169,6 @@ export const reports = {
   expensesAndMaterials: "Materiali / Spese",
   selectSameProjectWarning: "Seleziona solo rapportini appartenenti allo stesso progetto",
   selectAtLeastOneReport: "Seleziona almeno un rapportino",
+  category: "Categoria",
+  kmShort: "Km",
 };

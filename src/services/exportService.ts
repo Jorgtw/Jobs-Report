@@ -900,7 +900,7 @@ export const generateInterventionPDF = async (
   doc.text(descLines, margin, y);
   y += descLines.length * 5 + 6;
 
-  // Team Personnel Hours Aggregation
+  // Team Personnel Hours Breakdown per Date + Worker
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
   y += 6;
@@ -910,17 +910,14 @@ export const generateInterventionPDF = async (
   doc.text((t('reports.workTeam') || 'Squadra di Lavoro').toUpperCase(), margin, y);
   y += 4;
 
-  const workerStatsMap = new Map<string, {
-    name: string;
-    ordinary: number;
-    extra: number;
-    festive: number;
-    night: number;
-    total: number;
-  }>();
+  const sortedReports = [...reports].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  reports.forEach(r => {
-    const mainId = r.userId || 'main';
+  const teamTableData: any[] = [];
+  let sumOrd = 0, sumEx = 0, sumF = 0, sumN = 0, sumTot = 0;
+
+  sortedReports.forEach(r => {
+    const dateFormatted = formatDateEU(r.date);
+
     const mainName = personnel?.find(u => u.id === r.userId)?.name || r.userName || t('reports.mainWorker');
     const mainTot = r.manualTotalHours !== undefined && r.manualTotalHours !== null
       ? Number(r.manualTotalHours)
@@ -928,22 +925,27 @@ export const generateInterventionPDF = async (
     const mainEx = Number(r.overtimeHours) || 0;
     const mainF = Number(r.festiveHours) || 0;
     const mainN = Number(r.nightHours) || 0;
-    const mainOrd = r.ordinaryHours !== undefined && r.ordinaryHours !== null
-      ? Number(r.ordinaryHours)
+    const mainOrd = (r as any).ordinaryHours !== undefined && (r as any).ordinaryHours !== null
+      ? Number((r as any).ordinaryHours)
       : Math.max(0, mainTot - mainEx - mainF - mainN);
 
-    if (!workerStatsMap.has(mainId)) {
-      workerStatsMap.set(mainId, { name: mainName, ordinary: 0, extra: 0, festive: 0, night: 0, total: 0 });
-    }
-    const mainStat = workerStatsMap.get(mainId)!;
-    mainStat.ordinary += mainOrd;
-    mainStat.extra += mainEx;
-    mainStat.festive += mainF;
-    mainStat.night += mainN;
-    mainStat.total += mainTot;
+    sumOrd += mainOrd;
+    sumEx += mainEx;
+    sumF += mainF;
+    sumN += mainN;
+    sumTot += mainTot;
+
+    teamTableData.push([
+      dateFormatted,
+      mainName,
+      `${mainOrd.toFixed(2)} h`,
+      `${mainEx.toFixed(2)} h`,
+      `${mainF.toFixed(2)} h`,
+      `${mainN.toFixed(2)} h`,
+      `${mainTot.toFixed(2)} h`
+    ]);
 
     (r.additionalWorkers || []).forEach((aw: any) => {
-      const awId = aw.userId || aw.personName || 'helper';
       const awName = aw.personName || personnel?.find(u => u.id === aw.userId)?.name || '---';
       const awTot = aw.manualTotalHours !== undefined && aw.manualTotalHours !== null
         ? Number(aw.manualTotalHours)
@@ -955,42 +957,29 @@ export const generateInterventionPDF = async (
         ? Number(aw.ordinaryHours)
         : Math.max(0, awTot - awEx - awF - awN);
 
-      if (!workerStatsMap.has(awId)) {
-        workerStatsMap.set(awId, { name: awName, ordinary: 0, extra: 0, festive: 0, night: 0, total: 0 });
-      }
-      const awStat = workerStatsMap.get(awId)!;
-      awStat.ordinary += awOrd;
-      awStat.extra += awEx;
-      awStat.festive += awF;
-      awStat.night += awN;
-      awStat.total += awTot;
+      sumOrd += awOrd;
+      sumEx += awEx;
+      sumF += awF;
+      sumN += awN;
+      sumTot += awTot;
+
+      teamTableData.push([
+        dateFormatted,
+        awName,
+        `${awOrd.toFixed(2)} h`,
+        `${awEx.toFixed(2)} h`,
+        `${awF.toFixed(2)} h`,
+        `${awN.toFixed(2)} h`,
+        `${awTot.toFixed(2)} h`
+      ]);
     });
-  });
-
-  const teamTableData: any[] = [];
-  let sumOrd = 0, sumEx = 0, sumF = 0, sumN = 0, sumTot = 0;
-
-  workerStatsMap.forEach(w => {
-    sumOrd += w.ordinary;
-    sumEx += w.extra;
-    sumF += w.festive;
-    sumN += w.night;
-    sumTot += w.total;
-
-    teamTableData.push([
-      w.name,
-      `${w.ordinary.toFixed(2)} h`,
-      `${w.extra.toFixed(2)} h`,
-      `${w.festive.toFixed(2)} h`,
-      `${w.night.toFixed(2)} h`,
-      `${w.total.toFixed(2)} h`
-    ]);
   });
 
   autoTable(doc, {
     startY: y,
     head: [[
-      t('reports.workerCol') || 'Operaio',
+      t('reports.headerDate') || 'Data',
+      t('reports.workerCol') || 'Collaboratore',
       t('reports.ordinaryHours') || 'Ordinarie',
       t('reports.headerExtra') || 'Extra',
       t('reports.headerFestive') || 'Festive',
@@ -999,6 +988,7 @@ export const generateInterventionPDF = async (
     ]],
     body: teamTableData,
     foot: [[
+      '',
       (t('reports.totalTeamHours') || 'TOTALE SQUADRA').toUpperCase(),
       `${sumOrd.toFixed(2)} h`,
       `${sumEx.toFixed(2)} h`,
@@ -1012,12 +1002,13 @@ export const generateInterventionPDF = async (
     footStyles: { fillColor: [241, 245, 249], textColor: [79, 70, 229], fontSize: 8.5, fontStyle: 'bold', cellPadding: 2 },
     alternateRowStyles: { fillColor: [248, 250, 252] },
     columnStyles: {
-      0: { cellWidth: 70 },
-      1: { cellWidth: 22, halign: 'center' },
-      2: { cellWidth: 22, halign: 'center' },
-      3: { cellWidth: 22, halign: 'center' },
-      4: { cellWidth: 22, halign: 'center' },
-      5: { cellWidth: 24, halign: 'center' }
+      0: { cellWidth: 25 },
+      1: { cellWidth: 53 },
+      2: { cellWidth: 21, halign: 'center' },
+      3: { cellWidth: 21, halign: 'center' },
+      4: { cellWidth: 21, halign: 'center' },
+      5: { cellWidth: 21, halign: 'center' },
+      6: { cellWidth: 20, halign: 'center' }
     }
   });
 
@@ -1034,6 +1025,8 @@ export const generateInterventionPDF = async (
   });
 
   if (allExpenses.length > 0) {
+    const hasKm = allExpenses.some((exp: any) => (exp.type === 'KM' || Number(exp.km) > 0));
+
     doc.setDrawColor(226, 232, 240);
     doc.line(margin, y, pageW - margin, y);
     y += 6;
@@ -1044,37 +1037,57 @@ export const generateInterventionPDF = async (
     doc.text((t('reports.expensesAndMaterials') || 'Materiali / Spese').toUpperCase(), margin, y);
     y += 4;
 
+    const expenseHead = hasKm
+      ? [[
+          t('reports.category') || 'Categoria',
+          t('reports.description') || 'Descrizione',
+          t('reports.kmShort') || 'Km'
+        ]]
+      : [[
+          t('reports.category') || 'Categoria',
+          t('reports.description') || 'Descrizione'
+        ]];
+
     const expenseTableData = allExpenses.map((exp: any) => {
       let catLabel = exp.type || 'CANTIERE';
       if (exp.type === 'CANTIERE') catLabel = t('reports.expenseCantiere') || 'Spesa Cantiere';
       else if (exp.type === 'RIMBORSO') catLabel = t('reports.expenseRimborso') || 'Rimborso Personale';
       else if (exp.type === 'KM') catLabel = t('reports.expenseKm') || 'Trasferta (KM)';
 
-      const kmText = (exp.type === 'KM' || exp.km) && Number(exp.km) > 0 ? `${exp.km} Km` : '---';
-
-      return [
-        catLabel,
-        exp.description || exp.notes || '---',
-        kmText
-      ];
+      if (hasKm) {
+        const kmText = (exp.type === 'KM' || exp.km) && Number(exp.km) > 0 ? `${exp.km} Km` : '---';
+        return [
+          catLabel,
+          exp.description || exp.notes || '---',
+          kmText
+        ];
+      } else {
+        return [
+          catLabel,
+          exp.description || exp.notes || '---'
+        ];
+      }
     });
+
+    const expenseColumnStyles: any = hasKm
+      ? {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 102 },
+          2: { cellWidth: 30, halign: 'center' as const }
+        }
+      : {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 132 }
+        };
 
     autoTable(doc, {
       startY: y,
-      head: [[
-        t('reports.category') || 'Categoria',
-        t('reports.description') || 'Descrizione',
-        t('reports.kmShort') || 'Km'
-      ]],
+      head: expenseHead,
       body: expenseTableData,
       theme: 'grid',
       headStyles: { fillColor: [79, 70, 229], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 2 },
       bodyStyles: { fontSize: 8.5, cellPadding: 2, textColor: [30, 41, 59] },
-      columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 102 },
-        2: { cellWidth: 30, halign: 'center' }
-      }
+      columnStyles: expenseColumnStyles
     });
 
     y = (doc as any).lastAutoTable.finalY + 8;

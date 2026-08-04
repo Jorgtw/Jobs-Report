@@ -37,7 +37,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
   // Aggregated calculations for live preview before signing
-  const { periodStr, teamStats, teamTotals, allExpenses } = useMemo(() => {
+  const { periodStr, dailyRows, teamTotals, allExpenses, hasKm } = useMemo(() => {
     const formatDateEU = (isoDate: string) => {
       if (!isoDate) return '---';
       const parts = isoDate.split('-');
@@ -52,17 +52,23 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
     const maxDateStr = sortedDates[sortedDates.length - 1] ? formatDateEU(sortedDates[sortedDates.length - 1]) : '---';
     const periodStr = minDateStr === maxDateStr ? minDateStr : `${minDateStr} — ${maxDateStr}`;
 
-    const workerMap = new Map<string, {
-      name: string;
+    const sortedReports = [...selectedReports].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    interface DailyWorkerRow {
+      dateFormatted: string;
+      workerName: string;
       ordinary: number;
       extra: number;
       festive: number;
       night: number;
       total: number;
-    }>();
+    }
 
-    selectedReports.forEach(r => {
-      const mainId = r.userId || 'main';
+    const dailyRows: DailyWorkerRow[] = [];
+
+    sortedReports.forEach(r => {
+      const dateFormatted = formatDateEU(r.date);
+
       const mainName = personnel?.find(u => u.id === r.userId)?.name || (r as any).userName || t('reports.mainWorker');
       const mainTot = r.manualTotalHours !== undefined && r.manualTotalHours !== null
         ? Number(r.manualTotalHours)
@@ -74,18 +80,17 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
         ? Number((r as any).ordinaryHours)
         : Math.max(0, mainTot - mainEx - mainF - mainN);
 
-      if (!workerMap.has(mainId)) {
-        workerMap.set(mainId, { name: mainName, ordinary: 0, extra: 0, festive: 0, night: 0, total: 0 });
-      }
-      const mainStat = workerMap.get(mainId)!;
-      mainStat.ordinary += mainOrd;
-      mainStat.extra += mainEx;
-      mainStat.festive += mainF;
-      mainStat.night += mainN;
-      mainStat.total += mainTot;
+      dailyRows.push({
+        dateFormatted,
+        workerName: mainName,
+        ordinary: mainOrd,
+        extra: mainEx,
+        festive: mainF,
+        night: mainN,
+        total: mainTot
+      });
 
       (r.additionalWorkers || []).forEach((aw: any) => {
-        const awId = aw.userId || aw.personName || 'helper';
         const awName = aw.personName || personnel?.find(u => u.id === aw.userId)?.name || '---';
         const awTot = aw.manualTotalHours !== undefined && aw.manualTotalHours !== null
           ? Number(aw.manualTotalHours)
@@ -97,20 +102,19 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
           ? Number(aw.ordinaryHours)
           : Math.max(0, awTot - awEx - awF - awN);
 
-        if (!workerMap.has(awId)) {
-          workerMap.set(awId, { name: awName, ordinary: 0, extra: 0, festive: 0, night: 0, total: 0 });
-        }
-        const awStat = workerMap.get(awId)!;
-        awStat.ordinary += awOrd;
-        awStat.extra += awEx;
-        awStat.festive += awF;
-        awStat.night += awN;
-        awStat.total += awTot;
+        dailyRows.push({
+          dateFormatted,
+          workerName: awName,
+          ordinary: awOrd,
+          extra: awEx,
+          festive: awF,
+          night: awN,
+          total: awTot
+        });
       });
     });
 
-    const teamStats = Array.from(workerMap.values());
-    const teamTotals = teamStats.reduce((acc, curr) => ({
+    const teamTotals = dailyRows.reduce((acc, curr) => ({
       ordinary: acc.ordinary + curr.ordinary,
       extra: acc.extra + curr.extra,
       festive: acc.festive + curr.festive,
@@ -125,7 +129,9 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
       }
     });
 
-    return { periodStr, teamStats, teamTotals, allExpenses };
+    const hasKm = allExpenses.some(exp => (exp.type === 'KM' || Number(exp.km) > 0));
+
+    return { periodStr, dailyRows, teamTotals, allExpenses, hasKm };
   }, [selectedReports, personnel, t]);
 
   // Resize signature canvas to match container width
@@ -196,7 +202,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
             <div>
               <h2 className="text-xl font-black text-slate-900">{t('reports.interventionReport')}</h2>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                {project?.name || '---'} {client?.name ? `• ${client.name}` : ''} ({selectedReports.length} {t('reports.title').toLowerCase()})
+                {project?.name || '---'} {client?.name ? `• ${client.name}` : ''}
               </p>
             </div>
           </div>
@@ -284,15 +290,12 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
               <div className="flex items-center gap-2">
                 <FileText size={16} className="text-indigo-600" />
                 <h3 className="text-xs font-black text-indigo-900 uppercase tracking-wider">
-                  {t('reports.workSummary')} ({t('reports.workPeriod')}: <span className="text-indigo-700">{periodStr}</span>)
+                  {t('reports.workSummary')} — {t('reports.workPeriod')}: <span className="text-indigo-700">{periodStr}</span>
                 </h3>
               </div>
-              <span className="text-[10px] font-black text-indigo-600 bg-white border border-indigo-200 px-2 py-0.5 rounded-full">
-                {selectedReports.length} {t('reports.title').toLowerCase()}
-              </span>
             </div>
 
-            {/* Team Hours Summary Table */}
+            {/* Team Hours Summary Table (Row per Date & Worker) */}
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Users size={12} className="text-indigo-500" />
@@ -304,6 +307,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100/70 border-b border-slate-200 text-[9px] font-black uppercase text-slate-500">
                     <tr>
+                      <th className="p-2">{t('reports.headerDate')}</th>
                       <th className="p-2">{t('reports.workerCol')}</th>
                       <th className="p-2 text-center">{t('reports.ordinaryHours')}</th>
                       <th className="p-2 text-center">{t('reports.headerExtra')}</th>
@@ -313,20 +317,21 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                    {teamStats.map((w, idx) => (
+                    {dailyRows.map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
-                        <td className="p-2 font-semibold text-slate-900">{w.name}</td>
-                        <td className="p-2 text-center">{w.ordinary.toFixed(2)}h</td>
-                        <td className="p-2 text-center text-amber-600 font-medium">{w.extra > 0 ? `${w.extra.toFixed(2)}h` : '-'}</td>
-                        <td className="p-2 text-center text-red-600 font-medium">{w.festive > 0 ? `${w.festive.toFixed(2)}h` : '-'}</td>
-                        <td className="p-2 text-center text-indigo-600 font-medium">{w.night > 0 ? `${w.night.toFixed(2)}h` : '-'}</td>
-                        <td className="p-2 text-center font-bold text-slate-900">{w.total.toFixed(2)}h</td>
+                        <td className="p-2 font-bold text-blue-600 whitespace-nowrap">{row.dateFormatted}</td>
+                        <td className="p-2 font-semibold text-slate-900">{row.workerName}</td>
+                        <td className="p-2 text-center">{row.ordinary.toFixed(2)}h</td>
+                        <td className="p-2 text-center text-amber-600 font-medium">{row.extra > 0 ? `${row.extra.toFixed(2)}h` : '-'}</td>
+                        <td className="p-2 text-center text-red-600 font-medium">{row.festive > 0 ? `${row.festive.toFixed(2)}h` : '-'}</td>
+                        <td className="p-2 text-center text-indigo-600 font-medium">{row.night > 0 ? `${row.night.toFixed(2)}h` : '-'}</td>
+                        <td className="p-2 text-center font-bold text-slate-900">{row.total.toFixed(2)}h</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot className="bg-indigo-50/70 border-t border-indigo-100 text-xs font-black text-indigo-900">
                     <tr>
-                      <td className="p-2">{t('reports.teamTotalLabel')}</td>
+                      <td colSpan={2} className="p-2">{t('reports.totalTeamHours')}</td>
                       <td className="p-2 text-center">{teamTotals.ordinary.toFixed(2)}h</td>
                       <td className="p-2 text-center">{teamTotals.extra.toFixed(2)}h</td>
                       <td className="p-2 text-center">{teamTotals.festive.toFixed(2)}h</td>
@@ -353,7 +358,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                       <tr>
                         <th className="p-2 w-1/3">{t('reports.category')}</th>
                         <th className="p-2">{t('reports.description')}</th>
-                        <th className="p-2 text-center w-20">{t('reports.kmShort')}</th>
+                        {hasKm && <th className="p-2 text-center w-20">{t('reports.kmShort')}</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
@@ -367,9 +372,11 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                           <tr key={idx} className="hover:bg-slate-50">
                             <td className="p-2 font-semibold text-slate-800">{catLabel}</td>
                             <td className="p-2">{exp.description || exp.notes || '---'}</td>
-                            <td className="p-2 text-center font-bold text-slate-600">
-                              {(exp.type === 'KM' || exp.km) && Number(exp.km) > 0 ? `${exp.km} Km` : '---'}
-                            </td>
+                            {hasKm && (
+                              <td className="p-2 text-center font-bold text-slate-600">
+                                {(exp.type === 'KM' || exp.km) && Number(exp.km) > 0 ? `${exp.km} Km` : '---'}
+                              </td>
+                            )}
                           </tr>
                         );
                       })}

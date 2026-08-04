@@ -168,6 +168,8 @@ export const reports = {
   interventionCompleted: "Intervention Afsluttet",
   workPeriod: "Arbejdsperiode",
   expensesAndMaterials: "Materialer / Udgifter",
-  selectSameProjectWarning: "Vælg venligst kun rapporter fra samme projekt",
-  selectAtLeastOneReport: "Vælg mindst én rapport"
+  selectSameProjectWarning: "Vælg venligst kun rapporter, der tilhører det samme projekt",
+  selectAtLeastOneReport: "Vælg mindst én rapport",
+  category: "Kategori",
+  kmShort: "Km"
 } as const;

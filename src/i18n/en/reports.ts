@@ -169,5 +169,7 @@ export const reports = {
   workPeriod: "Work Period",
   expensesAndMaterials: "Materials / Expenses",
   selectSameProjectWarning: "Please select reports belonging to the same project",
-  selectAtLeastOneReport: "Select at least one report"
+  selectAtLeastOneReport: "Select at least one report",
+  category: "Category",
+  kmShort: "Km"
 } as const;
