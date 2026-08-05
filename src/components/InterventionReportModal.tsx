@@ -460,22 +460,22 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="p-2 font-bold text-blue-600 whitespace-nowrap">{row.isFirstRowOfDate ? row.dateFormatted : ''}</td>
                         <td className="p-2 font-semibold text-slate-900">{row.workerName}</td>
-                        <td className="p-2 text-center">{row.ordinary.toFixed(2)}h</td>
+                        <td className="p-2 text-center">{row.ordinary > 0 ? `${row.ordinary.toFixed(2)}h` : '-'}</td>
                         <td className="p-2 text-center text-amber-600 font-medium">{row.extra > 0 ? `${row.extra.toFixed(2)}h` : '-'}</td>
                         <td className="p-2 text-center text-red-600 font-medium">{row.festive > 0 ? `${row.festive.toFixed(2)}h` : '-'}</td>
                         <td className="p-2 text-center text-indigo-600 font-medium">{row.night > 0 ? `${row.night.toFixed(2)}h` : '-'}</td>
-                        <td className="p-2 text-center font-bold text-slate-900">{row.total.toFixed(2)}h</td>
+                        <td className="p-2 text-center font-bold text-slate-900">{row.total > 0 ? `${row.total.toFixed(2)}h` : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot className="bg-indigo-50/70 border-t border-indigo-100 text-xs font-black text-indigo-900">
                     <tr>
                       <td colSpan={2} className="p-2">{t('reports.totalTeamHours')}</td>
-                      <td className="p-2 text-center">{teamTotals.ordinary.toFixed(2)}h</td>
-                      <td className="p-2 text-center">{teamTotals.extra.toFixed(2)}h</td>
-                      <td className="p-2 text-center">{teamTotals.festive.toFixed(2)}h</td>
-                      <td className="p-2 text-center">{teamTotals.night.toFixed(2)}h</td>
-                      <td className="p-2 text-center text-indigo-700">{teamTotals.total.toFixed(2)}h</td>
+                      <td className="p-2 text-center">{teamTotals.ordinary > 0 ? `${teamTotals.ordinary.toFixed(2)}h` : '-'}</td>
+                      <td className="p-2 text-center">{teamTotals.extra > 0 ? `${teamTotals.extra.toFixed(2)}h` : '-'}</td>
+                      <td className="p-2 text-center">{teamTotals.festive > 0 ? `${teamTotals.festive.toFixed(2)}h` : '-'}</td>
+                      <td className="p-2 text-center">{teamTotals.night > 0 ? `${teamTotals.night.toFixed(2)}h` : '-'}</td>
+                      <td className="p-2 text-center text-indigo-700">{teamTotals.total > 0 ? `${teamTotals.total.toFixed(2)}h` : '-'}</td>
                     </tr>
                   </tfoot>
                 </table>

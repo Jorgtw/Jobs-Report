@@ -916,6 +916,7 @@ export const generateInterventionPDF = async (
   const teamTableData: any[] = [];
   let sumOrd = 0, sumEx = 0, sumF = 0, sumN = 0, sumTot = 0;
   let lastDate = '';
+  const formatHoursVal = (val: number) => (val > 0 ? `${val.toFixed(2)} h` : '-');
 
   sortedReports.forEach(r => {
     const dateFormatted = formatDateEU(r.date);
@@ -943,11 +944,11 @@ export const generateInterventionPDF = async (
     teamTableData.push([
       displayDateMain,
       mainName,
-      `${mainOrd.toFixed(2)} h`,
-      `${mainEx.toFixed(2)} h`,
-      `${mainF.toFixed(2)} h`,
-      `${mainN.toFixed(2)} h`,
-      `${mainTot.toFixed(2)} h`
+      formatHoursVal(mainOrd),
+      formatHoursVal(mainEx),
+      formatHoursVal(mainF),
+      formatHoursVal(mainN),
+      formatHoursVal(mainTot)
     ]);
 
     (r.additionalWorkers || []).forEach((aw: any) => {
@@ -974,11 +975,11 @@ export const generateInterventionPDF = async (
       teamTableData.push([
         displayDateAw,
         awName,
-        `${awOrd.toFixed(2)} h`,
-        `${awEx.toFixed(2)} h`,
-        `${awF.toFixed(2)} h`,
-        `${awN.toFixed(2)} h`,
-        `${awTot.toFixed(2)} h`
+        formatHoursVal(awOrd),
+        formatHoursVal(awEx),
+        formatHoursVal(awF),
+        formatHoursVal(awN),
+        formatHoursVal(awTot)
       ]);
     });
   });
@@ -998,11 +999,11 @@ export const generateInterventionPDF = async (
     foot: [[
       '',
       (t('reports.totalTeamHours') || 'TOTALE SQUADRA').toUpperCase(),
-      `${sumOrd.toFixed(2)} h`,
-      `${sumEx.toFixed(2)} h`,
-      `${sumF.toFixed(2)} h`,
-      `${sumN.toFixed(2)} h`,
-      `${sumTot.toFixed(2)} h`
+      formatHoursVal(sumOrd),
+      formatHoursVal(sumEx),
+      formatHoursVal(sumF),
+      formatHoursVal(sumN),
+      formatHoursVal(sumTot)
     ]],
     theme: 'grid',
     headStyles: { fillColor: [79, 70, 229], textColor: 255, fontSize: 8, fontStyle: 'bold', cellPadding: 2 },
