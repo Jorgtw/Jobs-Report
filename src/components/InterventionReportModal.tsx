@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { X, FileText, CheckCircle2, FileDown, PenLine, Users, Package } from 'lucide-react';
+import { X, FileText, CheckCircle2, FileDown, PenLine, Users, Package, Camera, Trash2, Smile, Frown, Image as ImageIcon } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { useTranslation } from '../contexts/LanguageContext';
 import { WorkReport, Project, Client, User } from '../types';
@@ -14,9 +14,43 @@ interface InterventionReportModalProps {
     description: string;
     notes: string;
     isCompleted: boolean;
+    satisfaction: 'yes' | 'no' | null;
+    photos: string[];
     signature: string;
   }) => Promise<void>;
 }
+
+// Client-side image compression helper
+const compressImage = (base64Str: string, maxDim = 1200, quality = 0.75): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      } else {
+        resolve(base64Str);
+      }
+    };
+    img.onerror = () => resolve(base64Str);
+  });
+};
 
 export const InterventionReportModal: React.FC<InterventionReportModalProps> = ({
   selectedReports,
@@ -33,6 +67,8 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
   const [description, setDescription] = useState<string>(project?.description || project?.name || '');
   const [notes, setNotes] = useState<string>('');
   const [isCompleted, setIsCompleted] = useState<boolean>(true);
+  const [satisfaction, setSatisfaction] = useState<'yes' | 'no' | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [hasSigned, setHasSigned] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
@@ -169,12 +205,41 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
     };
   }, []);
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        if (reader.result) {
+          const compressed = await compressImage(reader.result as string, 1200, 0.75);
+          setPhotos(prev => {
+            if (prev.length >= 3) return prev;
+            return [...prev, compressed].slice(0, 3);
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleClearSignature = () => {
     sigCanvas.current?.clear();
     setHasSigned(false);
   };
 
   const handleGenerate = async () => {
+    if (!satisfaction) {
+      alert('⚠️ ' + (t('reports.satisfactionRequired') || 'Seleziona la soddisfazione del cliente prima di firmare'));
+      return;
+    }
+
     if (!hasSigned || sigCanvas.current?.isEmpty()) {
       alert('⚠️ ' + t('reports.complianceSignatureRequired'));
       return;
@@ -187,6 +252,8 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
         description,
         notes,
         isCompleted,
+        satisfaction,
+        photos,
         signature: signatureBase64
       });
       onClose();
@@ -294,6 +361,73 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
             </div>
           </section>
 
+          {/* Section 4: Documentazione Fotografica dell'Intervento (Opzionale, Max 3 foto) */}
+          <section>
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] block">
+                4. {t('reports.interventionPhotoDoc')} ({photos.length}/3)
+              </label>
+              {photos.length >= 3 && (
+                <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  {t('reports.maxPhotosReached')}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {/* Photo Thumbnails */}
+              {photos.length > 0 && (
+                <div className="grid grid-cols-3 gap-3">
+                  {photos.map((photo, idx) => (
+                    <div key={idx} className="relative aspect-video bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group shadow-sm">
+                      <img src={photo} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(idx)}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg opacity-90 hover:opacity-100 transition-all cursor-pointer"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                      <span className="absolute bottom-1 left-2 text-[9px] font-black text-white/90 bg-black/50 px-1.5 py-0.5 rounded-full backdrop-blur-xs">
+                        #{idx + 1}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Photo Upload Buttons */}
+              {photos.length < 3 && (
+                <div className="flex gap-3">
+                  {/* Camera Button (Mobile/PWA Direct Camera) */}
+                  <label className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-50 border-2 border-dashed border-indigo-200 text-indigo-700 rounded-2xl text-xs font-black uppercase tracking-wider cursor-pointer hover:bg-indigo-100 transition-all shadow-xs">
+                    <Camera size={16} />
+                    <span>{t('reports.addPhotoCamera')}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+
+                  {/* Gallery Button */}
+                  <label className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-50 border-2 border-dashed border-slate-200 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-all shadow-xs">
+                    <ImageIcon size={16} />
+                    <span>{t('reports.addPhotoGallery')}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* Section: Live Preview of Aggregated Data Before Signing */}
           <section className="bg-indigo-50/40 border border-indigo-100 rounded-2xl p-4 space-y-3">
             <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
@@ -395,19 +529,80 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                 </div>
               </div>
             )}
+
+            {/* Photos Preview Grid in Summary (if photos present) */}
+            {photos.length > 0 && (
+              <div className="pt-1 border-t border-indigo-100">
+                <h4 className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1.5">
+                  {t('reports.interventionPhotoDoc')} ({photos.length})
+                </h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {photos.map((p, idx) => (
+                    <div key={idx} className="aspect-video rounded-xl overflow-hidden border border-indigo-100 bg-white">
+                      <img src={p} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
 
-          {/* Section 4: Signature */}
+          {/* Section 5: Soddisfazione del Cliente (Obbligatoria prima di firmare) */}
+          <section className="bg-slate-50 p-4 rounded-2xl border-2 border-indigo-100 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <span className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                5. {t('reports.satisfiedWithIntervention')} <span className="text-red-500">*</span>
+              </span>
+              <div className="flex items-center gap-4">
+                {/* SÌ Button */}
+                <button
+                  type="button"
+                  onClick={() => setSatisfaction('yes')}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
+                  style={{
+                    borderColor: satisfaction === 'yes' ? '#10b981' : '#cbd5e1',
+                    backgroundColor: satisfaction === 'yes' ? '#ecfdf5' : 'white',
+                    color: satisfaction === 'yes' ? '#047857' : '#64748b'
+                  }}
+                >
+                  <Smile size={16} className={satisfaction === 'yes' ? 'text-emerald-600' : 'text-slate-400'} />
+                  {t('common.yes')}
+                </button>
+
+                {/* NO Button */}
+                <button
+                  type="button"
+                  onClick={() => setSatisfaction('no')}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
+                  style={{
+                    borderColor: satisfaction === 'no' ? '#ef4444' : '#cbd5e1',
+                    backgroundColor: satisfaction === 'no' ? '#fef2f2' : 'white',
+                    color: satisfaction === 'no' ? '#b91c1c' : '#64748b'
+                  }}
+                >
+                  <Frown size={16} className={satisfaction === 'no' ? 'text-red-600' : 'text-slate-400'} />
+                  {t('common.no')}
+                </button>
+              </div>
+            </div>
+            {!satisfaction && (
+              <p className="text-[11px] font-bold text-amber-600 mt-2 flex items-center gap-1">
+                ⚠️ {t('reports.satisfactionRequired')}
+              </p>
+            )}
+          </section>
+
+          {/* Section 6: Signature */}
           <section>
             <div className="flex justify-between items-end mb-3">
               <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] block">
-                4. {t('reports.clientSignature')}
+                6. {t('reports.clientSignature')}
                 {hasSigned && <span className="ml-2 text-emerald-500">✓</span>}
               </label>
               <button
                 type="button"
                 onClick={handleClearSignature}
-                className="text-[10px] font-bold text-red-500 uppercase hover:underline"
+                className="text-[10px] font-bold text-red-500 uppercase hover:underline cursor-pointer"
               >
                 {t('reports.complianceSignatureClear')}
               </button>
@@ -436,10 +631,10 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
             <button
               type="button"
               onClick={handleGenerate}
-              disabled={isGenerating || !hasSigned}
+              disabled={isGenerating || !hasSigned || !satisfaction}
               className={`w-full py-4 rounded-2xl font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 ${
-                hasSigned
-                  ? 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98]'
+                hasSigned && satisfaction
+                  ? 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] cursor-pointer'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
@@ -450,8 +645,12 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
               )}
               {t('reports.exportPDF')}
             </button>
-            {!hasSigned && (
-              <p className="text-center text-xs text-slate-400 mt-2">⚠️ {t('reports.complianceSignatureRequired')}</p>
+            {(!satisfaction || !hasSigned) && (
+              <p className="text-center text-xs text-slate-400 mt-2">
+                {!satisfaction
+                  ? `⚠️ ${t('reports.satisfactionRequired')}`
+                  : `⚠️ ${t('reports.complianceSignatureRequired')}`}
+              </p>
             )}
           </div>
         </div>

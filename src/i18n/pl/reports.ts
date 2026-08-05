@@ -171,5 +171,12 @@ export const reports = {
   selectSameProjectWarning: "Wybierz tylko raporty należące do tego samego projektu",
   selectAtLeastOneReport: "Wybierz co najmniej jeden raport",
   category: "Kategoria",
-  kmShort: "Km"
+  kmShort: "Km",
+  clientSatisfaction: "Satysfakcja Klienta",
+  satisfiedWithIntervention: "Zadowolony z interwencji",
+  satisfactionRequired: "Wybierz satysfakcję klienta przed podpisaniem",
+  interventionPhotoDoc: "Dokumentacja Fotograficzna Interwencji",
+  addPhotoCamera: "Zrób Zdjęcie",
+  addPhotoGallery: "Galeria",
+  maxPhotosReached: "Maksymalnie 3 zdjęcia"
 } as const;

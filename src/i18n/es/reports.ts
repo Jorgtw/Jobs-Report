@@ -172,4 +172,11 @@ export const reports = {
   selectAtLeastOneReport: "Seleccione al menos un parte de trabajo",
   category: "Categoría",
   kmShort: "Km",
+  clientSatisfaction: "Satisfacción del Cliente",
+  satisfiedWithIntervention: "Satisfecho con la intervención",
+  satisfactionRequired: "Seleccione la satisfacción del cliente antes de firmar",
+  interventionPhotoDoc: "Documentación Fotográfica de la Intervención",
+  addPhotoCamera: "Tomar Foto",
+  addPhotoGallery: "Galería",
+  maxPhotosReached: "Máximo 3 fotos permitidas"
 } as const;

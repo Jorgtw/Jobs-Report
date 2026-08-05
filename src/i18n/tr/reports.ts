@@ -171,5 +171,12 @@ export const reports = {
   selectSameProjectWarning: "Lütfen sadece aynı projeye ait raporları seçin",
   selectAtLeastOneReport: "En az bir rapor seçin",
   category: "Kategori",
-  kmShort: "Km"
+  kmShort: "Km",
+  clientSatisfaction: "Müşteri Memnuniyeti",
+  satisfiedWithIntervention: "Müdahaleden memnun",
+  satisfactionRequired: "Lütfen imzalamadan önce müşteri memnuniyetini seçin",
+  interventionPhotoDoc: "Müdahale Fotoğraf Belgeleri",
+  addPhotoCamera: "Fotoğraf Çek",
+  addPhotoGallery: "Galeri",
+  maxPhotosReached: "En fazla 3 fotoğraf izin verilir"
 } as const;

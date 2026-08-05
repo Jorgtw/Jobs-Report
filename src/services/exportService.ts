@@ -778,7 +778,7 @@ export const exportInvoiceToExcel = async (
   const ws = utils.aoa_to_sheet(rows);
   const wb = utils.book_new();
   utils.book_append_sheet(wb, ws, "Allegato");
-  const fileName = `${reportNumber}.xlsx`;
+  const fileName = `Allegato_Interventi.xlsx`;
   const excelBuffer = write(wb, { bookType: 'xlsx', type: 'array' });
   await saveAndShareFile(excelBuffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };
@@ -793,6 +793,8 @@ export const generateInterventionPDF = async (
     description: string;
     notes: string;
     isCompleted: boolean;
+    satisfaction: 'yes' | 'no' | null;
+    photos: string[];
     signature: string;
   },
   lang: Language
@@ -838,14 +840,13 @@ export const generateInterventionPDF = async (
 
   const hasCompanyData = companyDetails && (companyDetails.name || companyDetails.address || companyDetails.phone || companyDetails.email);
   if (hasCompanyData) {
-    doc.setFillColor(248, 250, 252);
-    doc.rect(0, y - 2, pageW, 26, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
-    doc.text(companyDetails.name || '', margin, y + 5);
+    doc.text(companyDetails.name || '---', margin, y);
+
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
     const addrParts = [companyDetails.address, companyDetails.city, companyDetails.country].filter(Boolean).join(', ');
     if (addrParts) doc.text(addrParts, margin, y + 11);
@@ -1120,7 +1121,7 @@ export const generateInterventionPDF = async (
     y += noteLines.length * 4.5 + 6;
   }
 
-  // Intervention Completed Section
+  // Intervention Completed & Satisfaction Section
   doc.setDrawColor(226, 232, 240);
   doc.line(margin, y, pageW - margin, y);
   y += 6;
@@ -1154,6 +1155,38 @@ export const generateInterventionPDF = async (
   doc.setFont('helvetica', 'normal');
   doc.text((t('common.no') || 'NO').toUpperCase(), noBoxX + 5.5, y);
 
+  y += 7;
+
+  // Client Satisfaction Line
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(79, 70, 229);
+  doc.text((t('reports.satisfiedWithIntervention') || "SODDISFATTO DELL'INTERVENTO").toUpperCase(), margin, y);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(15, 23, 42);
+
+  const satYesBoxX = margin + 65;
+  doc.setDrawColor(100, 116, 139);
+  doc.setLineWidth(0.3);
+  doc.rect(satYesBoxX, y - 3, 3.5, 3.5);
+  if (modalData.satisfaction === 'yes') {
+    doc.setFont('helvetica', 'bold');
+    doc.text('X', satYesBoxX + 0.8, y - 0.3);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text((t('common.yes') || 'SÌ').toUpperCase(), satYesBoxX + 5.5, y);
+
+  const satNoBoxX = satYesBoxX + 25;
+  doc.rect(satNoBoxX, y - 3, 3.5, 3.5);
+  if (modalData.satisfaction === 'no') {
+    doc.setFont('helvetica', 'bold');
+    doc.text('X', satNoBoxX + 0.8, y - 0.3);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text((t('common.no') || 'NO').toUpperCase(), satNoBoxX + 5.5, y);
+
   y += 8;
 
   // Signature Section
@@ -1184,6 +1217,43 @@ export const generateInterventionPDF = async (
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
   doc.text(`${client?.name || 'Cliente'}  —  ${maxDateStr}`, margin, y + 4);
+
+  // Photos Section (dedicated page at the end if photos present)
+  if (modalData.photos && modalData.photos.length > 0) {
+    doc.addPage();
+
+    // Top Header Banner for Photos Page
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, 0, pageW, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text((t('reports.interventionPhotoDoc') || "DOCUMENTAZIONE FOTOGRAFICA DELL'INTERVENTO").toUpperCase(), margin, 13);
+
+    const photoY = 28;
+    const pageH = doc.internal.pageSize.getHeight();
+    const availableH = pageH - photoY - 20;
+    const photoCount = Math.min(modalData.photos.length, 3);
+
+    if (photoCount === 1) {
+      const maxW = contentW;
+      const maxH = availableH - 10;
+      doc.addImage(modalData.photos[0], 'JPEG', margin, photoY, maxW, maxH, undefined, 'FAST');
+    } else if (photoCount === 2) {
+      const maxW = contentW;
+      const maxH = (availableH - 12) / 2;
+      doc.addImage(modalData.photos[0], 'JPEG', margin, photoY, maxW, maxH, undefined, 'FAST');
+      doc.addImage(modalData.photos[1], 'JPEG', margin, photoY + maxH + 8, maxW, maxH, undefined, 'FAST');
+    } else if (photoCount === 3) {
+      const topH = (availableH - 12) * 0.52;
+      const botH = (availableH - 12) * 0.48;
+      const botW = (contentW - 6) / 2;
+
+      doc.addImage(modalData.photos[0], 'JPEG', margin, photoY, contentW, topH, undefined, 'FAST');
+      doc.addImage(modalData.photos[1], 'JPEG', margin, photoY + topH + 6, botW, botH, undefined, 'FAST');
+      doc.addImage(modalData.photos[2], 'JPEG', margin + botW + 6, photoY + topH + 6, botW, botH, undefined, 'FAST');
+    }
+  }
 
   // Footer
   const totalPages = doc.internal.pages.length - 1;

@@ -37,11 +37,13 @@
       "reports.headerTotal",
       "reports.headerExtra",
       "reports.headerFestive",
-      "reports.ordinaryShort"
+      "reports.ordinaryShort",
+      "reports.kmShort"
     ],
     "es": [
       "auth.phonePlaceholder",
       "auth.placeholderName",
+      "auth.systemLabel",
       "common.no",
       "common.recipient",
       "common.type",
@@ -68,7 +70,8 @@
       "reports.headerExtra",
       "reports.clientSignature",
       "reports.ordinaryShort",
-      "reports.holidayShort"
+      "reports.holidayShort",
+      "reports.kmShort"
     ],
     "pl": [
       "auth.email",
@@ -84,7 +87,8 @@
       "landing.sandbox.guestId",
       "reports.date",
       "reports.headerDate",
-      "reports.headerExtra"
+      "reports.headerExtra",
+      "reports.kmShort"
     ],
     "tr": [
       "auth.phonePlaceholder",
@@ -94,7 +98,8 @@
       "dashboard.upgradeModal.twoMonthsFree",
       "landing.title",
       "landing.diff5Title",
-      "landing.sandbox.guestId"
+      "landing.sandbox.guestId",
+      "reports.kmShort"
     ],
     "da": [
       "auth.email",
@@ -112,7 +117,8 @@
       "projects.personnelTitle",
       "reports.headerWorker",
       "reports.headerTotal",
-      "reports.personnel"
+      "reports.personnel",
+      "reports.kmShort"
     ]
   },
   "duplicates": {
@@ -356,14 +362,12 @@
     "reports.headerSelling",
     "reports.headerMargin",
     "reports.headerPaid",
-    "reports.exportPDF",
     "reports.exportExcel",
     "reports.billingReport",
     "reports.overtimeHours",
     "reports.overtimeCost",
     "reports.normalHours",
     "reports.normalCost",
-    "reports.nonBillable",
     "reports.signature",
     "reports.signatureClear",
     "reports.signaturePlaceholder",
@@ -371,15 +375,14 @@
     "reports.upgradeRequired",
     "reports.adminStatusLabel",
     "reports.complianceSatisfactionRequired",
-    "reports.hoursSummary",
     "reports.totalCosts",
     "reports.project",
-    "reports.hours",
     "reports.costs",
     "reports.ordinaryShort",
     "reports.nightShort",
     "reports.holidayShort",
-    "reports.cost"
+    "reports.cost",
+    "reports.clientSatisfaction"
   ],
   "hardcoded": [
     {

@@ -171,4 +171,11 @@ export const reports = {
   selectAtLeastOneReport: "Seleziona almeno un rapportino",
   category: "Categoria",
   kmShort: "Km",
+  clientSatisfaction: "Soddisfazione del Cliente",
+  satisfiedWithIntervention: "Soddisfatto dell'intervento",
+  satisfactionRequired: "Seleziona la soddisfazione del cliente prima di firmare",
+  interventionPhotoDoc: "Documentazione Fotografica dell'Intervento",
+  addPhotoCamera: "Scatta Foto",
+  addPhotoGallery: "Galleria",
+  maxPhotosReached: "Massimo 3 foto consentite",
 };

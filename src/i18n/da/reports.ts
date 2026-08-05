@@ -171,5 +171,12 @@ export const reports = {
   selectSameProjectWarning: "Vælg venligst kun rapporter, der tilhører det samme projekt",
   selectAtLeastOneReport: "Vælg mindst én rapport",
   category: "Kategori",
-  kmShort: "Km"
+  kmShort: "Km",
+  clientSatisfaction: "Kundetilfredshed",
+  satisfiedWithIntervention: "Tilfreds med interventionen",
+  satisfactionRequired: "Vælg kundetilfredshed før du underskriver",
+  interventionPhotoDoc: "Fotoskation af Interventionen",
+  addPhotoCamera: "Tag Foto",
+  addPhotoGallery: "Galleri",
+  maxPhotosReached: "Maksimalt 3 fotos tilladt"
 } as const;
