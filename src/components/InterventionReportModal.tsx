@@ -13,7 +13,7 @@ interface InterventionReportModalProps {
   onGenerate: (data: {
     description: string;
     notes: string;
-    isCompleted: boolean;
+    isCompleted: boolean | null;
     satisfaction: 'yes' | 'no' | null;
     photos: string[];
     signature: string;
@@ -66,7 +66,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
 
   const [description, setDescription] = useState<string>(project?.description || project?.name || '');
   const [notes, setNotes] = useState<string>('');
-  const [isCompleted, setIsCompleted] = useState<boolean>(true);
+  const [isCompleted, setIsCompleted] = useState<boolean | null>(null);
   const [satisfaction, setSatisfaction] = useState<'yes' | 'no' | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [hasSigned, setHasSigned] = useState<boolean>(false);
@@ -235,11 +235,6 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
   };
 
   const handleGenerate = async () => {
-    if (!satisfaction) {
-      alert('⚠️ ' + (t('reports.satisfactionRequired') || 'Seleziona la soddisfazione del cliente prima di firmare'));
-      return;
-    }
-
     if (!hasSigned || sigCanvas.current?.isEmpty()) {
       alert('⚠️ ' + t('reports.complianceSignatureRequired'));
       return;
@@ -317,26 +312,26 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
             />
           </section>
 
-          {/* Section 3: Intervento Concluso */}
+          {/* Section 3: Intervento Concluso (Opzionale) */}
           <section className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <span className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">
+              <span className="text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 3. {t('reports.interventionCompleted')}
               </span>
               <div className="flex items-center gap-4">
                 {/* SÌ Button */}
                 <button
                   type="button"
-                  onClick={() => setIsCompleted(true)}
+                  onClick={() => setIsCompleted(prev => prev === true ? null : true)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
                   style={{
-                    borderColor: isCompleted ? '#10b981' : '#cbd5e1',
-                    backgroundColor: isCompleted ? '#ecfdf5' : 'white',
-                    color: isCompleted ? '#047857' : '#64748b'
+                    borderColor: isCompleted === true ? '#10b981' : '#cbd5e1',
+                    backgroundColor: isCompleted === true ? '#ecfdf5' : 'white',
+                    color: isCompleted === true ? '#047857' : '#64748b'
                   }}
                 >
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-300'}`}>
-                    {isCompleted && <CheckCircle2 size={12} />}
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isCompleted === true ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-300'}`}>
+                    {isCompleted === true && <CheckCircle2 size={12} />}
                   </div>
                   {t('common.yes')}
                 </button>
@@ -344,16 +339,16 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                 {/* NO Button */}
                 <button
                   type="button"
-                  onClick={() => setIsCompleted(false)}
+                  onClick={() => setIsCompleted(prev => prev === false ? null : false)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
                   style={{
-                    borderColor: !isCompleted ? '#ef4444' : '#cbd5e1',
-                    backgroundColor: !isCompleted ? '#fef2f2' : 'white',
-                    color: !isCompleted ? '#b91c1c' : '#64748b'
+                    borderColor: isCompleted === false ? '#ef4444' : '#cbd5e1',
+                    backgroundColor: isCompleted === false ? '#fef2f2' : 'white',
+                    color: isCompleted === false ? '#b91c1c' : '#64748b'
                   }}
                 >
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${!isCompleted ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-slate-300'}`}>
-                    {!isCompleted && <X size={12} />}
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isCompleted === false ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-slate-300'}`}>
+                    {isCompleted === false && <X size={12} />}
                   </div>
                   {t('common.no')}
                 </button>
@@ -547,17 +542,17 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
             )}
           </section>
 
-          {/* Section 5: Soddisfazione del Cliente (Obbligatoria prima di firmare) */}
+          {/* Section 5: Soddisfazione del Cliente (Opzionale) */}
           <section className="bg-slate-50 p-4 rounded-2xl border-2 border-indigo-100 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <span className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                5. {t('reports.satisfiedWithIntervention')} <span className="text-red-500">*</span>
+                5. {t('reports.satisfiedWithIntervention')}
               </span>
               <div className="flex items-center gap-4">
                 {/* SÌ Button */}
                 <button
                   type="button"
-                  onClick={() => setSatisfaction('yes')}
+                  onClick={() => setSatisfaction(prev => prev === 'yes' ? null : 'yes')}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
                   style={{
                     borderColor: satisfaction === 'yes' ? '#10b981' : '#cbd5e1',
@@ -572,7 +567,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                 {/* NO Button */}
                 <button
                   type="button"
-                  onClick={() => setSatisfaction('no')}
+                  onClick={() => setSatisfaction(prev => prev === 'no' ? null : 'no')}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider cursor-pointer"
                   style={{
                     borderColor: satisfaction === 'no' ? '#ef4444' : '#cbd5e1',
@@ -585,11 +580,6 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
                 </button>
               </div>
             </div>
-            {!satisfaction && (
-              <p className="text-[11px] font-bold text-amber-600 mt-2 flex items-center gap-1">
-                ⚠️ {t('reports.satisfactionRequired')}
-              </p>
-            )}
           </section>
 
           {/* Section 6: Signature */}
@@ -631,9 +621,9 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
             <button
               type="button"
               onClick={handleGenerate}
-              disabled={isGenerating || !hasSigned || !satisfaction}
+              disabled={isGenerating || !hasSigned}
               className={`w-full py-4 rounded-2xl font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 ${
-                hasSigned && satisfaction
+                hasSigned
                   ? 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] cursor-pointer'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
@@ -645,11 +635,9 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
               )}
               {t('reports.exportPDF')}
             </button>
-            {(!satisfaction || !hasSigned) && (
+            {!hasSigned && (
               <p className="text-center text-xs text-slate-400 mt-2">
-                {!satisfaction
-                  ? `⚠️ ${t('reports.satisfactionRequired')}`
-                  : `⚠️ ${t('reports.complianceSignatureRequired')}`}
+                ⚠️ {t('reports.complianceSignatureRequired')}
               </p>
             )}
           </div>

@@ -792,7 +792,7 @@ export const generateInterventionPDF = async (
   modalData: {
     description: string;
     notes: string;
-    isCompleted: boolean;
+    isCompleted: boolean | null;
     satisfaction: 'yes' | 'no' | null;
     photos: string[];
     signature: string;
@@ -1139,7 +1139,7 @@ export const generateInterventionPDF = async (
   doc.setDrawColor(100, 116, 139);
   doc.setLineWidth(0.3);
   doc.rect(yesBoxX, y - 3, 3.5, 3.5);
-  if (modalData.isCompleted) {
+  if (modalData.isCompleted === true) {
     doc.setFont('helvetica', 'bold');
     doc.text('X', yesBoxX + 0.8, y - 0.3);
   }
@@ -1148,7 +1148,7 @@ export const generateInterventionPDF = async (
 
   const noBoxX = yesBoxX + 25;
   doc.rect(noBoxX, y - 3, 3.5, 3.5);
-  if (!modalData.isCompleted) {
+  if (modalData.isCompleted === false) {
     doc.setFont('helvetica', 'bold');
     doc.text('X', noBoxX + 0.8, y - 0.3);
   }
@@ -1235,23 +1235,50 @@ export const generateInterventionPDF = async (
     const availableH = pageH - photoY - 20;
     const photoCount = Math.min(modalData.photos.length, 3);
 
+    // Helper to render photo with aspect ratio preserved ("contain" fit & centered inside box)
+    const addImageContain = (photoBase64: string, boxX: number, boxY: number, boxW: number, boxH: number) => {
+      try {
+        const props = doc.getImageProperties(photoBase64);
+        const imgAspect = props.width / props.height;
+        const boxAspect = boxW / boxH;
+
+        let renderW = boxW;
+        let renderH = boxH;
+
+        if (boxAspect > imgAspect) {
+          renderH = boxH;
+          renderW = boxH * imgAspect;
+        } else {
+          renderW = boxW;
+          renderH = boxW / imgAspect;
+        }
+
+        const renderX = boxX + (boxW - renderW) / 2;
+        const renderY = boxY + (boxH - renderH) / 2;
+
+        doc.addImage(photoBase64, 'JPEG', renderX, renderY, renderW, renderH, undefined, 'FAST');
+      } catch (err) {
+        console.error('Error rendering PDF image:', err);
+      }
+    };
+
     if (photoCount === 1) {
       const maxW = contentW;
       const maxH = availableH - 10;
-      doc.addImage(modalData.photos[0], 'JPEG', margin, photoY, maxW, maxH, undefined, 'FAST');
+      addImageContain(modalData.photos[0], margin, photoY, maxW, maxH);
     } else if (photoCount === 2) {
       const maxW = contentW;
       const maxH = (availableH - 12) / 2;
-      doc.addImage(modalData.photos[0], 'JPEG', margin, photoY, maxW, maxH, undefined, 'FAST');
-      doc.addImage(modalData.photos[1], 'JPEG', margin, photoY + maxH + 8, maxW, maxH, undefined, 'FAST');
+      addImageContain(modalData.photos[0], margin, photoY, maxW, maxH);
+      addImageContain(modalData.photos[1], margin, photoY + maxH + 8, maxW, maxH);
     } else if (photoCount === 3) {
       const topH = (availableH - 12) * 0.52;
       const botH = (availableH - 12) * 0.48;
       const botW = (contentW - 6) / 2;
 
-      doc.addImage(modalData.photos[0], 'JPEG', margin, photoY, contentW, topH, undefined, 'FAST');
-      doc.addImage(modalData.photos[1], 'JPEG', margin, photoY + topH + 6, botW, botH, undefined, 'FAST');
-      doc.addImage(modalData.photos[2], 'JPEG', margin + botW + 6, photoY + topH + 6, botW, botH, undefined, 'FAST');
+      addImageContain(modalData.photos[0], margin, photoY, contentW, topH);
+      addImageContain(modalData.photos[1], margin, photoY + topH + 6, botW, botH);
+      addImageContain(modalData.photos[2], margin + botW + 6, photoY + topH + 6, botW, botH);
     }
   }
 

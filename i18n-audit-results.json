@@ -382,7 +382,8 @@
     "reports.nightShort",
     "reports.holidayShort",
     "reports.cost",
-    "reports.clientSatisfaction"
+    "reports.clientSatisfaction",
+    "reports.satisfactionRequired"
   ],
   "hardcoded": [
     {
