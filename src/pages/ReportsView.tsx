@@ -13,9 +13,7 @@ import {
   FileSpreadsheet, 
   Filter, 
   Search, 
-  CheckCircle2, 
-  Copy, 
-  Settings
+  Copy
 } from 'lucide-react';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
@@ -157,7 +155,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const {
     complianceReportToSign,
-    openComplianceReport: handleComplianceClick,
     closeComplianceReport,
     handleGenerateCompliance
   } = useComplianceReportController(user, projects, clients, personnel, lang, hasFeature('compliance'), (feature) => {
@@ -610,7 +607,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                     </div>
                   </div>
                   <div className="flex gap-1.5">
-                    <button onClick={() => handleComplianceClick(r)} className="p-2 text-indigo-600 bg-indigo-50 active:bg-indigo-100 rounded-lg transition-colors border border-indigo-100" title={t('reports.complianceReport')}><CheckCircle2 size={16} /></button>
                     <button onClick={() => handleDuplicate(r)} className="p-2 text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors border border-emerald-100" title={t('common.duplicate')}><Copy size={16} /></button>
                     {canEditReport(r) && (
                       <><button onClick={() => handleEdit(r)} className="p-2 text-blue-600 bg-blue-50 active:bg-blue-100 rounded-lg transition-colors border border-blue-100" title={t('common.edit')}><Pencil size={16} /></button><button onClick={() => handleDelete(r.id)} className="p-2 text-red-600 bg-red-50 active:bg-red-100 rounded-lg transition-colors border border-red-100" title={t('common.delete')}><Trash2 size={16} /></button></>
@@ -689,8 +685,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                     </td>
                     <td className="px-3 py-1.5 text-right whitespace-nowrap">
                       <div className="flex gap-1.5 justify-end">
-                        <button onClick={() => handleComplianceClick(r)} className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title={t('reports.complianceReport')}><CheckCircle2 size={14} /></button>
-                        <button onClick={() => window.location.hash = '#activities'} className="text-slate-400 hover:text-indigo-600 transition-colors" title={t('reports.activityManagement')}><Settings size={14} /></button>
                         <button onClick={() => handleDuplicate(r)} className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title={t('common.duplicate')}><Copy size={14} /></button>
                         {canEditReport(r) && (
                           <><button onClick={() => handleEdit(r)} className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title={t('common.edit')}><Pencil size={14} /></button><button onClick={() => handleDelete(r.id)} className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title={t('common.delete')}><Trash2 size={14} /></button></>
