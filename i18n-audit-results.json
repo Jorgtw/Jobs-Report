@@ -387,6 +387,396 @@
   ],
   "hardcoded": [
     {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 53,
+      "text": "Anteprima Documenti & Risultati",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 54,
+      "text": "Esempi di documenti operativi generati da Jobs-Report",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 69,
+      "text": "DATI DIMOSTRATIVI • Nessun costo o importo economico incluso",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 71,
+      "text": "Esempio",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 87,
+      "text": "1. Rapporto Intervento",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 99,
+      "text": "2. PDF Sede",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 111,
+      "text": "3. Foglio Excel",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 124,
+      "text": "Rapporto d'Intervento Ufficiale",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 128,
+      "text": "Cliente:",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 130,
+      "text": "Periodo: 05/08/2026 — 06/08/2026",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 138,
+      "text": "Riepilogo Squadra e Ore Lavorate",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 144,
+      "text": "Data",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 145,
+      "text": "Operatore",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 146,
+      "text": "Ore Ord.",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 147,
+      "text": "Straord.",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 153,
+      "text": "Marco Rossi (Capocantiere)",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 154,
+      "text": "8h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 155,
+      "text": "2h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 159,
+      "text": "Luca Bianchi (Tecnico)",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 160,
+      "text": "8h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 161,
+      "text": "1h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 165,
+      "text": "Marco Rossi (Capocantiere)",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 166,
+      "text": "8h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 167,
+      "text": "1h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 176,
+      "text": "Descrizione Intervento:",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 185,
+      "text": "Foto Cantiere",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 186,
+      "text": "1 Immagine allegata",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 193,
+      "text": "Soddisfazione",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 194,
+      "text": "Sì ✓",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 201,
+      "text": "Firma Cliente",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 202,
+      "text": "Tracciata sul display",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 227,
+      "text": "Report PDF Sede Operativo",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 230,
+      "text": "Riepilogo Attività & Ore Lavorate",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 232,
+      "text": "Formato PDF A4",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 237,
+      "text": "Il Report PDF sintetizza tutte le presenze, le attività svolte e le ore ordinarie/straordinarie per ciascuna commessa, pronto per l'archiviazione in sede.",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 245,
+      "text": "Data",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 246,
+      "text": "Cliente",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 247,
+      "text": "Commessa",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 248,
+      "text": "Operatore",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 249,
+      "text": "Ore",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 255,
+      "text": "Azienda Cliente SpA",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 256,
+      "text": "Cantiere Centro",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 257,
+      "text": "Marco Rossi",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 258,
+      "text": "8h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 262,
+      "text": "Azienda Cliente SpA",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 263,
+      "text": "Cantiere Centro",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 264,
+      "text": "Luca Bianchi",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 265,
+      "text": "8h",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 291,
+      "text": "Foglio Excel (.xlsx) Operativo",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 294,
+      "text": "Export Dati Operativi Cantiere",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 296,
+      "text": "Formato .xlsx",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 301,
+      "text": "L'esportazione Excel raccoglie i dati in formato tabellare per l'amministrazione, consentendo di filtrare per operatore, commessa o data senza dover riscrivere alcuna informazione.",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 309,
+      "text": "Data",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 310,
+      "text": "Cliente",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 311,
+      "text": "Commessa",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 312,
+      "text": "Operatore",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 313,
+      "text": "Ore",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 319,
+      "text": "Azienda Cliente SpA",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 320,
+      "text": "Cantiere Centro",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 321,
+      "text": "Marco Rossi",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 326,
+      "text": "Azienda Cliente SpA",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 327,
+      "text": "Cantiere Centro",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 328,
+      "text": "Luca Bianchi",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 355,
+      "text": "Jobs-Report V1: Dal campo all'ufficio, i dati una sola volta.",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\components\\OutputSamplesModal.tsx",
+      "line": 360,
+      "text": "Chiudi",
+      "type": "JSXText"
+    },
+    {
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\BillingView.tsx",
       "line": 83,
       "text": "Seleziona almeno un rapportino e un cliente",
@@ -468,6 +858,24 @@
       "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\CompaniesView.tsx",
       "line": 194,
       "text": "Data di registrazione",
+      "type": "JSXAttribute: title"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\ReportsView.tsx",
+      "line": 509,
+      "text": "Anteprima documenti",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\ReportsView.tsx",
+      "line": 510,
+      "text": "Esempi",
+      "type": "JSXText"
+    },
+    {
+      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\ReportsView.tsx",
+      "line": 506,
+      "text": "Visualizza esempi di risultati e documenti generabili",
       "type": "JSXAttribute: title"
     }
   ]

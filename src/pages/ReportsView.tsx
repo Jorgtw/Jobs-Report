@@ -13,7 +13,8 @@ import {
   FileSpreadsheet, 
   Filter, 
   Search, 
-  Copy
+  Copy,
+  Eye
 } from 'lucide-react';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
@@ -37,6 +38,7 @@ import { UpgradeModal } from '../components/UpgradeModal';
 import { analyticsService } from '../services/analyticsService';
 import { ComplianceReportModal } from '../components/ComplianceReportModal';
 import { InterventionReportModal } from '../components/InterventionReportModal';
+import { OutputSamplesModal } from '../components/OutputSamplesModal';
 
 interface ReportsViewProps {
   user: User;
@@ -58,6 +60,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
   const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
+  const [isSamplesModalOpen, setIsSamplesModalOpen] = useState(false);
 
   const selectedReports = useMemo(() => {
     return reports.filter(r => selectedReportIds.includes(r.id));
@@ -498,6 +501,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
         </div>
         <button onClick={() => setShowFilters(!showFilters)} className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`} title={t('reports.filters')}><Filter size={20} /></button>
         <button
+          onClick={() => setIsSamplesModalOpen(true)}
+          className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition-all flex items-center gap-1.5 border border-slate-200 shadow-sm"
+          title="Visualizza esempi di risultati e documenti generabili"
+        >
+          <Eye size={16} className="text-indigo-600" />
+          <span className="hidden md:inline">Anteprima documenti</span>
+          <span className="md:hidden">Esempi</span>
+        </button>
+        <button
           onClick={() => {
             if (selectedReportIds.length === 0) {
               alert(t('reports.selectAtLeastOneReport'));
@@ -830,6 +842,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           }}
         />
       )}
+      <OutputSamplesModal isOpen={isSamplesModalOpen} onClose={() => setIsSamplesModalOpen(false)} />
     </div>
   );
 };
