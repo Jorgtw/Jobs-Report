@@ -13,8 +13,7 @@ import {
   FileSpreadsheet, 
   Filter, 
   Search, 
-  Copy,
-  Eye
+  Copy
 } from 'lucide-react';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
@@ -500,15 +499,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           <button onClick={() => setFilters({ ...filters, dateRange: 'custom' })} className={`flex-1 sm:flex-none px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${filters.dateRange === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('common.customRange')}</button>
         </div>
         <button onClick={() => setShowFilters(!showFilters)} className={`p-2 rounded-xl border transition-all ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:border-slate-300'}`} title={t('reports.filters')}><Filter size={20} /></button>
-        <button
-          onClick={() => setIsSamplesModalOpen(true)}
-          className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition-all flex items-center gap-1.5 border border-slate-200 shadow-sm"
-          title="Visualizza esempi di risultati e documenti generabili"
-        >
-          <Eye size={16} className="text-indigo-600" />
-          <span className="hidden md:inline">Anteprima documenti</span>
-          <span className="md:hidden">Esempi</span>
-        </button>
         <button
           onClick={() => {
             if (selectedReportIds.length === 0) {

@@ -859,24 +859,6 @@
       "line": 194,
       "text": "Data di registrazione",
       "type": "JSXAttribute: title"
-    },
-    {
-      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\ReportsView.tsx",
-      "line": 509,
-      "text": "Anteprima documenti",
-      "type": "JSXText"
-    },
-    {
-      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\ReportsView.tsx",
-      "line": 510,
-      "text": "Esempi",
-      "type": "JSXText"
-    },
-    {
-      "file": "C:\\Users\\jtw\\Euro JTW\\Archivi\\JTW\\Programmi\\jobs-report-complete\\src\\pages\\ReportsView.tsx",
-      "line": 506,
-      "text": "Visualizza esempi di risultati e documenti generabili",
-      "type": "JSXAttribute: title"
     }
   ]
 }
