@@ -593,7 +593,7 @@ const App: React.FC = () => {
             element={
               sessionStorage.getItem('auth_recovery_flow') === 'true' ? (
                 <Navigate to="/reset-password" replace />
-              ) : ((!isReady && status !== 'resolving') || (!user && status !== 'resolving')) ? (
+              ) : (!user && status !== 'resolving') ? (
                 <Navigate to="/" replace />
               ) : !user ? (
                 <div className="min-h-screen flex items-center justify-center bg-white">
@@ -615,10 +615,19 @@ const App: React.FC = () => {
                       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mb-4 shadow-sm">
                         <Building2 size={32} />
                       </div>
-                      <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t('common.setupRequiredTitle')}</h1>
+                      <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {t('common.setupRequiredTitle') || 'Configurazione Azienda Richiesta'}
+                      </h1>
                       <p className="text-sm text-slate-500 max-w-md mt-2">
-                        {t('common.setupRequiredDesc')}
+                        {t('common.setupRequiredDesc') || 'L\'azienda collegata a questo profilo è in fase di configurazione o in attesa di attivazione da parte dell\'amministratore.'}
                       </p>
+                      <button
+                        onClick={handleLogout}
+                        className="mt-6 px-6 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <LogOut size={14} />
+                        <span>{t('common.logout') || 'Esci dall\'account'}</span>
+                      </button>
                     </div>
                   )}
 
