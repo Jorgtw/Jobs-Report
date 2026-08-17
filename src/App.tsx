@@ -406,6 +406,25 @@ const AppLayout: React.FC<{
   );
 };
 
+// Helper to handle Supabase Auth hash redirects safely within HashRouter
+const AuthRedirectHandler: React.FC = () => {
+  const location = useLocation();
+  React.useEffect(() => {
+    const isRecovery = 
+      location.pathname.includes('type=recovery') || 
+      location.pathname.startsWith('/access_token') ||
+      location.pathname.includes('recovery') ||
+      sessionStorage.getItem('auth_recovery_flow') === 'true';
+
+    if (isRecovery && location.pathname !== '/reset-password') {
+      console.log('[AuthRedirectHandler] Directing to /reset-password');
+      window.location.hash = '#/reset-password';
+    }
+  }, [location.pathname]);
+
+  return null;
+};
+
 // --- App Component ---
 const App: React.FC = () => {
   const { user, status, isReady, updateUser } = useCompany();
@@ -560,6 +579,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
+      <AuthRedirectHandler />
       <React.Suspense fallback={null}>
         <Routes>
           <Route path="/" element={user ? <Navigate to="/reports" replace /> : <LoginView onLogin={handleLogin} />} />
@@ -571,7 +591,9 @@ const App: React.FC = () => {
           <Route
             path="/*"
             element={
-              ((!isReady && status !== 'resolving') || (!user && status !== 'resolving')) ? (
+              sessionStorage.getItem('auth_recovery_flow') === 'true' ? (
+                <Navigate to="/reset-password" replace />
+              ) : ((!isReady && status !== 'resolving') || (!user && status !== 'resolving')) ? (
                 <Navigate to="/" replace />
               ) : !user ? (
                 <div className="min-h-screen flex items-center justify-center bg-white">

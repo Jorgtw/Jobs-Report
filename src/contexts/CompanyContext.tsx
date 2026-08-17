@@ -134,9 +134,13 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
       console.log("[CompanyContext] Auth Event:", event, session?.user?.id ? "User Present" : "No User");
       
       if (event === 'PASSWORD_RECOVERY') {
-        window.location.hash = '/reset-password';
-        if (session) resolveContext();
+        sessionStorage.setItem('auth_recovery_flow', 'true');
+        window.location.hash = '#/reset-password';
       } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        if (sessionStorage.getItem('auth_recovery_flow') === 'true' || window.location.hash.includes('/reset-password')) {
+          console.log("[CompanyContext] Password recovery flow in progress, preserving reset-password view");
+          return;
+        }
         if (session) {
           resolveContext();
         }

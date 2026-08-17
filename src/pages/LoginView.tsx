@@ -10,7 +10,14 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => {
+    const saved = sessionStorage.getItem('auth_error_message');
+    if (saved) {
+      sessionStorage.removeItem('auth_error_message');
+      return saved;
+    }
+    return '';
+  });
   const [loading, setLoading] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
 
