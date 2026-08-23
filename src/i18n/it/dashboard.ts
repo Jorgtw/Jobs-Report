@@ -60,16 +60,22 @@ export const dashboard = {
   sendingInProgress: "INVIO IN CORSO...",
   autoSendActive: "AUTO-INVIO ATTIVO",
   sendInstructionsAuto: "INVIA ISTRUZIONI (AUTO)",
+  freeSupportBanner: {
+    title: "Sostieni Jobs-Report",
+    description: "Tutte le funzionalità restano disponibili gratuitamente fino a 5 utenti. Se Jobs-Report ti è utile, passando a Starter sostieni lo sviluppo dell’app e puoi utilizzare fino a 10 utenti.",
+    button: "Passa a Starter"
+  },
   upgradeModal: {
     monthly: 'Mensile',
     annually: 'Annuale',
     billedAnnually: 'Fatturato annualmente',
     twoMonthsFree: '-17%',
-    complianceTitle: 'Modulo Compliance',
-    complianceDesc: 'Garantisci la conformità normativa con report avanzati e controlli di sicurezza automatizzati.',
-    communicationsDesc: 'Sblocca le comunicazioni interne in tempo reale e tieni traccia dei messaggi aziendali.',
-    genericTitle: 'Espandi il tuo business',
-    genericDesc: 'Scegli il piano più adatto alle tue esigenze e porta Jobs-Report al livello successivo.',
+    teamTitle: 'Scegli il piano adatto alla tua squadra',
+    complianceTitle: 'Rapporti e Firme',
+    complianceDesc: 'Tutte le funzionalità operative sono incluse in ogni piano.',
+    communicationsDesc: 'Tutte le funzionalità operative sono incluse in ogni piano.',
+    genericTitle: 'Scegli il piano adatto alla tua squadra',
+    genericDesc: 'Tutte le funzionalità operative sono incluse in ogni piano. Scegli in base al numero di collaboratori.',
     loadingPlans: 'Caricamento piani...',
     recommended: 'Consigliato',
     perMonth: '/mese',
@@ -81,63 +87,61 @@ export const dashboard = {
   plans: {
     free: {
       name: "Free",
-      description: "Entry test per valutare il prodotto in cantiere",
+      description: "Ideale per micro-squadre e professionisti indipendenti",
       features: {
         "0": "Fino a 5 utenti inclusi",
-        "1": "Progetti e rapportini base",
-        "2": "Nessuna funzionalità AI",
-        "3": "Non include Rapportino con Foto/Firma",
-        "4": "Non include Comunicazioni interne"
+        "1": "Tutte le funzionalità operative incluse",
+        "2": "Progetti e rapportini illimitati",
+        "3": "Rapporti Intervento con Foto e Firma",
+        "4": "Comunicazioni interne",
+        "5": "Export PDF ed Excel"
       }
     },
     starter: {
       name: "Starter",
-      description: "Ideale per micro-imprese e artigiani in crescita",
+      description: "Ideale per piccole imprese e squadre fino a 10 persone",
       features: {
         "0": "Fino a 10 utenti inclusi",
-        "1": "Progetti e rapportini illimitati",
-        "2": "Tracking ore e spese completo",
-        "3": "Esportazioni base PDF/Excel",
-        "4": "App mobile PWA + Web",
-        "5": "Non include Rapportino con Foto/Firma",
-        "6": "Non include Comunicazioni interne"
+        "1": "Tutte le funzionalità operative incluse",
+        "2": "Progetti e rapportini illimitati",
+        "3": "Rapporti Intervento con Foto e Firma",
+        "4": "Comunicazioni interne",
+        "5": "Export PDF ed Excel"
       }
     },
     business: {
       name: "Business",
-      description: "Il cuore di Jobs-Report per PMI strutturate edili e di servizi",
+      description: "La soluzione perfetta per PMI e imprese strutturate fino a 50 persone",
       features: {
         "0": "Fino a 50 utenti inclusi",
-        "1": "Tutto quello presente in Starter",
-        "2": "Include Rapportino con Foto e Firma",
-        "3": "Include Comunicazioni interne",
-        "4": "AI insights e report automatici",
-        "5": "Analisi avanzata costi e ricavi"
+        "1": "Tutte le funzionalità operative incluse",
+        "2": "Progetti e rapportini illimitati",
+        "3": "Rapporti Intervento con Foto e Firma",
+        "4": "Comunicazioni interne",
+        "5": "Export PDF ed Excel"
       }
     },
     growth: {
       name: "Growth",
-      description: "Per aziende strutturate che necessitano di controllo totale",
+      description: "Per aziende in forte espansione fino a 150 persone",
       features: {
         "0": "Fino a 150 utenti inclusi",
-        "1": "Tutto quello presente in Business",
-        "2": "Include Rapportino con Foto e Firma",
-        "3": "Include Comunicazioni interne",
-        "4": "Ruoli avanzati (Admin / Supervisor / Worker)",
-        "5": "Performance analytics di cantiere"
+        "1": "Tutte le funzionalità operative incluse",
+        "2": "Progetti e rapportini illimitati",
+        "3": "Rapporti Intervento con Foto e Firma",
+        "4": "Comunicazioni interne",
+        "5": "Export PDF ed Excel"
       }
     },
     enterprise: {
       name: "Enterprise",
-      description: "Soluzione personalizzata senza limiti di crescita",
+      description: "Soluzione personalizzata per grandi organizzazioni oltre 150 persone",
       features: {
-        "0": "Utenti illimitati",
-        "1": "Personalizzazione avanzata",
-        "2": "Calendario",
-        "3": "Avanzamento dei lavori",
-        "4": "Accesso API (Prossima versione)",
-        "5": "Single Sign-On (SSO / SAML)",
-        "6": "Opzione White-Label (tuo logo e dominio)"
+        "0": "Oltre 150 utenti (illimitati)",
+        "1": "Tutte le funzionalità operative incluse",
+        "2": "Progetti e rapportini illimitati",
+        "3": "Supporto prioritario e onboarding dedicato",
+        "4": "Personalizzazioni su richiesta"
       }
     }
   }

@@ -21,13 +21,27 @@ export const pricingPolicy = {
     const limit = config.maxUsers;
     const allowed = currentUsersCount < limit;
 
+    let message: string | null = null;
+    if (!allowed) {
+      const code = config.code;
+      if (code === 'free') {
+        message = `Hai raggiunto il limite di 5 utenti del piano Free. Per aggiungere un altro collaboratore passa al piano Starter.`;
+      } else if (code === 'starter' || code === 'basic') {
+        message = `Hai raggiunto il limite di 10 utenti del piano Starter. Per aggiungere un altro collaboratore passa al piano Business.`;
+      } else if (code === 'business' || code === 'premium' || code === 'pro') {
+        message = `Hai raggiunto il limite di 50 utenti del piano Business. Per aggiungere un altro collaboratore passa al piano Growth.`;
+      } else if (code === 'growth') {
+        message = `Hai raggiunto il limite di 150 utenti del piano Growth. Per aggiungere ulteriori collaboratori contattaci per il piano Enterprise.`;
+      } else {
+        message = `Hai raggiunto il limite massimo di ${limit} utenti per il piano ${config.name}.`;
+      }
+    }
+
     return {
       allowed,
       current: currentUsersCount,
       limit,
-      message: allowed
-        ? null
-        : `Hai raggiunto il limite massimo di ${limit} dipendenti per il piano ${config.name}.`
+      message
     };
   },
 

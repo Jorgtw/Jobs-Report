@@ -5,6 +5,9 @@ import { db } from '../services/dbService';
 import { User, Role, UserStatus } from '../types';
 import { inputClasses, modalClasses, FullWidthField } from '../App';
 import Tooltip from '../components/common/Tooltip';
+import { useSubscription } from '../hooks/useSubscription';
+import { pricingPolicy } from '../utils/pricingPolicy';
+import { UpgradeModal } from '../components/UpgradeModal';
 
 interface PersonnelViewProps {
   user: User;
@@ -13,9 +16,11 @@ interface PersonnelViewProps {
 
 const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) => {
   const { t } = useTranslation();
+  const { status: subStatus } = useSubscription(user?.companyId);
   const [users, setUsers] = useState<User[]>([]);
   const [subcontractors, setSubcontractors] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendStatus, setSendStatus] = useState<Record<string, 'success' | 'error'>>({});
@@ -105,6 +110,14 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
           alert(t('auth.profileUpdated'));
         }
       } else {
+        const activeCount = users.filter(u => u.status === 'active').length;
+        const check = pricingPolicy.checkUserLimit(subStatus?.planCode, activeCount);
+        if (!check.allowed) {
+          alert(check.message);
+          setIsModalOpen(false);
+          setIsUpgradeModalOpen(true);
+          return;
+        }
         await db.addUser(data);
       }
       setUsers(await db.getUsers());
@@ -116,6 +129,13 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
   };
 
   const resetForm = () => {
+    const activeCount = users.filter(u => u.status === 'active').length;
+    const check = pricingPolicy.checkUserLimit(subStatus?.planCode, activeCount);
+    if (!check.allowed) {
+      alert(check.message);
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     setEditingId(null);
     setFormData({
       name: '',
@@ -338,6 +358,9 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
             </form>
           </div>
         </div>
+      )}
+      {isUpgradeModalOpen && (
+        <UpgradeModal onClose={() => setIsUpgradeModalOpen(false)} />
       )}
     </div>
   );

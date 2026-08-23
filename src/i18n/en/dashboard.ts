@@ -54,84 +54,88 @@ export const dashboard = {
   sendingInProgress: "SENDING IN PROGRESS...",
   autoSendActive: "AUTO-SEND ACTIVE",
   sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)",
+  freeSupportBanner: {
+    title: "Support Jobs-Report",
+    description: "All features remain freely available for up to 5 users. If you find Jobs-Report valuable, upgrading to Starter supports app development and lets you use up to 10 users.",
+    button: "Upgrade to Starter"
+  },
   upgradeModal: {
     monthly: 'Monthly',
     annually: 'Annually',
     billedAnnually: 'Billed annually',
     twoMonthsFree: '-17%',
-    complianceTitle: "Compliance Module",
-    complianceDesc: "Ensure regulatory compliance with advanced reports and automated security checks.",
-    communicationsDesc: "Unlock real-time internal communications and track company messages.",
-    genericTitle: "Expand your business",
-    genericDesc: "Choose the plan that best suits your needs and take Jobs-Report to the next level.",
-    loadingPlans: "Loading plans...",
-    recommended: "Recommended",
-    perMonth: "/month",
-    activateNow: "Activate Now",
-    securePayments: "Secure payments via Stripe",
-    footerSupport: "JobsReport Professional Edition • 24/7 Support",
-    checkoutError: "An error occurred while opening checkout. Please try again later."
+    teamTitle: 'Choose the right plan for your team',
+    complianceTitle: 'Reports and Signatures',
+    complianceDesc: 'All operational features are included in every plan.',
+    communicationsDesc: 'All operational features are included in every plan.',
+    genericTitle: 'Choose the right plan for your team',
+    genericDesc: 'All operational features are included in every plan. Choose based on your team size.',
+    loadingPlans: 'Loading plans...',
+    recommended: 'Recommended',
+    perMonth: '/month',
+    activateNow: 'Activate Now',
+    securePayments: 'Secure payments via Stripe',
+    footerSupport: 'JobsReport Professional Edition • 24/7 Support',
+    checkoutError: 'An error occurred while opening checkout. Please try again later.'
   },
   plans: {
     free: {
-      name: "Free",
-      description: "Entry level test to evaluate the product on site",
+      name: 'Free',
+      description: 'Ideal for micro-teams and independent contractors',
       features: {
-        "0": "Up to 5 users included",
-        "1": "Basic projects and reports",
-        "2": "No AI capabilities",
-        "3": "Does not include Photos/Signature",
-        "4": "Does not include Internal Communications"
+        '0': 'Up to 5 users included',
+        '1': 'All operational features included',
+        '2': 'Unlimited projects and reports',
+        '3': 'Intervention Reports with Photos & Signature',
+        '4': 'Internal communications',
+        '5': 'PDF & Excel exports'
       }
     },
     starter: {
-      name: "Starter",
-      description: "Ideal for micro-businesses and growing craftsmen",
+      name: 'Starter',
+      description: 'Ideal for small businesses and teams up to 10 people',
       features: {
-        "0": "Up to 10 users included",
-        "1": "Unlimited projects and reports",
-        "2": "Complete time and expense tracking",
-        "3": "Basic PDF/Excel exports",
-        "4": "PWA mobile app + Web",
-        "5": "Does not include Photos/Signature",
-        "6": "Does not include Internal Communications"
+        '0': 'Up to 10 users included',
+        '1': 'All operational features included',
+        '2': 'Unlimited projects and reports',
+        '3': 'Intervention Reports with Photos & Signature',
+        '4': 'Internal communications',
+        '5': 'PDF & Excel exports'
       }
     },
     business: {
-      name: "Business",
-      description: "The heart of Jobs-Report for structured SMEs",
+      name: 'Business',
+      description: 'The perfect solution for SMEs and structured teams up to 50 people',
       features: {
-        "0": "Up to 50 users included",
-        "1": "Everything in Starter Plan",
-        "2": "Includes Photos and Signature",
-        "3": "Includes Internal Communications",
-        "4": "AI insights and automated reports",
-        "5": "Advanced cost and revenue analysis"
+        '0': 'Up to 50 users included',
+        '1': 'All operational features included',
+        '2': 'Unlimited projects and reports',
+        '3': 'Intervention Reports with Photos & Signature',
+        '4': 'Internal communications',
+        '5': 'PDF & Excel exports'
       }
     },
     growth: {
-      name: "Growth",
-      description: "For structured companies that need total control",
+      name: 'Growth',
+      description: 'For rapidly expanding companies up to 150 people',
       features: {
-        "0": "Up to 150 users included",
-        "1": "Everything in Business Plan",
-        "2": "Includes Photos and Signature",
-        "3": "Includes Internal Communications",
-        "4": "Advanced roles (Admin/Supervisor/Worker)",
-        "5": "On-site performance analytics"
+        '0': 'Up to 150 users included',
+        '1': 'All operational features included',
+        '2': 'Unlimited projects and reports',
+        '3': 'Intervention Reports with Photos & Signature',
+        '4': 'Internal communications',
+        '5': 'PDF & Excel exports'
       }
     },
     enterprise: {
-      name: "Enterprise",
-      description: "Custom solution for unlimited growth",
+      name: 'Enterprise',
+      description: 'Custom solution for large organizations over 150 people',
       features: {
-        "0": "Unlimited users",
-        "1": "Advanced customization",
-        "2": "Calendar",
-        "3": "Work progress tracking",
-        "4": "API access (Next version)",
-        "5": "Single Sign-On (SSO / SAML)",
-        "6": "White-Label option (your logo and domain)"
+        '0': 'Over 150 users (unlimited)',
+        '1': 'All operational features included',
+        '2': 'Unlimited projects and reports',
+        '3': 'Priority support & dedicated onboarding',
+        '4': 'Customizations upon request'
       }
     }
   }

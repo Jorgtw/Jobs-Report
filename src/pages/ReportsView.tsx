@@ -24,7 +24,6 @@ import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
 import { useSubcontractors } from '../hooks/useSubcontractors';
 import { useComplianceReportController } from '../hooks/useComplianceReportController';
-import { useSubscription } from '../hooks/useSubscription';
 import { exportToPDF, exportToExcel, generateInterventionPDF } from '../services/exportService';
 import { 
   inputClasses, 
@@ -34,7 +33,6 @@ import {
   canUserAccessProject 
 } from '../App';
 import { UpgradeModal } from '../components/UpgradeModal';
-import { analyticsService } from '../services/analyticsService';
 import { ComplianceReportModal } from '../components/ComplianceReportModal';
 import { InterventionReportModal } from '../components/InterventionReportModal';
 import { OutputSamplesModal } from '../components/OutputSamplesModal';
@@ -55,7 +53,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
-  const { status, isLimitReached, hasFeature } = useSubscription();
 
   const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
   const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
@@ -123,18 +120,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   });
 
   const handleNewReport = () => {
-    if (isLimitReached) {
-      setUpgradeFeature('generic');
-      setIsUpgradeModalOpen(true);
-      // Track that the user hit a pricing limit warning
-      analyticsService.trackPricingEvent('limit_reached', {
-        limit_name: 'reports_limit',
-        current_usage: status?.currentUsage,
-        limit_value: status?.reportsLimit,
-        current_plan: status?.planCode || 'free'
-      });
-      return;
-    }
     setEditingId(null);
     setFormData({
       projectId: '',
@@ -159,10 +144,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     complianceReportToSign,
     closeComplianceReport,
     handleGenerateCompliance
-  } = useComplianceReportController(user, projects, clients, personnel, lang, hasFeature('compliance'), (feature) => {
-    setUpgradeFeature(feature);
-    setIsUpgradeModalOpen(true);
-  });
+  } = useComplianceReportController(user, projects, clients, personnel, lang);
 
   useEffect(() => {
     if (!user?.companyId) return;

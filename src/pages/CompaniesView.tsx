@@ -316,10 +316,11 @@ const CompaniesView: React.FC = () => {
                           onChange={e => setFormData({ ...formData, planCode: e.target.value, manualOverride: true })} 
                           className={inputClasses}
                         >
-                          <option value="free">{'Free'}</option>
-                          <option value="starter">{'Starter'}</option>
-                          <option value="premium">{'Premium'}</option>
-                          <option value="blindato">{'Blindato'}</option>
+                          <option value="free">{'Free (fino a 5 utenti)'}</option>
+                          <option value="starter">{'Starter (fino a 10 utenti)'}</option>
+                          <option value="business">{'Business (fino a 50 utenti)'}</option>
+                          <option value="growth">{'Growth (fino a 150 utenti)'}</option>
+                          <option value="enterprise">{'Enterprise (oltre 150 utenti)'}</option>
                         </select>
                         {formData.manualOverride && (
                           <div className="flex flex-col gap-2 mt-2">

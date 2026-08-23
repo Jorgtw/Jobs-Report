@@ -46,18 +46,19 @@ export const dashboard = {
     annually: 'Rocznie',
     billedAnnually: 'Rozliczane rocznie',
     twoMonthsFree: '-17%',
-    complianceTitle: "Moduł zgodności",
-    complianceDesc: "Zapewnij zgodność z przepisami dzięki zaawansowanym raportom i automatycznym kontrolom bezpieczeństwa.",
-    genericTitle: "Rozwiń swój biznes",
-    genericDesc: "Wybierz plan najlepiej dopasowany do Twoich potrzeb i przenieś Jobs-Report na wyższy poziom.",
-    loadingPlans: "Ładowanie planów...",
-    recommended: "Zalecane",
-    perMonth: "/miesiąc",
-    activateNow: "Aktywuj Teraz",
-    securePayments: "Bezpieczne płatności przez Stripe",
-    footerSupport: "JobsReport Professional Edition • Wsparcie 24/7",
-    checkoutError: "Wystąpił błąd podczas otwierania kasy. Spróbuj ponownie później.",
-    communicationsDesc: "Odblokuj wewnętrzną komunikację w czasie rzeczywistym i śledź wiadomości firmowe."
+    teamTitle: 'Wybierz plan dopasowany do Twojego zespołu',
+    complianceTitle: 'Raporty i Podpisy',
+    complianceDesc: 'Wszystkie funkcje operacyjne są włączone w każdym planie.',
+    genericTitle: 'Wybierz plan dopasowany do Twojego zespołu',
+    genericDesc: 'Wszystkie funkcje operacyjne są włączone w każdym planie. Wybierz na podstawie wielkości zespołu.',
+    loadingPlans: 'Ładowanie planów...',
+    recommended: 'Zalecane',
+    perMonth: '/miesiąc',
+    activateNow: 'Aktywuj Teraz',
+    securePayments: 'Bezpieczne płatności przez Stripe',
+    footerSupport: 'JobsReport Professional Edition • Wsparcie 24/7',
+    checkoutError: 'Wystąpił błąd podczas otwierania kasy. Spróbuj ponownie później.',
+    communicationsDesc: 'Wszystkie funkcje operacyjne są włączone w każdym planie.'
   },
   missingEmailOrAdminId: "Brak adresu e-mail lub identyfikatora administratora dla tej firmy.",
   prepareManualEmail: "Przygotuj ręczny e-mail",
@@ -72,66 +73,69 @@ export const dashboard = {
   sendingInProgress: "WYSYŁANIE W TOKU...",
   autoSendActive: "AUTO-WYSYŁKA AKTYWNA",
   sendInstructionsAuto: "WYŚLIJ INSTRUKCJĘ (AUTO)",
+  freeSupportBanner: {
+    title: "Wesprzyj Jobs-Report",
+    description: "Wszystkie funkcje pozostają bezpłatnie dostępne dla maksymalnie 5 użytkowników. Jeśli Jobs-Report jest dla Ciebie pomocny, przejście na pakiet Starter wspiera rozwój aplikacji i pozwala korzystać z niej do 10 użytkowników.",
+    button: "Przejdź na Starter"
+  },
   plans: {
     free: {
       name: "Free",
-      description: "Wstępny test w celu oceny produktu na budowie",
+      description: "Idealny dla małych zespołów i niezależnych wykonawców",
       features: {
         "0": "Do 5 użytkowników w pakiecie",
-        "1": "Podstawowe projekty i raporty",
-        "2": "Brak funkcji sztucznej inteligencji (AI)",
-        "3": "Nie obejmuje raportu ze zdjęciem/podpisem",
-        "4": "Nie obejmuje komunikacji wewnętrznej"
+        "1": "Wszystkie funkcje operacyjne w cenie",
+        "2": "Nielimitowane projekty i raporty",
+        "3": "Raporty ze zdjęciem i podpisem",
+        "4": "Komunikacja wewnętrzna",
+        "5": "Eksport PDF i Excel"
       }
     },
     starter: {
       name: "Starter",
-      description: "Idealny dla mikroprzedsiębiorstw i rozwijających się rzemieślników",
+      description: "Idealny dla małych firm i zespołów do 10 osób",
       features: {
         "0": "Do 10 użytkowników w pakiecie",
-        "1": "Nielimitowane projekty i raporty",
-        "2": "Pełne rejestrowanie czasu pracy i wydatków",
-        "3": "Podstawowy eksport PDF/Excel",
-        "4": "Aplikacja mobilna PWA + strona WWW",
-        "5": "Nie obejmuje raportu ze zdjęciem/podpisem",
-        "6": "Nie obejmuje komunikacji wewnętrznej"
+        "1": "Wszystkie funkcje operacyjne w cenie",
+        "2": "Nielimitowane projekty i raporty",
+        "3": "Raporty ze zdjęciem i podpisem",
+        "4": "Komunikacja wewnętrzna",
+        "5": "Eksport PDF i Excel"
       }
     },
     business: {
       name: "Business",
-      description: "Serce Jobs-Report dla ustrukturyzowanych małych i średnich firm (MŚP)",
+      description: "Idealne rozwiązanie dla MŚP i zespołów do 50 osób",
       features: {
         "0": "Do 50 użytkowników w pakiecie",
-        "1": "Wszystko, co jest dostępne w planie Starter",
-        "2": "Obejmuje raport ze zdjęciem i podpisem cyfrowym",
-        "3": "Obejmuje komunikację wewnętrzną",
-        "4": "Analizy AI i automatyczne raporty",
-        "5": "Zaawansowana analiza kosztów i przychodów"
+        "1": "Wszystkie funkcje operacyjne w cenie",
+        "2": "Nielimitowane projekty i raporty",
+        "3": "Raporty ze zdjęciem i podpisem",
+        "4": "Komunikacja wewnętrzna",
+        "5": "Eksport PDF i Excel"
       }
     },
     growth: {
       name: "Growth",
-      description: "Dla ustrukturyzowanych firm potrzebujących pełnej kontroli",
+      description: "Dla dynamicznie rozwijających się firm do 150 osób",
       features: {
         "0": "Do 150 użytkowników w pakiecie",
-        "1": "Wszystko, co jest dostępne w planie Business",
-        "2": "Obejmuje raport ze zdjęciem i podpisem cyfrowym",
-        "3": "Obejmuje komunikację wewnętrzną",
-        "4": "Zaawansowane role (Admin / Supervisor / Pracownik)",
-        "5": "Analiza wydajności na budowie"
+        "1": "Wszystkie funkcje operacyjne w cenie",
+        "2": "Nielimitowane projekty i raporty",
+        "3": "Raporty ze zdjęciem i podpisem",
+        "4": "Komunikacja wewnętrzna",
+        "5": "Eksport PDF i Excel"
       }
     },
     enterprise: {
       name: "Enterprise",
-      description: "Rozwiązanie szyte na miarę dla nieograniczonego wzrostu",
+      description: "Rozwiązanie szyte na miarę dla organizacji powyżej 150 osób",
       features: {
-        "0": "Nielimitowana liczba użytkowników",
-        "1": "Zaawansowana personalizacja",
-        "2": "Kalendarz",
-        "3": "Postęp prac budowlanych",
-        "4": "Dostęp do API (W następnej wersji)",
-        "5": "Single Sign-On (SSO / SAML)",
-        "6": "Opcja White-Label (Własne logo i domena)"
+        "0": "Powyżej 150 użytkowników (bez limitu)",
+        "1": "Wszystkie funkcje operacyjne w cenie",
+        "2": "Nielimitowane projekty i raporty",
+        "3": "Wsparcie priorytetowe i dedykowany onboarding",
+        "4": "Personalizacja na życzenie"
       }
     }
   }

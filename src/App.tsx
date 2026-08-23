@@ -15,7 +15,6 @@ import {
   Mail,
   HelpCircle,
   Download,
-  Lock,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -26,7 +25,6 @@ import { User, Project } from './types';
 import { Language } from './i18n';
 import { useTranslation } from './contexts/LanguageContext';
 import logoImg from './assets/logo.png';
-import { useSubscription } from './hooks/useSubscription';
 import { audioService } from './services/audioService';
 
 // --- Lazy-loaded Pages ---
@@ -71,7 +69,7 @@ export const FullWidthField: React.FC<{ label: string; children: React.ReactNode
 );
 
 // --- Navigation Config ---
-const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
+const getNavLinks = (t: any, user: User | null) => {
   const isSA = user?.role?.toLowerCase() === 'superadmin';
   const isOperator = authService.isOperator(user);
 
@@ -84,9 +82,8 @@ const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = fal
       name: t('common.internalCommMenu'), 
       path: '/communications', 
       icon: Mail, 
-      show: !isSA && authService.can(user, 'read', 'communications') && (!isOperator || hasCommunications), 
-      color: 'bg-blue-600', 
-      premiumOnly: true 
+      show: !isSA && authService.can(user, 'read', 'communications'), 
+      color: 'bg-blue-600'
     },
     { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.can(user, 'read', 'subcontractors'), color: 'bg-cyan-500' },
     { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
@@ -278,14 +275,12 @@ const AppLayout: React.FC<{
 }> = ({ user, onLogout, children, isMobileMenuOpen, setIsMobileMenuOpen, unreadCount, setUser }) => {
   const location = useLocation();
   const { t } = useTranslation();
-  const { hasFeature } = useSubscription(user.companyId);
 
   React.useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname, setIsMobileMenuOpen]);
 
-  const hasComms = hasFeature('communications');
-  const filteredLinks = getNavLinks(t, user, hasComms);
+  const filteredLinks = getNavLinks(t, user);
 
   const renderSidebarContent = (onItemClick?: () => void) => (
     <div className="flex flex-col h-full py-6">
@@ -306,14 +301,10 @@ const AppLayout: React.FC<{
           >
             <link.icon className={`w-5 h-5 ${location.pathname === link.path ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
             <span className="truncate">{link.name}</span>
-            {(link as any).premiumOnly && !hasFeature('communications') ? (
-              <Lock size={12} className="ml-auto text-slate-300" />
-            ) : (
-              link.path === '/communications' && unreadCount > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
-                  {unreadCount}
-                </span>
-              )
+            {link.path === '/communications' && unreadCount > 0 && (
+              <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
+                {unreadCount}
+              </span>
             )}
           </Link>
         ))}
@@ -428,8 +419,6 @@ const AuthRedirectHandler: React.FC = () => {
 // --- App Component ---
 const App: React.FC = () => {
   const { user, status, isReady, updateUser } = useCompany();
-  const { hasFeature } = useSubscription();
-  const hasComms = hasFeature('communications');
   const [adminUser, setAdminUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('ws_auth_admin');
     return saved ? JSON.parse(saved) : null;
@@ -649,7 +638,7 @@ const App: React.FC = () => {
                       <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                       <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
                       <Route path="/projects" element={<ProjectsView user={user} />} />
-                      <Route path="/communications" element={<CommunicationsHub currentUser={user} hasAccess={hasComms} onUpgradeRequest={() => setIsCommsUpgradeOpen(true)} />} />
+                      <Route path="/communications" element={<CommunicationsHub currentUser={user} />} />
                       <Route path="/subcontractors" element={authService.canAccessAdmin(user) ? <SubcontractorsView /> : <Navigate to="/" />} />
                       <Route path="/personnel" element={authService.canAccessAdmin(user) ? <PersonnelView user={user} onImpersonate={handleImpersonate} /> : <Navigate to="/" />} />
                       <Route path="/companies" element={isSuperAdmin ? <CompaniesView /> : <Navigate to="/" />} />

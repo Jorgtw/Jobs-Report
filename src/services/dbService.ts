@@ -2,6 +2,8 @@ import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType,
 import { supabase } from './supabase';
 import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
 import { calculateFinancials } from './billingEngine';
+import { getPlanConfig } from '../utils/pricingConfig';
+import { pricingPolicy } from '../utils/pricingPolicy';
 
 const getApiUrl = (url: string) => {
   if (typeof window !== 'undefined' && (window as any).Capacitor?.isNative) {
@@ -202,6 +204,27 @@ class DBService {
     let authId = existingWorker?.auth_id;
 
     if (!existingWorker) {
+      // 1b. Check user limit for this company
+      const { data: viewData } = await supabase
+        .from('vw_access_control')
+        .select('plan_code')
+        .eq('company_id', compId)
+        .maybeSingle();
+      
+      const planCode = viewData?.plan_code || 'free';
+      const planConfig = getPlanConfig(planCode);
+
+      const { count, error: countErr } = await supabase
+        .from('workers')
+        .select('*', { count: 'exact', head: true })
+        .eq('company_id', compId)
+        .eq('status', 'active');
+
+      if (!countErr && count !== null && count >= planConfig.maxUsers) {
+        const check = pricingPolicy.checkUserLimit(planCode, count);
+        throw new Error(check.message || `Limite massimo di ${planConfig.maxUsers} utenti raggiunto per il piano ${planConfig.name}.`);
+      }
+
       // 2. Create new global profile if not exists
       const sbWorker = {
         ...this.mapAppWorkerToSupabase(worker),

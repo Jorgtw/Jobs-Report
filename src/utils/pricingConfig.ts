@@ -36,26 +36,27 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     stripePriceIdMonthly: null,
     stripePriceIdYearly: null,
     maxUsers: 5,
-    maxProjects: 1,
-    maxReports: 50, // standard free limit
-    description: 'Entry test per valutare il prodotto in cantiere',
+    maxProjects: null,
+    maxReports: null,
+    description: 'Ideale per micro-squadre e professionisti indipendenti',
     features_list: [
       'Fino a 5 utenti inclusi',
-      'Progetti e rapportini base',
-      'Nessuna funzionalità AI',
-      'Non include Rapportino con Foto/Firma',
-      'Non include Comunicazioni interne'
+      'Tutte le funzionalità operative incluse',
+      'Progetti e rapportini illimitati',
+      'Rapporti Intervento con Foto e Firma',
+      'Comunicazioni interne',
+      'Export PDF ed Excel'
     ],
     color_theme: 'slate',
     is_popular: false,
     features: {
-      compliance: false,
-      communications: false,
-      multiworker: false,
-      ai_insights: false,
-      advanced_roles: false,
-      sso: false,
-      white_label: false
+      compliance: true,
+      communications: true,
+      multiworker: true,
+      ai_insights: true,
+      advanced_roles: true,
+      sso: true,
+      white_label: true
     }
   },
   starter: {
@@ -66,28 +67,27 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     stripePriceIdMonthly: 'price_1TcUsRQL4s145ccHKvia2EMG',
     stripePriceIdYearly: 'price_1TiAiXQL4s145ccHAMmazaPS',
     maxUsers: 10,
-    maxProjects: null, // unlimited
-    maxReports: null,  // unlimited
-    description: 'Ideale per micro-imprese e artigiani in crescita',
+    maxProjects: null,
+    maxReports: null,
+    description: 'Ideale per piccole imprese e squadre fino a 10 persone',
     features_list: [
       'Fino a 10 utenti inclusi',
+      'Tutte le funzionalità operative incluse',
       'Progetti e rapportini illimitati',
-      'Tracking ore e spese completo',
-      'Esportazioni base PDF/Excel',
-      'App mobile PWA + Web',
-      'Non include Rapportino con Foto/Firma',
-      'Non include Comunicazioni interne'
+      'Rapporti Intervento con Foto e Firma',
+      'Comunicazioni interne',
+      'Export PDF ed Excel'
     ],
     color_theme: 'blue',
     is_popular: false,
     features: {
-      compliance: false,
-      communications: false,
+      compliance: true,
+      communications: true,
       multiworker: true,
-      ai_insights: false,
-      advanced_roles: false,
-      sso: false,
-      white_label: false
+      ai_insights: true,
+      advanced_roles: true,
+      sso: true,
+      white_label: true
     }
   },
   business: {
@@ -100,14 +100,14 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     maxUsers: 50,
     maxProjects: null,
     maxReports: null,
-    description: 'Il cuore di Jobs-Report per PMI strutturate edili e di servizi',
+    description: 'La soluzione perfetta per PMI e imprese strutturate fino a 50 persone',
     features_list: [
       'Fino a 50 utenti inclusi',
-      'Tutto quello presente in Starter',
-      'Include Rapportino con Foto e Firma',
-      'Include Comunicazioni interne',
-      'AI insights e report automatici',
-      'Analisi avanzata costi e ricavi'
+      'Tutte le funzionalità operative incluse',
+      'Progetti e rapportini illimitati',
+      'Rapporti Intervento con Foto e Firma',
+      'Comunicazioni interne',
+      'Export PDF ed Excel'
     ],
     color_theme: 'emerald',
     is_popular: true,
@@ -116,9 +116,9 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
       communications: true,
       multiworker: true,
       ai_insights: true,
-      advanced_roles: false,
-      sso: false,
-      white_label: false
+      advanced_roles: true,
+      sso: true,
+      white_label: true
     }
   },
   growth: {
@@ -131,14 +131,14 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
     maxUsers: 150,
     maxProjects: null,
     maxReports: null,
-    description: 'Per aziende strutturate che necessitano di controllo totale',
+    description: 'Per aziende in forte espansione fino a 150 persone',
     features_list: [
       'Fino a 150 utenti inclusi',
-      'Tutto quello presente in Business',
-      'Include Rapportino con Foto e Firma',
-      'Include Comunicazioni interne',
-      'Ruoli avanzati (Admin / Supervisor / Worker)',
-      'Performance analytics di cantiere'
+      'Tutte le funzionalità operative incluse',
+      'Progetti e rapportini illimitati',
+      'Rapporti Intervento con Foto e Firma',
+      'Comunicazioni interne',
+      'Export PDF ed Excel'
     ],
     color_theme: 'purple',
     is_popular: false,
@@ -148,29 +148,27 @@ export const PRICING_PLANS: Record<string, PricingPlan> = {
       multiworker: true,
       ai_insights: true,
       advanced_roles: true,
-      sso: false,
-      white_label: false
+      sso: true,
+      white_label: true
     }
   },
   enterprise: {
     code: 'enterprise',
     name: 'Enterprise',
-    priceMonthly: 0, // precio su richiesta, handled visually as custom text
+    priceMonthly: 0,
     priceYearly: 0,
     stripePriceIdMonthly: 'price_enterprise_monthly_placeholder',
     stripePriceIdYearly: 'price_enterprise_yearly_placeholder',
-    maxUsers: 9999, // unlimited
+    maxUsers: 9999, // oltre 150 / illimitato
     maxProjects: null,
     maxReports: null,
-    description: 'Soluzione personalizzata senza limiti di crescita',
+    description: 'Soluzione personalizzata per grandi organizzazioni oltre 150 persone',
     features_list: [
-      'Utenti illimitati',
-      'Personalizzazione avanzata',
-      'Calendario',
-      'Avanzamento dei lavori',
-      'Accesso API (Prossima versione)',
-      'Single Sign-On (SSO / SAML)',
-      'Opzione White-Label (tuo logo e dominio)'
+      'Oltre 150 utenti (illimitati)',
+      'Tutte le funzionalità operative incluse',
+      'Progetti e rapportini illimitati',
+      'Supporto prioritario e onboarding dedicato',
+      'Personalizzazioni su richiesta'
     ],
     color_theme: 'slate',
     is_popular: false,

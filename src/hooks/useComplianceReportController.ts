@@ -8,17 +8,11 @@ export function useComplianceReportController(
   projects: Project[],
   clients: Client[],
   personnel: User[],
-  lang: Language,
-  hasAccess: boolean,
-  onUpgradeRequired: (feature: 'compliance') => void
+  lang: Language
 ) {
   const [complianceReportToSign, setComplianceReportToSign] = useState<WorkReport | null>(null);
 
   const openComplianceReport = (report: WorkReport) => {
-    if (!hasAccess) {
-      onUpgradeRequired('compliance');
-      return;
-    }
     setComplianceReportToSign(report);
   };
 

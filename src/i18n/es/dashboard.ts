@@ -46,18 +46,19 @@ export const dashboard = {
     annually: 'Anual',
     billedAnnually: 'Facturado anualmente',
     twoMonthsFree: '-17%',
-    complianceTitle: "Módulo de Compliance",
-    complianceDesc: "Garantice el cumplimiento normativo con informes avanzados y controles de seguridad automatizados.",
-    genericTitle: "Expanda su negocio",
-    genericDesc: "Elija el plan que mejor se adapte a sus necesidades y lleve Jobs-Report al siguiente nivel.",
-    loadingPlans: "Cargando planes...",
-    recommended: "Recomendado",
-    perMonth: "/mes",
-    activateNow: "Activar Ahora",
-    securePayments: "Pagos seguros a través de Stripe",
-    footerSupport: "JobsReport Professional Edition • Soporte 24/7",
-    checkoutError: "Ocurrió un error al abrir el pago. Por favor, inténtelo de nuevo más tarde.",
-    communicationsDesc: "Desbloquee comunicaciones internas en tiempo real y realice un seguimiento de los mensajes de la empresa."
+    teamTitle: 'Elija el plan adecuado para su equipo',
+    complianceTitle: 'Informes y Firmas',
+    complianceDesc: 'Todas las funciones operativas están incluidas en cada plan.',
+    genericTitle: 'Elija el plan adecuado para su equipo',
+    genericDesc: 'Todas las funciones operativas están incluidas en cada plan. Elija según el tamaño de su equipo.',
+    loadingPlans: 'Cargando planes...',
+    recommended: 'Recomendado',
+    perMonth: '/mes',
+    activateNow: 'Activar Ahora',
+    securePayments: 'Pagos seguros a través de Stripe',
+    footerSupport: 'JobsReport Professional Edition • Soporte 24/7',
+    checkoutError: 'Ocurrió un error al abrir el pago. Por favor, inténtelo de nuevo más tarde.',
+    communicationsDesc: 'Todas las funciones operativas están incluidas en cada plan.'
   },
   missingEmailOrAdminId: "Falta el correo electrónico o el ID de administrador de esta empresa.",
   prepareManualEmail: "Preparar correo electrónico manual",
@@ -72,66 +73,69 @@ export const dashboard = {
   sendingInProgress: "ENVÍO EN CURSO...",
   autoSendActive: "ENVÍO AUTOMÁTICO ACTIVO",
   sendInstructionsAuto: "ENVIAR INSTRUCCIONES (AUTO)",
+  freeSupportBanner: {
+    title: "Apoya a Jobs-Report",
+    description: "Todas las funciones siguen estando disponibles de forma gratuita para hasta 5 usuarios. Si Jobs-Report te resulta útil, pasar a Starter apoya el desarrollo de la aplicación y te permite utilizar hasta 10 usuarios.",
+    button: "Pasar a Starter"
+  },
   plans: {
     free: {
       name: "Free",
-      description: "Prueba inicial para evaluar el producto en la obra",
+      description: "Ideal para microequipos y profesionales independientes",
       features: {
         "0": "Hasta 5 usuarios incluidos",
-        "1": "Proyectos y partes básicos",
-        "2": "Sin funcionalidades de IA",
-        "3": "No incluye Foto/Firma en parte",
-        "4": "No incluye Comunicaciones internas"
+        "1": "Todas las funciones operativas incluidas",
+        "2": "Proyectos y partes ilimitados",
+        "3": "Partes de Trabajo con Foto y Firma",
+        "4": "Comunicaciones internas",
+        "5": "Exportaciones PDF y Excel"
       }
     },
     starter: {
       name: "Starter",
-      description: "Ideal para microempresas y artesanos en crecimiento",
+      description: "Ideal para pequeñas empresas y equipos de hasta 10 personas",
       features: {
         "0": "Hasta 10 usuarios incluidos",
-        "1": "Proyectos y partes ilimitados",
-        "2": "Seguimiento completo de horas y gastos",
-        "3": "Exportaciones básicas en PDF/Excel",
-        "4": "Aplicación móvil PWA + Web",
-        "5": "No incluye Foto/Firma en parte",
-        "6": "No incluye Comunicaciones internas"
+        "1": "Todas las funciones operativas incluidas",
+        "2": "Proyectos y partes ilimitados",
+        "3": "Partes de Trabajo con Foto y Firma",
+        "4": "Comunicaciones internas",
+        "5": "Exportaciones PDF y Excel"
       }
     },
     business: {
       name: "Business",
-      description: "El corazón de Jobs-Report para PYMEs estructuradas",
+      description: "La solución perfecta para PYMEs y empresas estructuradas de hasta 50 personas",
       features: {
         "0": "Hasta 50 usuarios incluidos",
-        "1": "Todo lo presente en Starter",
-        "2": "Incluye Foto y Firma en parte",
-        "3": "Incluye Comunicaciones internas",
-        "4": "AI insights e informes automáticos",
-        "5": "Análisis avanzado de costes e ingresos"
+        "1": "Todas las funciones operativas incluidas",
+        "2": "Proyectos y partes ilimitados",
+        "3": "Partes de Trabajo con Foto y Firma",
+        "4": "Comunicaciones internas",
+        "5": "Exportaciones PDF y Excel"
       }
     },
     growth: {
       name: "Growth",
-      description: "Para empresas estructuradas que necesitan un control total",
+      description: "Para empresas en rápida expansión de hasta 150 personas",
       features: {
         "0": "Hasta 150 usuarios incluidos",
-        "1": "Todo lo presente en Business",
-        "2": "Incluye Foto y Firma en parte",
-        "3": "Incluye Comunicaciones internas",
-        "4": "Roles avanzados (Admin / Supervisor / Worker)",
-        "5": "Analítica de rendimiento en obra"
+        "1": "Todas las funciones operativas incluidas",
+        "2": "Proyectos y partes ilimitados",
+        "3": "Partes de Trabajo con Foto e Firma",
+        "4": "Comunicaciones internas",
+        "5": "Exportaciones PDF y Excel"
       }
     },
     enterprise: {
       name: "Enterprise",
-      description: "Solución personalizada para un crecimiento sin límites",
+      description: "Solución personalizada para grandes organizaciones de más de 150 personas",
       features: {
-        "0": "Usuarios ilimitados",
-        "1": "Personalización avanzada",
-        "2": "Calendario",
-        "3": "Avance de los trabajos",
-        "4": "Acceso API (Próxima versión)",
-        "5": "Single Sign-On (SSO / SAML)",
-        "6": "Opción White-Label (su logo y dominio)"
+        "0": "Más de 150 usuarios (ilimitados)",
+        "1": "Todas las funciones operativas incluidas",
+        "2": "Proyectos y partes ilimitados",
+        "3": "Soporte prioritario y onboarding dedicado",
+        "4": "Personalizaciones bajo petición"
       }
     }
   }

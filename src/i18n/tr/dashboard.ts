@@ -46,18 +46,19 @@ export const dashboard = {
     annually: 'Yıllık',
     billedAnnually: 'Yıllık faturalandırılır',
     twoMonthsFree: '-17%',
-    complianceTitle: "Uygunluk Modülü",
-    complianceDesc: "Gelişmiş raporlar ve otomatik güvenlik kontrolleri ile yasal uyumluluğu sağlayın.",
-    genericTitle: "İşinizi Büyütün",
-    genericDesc: "İhtiyaçlarınıza en uygun planı seçin ve Jobs-Report'u bir üst seviyeye taşıyın.",
-    loadingPlans: "Planlar yükleniyor...",
-    recommended: "Önerilen",
-    perMonth: "/ay",
-    activateNow: "Şimdi Etkinleştir",
-    securePayments: "Stripe ile güvenli ödemeler",
-    footerSupport: "JobsReport Professional Edition • 7/24 Destek",
-    checkoutError: "Ödeme sayfası açılırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-    communicationsDesc: "Gerçek zamanlı dahili iletişimin kilidini açın ve şirket mesajlarını takip edin."
+    teamTitle: 'Ekibiniz için doğru planı seçin',
+    complianceTitle: 'Raporlar ve İmzalar',
+    complianceDesc: 'Tüm operasyonel özellikler her plana dahildir.',
+    genericTitle: 'Ekibiniz için doğru planı seçin',
+    genericDesc: 'Tüm operasyonel özellikler her plana dahildir. Ekip büyüklüğünüze göre seçim yapın.',
+    loadingPlans: 'Planlar yükleniyor...',
+    recommended: 'Önerilen',
+    perMonth: '/ay',
+    activateNow: 'Şimdi Etkinleştir',
+    securePayments: 'Stripe ile güvenli ödemeler',
+    footerSupport: 'JobsReport Professional Edition • 7/24 Destek',
+    checkoutError: 'Ödeme sayfası açılırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
+    communicationsDesc: 'Tüm operasyonel özellikler her plana dahildir.'
   },
   missingEmailOrAdminId: "Bu şirket için E-posta veya Yönetici Kimliği eksik.",
   prepareManualEmail: "Manuel E-posta Hazırla",
@@ -72,66 +73,69 @@ export const dashboard = {
   sendingInProgress: "GÖNDERİLİYOR...",
   autoSendActive: "OTOMATİK GÖNDERİM AKTİF",
   sendInstructionsAuto: "TALİMATLARI GÖNDER (OTOMATİK)",
+  freeSupportBanner: {
+    title: "Jobs-Report'u Destekleyin",
+    description: "Tüm özellikler 5 kullanıcıya kadar ücretsiz olarak sunulmaya devam eder. Jobs-Report sizin için faydalıysa, Starter planına geçerek uygulamanın gelişimini destekleyebilir ve 10 kullanıcıya kadar kullanabilirsiniz.",
+    button: "Starter'a Geç"
+  },
   plans: {
     free: {
       name: "Free",
-      description: "Ürünü şantiyede değerlendirmek için giriş seviyesi test paketi",
+      description: "Mikro ekipler ve serbest çalışan profesyoneller için ideal",
       features: {
         "0": "5 kullanıcıya kadar dahil",
-        "1": "Temel projeler ve raporlar",
-        "2": "Yapay zeka (AI) özellikleri yok",
-        "3": "Fotoğraflı/İmzalı rapor dahil değildir",
-        "4": "Dahili iletişim dahil değildir"
+        "1": "Tüm operasyonel özellikler dahil",
+        "2": "Sınırsız proje ve raporlar",
+        "3": "Fotoğraflı ve İmzalı Raporlar",
+        "4": "Dahili iletişim",
+        "5": "PDF ve Excel çıktıları"
       }
     },
     starter: {
       name: "Starter",
-      description: "Mikro işletmeler ve büyüyen zanaatkarlar için ideal",
+      description: "Küçük işletmeler ve 10 kişiye kadar olan ekipler için ideal",
       features: {
         "0": "10 kullanıcıya kadar dahil",
-        "1": "Sınırsız proje ve raporlar",
-        "2": "Eksiksiz zaman ve masraf takibi",
-        "3": "Temel PDF/Excel çıktıları",
-        "4": "PWA mobil uygulaması + Web",
-        "5": "Fotoğraflı/İmzalı rapor dahil değildir",
-        "6": "Dahili iletişim dahil değildir"
+        "1": "Tüm operasyonel özellikler dahil",
+        "2": "Sınırsız proje ve raporlar",
+        "3": "Fotoğraflı ve İmzalı Raporlar",
+        "4": "Dahili iletişim",
+        "5": "PDF ve Excel çıktıları"
       }
     },
     business: {
       name: "Business",
-      description: "Yapılandırılmış KOBİ'ler için Jobs-Report'un kalbi",
+      description: "KOBİ'ler ve 50 kişiye kadar olan yapılandırılmış ekipler için mükemmel çözüm",
       features: {
         "0": "50 kullanıcıya kadar dahil",
-        "1": "Starter planındaki her şey",
-        "2": "Fotoğraflı ve imzalı rapor dahildir",
-        "3": "Dahili iletişimi içerir",
-        "4": "Yapay zeka analizleri ve otomatik raporlar",
-        "5": "Gelişmiş maliyet ve gelir analizi"
+        "1": "Tüm operasyonel özellikler dahil",
+        "2": "Sınırsız proje ve raporlar",
+        "3": "Fotoğraflı ve İmzalı Raporlar",
+        "4": "Dahili iletişim",
+        "5": "PDF ve Excel çıktıları"
       }
     },
     growth: {
       name: "Growth",
-      description: "Tam kontrole ihtiyaç duyan yapılandırılmış şirketler için",
+      description: "150 kişiye kadar hızla büyüyen şirketler için",
       features: {
         "0": "150 kullanıcıya kadar dahil",
-        "1": "Business planındaki her şey",
-        "2": "Fotoğraflı ve imzalı rapor dahildir",
-        "3": "Dahili iletişimi içerir",
-        "4": "Gelişmiş roller (Yönetici / Supervisor / Çalışan)",
-        "5": "Şantiye içi performans analitiği"
+        "1": "Tüm operasyonel özellikler dahil",
+        "2": "Sınırsız proje ve raporlar",
+        "3": "Fotoğraflı ve İmzalı Raporlar",
+        "4": "Dahili iletişim",
+        "5": "PDF ve Excel çıktıları"
       }
     },
     enterprise: {
       name: "Enterprise",
-      description: "Sınırsız büyüme için özel çözümler",
+      description: "150 kişiden fazla büyük organizasyonlar için özel çözüm",
       features: {
-        "0": "Sınırsız kullanıcı",
-        "1": "Gelişmiş özelleştirme",
-        "2": "Takvim",
-        "3": "İş ilerleme takibi",
-        "4": "API erişimi (Sonraki sürüm)",
-        "5": "Single Sign-On (SSO / SAML)",
-        "6": "White-Label seçeneği (Logonuz ve alan adınız)"
+        "0": "150'den fazla kullanıcı (sınırsız)",
+        "1": "Tüm operasyonel özellikler dahil",
+        "2": "Sınırsız proje ve raporlar",
+        "3": "Öncelikli destek ve özel başlangıç eğitimi",
+        "4": "İsteğe göre özelleştirme"
       }
     }
   }

@@ -101,24 +101,24 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, feature = '
     communications: {
       icon: <MessageSquare size={24} />,
       iconBg: 'bg-blue-100 text-blue-600',
-      title: t('communications.premiumFeature'),
-      desc: t('dashboard.upgradeModal.communicationsDesc'),
+      title: t('dashboard.upgradeModal.teamTitle') || 'Scegli il piano adatto alla tua squadra',
+      desc: t('dashboard.upgradeModal.genericDesc') || 'Tutte le funzionalità operative sono incluse in ogni piano. Scegli in base al numero di collaboratori.',
     },
     compliance: {
       icon: <FileCheck size={24} />,
       iconBg: 'bg-emerald-100 text-emerald-600',
-      title: t('dashboard.upgradeModal.complianceTitle'),
-      desc: t('dashboard.upgradeModal.complianceDesc'),
+      title: t('dashboard.upgradeModal.teamTitle') || 'Scegli il piano adatto alla tua squadra',
+      desc: t('dashboard.upgradeModal.genericDesc') || 'Tutte le funzionalità operative sono incluse in ogni piano. Scegli in base al numero di collaboratori.',
     },
     generic: {
       icon: <Trophy size={24} />,
       iconBg: 'bg-amber-100 text-amber-600',
-      title: t('dashboard.upgradeModal.genericTitle'),
-      desc: t('dashboard.upgradeModal.genericDesc'),
+      title: t('dashboard.upgradeModal.teamTitle') || 'Scegli il piano adatto alla tua squadra',
+      desc: t('dashboard.upgradeModal.genericDesc') || 'Tutte le funzionalità operative sono incluse in ogni piano. Scegli in base al numero di collaboratori.',
     },
   };
 
-  const cfg = featureConfig[feature];
+  const cfg = featureConfig[feature] || featureConfig.generic;
 
   const getButtonClass = (color: string) => {
     switch (color) {

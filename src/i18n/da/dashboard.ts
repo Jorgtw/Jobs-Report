@@ -46,18 +46,19 @@ export const dashboard = {
     annually: 'Årlig',
     billedAnnually: 'Faktureres årligt',
     twoMonthsFree: '-17%',
-    complianceTitle: "Overensstemmelsesmodul",
-    complianceDesc: "Sikr overholdelse af lovgivningen med avancerede rapporter og automatiserede sikkerhedskontroller.",
-    genericTitle: "Udvid din virksomhed",
-    genericDesc: "Vælg den plan, der passer bedst til dine behov, og tag Jobs-Report til næste niveau.",
-    loadingPlans: "Indlæser planer...",
-    recommended: "Anbefalet",
-    perMonth: "/måned",
-    activateNow: "Aktiver Nu",
-    securePayments: "Sikre betalinger via Stripe",
-    footerSupport: "JobsReport Professional Edition • 24/7 Support",
-    checkoutError: "Der opstod en fejl under åbning af betalingen. Prøv venligst igen senere.",
-    communicationsDesc: "Lås op for interne kommunikationer i realtid og spor virksomhedsmeddelelser."
+    teamTitle: 'Vælg den rigtige plan til dit team',
+    complianceTitle: 'Rapporter og underskrifter',
+    complianceDesc: 'Alle driftsfunktioner er inkluderet i hver plan.',
+    genericTitle: 'Vælg den rigtige plan til dit team',
+    genericDesc: 'Alle driftsfunktioner er inkluderet i hver plan. Vælg baseret på dit teams størrelse.',
+    loadingPlans: 'Indlæser planer...',
+    recommended: 'Anbefalet',
+    perMonth: '/måned',
+    activateNow: 'Aktiver Nu',
+    securePayments: 'Sikre betalinger via Stripe',
+    footerSupport: 'JobsReport Professional Edition • 24/7 Support',
+    checkoutError: 'Der opstod en fejl under åbning af betalingen. Prøv venligst igen senere.',
+    communicationsDesc: 'Alle driftsfunktioner er inkluderet i hver plan.'
   },
   missingEmailOrAdminId: "E-mail eller administrator-id mangler for denne virksomhed.",
   prepareManualEmail: "Forbered manuel e-mail",
@@ -72,66 +73,69 @@ export const dashboard = {
   sendingInProgress: "AFSENDELSE IGANG...",
   autoSendActive: "AUTOMATISK AFSENDELSE AKTIV",
   sendInstructionsAuto: "SEND VEJLEDNING (AUTO)",
+  freeSupportBanner: {
+    title: "Støt Jobs-Report",
+    description: "Alle funktioner forbliver gratis tilgængelige for op til 5 brugere. Hvis Jobs-Report er værdifuld for dig, støtter en opgradering til Starter app-udviklingen og giver dig mulighed for at bruge op til 10 brugere.",
+    button: "Skift til Starter"
+  },
   plans: {
     free: {
       name: "Free",
-      description: "Indledende test for at evaluere produktet på byggepladsen",
+      description: "Ideel til mikroteams og selvstændige fagfolk",
       features: {
         "0": "Op til 5 brugere inkluderet",
-        "1": "Grundlæggende projekter og rapporter",
-        "2": "Ingen AI-funktioner",
-        "3": "Inkluderer ikke rapport med foto/underskrift",
-        "4": "Inkluderer ikke interne kommunikationer"
+        "1": "Alle driftsfunktioner inkluderet",
+        "2": "Ubegrænsede projekter og rapporter",
+        "3": "Rapporter med foto og underskrift",
+        "4": "Interne kommunikationer",
+        "5": "PDF og Excel-eksport"
       }
     },
     starter: {
       name: "Starter",
-      description: "Ideel til mikrovirksomheder og voksende håndværkere",
+      description: "Ideel til små virksomheder og teams op til 10 personer",
       features: {
         "0": "Op til 10 brugere inkluderet",
-        "1": "Ubegrænsede projekter og rapporter",
-        "2": "Komplet tids- og udgiftsregistrering",
-        "3": "Grundlæggende PDF/Excel-eksport",
-        "4": "PWA mobilapp + web",
-        "5": "Inkluderer ikke rapport med foto/underskrift",
-        "6": "Inkluderer ikke interne kommunikationer"
+        "1": "Alle driftsfunktioner inkluderet",
+        "2": "Ubegrænsede projekter og rapporter",
+        "3": "Rapporter med foto og underskrift",
+        "4": "Interne kommunikationer",
+        "5": "PDF og Excel-eksport"
       }
     },
     business: {
       name: "Business",
-      description: "Hjertet i Jobs-Report for strukturerede SMV'er",
+      description: "Den perfekte løsning til SMV'er og strukturerede teams op til 50 personer",
       features: {
         "0": "Op til 50 brugere inkluderet",
-        "1": "Alt indhold i Starter-planen",
-        "2": "Inkluderer rapport med foto og underskrift",
-        "3": "Inkluderer interne kommunikationer",
-        "4": "AI-indsigt og automatiske rapporter",
-        "5": "Avanceret omkostnings- og indtægtsanalyse"
+        "1": "Alle driftsfunktioner inkluderet",
+        "2": "Ubegrænsede projekter og rapporter",
+        "3": "Rapporter med foto og underskrift",
+        "4": "Interne kommunikationer",
+        "5": "PDF og Excel-eksport"
       }
     },
     growth: {
       name: "Growth",
-      description: "For strukturerede virksomheder, der har brug for fuld kontrol",
+      description: "Til hurtigt voksende virksomheder op til 150 personer",
       features: {
         "0": "Op til 150 brugere inkluderet",
-        "1": "Alt indhold i Business-planen",
-        "2": "Inkluderer rapport med foto og underskrift",
-        "3": "Inkluderer interne kommunikationer",
-        "4": "Avancerede roller (Admin / Supervisor / Medarbejder)",
-        "5": "Prestationsanalyse på pladsen"
+        "1": "Alle driftsfunktioner inkluderet",
+        "2": "Ubegrænsede projekter og rapporter",
+        "3": "Rapporter med foto og underskrift",
+        "4": "Interne kommunikationer",
+        "5": "PDF og Excel-eksport"
       }
     },
     enterprise: {
       name: "Enterprise",
-      description: "Skræddersyet løsning til ubegrænset vækst",
+      description: "Skræddersyet løsning til store organisationer over 150 personer",
       features: {
-        "0": "Ubegrænsede brugere",
-        "1": "Avanceret tilpasning",
-        "2": "Kalender",
-        "3": "Arbejdets fremskridt",
-        "4": "API-adgang (Næste version)",
-        "5": "Single Sign-On (SSO / SAML)",
-        "6": "White-label mulighed (dit logo og domæne)"
+        "0": "Over 150 brugere (ubegrænset)",
+        "1": "Alle driftsfunktioner inkluderet",
+        "2": "Ubegrænsede projekter og rapporter",
+        "3": "Prioriteret support og dedikeret onboarding",
+        "4": "Tilpasninger efter anmodning"
       }
     }
   }

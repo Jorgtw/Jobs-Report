@@ -7,7 +7,6 @@ import {
   Search, 
   FileText, 
   Clock, 
-  CheckCircle2, 
   Check,
   ChevronLeft,
   ChevronRight,
@@ -120,7 +119,7 @@ const UserMultiSelect = ({
   );
 };
 
-const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasAccess, onUpgradeRequest }) => {
+const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser }) => {
   const { t, lang } = useTranslation();
   
   const formatDate = (date: number | Date | string, options: Intl.DateTimeFormatOptions = { 
@@ -218,9 +217,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasA
   };
 
   useEffect(() => {
-    if (!hasAccess) {
-      return;
-    }
     fetchMainData();
     fetchSupportData();
 
@@ -270,13 +266,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasA
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUser.companyId, hasAccess]);
-
-  useEffect(() => {
-    if (!hasAccess) {
-      if (onUpgradeRequest) onUpgradeRequest();
-    }
-  }, [hasAccess]);
+  }, [currentUser.companyId]);
 
   useEffect(() => {
     setSelectedThread(null);
@@ -292,8 +282,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasA
       setForwardNote('');
     }
   }, [threadMessages]);
-
-  if (!hasAccess) return null;
 
   const fetchMainData = async () => {
     try {
@@ -538,23 +526,6 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser, hasA
       c.senderName.toLowerCase().includes(term)
     );
   };
-
-  if (!hasAccess && currentUser.role !== 'admin') {
-    return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-100">
-        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle2 className="w-10 h-10 text-blue-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-slate-955 mb-2">{t('communications.premiumFeature')}</h2>
-        <p className="text-gray-500 text-center max-w-md mb-8">
-          {t('communications.premiumRequiredDesc')}
-        </p>
-        <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg transition-all">
-          {t('communications.upgradeNow')}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-120px)] bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm selection:bg-blue-100">

@@ -63,12 +63,12 @@ CONOSCENZA APP:
 - SOMMARIO LAVORI E FILTRI: Area direzionale (Work Summary) dove l'Admin/Supervisor può applicare filtri combinati (Cliente, Progetto, Lavoratore, Subappalto, Periodo, Stato Fatturazione) per analizzare ed estrapolare i dati operativi in tempo reale.
 - EXPORT EXCEL DIREZIONALE (Professional Report Engine): Il sistema di esportazione genera file Excel che riflettono esattamente il dataset filtrato nel Sommario Lavori. Non ricalcola i dati, ma li formatta in 7 template professionali: Dashboard Commesse (analisi economica con formule native Excel), Customer Work Report, Weekly Report, Employee Monthly Report, Allegato Fatturazione (lista interventi con colonna Operatore), Registro Rapportini e Registro Costi Esterni. Disponibile nei piani Business e superiore. Consigliato per consuntivi e aggregazioni di lungo periodo (superiori a 10 giornate).
 - RUOLI: Admin vede KPI finanziari, margini e ditta; Operaio vede i propri lavori e rimborsi.
-- VERSIONI / PIANI:
-  * FREE: fino a 5 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.
-  * STARTER (€39/mese): fino a 10 utenti. Esclude Rapportino con Foto/Firma e Comunicazioni interne.
-  * BUSINESS (€119/mese): fino a 50 utenti. Include Rapportino con Foto/Firma e Comunicazioni interne. Offre AI insights e report automatici.
-  * GROWTH (€299/mese): fino a 150 utenti. Include Rapportino con Foto/Firma e Comunicazioni interne. Offre ruoli avanzati (Admin/Supervisor/Worker) e performance analytics.
-  * ENTERPRISE (prezzo su richiesta): utenti illimitati. Include Personalizzazione avanzata, Calendario, Avanzamento dei lavori, API (Prossima versione), Single Sign-On (SSO) e White-Label.
+- VERSIONI / PIANI (Tutte le funzionalità operative sono incluse in tutti i piani, inclusi Progetti/Rapportini illimitati, Rapporto Intervento con Foto e Firma, Comunicazioni interne, Export PDF/Excel):
+  * FREE: fino a 5 utenti inclusi. Gratuito.
+  * STARTER (€39/mese o €390/anno): fino a 10 utenti inclusi.
+  * BUSINESS (€119/mese o €1.188/anno): fino a 50 utenti inclusi.
+  * GROWTH (€299/mese o €2.988/anno): fino a 150 utenti inclusi.
+  * ENTERPRISE (prezzo su richiesta): oltre 150 utenti inclusi, supporto prioritario e onboarding dedicato.
 - ABBONAMENTI E FATTURAZIONE:
   * Come annullare/modificare: Clicca sul pulsante "Gestisci Abbonamento" (oppure "Esegui Upgrade" se sei Free) nella Home per accedere al portale Stripe. Da lì potrai annullare o aggiornare il piano.
   * Fatturazione Annuale: Pagando tutto l'anno in anticipo c'è uno sconto fedeltà (circa 17%). Il prezzo è mostrato diviso per mese per comodità, ma si paga in un'unica soluzione.

@@ -16,7 +16,8 @@ import {
   Mail, 
   ClipboardList, 
   User as UserIcon, 
-  HelpCircle 
+  HelpCircle,
+  Sparkles
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { authService } from '../services/authService';
@@ -25,6 +26,7 @@ import { useTranslation, localeMap } from '../contexts/LanguageContext';
 import { useSubscription } from '../hooks/useSubscription';
 import SuperAdminDashboard from '../components/SuperAdminDashboard';
 import { supabase } from '../services/supabase';
+import { UpgradeModal } from '../components/UpgradeModal';
 
 // --- Compact Dashboard component ---
 const CompactDashboard: React.FC = () => {
@@ -171,8 +173,9 @@ interface HomeViewProps {
 const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
   const { t, lang } = useTranslation();
   const [isPortalLoading, setIsPortalLoading] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
-  const getNavLinks = (t: any, user: User | null, hasCommunications: boolean = false) => {
+  const getNavLinks = (t: any, user: User | null) => {
     const isSA = user?.role?.toLowerCase() === 'superadmin';
     const isOperator = authService.isOperator(user);
 
@@ -185,9 +188,8 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
         name: t('common.internalCommMenu'), 
         path: '/communications', 
         icon: Mail, 
-        show: !isSA && authService.can(user, 'read', 'communications') && (!isOperator || hasCommunications), 
-        color: 'bg-blue-600', 
-        premiumOnly: true 
+        show: !isSA && authService.can(user, 'read', 'communications'), 
+        color: 'bg-blue-600'
       },
       { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.canAccessAdmin(user), color: 'bg-cyan-500' },
       { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
@@ -198,8 +200,8 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
     return links.filter(l => l.show);
   };
 
-  const { hasFeature, status } = useSubscription(user.companyId);
-  const actions = getNavLinks(t, user, hasFeature('communications'));
+  const { status } = useSubscription(user.companyId);
+  const actions = getNavLinks(t, user);
   const isOperator = authService.isOperator(user);
 
   const handleManualLogout = async () => {
@@ -268,6 +270,31 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
         </div>
       </div>
 
+      {/* Free Plan Discreet Voluntary Support Banner */}
+      {!isSuperAdmin && authService.canAccessAdmin(user) && status?.planCode === 'free' && (
+        <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-3 sm:p-3.5 mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-2.5">
+            <div className="p-1.5 bg-blue-100/70 text-blue-600 rounded-lg shrink-0 mt-0.5 sm:mt-0">
+              <Sparkles size={16} />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-800 tracking-tight">
+                {t('dashboard.freeSupportBanner.title')}
+              </h4>
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5 leading-relaxed">
+                {t('dashboard.freeSupportBanner.description')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsUpgradeModalOpen(true)}
+            className="shrink-0 px-3.5 py-1.5 bg-white hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 rounded-xl text-xs font-bold transition-all shadow-xs"
+          >
+            {t('dashboard.freeSupportBanner.button')}
+          </button>
+        </div>
+      )}
+
       {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : (
         <div className="space-y-3">
           <PendingHoursCard user={user} />
@@ -321,6 +348,10 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
           )}
         </nav>
       </div>
+
+      {isUpgradeModalOpen && (
+        <UpgradeModal onClose={() => setIsUpgradeModalOpen(false)} />
+      )}
     </div>
   );
 };
