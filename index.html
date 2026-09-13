@@ -1,450 +1,453 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jobs Report - Presentazione</title>
-    <meta name="description" content="Più controllo operativo, meno tempo perso nella gestione. Jobs Report digitalizza i rapportini di lavoro per cantiere e ufficio.">
+    <title>JobsReport - Dal campo direttamente all'ufficio</title>
+    <meta name="description" content="Time tracking e raccolta dati operativi sul campo. Digitalizza i rapportini di lavoro, le spese e le ore per cantiere e ufficio. Gratis fino a 5 utenti.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@1.21.0"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="light-mode">
-    <div class="app-container">
-        
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <i data-lucide="clipboard-check" class="logo-icon"></i>
-                <span>Jobs Report</span>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <button class="nav-item active" data-target="benvenuto">
-                    <i data-lucide="home"></i>
-                    <span data-i18n="nav.welcome">Benvenuto</span>
-                </button>
-                <button class="nav-item" data-target="problema">
-                    <i data-lucide="alert-triangle"></i>
-                    <span data-i18n="nav.problem">Il Problema</span>
-                </button>
-                <button class="nav-item" data-target="soluzione">
-                    <i data-lucide="lightbulb"></i>
-                    <span data-i18n="nav.solution">La Soluzione</span>
-                </button>
-                <button class="nav-item" data-target="funzionalita">
-                    <i data-lucide="layers"></i>
-                    <span data-i18n="nav.features">Funzionalità</span>
-                </button>
-                <button class="nav-item" data-target="esempi">
-                    <i data-lucide="file-spreadsheet"></i>
-                    <span data-i18n="nav.examples">Report Excel</span>
-                </button>
-                <button class="nav-item" data-target="benefici">
-                    <i data-lucide="trending-up"></i>
-                    <span data-i18n="nav.benefits">Benefici</span>
-                </button>
-                <button class="nav-item" data-target="target">
-                    <i data-lucide="users"></i>
-                    <span data-i18n="nav.target">A chi è rivolto</span>
-                </button>
-                <button class="nav-item" data-target="registrazione">
-                    <i data-lucide="user-plus"></i>
-                    <span data-i18n="nav.register">Registrazione</span>
-                </button>
-                <button class="nav-item" data-target="contatto">
-                    <i data-lucide="mail"></i>
-                    <span data-i18n="nav.contact">Contattaci</span>
-                </button>
+<body>
+
+    <!-- TOP NAVIGATION -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="nav-brand">
+                <div class="brand-icon">
+                    <i data-lucide="clipboard-check"></i>
+                </div>
+                <span>Jobs</span>Report
+            </a>
+
+            <nav class="nav-links">
+                <a href="#flusso" class="nav-link" data-i18n="nav.flow">Come Funziona</a>
+                <a href="#moduli" class="nav-link" data-i18n="nav.features">Moduli Operativi</a>
+                <a href="#prezzi" class="nav-link" data-i18n="nav.pricing">Prezzi</a>
+                <a href="#faq" class="nav-link" data-i18n="nav.faq">FAQ</a>
             </nav>
 
-            <div class="sidebar-footer">
-                <button id="theme-toggle" class="icon-btn theme-btn" aria-label="Toggle theme">
-                    <i data-lucide="moon" class="moon-icon"></i>
-                    <i data-lucide="sun" class="sun-icon"></i>
-                    <span class="theme-text" id="theme-text">Attiva tema scuro</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            
-            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                <select id="lang-select" class="form-control" style="width: auto; padding: 0.5rem 1rem; background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; cursor: pointer; box-shadow: var(--shadow);">
-                    <option value="it">Italiano 🇮🇹</option>
-                    <option value="en">English 🇬🇧</option>
-                    <option value="es">Español 🇪🇸</option>
-                    <option value="da">Dansk 🇩🇰</option>
+            <div class="nav-actions">
+                <select id="lang-select" class="lang-select" aria-label="Language Selector">
+                    <option value="it">🇮🇹 IT</option>
+                    <option value="en">🇬🇧 EN</option>
+                    <option value="es">🇪🇸 ES</option>
+                    <option value="da">🇩🇰 DA</option>
                 </select>
-                <a href="https://app.jobs-report.app" class="btn btn-outline" style="padding: 0.5rem 1.5rem; text-decoration: none;" data-i18n="nav.login">Accedi</a>
-                <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn btn-primary" style="padding: 0.5rem 1.5rem; text-decoration: none;" data-i18n="nav.signup">Prova Gratis</a>
+
+                <a href="https://app.jobs-report.app" class="btn-nav-login" data-i18n="nav.login">Accedi</a>
+                <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-nav-cta" data-i18n="nav.signup">Inizia Gratis</a>
             </div>
+        </div>
+    </header>
 
-            <!-- SECTION: Benvenuto -->
-            <section id="benvenuto" class="content-section active">
-                <div class="content-header">
-                    <h1><span data-i18n="hero.title1">Più controllo operativo,</span><br><span class="highlight" data-i18n="hero.title2">meno tempo perso</span> <span data-i18n="hero.title3">nella gestione</span></h1>
-                    <p class="subtitle" data-i18n="hero.subtitle">Jobs Report è la piattaforma progettata per semplificare la gestione dei rapportini di lavoro, delle attività operative e delle comunicazioni tra cantiere e ufficio.</p>
-                </div>
-                <div class="content-body split-layout">
-                    <div class="text-block">
-                        <p data-i18n="hero.desc1">Nasce da esigenze reali di imprese, installatori, manutentori e squadre operative che ogni giorno devono registrare ore, attività, costi e informazioni senza rallentare il lavoro.</p>
-                        <p class="highlight-box" data-i18n="hero.desc2">L’obiettivo di Jobs Report è semplice: ridurre il caos operativo, migliorare il controllo delle informazioni e rendere più veloce la gestione quotidiana del lavoro sul campo.</p>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn btn-primary" style="text-decoration: none;"><span data-i18n="nav.signup">Prova Gratis</span> <i data-lucide="arrow-right"></i></a>
-                            <button class="btn btn-outline" onclick="switchTab('problema')"><span data-i18n="hero.btn">Inizia la presentazione</span></button>
-                        </div>
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-card">
+                    <div class="hero-glow"></div>
+                    
+                    <div class="hero-tag">
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px; color: #fde047;"></i>
+                        <span data-i18n="hero.tag">Time tracking e gestione interventi per squadre operative</span>
                     </div>
-                    <div class="image-block">
-                        <div class="mockup-ui">
-                            <div class="mockup-header">
-                                <h3 data-i18n="mockup.welcome">Benvenuto, Thomas</h3>
-                                <p data-i18n="mockup.sub">Gestione Attività</p>
-                            </div>
-                            <div class="mockup-stats">
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon"><i data-lucide="clock"></i> <span data-i18n="mockup.hours">Ore</span></div>
-                                    <div class="stat-value">120 <span class="stat-sub" data-i18n="mockup.hours_sub">ore</span></div>
-                                </div>
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon"><i data-lucide="file-text"></i> <span data-i18n="mockup.reports">Rapportini</span></div>
-                                    <div class="stat-value">45 <span class="stat-sub" data-i18n="mockup.reports_sub">in sospeso</span></div>
-                                </div>
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon"><i data-lucide="briefcase"></i> <span data-i18n="mockup.projects">Progetti</span></div>
-                                    <div class="stat-value">8 <span class="stat-sub" data-i18n="mockup.projects_sub">attivi</span></div>
-                                </div>
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon text-green"><span class="badge-green">35%</span> <span data-i18n="mockup.margin">Margine</span></div>
-                                    <div class="stat-value">35% <i data-lucide="trending-up" class="text-green" style="width: 18px; height: 18px;"></i></div>
-                                </div>
-                            </div>
-                            <div class="mockup-grid">
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="users"></i></div> <span data-i18n="mockup.clients">Clienti</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="hard-hat"></i></div> <span data-i18n="mockup.staff">Personale</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="briefcase"></i></div> <span data-i18n="mockup.projects">Progetti</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="file-text"></i></div> <span data-i18n="mockup.reports">Rapportini</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="clipboard-list"></i></div> <span data-i18n="mockup.summary">Sommario</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="user"></i></div> <span data-i18n="mockup.profile">Profilo</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="help-circle"></i></div> <span data-i18n="mockup.support">Assistenza</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- SECTION: Il Problema -->
-            <section id="problema" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="prob.title">Il Problema</h2>
-                    <p class="subtitle" data-i18n="prob.sub">La gestione delle informazioni è il vero ostacolo, non il lavoro operativo.</p>
-                </div>
-                <div class="content-body split-layout">
-                    <div class="text-block">
-                        <p data-i18n="prob.desc">Molte aziende operative gestiscono ancora il lavoro tramite:</p>
-                        <ul class="bad-list">
-                            <li><i data-lucide="x"></i> <span data-i18n="prob.list1">Fogli cartacei e note sparse</span></li>
-                            <li><i data-lucide="x"></i> <span data-i18n="prob.list2">Messaggi WhatsApp disordinati</span></li>
-                            <li><i data-lucide="x"></i> <span data-i18n="prob.list3">Comunicazioni di fine settimana</span></li>
-                        </ul>
-                        
-                        <div class="impact-box">
-                            <h3 data-i18n="prob.impact">L'impatto sul business:</h3>
-                            <div class="impact-grid">
-                                <div class="impact-item">
-                                    <i data-lucide="clock"></i>
-                                    <span data-i18n="prob.imp1">Ore dimenticate o non fatturate</span>
-                                </div>
-                                <div class="impact-item">
-                                    <i data-lucide="alert-circle"></i>
-                                    <span data-i18n="prob.imp2">Contestazioni sui lavori</span>
-                                </div>
-                                <div class="impact-item">
-                                    <i data-lucide="trending-down"></i>
-                                    <span data-i18n="prob.imp3">Costi non controllati</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn btn-outline" onclick="switchTab('soluzione')"><span data-i18n="prob.btn">Scopri la soluzione</span> <i data-lucide="arrow-right"></i></button>
-                    </div>
-                    <div class="image-block">
-                        <img src="assets/caos_mockup.png" alt="Caos e confusione tra operai e amministrazione" class="mockup-img error-img">
-                    </div>
-                </div>
-            </section>
+                    <h1 class="hero-title" data-i18n="hero.title">Dal campo direttamente all'ufficio.</h1>
+                    <p class="hero-hook">“<span data-i18n="hero.hook">Il venerdì non devi più ricostruire le ore degli operai.</span>”</p>
+                    <p class="hero-desc" data-i18n="hero.desc">Il dipendente inserisce le attività e le spese direttamente dallo smartphone in cantiere. L'ufficio ritrova i rapportini già organizzati e pronti per l'export.</p>
 
-            <!-- SECTION: La Soluzione -->
-            <section id="soluzione" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="sol.title">La Soluzione: Jobs Report</h2>
-                    <p class="subtitle" data-i18n="sol.sub">Digitalizza e centralizza le informazioni in un unico sistema immediato.</p>
-                </div>
-                <div class="content-body split-layout">
-                    <div class="text-block">
-                        <p data-i18n="sol.desc">Le squadre possono registrare rapidamente:</p>
-                        <ul class="check-list">
-                            <li><i data-lucide="check-circle-2"></i> <span data-i18n="sol.list1">Ore lavorate e attività svolte</span></li>
-                            <li><i data-lucide="check-circle-2"></i> <span data-i18n="sol.list2">Note operative e comunicazioni</span></li>
-                            <li><i data-lucide="check-circle-2"></i> <span data-i18n="sol.list3">Materiali, spese e presenze</span></li>
-                        </ul>
-                        <div class="highlight-box success-box">
-                            <p data-i18n="sol.highlight">Le informazioni diventano <strong>immediatamente disponibili</strong> per ufficio, responsabili e gestione aziendale. L’obiettivo non è aggiungere complessità, ma semplificare il lavoro.</p>
-                        </div>
-                        <button class="btn btn-outline" onclick="switchTab('funzionalita')"><span data-i18n="sol.btn">Vedi le Funzionalità</span> <i data-lucide="arrow-right"></i></button>
+                    <div class="hero-free-badge">
+                        <i data-lucide="check-circle" style="width: 16px; height: 16px; color: #34d399;"></i>
+                        <span data-i18n="hero.badge_free">Gratis fino a 5 utenti · Nessuna scadenza · Nessuna pubblicità · Tutte le funzioni incluse</span>
                     </div>
-                    <div class="image-block">
-                        <div class="mockup-ui">
-                            <div class="mockup-header">
-                                <h3 data-i18n="mockup.welcome">Benvenuto, Thomas</h3>
-                                <p data-i18n="mockup.sub">Gestione Attività</p>
-                            </div>
-                            <div class="mockup-stats">
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon"><i data-lucide="clock"></i> <span data-i18n="mockup.hours">Ore</span></div>
-                                    <div class="stat-value">120 <span class="stat-sub" data-i18n="mockup.hours_sub">ore</span></div>
-                                </div>
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon"><i data-lucide="file-text"></i> <span data-i18n="mockup.reports">Rapportini</span></div>
-                                    <div class="stat-value">45 <span class="stat-sub" data-i18n="mockup.reports_sub">in sospeso</span></div>
-                                </div>
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon"><i data-lucide="briefcase"></i> <span data-i18n="mockup.projects">Progetti</span></div>
-                                    <div class="stat-value">8 <span class="stat-sub" data-i18n="mockup.projects_sub">attivi</span></div>
-                                </div>
-                                <div class="mockup-stat-card">
-                                    <div class="stat-icon text-green"><span class="badge-green">35%</span> <span data-i18n="mockup.margin">Margine</span></div>
-                                    <div class="stat-value">35% <i data-lucide="trending-up" class="text-green" style="width: 18px; height: 18px;"></i></div>
-                                </div>
-                            </div>
-                            <div class="mockup-grid">
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="users"></i></div> <span data-i18n="mockup.clients">Clienti</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="hard-hat"></i></div> <span data-i18n="mockup.staff">Personale</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="briefcase"></i></div> <span data-i18n="mockup.projects">Progetti</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="file-text"></i></div> <span data-i18n="mockup.reports">Rapportini</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="clipboard-list"></i></div> <span data-i18n="mockup.summary">Sommario</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="user"></i></div> <span data-i18n="mockup.profile">Profilo</span></div>
-                                <div class="mockup-btn"><div class="btn-icon-wrapper"><i data-lucide="help-circle"></i></div> <span data-i18n="mockup.support">Assistenza</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- SECTION: Funzionalità -->
-            <section id="funzionalita" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="feat.title">Funzionalità Principali</h2>
-                    <p class="subtitle" data-i18n="feat.sub">Tutto ciò che serve al cantiere e all'ufficio.</p>
+                    <div class="hero-actions">
+                        <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-hero-primary">
+                            <span data-i18n="hero.cta_primary">Inizia Gratis (Fino a 5 utenti)</span>
+                            <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+                        </a>
+                        <a href="https://app.jobs-report.app" class="btn-hero-secondary" data-i18n="hero.cta_login">
+                            Accedi all'App
+                        </a>
+                    </div>
                 </div>
-                <div class="content-body full-width">
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="file-text"></i></div>
-                            <h3 data-i18n="feat.1.title">Rapportini Digitali</h3>
-                            <p data-i18n="feat.1.desc">Giornate registrate in modo ordinato, leggibile e archiviate automaticamente.</p>
+            </div>
+        </section>
+
+        <!-- FLUSSO OPERATIVO (5 STEP) -->
+        <section id="flusso" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge" data-i18n="flow.badge">Processo Operativo</span>
+                    <h2 class="section-title" data-i18n="flow.title">Dal campo direttamente all'ufficio</h2>
+                    <p class="section-desc" data-i18n="flow.desc">Un flusso lineare in 5 passaggi che elimina carta, fogli sparsi e ritardi di rendicontazione.</p>
+                </div>
+
+                <div class="flow-grid">
+                    <div class="flow-step-card">
+                        <div class="step-icon-wrap">
+                            <i data-lucide="calendar-check"></i>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="users"></i></div>
-                            <h3 data-i18n="feat.2.title">Squadre e Subappaltatori</h3>
-                            <p data-i18n="feat.2.desc">Gestione del personale interno e supporto per aziende esterne.</p>
+                        <div class="step-title" data-i18n="flow.step1_title">1. Assegna l'intervento</div>
+                        <div class="step-desc" data-i18n="flow.step1_desc">L'ufficio o il caposquadra pianifica l'attività e assegna la squadra al cantiere.</div>
+                    </div>
+
+                    <div class="flow-step-card">
+                        <div class="step-icon-wrap">
+                            <i data-lucide="smartphone"></i>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="globe"></i></div>
-                            <h3 data-i18n="feat.3.title">Supporto Multilingua</h3>
-                            <p data-i18n="feat.3.desc">Pensato per squadre internazionali (IT, EN, ES, PL, TR, DA).</p>
+                        <div class="step-title" data-i18n="flow.step2_title">2. Registra dal telefono</div>
+                        <div class="step-desc" data-i18n="flow.step2_desc">L'operaio seleziona il progetto e inserisce ore ordinarie e straordinarie.</div>
+                    </div>
+
+                    <div class="flow-step-card">
+                        <div class="step-icon-wrap">
+                            <i data-lucide="receipt"></i>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="languages"></i></div>
-                            <h3 data-i18n="feat.4.title">Traduzioni Integrate</h3>
-                            <p data-i18n="feat.4.desc">Traduci comunicazioni e note direttamente nell'app.</p>
+                        <div class="step-title" data-i18n="flow.step3_title">3. Spese e materiali</div>
+                        <div class="step-desc" data-i18n="flow.step3_desc">Registrazione immediata di scontrini, pedaggi, carburante e materiali utilizzati.</div>
+                    </div>
+
+                    <div class="flow-step-card">
+                        <div class="step-icon-wrap">
+                            <i data-lucide="building-2"></i>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="bot"></i></div>
-                            <h3 data-i18n="feat.5.title">Assistente Operativo IA</h3>
-                            <p data-i18n="feat.5.desc">Un sistema intelligente per aiutare a compilare testi e comprendere l'app.</p>
+                        <div class="step-title" data-i18n="flow.step4_title">4. Controllo ufficio</div>
+                        <div class="step-desc" data-i18n="flow.step4_desc">I supervisor e l'amministrazione ritrovano i rapportini già organizzati e verificabili.</div>
+                    </div>
+
+                    <div class="flow-step-card">
+                        <div class="step-icon-wrap">
+                            <i data-lucide="file-spreadsheet"></i>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="cloud-download"></i></div>
-                            <h3 data-i18n="feat.6.title">Cloud & Export</h3>
-                            <p data-i18n="feat.6.desc">Accesso da smartphone, export in PDF o Excel, e cloud sempre sicuro.</p>
+                        <div class="step-title" data-i18n="flow.step5_title">5. Dati pronti all'uso</div>
+                        <div class="step-desc" data-i18n="flow.step5_desc">Riepiloghi pronti per PDF, Excel e supporto immediato alla fatturazione.</div>
+                    </div>
+                </div>
+
+                <!-- BENEFIT CALLOUT -->
+                <div class="benefit-callout">
+                    <div class="benefit-header">
+                        <i data-lucide="shield-check" class="benefit-header-icon" style="width: 22px; height: 22px;"></i>
+                        <span class="benefit-title" data-i18n="benefit.title">Meno tempo perso a ricostruire ore e informazioni.</span>
+                    </div>
+                    <div class="benefit-tags">
+                        <span class="benefit-tag" data-i18n="benefit.tag1">Meno messaggi WhatsApp</span>
+                        <span class="benefit-tag" data-i18n="benefit.tag2">Meno fogli sparsi</span>
+                        <span class="benefit-tag" data-i18n="benefit.tag3">Meno telefonate a fine mese</span>
+                        <span class="benefit-tag" data-i18n="benefit.tag4">Zero dati persi</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULI OPERATIVI -->
+        <section id="moduli" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge" data-i18n="modules.badge">Cosa puoi fare</span>
+                    <h2 class="section-title" data-i18n="modules.title">Tutto ciò che serve al cantiere e all'ufficio</h2>
+                    <p class="section-desc" data-i18n="modules.desc">Funzionalità essenziali focalizzate sulla raccolta dati operativi, senza complicazioni ERP.</p>
+                </div>
+
+                <div class="modules-grid">
+                    <div class="module-card">
+                        <div class="module-icon">📄</div>
+                        <h3 class="module-title" data-i18n="mod.1.title">Rapportini di Lavoro</h3>
+                        <p class="module-desc" data-i18n="mod.1.desc">Compilazione immediata delle ore sul campo da qualsiasi smartphone, con note e firma cliente opzionale.</p>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">💼</div>
+                        <h3 class="module-title" data-i18n="mod.2.title">Gestione Cantieri & Progetti</h3>
+                        <p class="module-desc" data-i18n="mod.2.desc">Organizzazione chiara del lavoro suddiviso per cliente, commessa, indirizzo e stato operativo.</p>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">🛡️</div>
+                        <h3 class="module-title" data-i18n="mod.3.title">Personale, Mezzi & Subappalti</h3>
+                        <p class="module-desc" data-i18n="mod.3.desc">Tracciamento presenze di dipendenti interni, targhe degli automezzi e ditte esterne in subappalto.</p>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">⛽</div>
+                        <h3 class="module-title" data-i18n="mod.4.title">Spese & Ricevute sul Campo</h3>
+                        <p class="module-desc" data-i18n="mod.4.desc">Registrazione rapida delle spese vive sostenute (carburante, pasti, pedaggi) con categoria e note.</p>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">📊</div>
+                        <h3 class="module-title" data-i18n="mod.5.title">Export Excel & PDF in 1 Clic</h3>
+                        <p class="module-desc" data-i18n="mod.5.desc">Generazione immediata di allegati operativi per il commercialista, l'amministrazione e i clienti.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PREZZI & PIANI -->
+        <section id="prezzi" class="section">
+            <div class="container">
+                <div class="section-header" style="text-align: center;">
+                    <span class="section-badge" data-i18n="pricing.badge">Piani & Prezzi</span>
+                    <h2 class="section-title" data-i18n="pricing.title">Prezzi chiari, zero sorprese</h2>
+                    <p class="section-desc" data-i18n="pricing.subtitle" style="max-width: 600px; margin: 0 auto;">Tutte le funzionalità sono incluse in tutti i piani. Cambia solo il numero massimo di utenti.</p>
+                </div>
+
+                <!-- Billing Toggle -->
+                <div class="pricing-toggle-wrap">
+                    <span id="label-monthly" class="toggle-label active" data-i18n="pricing.billing_monthly">Mensile</span>
+                    <div id="billing-toggle" class="toggle-switch" role="button" aria-label="Toggle Monthly or Yearly Billing">
+                        <div class="toggle-knob"></div>
+                    </div>
+                    <span id="label-yearly" class="toggle-label" data-i18n="pricing.billing_yearly">Annuale (-17%)</span>
+                </div>
+
+                <div class="pricing-grid">
+                    <!-- Card Free -->
+                    <div class="pricing-card featured">
+                        <span class="featured-badge" data-i18n="pricing.freeBadge">Inizia gratis</span>
+                        <div>
+                            <h3 class="plan-title" data-i18n="pricing.freeTitle">Free</h3>
+                            <div class="plan-price-wrap">
+                                <span class="plan-price" data-i18n="pricing.freePrice">€0</span>
+                            </div>
+                            <div class="plan-no-expiry" data-i18n="pricing.noExpiry">Nessuna scadenza · Nessuna pubblicità</div>
+                            <div class="plan-divider"></div>
+                            <ul class="plan-features">
+                                <li class="plan-feature-item highlight">
+                                    <i data-lucide="users" style="width: 14px; height: 14px; color: var(--primary);"></i>
+                                    <span data-i18n="pricing.freeUsers">Fino a 5 utenti</span>
+                                </li>
+                                <li class="plan-feature-item">
+                                    <i data-lucide="check" style="width: 14px; height: 14px; color: var(--accent);"></i>
+                                    <span data-i18n="pricing.allIncluded">Tutte le funzionalità incluse</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-plan btn-plan-primary" data-i18n="pricing.freeCta">Inizia Gratis</a>
+                    </div>
+
+                    <!-- Card Starter -->
+                    <div class="pricing-card">
+                        <div>
+                            <h3 class="plan-title" data-i18n="pricing.starterTitle">Starter</h3>
+                            <div class="plan-price-wrap">
+                                <span id="price-starter" class="plan-price">€39</span>
+                                <span id="period-starter" class="plan-period">/mese</span>
+                            </div>
+                            <div id="note-starter" class="plan-yearly-note">o €390/anno</div>
+                            <div class="plan-divider"></div>
+                            <ul class="plan-features">
+                                <li class="plan-feature-item highlight">
+                                    <i data-lucide="users" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                                    <span data-i18n="pricing.starterUsers">Fino a 10 utenti</span>
+                                </li>
+                                <li class="plan-feature-item">
+                                    <i data-lucide="check" style="width: 14px; height: 14px; color: var(--accent);"></i>
+                                    <span data-i18n="pricing.allIncluded">Tutte le funzionalità incluse</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-plan btn-plan-secondary" data-i18n="pricing.starterCta">Scegli Starter</a>
+                    </div>
+
+                    <!-- Card Business -->
+                    <div class="pricing-card">
+                        <div>
+                            <h3 class="plan-title" data-i18n="pricing.businessTitle">Business</h3>
+                            <div class="plan-price-wrap">
+                                <span id="price-business" class="plan-price">€119</span>
+                                <span id="period-business" class="plan-period">/mese</span>
+                            </div>
+                            <div id="note-business" class="plan-yearly-note">o €1.188/anno</div>
+                            <div class="plan-divider"></div>
+                            <ul class="plan-features">
+                                <li class="plan-feature-item highlight">
+                                    <i data-lucide="users" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                                    <span data-i18n="pricing.businessUsers">Fino a 50 utenti</span>
+                                </li>
+                                <li class="plan-feature-item">
+                                    <i data-lucide="check" style="width: 14px; height: 14px; color: var(--accent);"></i>
+                                    <span data-i18n="pricing.allIncluded">Tutte le funzionalità incluse</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-plan btn-plan-secondary" data-i18n="pricing.businessCta">Scegli Business</a>
+                    </div>
+
+                    <!-- Card Growth -->
+                    <div class="pricing-card">
+                        <div>
+                            <h3 class="plan-title" data-i18n="pricing.growthTitle">Growth</h3>
+                            <div class="plan-price-wrap">
+                                <span id="price-growth" class="plan-price">€299</span>
+                                <span id="period-growth" class="plan-period">/mese</span>
+                            </div>
+                            <div id="note-growth" class="plan-yearly-note">o €2.988/anno</div>
+                            <div class="plan-divider"></div>
+                            <ul class="plan-features">
+                                <li class="plan-feature-item highlight">
+                                    <i data-lucide="users" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                                    <span data-i18n="pricing.growthUsers">Fino a 150 utenti</span>
+                                </li>
+                                <li class="plan-feature-item">
+                                    <i data-lucide="check" style="width: 14px; height: 14px; color: var(--accent);"></i>
+                                    <span data-i18n="pricing.allIncluded">Tutte le funzionalità incluse</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-plan btn-plan-secondary" data-i18n="pricing.growthCta">Scegli Growth</a>
+                    </div>
+
+                    <!-- Card Enterprise -->
+                    <div class="pricing-card">
+                        <div>
+                            <h3 class="plan-title" data-i18n="pricing.enterpriseTitle">Enterprise</h3>
+                            <div class="plan-price-wrap">
+                                <span class="plan-price" style="font-size: 1.4rem;" data-i18n="pricing.enterprisePrice">Su misura</span>
+                            </div>
+                            <div class="plan-yearly-note" data-i18n="pricing.enterpriseDesc">Soluzione su misura</div>
+                            <div class="plan-divider"></div>
+                            <ul class="plan-features">
+                                <li class="plan-feature-item highlight">
+                                    <i data-lucide="users" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                                    <span data-i18n="pricing.enterpriseUsers">Oltre 150 utenti</span>
+                                </li>
+                                <li class="plan-feature-item">
+                                    <i data-lucide="check" style="width: 14px; height: 14px; color: var(--accent);"></i>
+                                    <span data-i18n="pricing.allIncluded">Tutte le funzionalità incluse</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-plan btn-plan-secondary" data-i18n="pricing.enterpriseCta">Richiedi info</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ ACCORDION -->
+        <section id="faq" class="section">
+            <div class="container">
+                <div class="section-header" style="text-align: center;">
+                    <span class="section-badge" data-i18n="faq.badge">FAQ</span>
+                    <h2 class="section-title" data-i18n="faq.title">Domande Frequenti</h2>
+                    <p class="section-desc" data-i18n="faq.subtitle">Risposte rapide su funzionamento, ruoli e dispositivi</p>
+                </div>
+
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q1">Il piano Free ha una durata massima o scade dopo un periodo di prova?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a1">
+                            No, il piano Free non ha alcuna scadenza temporale. È gratuito per sempre per team fino a 5 utenti e include tutte le funzionalità operative senza pubblicità.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q2">Quali funzioni sono incluse nel piano Free?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a2">
+                            Tutte le funzionalità della piattaforma sono incluse: inserimento rapportini, gestione clienti, progetti, registrazione spese e materiali, e l'export illimitato in Excel e PDF.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q3">I dipendenti devono installare un'app dallo store?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a3">
+                            Jobs-Report è una Progressive Web App (PWA). Funziona su qualsiasi browser da smartphone Android e iPhone e può essere aggiunta alla schermata Home in 3 secondi senza passare dallo store.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q4">Cosa succede se la mia azienda cresce oltre i 5 utenti?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a4">
+                            Puoi passare in qualsiasi momento a un piano superiore (Starter, Business o Growth). Tutti i tuoi dati storici, rapportini, clienti e progetti rimangono intatti e immediatamente accessibili.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q5">L'ufficio può esportare i dati per il commercialista o per fatturare?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a5">
+                            Sì. Puoi generare in qualsiasi momento file Excel completi e relazioni PDF riassuntive filtrando per data, cantiere o dipendente, pronti da consegnare all'amministrazione o al commercialista.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q6">È possibile raccogliere la firma del cliente sul telefono?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a6">
+                            Sì, il tecnico può far firmare il rapportino direttamente sullo schermo touch dello smartphone al termine dell'intervento, con allegato il riassunto delle attività svolte.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q7">Come funziona la gestione delle spese e dei materiali?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a7">
+                            Ogni operatore o caposquadra può registrare le spese vive sostenute sul campo (carburante, pasti, pedaggi) e i materiali impiegati, allegandoli direttamente alla commessa di lavoro.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span data-i18n="faq.q8">L'applicazione include calcoli di margini, prezzi o fatturazione elettronica?</span>
+                            <i data-lucide="chevron-down" class="faq-chevron"></i>
+                        </div>
+                        <div class="faq-answer" data-i18n="faq.a8">
+                            No. Jobs-Report è focalizzato al 100% sulla raccolta dei dati operativi reali dal campo. La complessità contabile e la fatturazione rimangono nei tuoi software amministrativi esterni via export Excel.
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- SECTION: Esempi Report -->
-            <section id="esempi" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="esempi.title">Export Professionali in Excel</h2>
-                    <p class="subtitle" data-i18n="esempi.sub">Visualizza i dati esattamente come ti servono con i nostri template pronti all'uso.</p>
+        <!-- FINAL CTA -->
+        <section class="section" style="padding-top: 0;">
+            <div class="container">
+                <div class="final-cta-card">
+                    <h2 class="final-cta-title" data-i18n="cta.title">Pronto a semplificare la rendicontazione dei tuoi cantieri?</h2>
+                    <p class="final-cta-sub" data-i18n="cta.sub">Crea il tuo account in 1 minuto. Nessuna carta di credito richiesta.</p>
+                    <a href="https://app.jobs-report.app/#/richiesta-registrazione" class="btn-final-cta" data-i18n="cta.btn">Inizia Gratis Ora</a>
                 </div>
-                <div class="content-body">
-                    <div class="reports-grid">
-                        <div class="report-card">
-                            <img src="assets/1_Dashboard_Commesse.png" alt="Dashboard Commesse" class="report-img">
-                            <div class="report-info">
-                                <h3 data-i18n="esempi.dashboard">Dashboard Commesse</h3>
-                                <p data-i18n="esempi.dashboard_desc">Analisi economica immediata con calcolo dei margini per l'amministrazione.</p>
-                            </div>
-                        </div>
-                        <div class="report-card">
-                            <img src="assets/5_Billing_Attachment.png" alt="Allegato Fatturazione" class="report-img">
-                            <div class="report-info">
-                                <h3 data-i18n="esempi.billing">Allegato Fatturazione</h3>
-                                <p data-i18n="esempi.billing_desc">L'elenco degli interventi pronto per essere allegato alla fattura del cliente.</p>
-                            </div>
-                        </div>
-                        <div class="report-card">
-                            <img src="assets/2_Customer_Work_Report.png" alt="Rapporto Lavori Svolti" class="report-img">
-                            <div class="report-info">
-                                <h3 data-i18n="esempi.customer">Rapporto Lavori Svolti</h3>
-                                <p data-i18n="esempi.customer_desc">Dettaglio cronologico delle attività per singolo cliente o progetto.</p>
-                            </div>
-                        </div>
-                        <div class="report-card">
-                            <img src="assets/3_Weekly_Report.png" alt="Report Settimanale" class="report-img">
-                            <div class="report-info">
-                                <h3 data-i18n="esempi.weekly">Report Settimanale</h3>
-                                <p data-i18n="esempi.weekly_desc">Riepilogo delle ore lavorate suddivise per settimane (ISO 8601).</p>
-                            </div>
-                        </div>
-                        <div class="report-card">
-                            <img src="assets/4_Employee_Monthly_Report.png" alt="Report Mensile Dipendente" class="report-img">
-                            <div class="report-info">
-                                <h3 data-i18n="esempi.employee">Report Mensile Dipendente</h3>
-                                <p data-i18n="esempi.employee_desc">Dettaglio ore e spese sostenute dal dipendente per elaborazione busta paga.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
+        </section>
+    </main>
 
-            <!-- SECTION: Benefici -->
-            <section id="benefici" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="ben.title">Perché Jobs Report</h2>
-                    <p class="subtitle" data-i18n="ben.sub">Progettato per l'uso sul campo, non solo per l'amministrazione.</p>
-                </div>
-                <div class="content-body full-width">
-                    <div class="benefits-list">
-                        <div class="benefit-row">
-                            <div class="benefit-number">1</div>
-                            <div class="benefit-text">
-                                <h4 data-i18n="ben.1.title">Migliore controllo economico</h4>
-                                <p data-i18n="ben.1.desc">Dati precisi e tempestivi aiutano a controllare costi e marginalità.</p>
-                            </div>
-                        </div>
-                        <div class="benefit-row">
-                            <div class="benefit-number">2</div>
-                            <div class="benefit-text">
-                                <h4 data-i18n="ben.2.title">Riduzione del tempo amministrativo</h4>
-                                <p data-i18n="ben.2.desc">Cantiere e ufficio lavorano sulle stesse informazioni in tempo reale.</p>
-                            </div>
-                        </div>
-                        <div class="benefit-row">
-                            <div class="benefit-number">3</div>
-                            <div class="benefit-text">
-                                <h4 data-i18n="ben.3.title">Collaborazione internazionale</h4>
-                                <p data-i18n="ben.3.desc">Traduzioni integrate migliorano la comunicazione tra team diversi.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div>© 2026 JobsReport · <span data-i18n="footer.rights">Tutti i diritti riservati</span></div>
+            <div class="footer-links">
+                <a href="https://app.jobs-report.app/#/privacy" data-i18n="footer.privacy">Privacy Policy</a>
+                <a href="https://app.jobs-report.app/#/terms" data-i18n="footer.terms">Termini di Servizio</a>
+            </div>
+        </div>
+    </footer>
 
-            <!-- SECTION: Target -->
-            <section id="target" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="tgt.title">A chi è rivolto</h2>
-                    <p class="subtitle" data-i18n="tgt.sub">La soluzione perfetta per chi lavora sul territorio.</p>
-                </div>
-                <div class="content-body text-center">
-                    <div class="target-tags">
-                        <span class="tag" data-i18n="tgt.1">Imprese edili</span>
-                        <span class="tag" data-i18n="tgt.2">Installatori elettrici</span>
-                        <span class="tag" data-i18n="tgt.3">Idraulici</span>
-                        <span class="tag" data-i18n="tgt.4">Aziende HVAC</span>
-                        <span class="tag" data-i18n="tgt.5">Manutentori</span>
-                        <span class="tag" data-i18n="tgt.6">Artigiani</span>
-                    </div>
-                    <div class="cta-box mt-5">
-                        <h3 data-i18n="tgt.cta.title">Pronto a ridurre il caos operativo?</h3>
-                        <p data-i18n="tgt.cta.desc">Richiedi una demo o inizia a usare Jobs Report oggi stesso.</p>
-                        <button class="btn btn-primary btn-large mt-3" onclick="switchTab('contatto')" data-i18n="tgt.btn">Contattaci Ora</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION: Registrazione -->
-            <section id="registrazione" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="reg.title">Attiva la tua Azienda</h2>
-                    <p class="subtitle" data-i18n="reg.sub">Inizia subito a usare Jobs Report. Compila il modulo per richiedere l'attivazione della tua impresa.</p>
-                </div>
-                <div class="content-body">
-                    <div class="form-container">
-                        <form onsubmit="event.preventDefault(); alert('Richiesta inviata!');">
-                            <div class="form-group">
-                                <label for="reg-company" data-i18n="reg.company">Nome Azienda</label>
-                                <input type="text" id="reg-company" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="reg-name" data-i18n="reg.name">Nome Amministratore</label>
-                                <input type="text" id="reg-name" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="reg-email" data-i18n="reg.email">Email aziendale</label>
-                                <input type="email" id="reg-email" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="reg-phone" data-i18n="reg.phone">Telefono (opzionale)</label>
-                                <input type="tel" id="reg-phone" class="form-control">
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;" data-i18n="reg.btn">Invia Richiesta di Attivazione</button>
-                        </form>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION: Contatto -->
-            <section id="contatto" class="content-section">
-                <div class="content-header">
-                    <h2 data-i18n="cont.title">Contattaci</h2>
-                    <p class="subtitle" data-i18n="cont.sub">Hai domande o vuoi prenotare una demo? Scrivici, ti risponderemo il prima possibile.</p>
-                </div>
-                <div class="content-body">
-                    <div class="form-container">
-                        <form onsubmit="event.preventDefault(); alert('Messaggio inviato!');">
-                            <div class="form-group">
-                                <label for="contact-name" data-i18n="cont.name">Nome e Cognome</label>
-                                <input type="text" id="contact-name" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="contact-email" data-i18n="cont.email">Email</label>
-                                <input type="email" id="contact-email" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="contact-message" data-i18n="cont.msg">Messaggio</label>
-                                <textarea id="contact-message" class="form-control" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;" data-i18n="cont.btn">Invia Messaggio</button>
-                        </form>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
+    <!-- Scripts -->
     <script src="translations.js"></script>
     <script src="script.js"></script>
-    <script>
-        // Inizializza le icone
-        lucide.createIcons();
-    </script>
 </body>
 </html>

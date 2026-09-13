@@ -1,37 +1,21 @@
-// Funzione globale per cambiare tab tramite i bottoni nella pagina
-function switchTab(targetId) {
-    if (targetId === 'registrazione') {
-        window.location.href = 'https://app.jobs-report.app/#/richiesta-registrazione';
-        return;
-    }
+﻿// --- Global State ---
+let currentBillingCycle = 'monthly'; // 'monthly' | 'yearly'
 
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.content-section');
-
-    // Trova l'elemento nav corrispondente
-    const targetNav = Array.from(navItems).find(item => item.getAttribute('data-target') === targetId);
-    if (!targetNav) return;
-
-    // Rimuovi classe active da tutto
-    navItems.forEach(nav => nav.classList.remove('active'));
-    sections.forEach(sec => sec.classList.remove('active'));
-
-    // Aggiungi classe active al bersaglio
-    targetNav.classList.add('active');
-    document.getElementById(targetId).classList.add('active');
-}
-
-// --- Translation Logic ---
+// --- Translation Engine ---
 function changeLanguage(lang) {
-    if (!window.i18nTranslations || !window.i18nTranslations[lang]) lang = 'it';
+    if (!window.i18nTranslations || !window.i18nTranslations[lang]) {
+        lang = 'it';
+    }
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
+
+    const dict = window.i18nTranslations[lang];
 
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (window.i18nTranslations[lang] && window.i18nTranslations[lang][key]) {
-            el.innerHTML = window.i18nTranslations[lang][key];
+        if (dict && dict[key] !== undefined) {
+            el.innerHTML = dict[key];
         }
     });
 
@@ -40,58 +24,79 @@ function changeLanguage(lang) {
         langSelect.value = lang;
     }
 
-    // Il testo del toggle tema non passa dal loop data-i18n perché dipende
-    // anche dallo stato corrente (chiaro/scuro), non solo dalla lingua.
-    updateThemeText();
+    updatePricingDisplay();
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
 
-// Imposta il testo del toggle tema in base allo stato attuale (chiaro/scuro)
-// e alla lingua corrente: il testo descrive l'azione (passaggio allo stato
-// successivo), non lo stato presente.
-function updateThemeText() {
-    const lang = localStorage.getItem('lang') || 'it';
-    const dict = (window.i18nTranslations && window.i18nTranslations[lang]) || {};
-    const themeTextEl = document.getElementById('theme-text');
-    if (!themeTextEl) return;
+// --- Pricing Toggle Engine ---
+function setBillingCycle(cycle) {
+    currentBillingCycle = cycle;
+    const switchEl = document.getElementById('billing-toggle');
+    const labelMonthly = document.getElementById('label-monthly');
+    const labelYearly = document.getElementById('label-yearly');
 
-    const isDark = document.body.classList.contains('dark-mode');
-    const key = isDark ? 'nav.theme_to_light' : 'nav.theme_to_dark';
-    themeTextEl.textContent = dict[key] || (isDark ? 'Light mode' : 'Dark mode');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Dark Mode Toggle ---
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        body.classList.remove('light-mode');
-        body.classList.add('dark-mode');
+    if (cycle === 'yearly') {
+        if (switchEl) switchEl.classList.add('active');
+        if (labelYearly) labelYearly.classList.add('active');
+        if (labelMonthly) labelMonthly.classList.remove('active');
+    } else {
+        if (switchEl) switchEl.classList.remove('active');
+        if (labelMonthly) labelMonthly.classList.add('active');
+        if (labelYearly) labelYearly.classList.remove('active');
     }
 
-    themeToggle.addEventListener('click', () => {
-        if (body.classList.contains('light-mode')) {
-            body.classList.replace('light-mode', 'dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.classList.replace('dark-mode', 'light-mode');
-            localStorage.setItem('theme', 'light');
-        }
-        updateThemeText();
-    });
+    updatePricingDisplay();
+}
 
-    // --- Tab Switching Logic (Sidebar) ---
-    const navItems = document.querySelectorAll('.nav-item');
-    
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const targetId = item.getAttribute('data-target');
-            switchTab(targetId);
-        });
-    });
+function updatePricingDisplay() {
+    const lang = localStorage.getItem('lang') || 'it';
+    const dict = (window.i18nTranslations && window.i18nTranslations[lang]) || {};
 
-    // --- Initialize Language ---
+    const isYearly = currentBillingCycle === 'yearly';
+
+    // Starter
+    const starterPriceEl = document.getElementById('price-starter');
+    const starterPeriodEl = document.getElementById('period-starter');
+    const starterYearlyNoteEl = document.getElementById('note-starter');
+    if (starterPriceEl) starterPriceEl.textContent = isYearly ? (dict['pricing.starterPriceYearly'] || '€32.50') : (dict['pricing.starterPriceMonthly'] || '€39');
+    if (starterPeriodEl) starterPeriodEl.textContent = dict['pricing.perMonth'] || '/mese';
+    if (starterYearlyNoteEl) {
+        starterYearlyNoteEl.textContent = isYearly 
+            ? (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.starterYearlyTotal'] || '390')
+            : (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.starterYearlyTotal'] || '390');
+    }
+
+    // Business
+    const businessPriceEl = document.getElementById('price-business');
+    const businessPeriodEl = document.getElementById('period-business');
+    const businessYearlyNoteEl = document.getElementById('note-business');
+    if (businessPriceEl) businessPriceEl.textContent = isYearly ? (dict['pricing.businessPriceYearly'] || '€99') : (dict['pricing.businessPriceMonthly'] || '€119');
+    if (businessPeriodEl) businessPeriodEl.textContent = dict['pricing.perMonth'] || '/mese';
+    if (businessYearlyNoteEl) {
+        businessYearlyNoteEl.textContent = isYearly
+            ? (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.businessYearlyTotal'] || '1.188')
+            : (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.businessYearlyTotal'] || '1.188');
+    }
+
+    // Growth
+    const growthPriceEl = document.getElementById('price-growth');
+    const growthPeriodEl = document.getElementById('period-growth');
+    const growthYearlyNoteEl = document.getElementById('note-growth');
+    if (growthPriceEl) growthPriceEl.textContent = isYearly ? (dict['pricing.growthPriceYearly'] || '€249') : (dict['pricing.growthPriceMonthly'] || '€299');
+    if (growthPeriodEl) growthPeriodEl.textContent = dict['pricing.perMonth'] || '/mese';
+    if (growthYearlyNoteEl) {
+        growthYearlyNoteEl.textContent = isYearly
+            ? (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.growthYearlyTotal'] || '2.988')
+            : (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.growthYearlyTotal'] || '2.988');
+    }
+}
+
+// --- DOM Initializer ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Language Init
     const savedLang = localStorage.getItem('lang') || 'it';
     changeLanguage(savedLang);
 
@@ -102,23 +107,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Hijack Contattaci Form ---
-    const contattoForm = document.querySelector('#contatto form');
-    if (contattoForm) {
-        contattoForm.onsubmit = function(e) {
-            e.preventDefault();
-            const name = document.getElementById('contact-name').value;
-            const email = document.getElementById('contact-email').value;
-            const msg = document.getElementById('contact-message').value;
-            
-            const subject = encodeURIComponent("Nuovo messaggio dal sito Jobs Report");
-            const body = encodeURIComponent(
-                "Nome: " + name + "\n" +
-                "Email: " + email + "\n\n" +
-                "Messaggio:\n" + msg
-            );
-            
-            window.location.href = "mailto:jtw@live.it?subject=" + subject + "&body=" + body;
-        };
+    // 2. Billing Toggle Init
+    const switchEl = document.getElementById('billing-toggle');
+    if (switchEl) {
+        switchEl.addEventListener('click', () => {
+            setBillingCycle(currentBillingCycle === 'monthly' ? 'yearly' : 'monthly');
+        });
+    }
+
+    const labelMonthly = document.getElementById('label-monthly');
+    if (labelMonthly) {
+        labelMonthly.addEventListener('click', () => setBillingCycle('monthly'));
+    }
+
+    const labelYearly = document.getElementById('label-yearly');
+    if (labelYearly) {
+        labelYearly.addEventListener('click', () => setBillingCycle('yearly'));
+    }
+
+    // 3. FAQ Accordion
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        if (question) {
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(other => other.classList.remove('active'));
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        }
+    });
+
+    // 4. Lucide Icons
+    if (window.lucide) {
+        window.lucide.createIcons();
     }
 });
