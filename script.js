@@ -11,6 +11,7 @@ function changeLanguage(lang) {
 
     const dict = window.i18nTranslations[lang];
 
+    // 1. Update text content
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -19,16 +20,49 @@ function changeLanguage(lang) {
         }
     });
 
+    // 2. Update select dropdown
     const langSelect = document.getElementById('lang-select');
     if (langSelect && langSelect.value !== lang) {
         langSelect.value = lang;
     }
 
+    // 3. Update all registration and login links with the active language parameter
+    updateAppLinks(lang);
+
+    // 4. Update pricing display
     updatePricingDisplay();
 
+    // 5. Re-render Lucide icons
     if (window.lucide) {
         window.lucide.createIcons();
     }
+}
+
+// Update all outbound app links so language propagates seamlessly
+function updateAppLinks(lang) {
+    const regUrl = 'https://app.jobs-report.app/#/richiesta-registrazione?lang=' + encodeURIComponent(lang);
+    const loginUrl = 'https://app.jobs-report.app/?lang=' + encodeURIComponent(lang);
+    const privacyUrl = 'https://app.jobs-report.app/#/privacy?lang=' + encodeURIComponent(lang);
+    const termsUrl = 'https://app.jobs-report.app/#/terms?lang=' + encodeURIComponent(lang);
+
+    // Registration CTA links
+    const regLinks = document.querySelectorAll('.link-register');
+    regLinks.forEach(el => {
+        el.href = regUrl;
+    });
+
+    // Login links
+    const loginLinks = document.querySelectorAll('.link-login');
+    loginLinks.forEach(el => {
+        el.href = loginUrl;
+    });
+
+    // Legal links
+    const privacyLink = document.getElementById('link-privacy');
+    if (privacyLink) privacyLink.href = privacyUrl;
+
+    const termsLink = document.getElementById('link-terms');
+    if (termsLink) termsLink.href = termsUrl;
 }
 
 // --- Pricing Toggle Engine ---
@@ -64,9 +98,7 @@ function updatePricingDisplay() {
     if (starterPriceEl) starterPriceEl.textContent = isYearly ? (dict['pricing.starterPriceYearly'] || '€32.50') : (dict['pricing.starterPriceMonthly'] || '€39');
     if (starterPeriodEl) starterPeriodEl.textContent = dict['pricing.perMonth'] || '/mese';
     if (starterYearlyNoteEl) {
-        starterYearlyNoteEl.textContent = isYearly 
-            ? (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.starterYearlyTotal'] || '390')
-            : (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.starterYearlyTotal'] || '390');
+        starterYearlyNoteEl.textContent = (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.starterYearlyTotal'] || '390');
     }
 
     // Business
@@ -76,9 +108,7 @@ function updatePricingDisplay() {
     if (businessPriceEl) businessPriceEl.textContent = isYearly ? (dict['pricing.businessPriceYearly'] || '€99') : (dict['pricing.businessPriceMonthly'] || '€119');
     if (businessPeriodEl) businessPeriodEl.textContent = dict['pricing.perMonth'] || '/mese';
     if (businessYearlyNoteEl) {
-        businessYearlyNoteEl.textContent = isYearly
-            ? (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.businessYearlyTotal'] || '1.188')
-            : (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.businessYearlyTotal'] || '1.188');
+        businessYearlyNoteEl.textContent = (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.businessYearlyTotal'] || '1.188');
     }
 
     // Growth
@@ -88,9 +118,7 @@ function updatePricingDisplay() {
     if (growthPriceEl) growthPriceEl.textContent = isYearly ? (dict['pricing.growthPriceYearly'] || '€249') : (dict['pricing.growthPriceMonthly'] || '€299');
     if (growthPeriodEl) growthPeriodEl.textContent = dict['pricing.perMonth'] || '/mese';
     if (growthYearlyNoteEl) {
-        growthYearlyNoteEl.textContent = isYearly
-            ? (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.growthYearlyTotal'] || '2.988')
-            : (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.growthYearlyTotal'] || '2.988');
+        growthYearlyNoteEl.textContent = (dict['pricing.perYear'] || 'o €{price}/anno').replace('{price}', dict['pricing.growthYearlyTotal'] || '2.988');
     }
 }
 
