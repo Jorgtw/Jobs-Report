@@ -17,7 +17,9 @@ import {
   ClipboardList, 
   User as UserIcon, 
   HelpCircle,
-  Sparkles
+  Sparkles,
+  Info,
+  X
 } from 'lucide-react';
 import { db } from '../services/dbService';
 import { authService } from '../services/authService';
@@ -171,9 +173,17 @@ interface HomeViewProps {
 }
 
 const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [planNotice, setPlanNotice] = useState<string | null>(null);
+
+  const showPlanNotice = (msg: string) => {
+    setPlanNotice(msg);
+    setTimeout(() => {
+      setPlanNotice(prev => (prev === msg ? null : prev));
+    }, 6000);
+  };
 
   const getNavLinks = (t: any, user: User | null) => {
     const isSA = user?.role?.toLowerCase() === 'superadmin';
@@ -221,23 +231,44 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
     }
   };
 
-  const handleOpenCustomerPortal = async () => {
-    setIsPortalLoading(true);
-    try {
-      const companyId = db.getCompanyIdSafe();
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        body: { company_id: companyId }
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error('Portal error:', err);
-      alert(t('dashboard.portalError'));
-    } finally {
-      setIsPortalLoading(false);
+  const handleManagePlan = async () => {
+    // 1. Commercial Override (takes precedence over everything, even if Stripe is active)
+    if (status?.isCommercialOverride) {
+      showPlanNotice(t('dashboard.commercialOverrideNotice'));
+      return;
     }
+
+    // 2. Free Plan (no override) -> Open upgrade modal
+    if (!status?.planCode || status.planCode === 'free') {
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+
+    // 3. Paid plan with active Stripe billing -> Open Stripe Customer Portal
+    if (status.isBillingActive) {
+      setIsPortalLoading(true);
+      try {
+        const companyId = db.getCompanyIdSafe();
+        const { data, error } = await supabase.functions.invoke('create-portal-session', {
+          body: { company_id: companyId }
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.location.href = data.url;
+        } else {
+          showPlanNotice(t('dashboard.portalError'));
+        }
+      } catch (err) {
+        console.error('Portal error:', err);
+        showPlanNotice(t('dashboard.portalError'));
+      } finally {
+        setIsPortalLoading(false);
+      }
+      return;
+    }
+
+    // 4. Paid plan without valid active Stripe configuration (and no override) -> Notice
+    showPlanNotice(t('dashboard.onlineManagementUnavailable'));
   };
 
   return (
@@ -254,21 +285,39 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
                 <span className={`px-1.5 py-0.5 rounded text-[9px] tracking-widest ${status.planCode === 'free' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
                   {t('common.plan')} {status.planCode}
                 </span>
-                {status.planCode !== 'free' && !status.isCommercialOverride && (
-                  <button 
-                    onClick={handleOpenCustomerPortal}
-                    disabled={isPortalLoading}
-                    className="flex items-center gap-1 text-[9px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
-                  >
-                    {isPortalLoading ? <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /> : <Wallet size={10} />}
-                    {lang === 'it' ? 'Gestisci Abbonamento' : 'Manage Subscription'}
-                  </button>
-                )}
+                <button 
+                  onClick={handleManagePlan}
+                  disabled={isPortalLoading}
+                  className="flex items-center gap-1 text-[9px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
+                >
+                  {isPortalLoading ? <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /> : <Wallet size={10} />}
+                  {t('dashboard.managePlan')}
+                </button>
               </div>
             )}
           </p>
         </div>
       </div>
+
+      {/* Non-blocking Plan Notice Banner */}
+      {planNotice && (
+        <div className="bg-blue-50/90 border border-blue-200/80 rounded-2xl p-3 mb-3 flex items-center justify-between gap-2 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg shrink-0">
+              <Info size={16} />
+            </div>
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
+              {planNotice}
+            </p>
+          </div>
+          <button
+            onClick={() => setPlanNotice(null)}
+            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors shrink-0"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Free Plan Discreet Voluntary Support Banner */}
       {!isSuperAdmin && authService.canAccessAdmin(user) && status?.planCode === 'free' && (

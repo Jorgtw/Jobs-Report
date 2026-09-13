@@ -19,6 +19,9 @@ export const dashboard = {
   quickSupport: 'Supporto Rapido',
   quickSupportDesc: 'Contatta il team tecnico per assistenza immediata sulla piattaforma.',
   portalError: 'Non è stato possibile aprire il Customer Portal. Verifica di avere un abbonamento attivo.',
+  managePlan: 'Gestione Piano',
+  commercialOverrideNotice: 'Il piano di questa azienda è gestito direttamente dall’amministrazione. Per modificarlo, contatta l’assistenza.',
+  onlineManagementUnavailable: 'La gestione online dell’abbonamento non è disponibile per questo account. Contatta l’assistenza.',
   
   // SaaS / Gestione Aziende
   companiesManagement: 'Gestione Aziende',
