@@ -24,6 +24,7 @@ export const help = {
   pwaTitle: "Installer som App",
   pwaBody: "Tilføj Jobs-Report til din startskærm for en hurtigere og mere smidig oplevelse.",
   contactHeader: "Har du brug for mere hjælp?",
+  contactSupportBtn: "Kontakt Jobs-Report support",
   supportContact: "Konsulter først brugervejledningen. For tekniske problemer, kontakt din administrator.",
   chatWithAI: "Spørg AI Assistenten",
   additionalWorkersTitle: "Tilføjelse af Medarbejdere",

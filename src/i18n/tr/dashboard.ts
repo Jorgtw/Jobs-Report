@@ -18,6 +18,7 @@ export const dashboard = {
   managePlan: "Plan Yönetimi",
   commercialOverrideNotice: "Bu şirketin planı doğrudan yönetim tarafından yönetilmektedir. Değiştirmek için lütfen destek ile iletişime geçin.",
   onlineManagementUnavailable: "Bu hesap için çevrimiçi abonelik yönetimi kullanılamıyor. Lütfen destek ile iletişime geçin.",
+  contactSupport: "Destek ile iletişime geçin",
   companiesManagement: "Şirket Yönetimi",
   createCompanyBtn: "Yeni Şirket Oluştur",
   editCompany: "Şirketi Düzenle",

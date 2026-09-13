@@ -18,6 +18,7 @@ export const dashboard = {
   managePlan: "Gestión del Plan",
   commercialOverrideNotice: "El plan de esta empresa es gestionado directamente por la administración. Para modificarlo, contacta con soporte.",
   onlineManagementUnavailable: "La gestión online de la suscripción no está disponible para esta cuenta. Contacta con soporte.",
+  contactSupport: "Contactar con soporte",
   companiesManagement: "Gestión de Empresas",
   createCompanyBtn: "Crear Nueva Empresa",
   editCompany: "Editar Empresa",

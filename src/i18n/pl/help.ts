@@ -28,6 +28,7 @@ export const help = {
   adminInternalTitle: "Internal Activities (Sickness/Holidays)",
   supportContact: "Please check the User Guide first — you will find the answer to most questions. For technical problems, contact your account administrator.",
   contactHeader: "Need help?",
+  contactSupportBtn: "Skontaktuj się z pomocą Jobs-Report",
   guideTitle: "Complete User Guide",
   guideBody: "Consult the detailed manual with step-by-step instructions for each function.",
   guideBtn: "Open Guide →",

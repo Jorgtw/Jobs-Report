@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, HelpCircle, Smartphone, PlusCircle, Users, 
-  BarChart3, ShieldCheck, Building2, Sparkles, X 
+  BarChart3, ShieldCheck, Building2, Sparkles, X, Mail 
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -192,11 +192,19 @@ const HelpView: React.FC<HelpViewProps> = ({ user, isMobile, t }) => {
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button 
             onClick={() => window.dispatchEvent(new CustomEvent('open-ai-chat'))}
-            className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2 group"
+            className="w-full sm:w-auto px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2 group"
           >
             <Sparkles size={18} className="text-blue-400 group-hover:scale-110 transition-transform" />
             {t('help.chatWithAI')}
           </button>
+
+          <a 
+            href="mailto:jobsreportadmin@gmail.com?subject=Assistenza%20Jobs-Report"
+            className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/10 transition-all flex items-center justify-center gap-2 group"
+          >
+            <Mail size={18} className="text-blue-200 group-hover:scale-110 transition-transform" />
+            {t('help.contactSupportBtn')}
+          </a>
           
           {!isMobile && (
             <button 
@@ -205,13 +213,17 @@ const HelpView: React.FC<HelpViewProps> = ({ user, isMobile, t }) => {
                 window.location.hash = '/home';
                 window.location.reload();
               }}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-3 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
             >
               <Smartphone size={18} />
               {t('help.restart')}
             </button>
           )}
         </div>
+
+        <p className="mt-4 text-[11px] text-slate-400 font-medium">
+          jobsreportadmin@gmail.com
+        </p>
       </div>
 
       {/* Modale Manuale (Single Window Experience) overlay */}

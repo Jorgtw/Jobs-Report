@@ -19,6 +19,7 @@ export const help = {
   commBody: "The messaging system is divided into two sections: 'INBOX' for messages received from others and 'SENT' for messages you have sent. Click on a message to open the full conversation and reply in real time. You can send messages to individual users or to the entire team.",
   supportContact: "Please check the User Guide first — you will find the answer to most questions. For technical problems, contact your account administrator.",
   contactHeader: "Need help?",
+  contactSupportBtn: "Contact Jobs-Report Support",
   guideTitle: "Complete User Guide",
   guideBody: "Consult the detailed manual with step-by-step instructions for each function.",
   guideBtn: "Open Guide →",

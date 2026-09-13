@@ -18,6 +18,7 @@ export const dashboard = {
   managePlan: "Administrer abonnement",
   commercialOverrideNotice: "Denne virksomheds abonnement administreres direkte af administrationen. Kontakt support for at ændre det.",
   onlineManagementUnavailable: "Online abonnementsstyring er ikke tilgængelig for denne konto. Kontakt support.",
+  contactSupport: "Kontakt support",
   companiesManagement: "Virksomhedsstyring",
   createCompanyBtn: "Opret ny virksomhed",
   editCompany: "Rediger virksomhed",

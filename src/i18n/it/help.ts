@@ -25,6 +25,7 @@ export const help = {
   // Support Contact
   supportContact: "Consulta prima la Guida all'Uso — trovi la risposta alla maggior parte delle domande. Per problemi tecnici contatta l'amministratore del tuo account.",
   contactHeader: "Hai bisogno di aiuto?",
+  contactSupportBtn: "Contatta assistenza Jobs-Report",
   guideTitle: "Guida all'Uso Completa",
   guideBody: "Consulta il manuale dettagliato con istruzioni passo-passo per ogni funzione.",
   guideBtn: "Apri la Guida →",

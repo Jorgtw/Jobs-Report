@@ -22,6 +22,7 @@ export const dashboard = {
   managePlan: 'Gestione Piano',
   commercialOverrideNotice: 'Il piano di questa azienda è gestito direttamente dall’amministrazione. Per modificarlo, contatta l’assistenza.',
   onlineManagementUnavailable: 'La gestione online dell’abbonamento non è disponibile per questo account. Contatta l’assistenza.',
+  contactSupport: 'Contatta assistenza',
   
   // SaaS / Gestione Aziende
   companiesManagement: 'Gestione Aziende',

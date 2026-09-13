@@ -301,21 +301,30 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
 
       {/* Non-blocking Plan Notice Banner */}
       {planNotice && (
-        <div className="bg-blue-50/90 border border-blue-200/80 rounded-2xl p-3 mb-3 flex items-center justify-between gap-2 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg shrink-0">
+        <div className="bg-blue-50/90 border border-blue-200/80 rounded-2xl p-3 mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg shrink-0 mt-0.5 sm:mt-0">
               <Info size={16} />
             </div>
             <p className="text-xs text-slate-700 font-medium leading-relaxed">
               {planNotice}
             </p>
           </div>
-          <button
-            onClick={() => setPlanNotice(null)}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors shrink-0"
-          >
-            <X size={14} />
-          </button>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <a
+              href="mailto:jobsreportadmin@gmail.com?subject=Gestione%20Piano%20Jobs-Report"
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <Mail size={12} />
+              {t('dashboard.contactSupport')}
+            </a>
+            <button
+              onClick={() => setPlanNotice(null)}
+              className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
       )}
 
