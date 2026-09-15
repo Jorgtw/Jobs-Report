@@ -96,7 +96,7 @@ class DBService {
 
   private formatForTimestamp(date: string, time: string | null | undefined): string | null {
     if (!time) return null;
-    if (time.includes('T')) return time; 
+    if (time.includes('T')) return time;
     const cleanTime = time.trim().substring(0, 5);
     return `${date}T${cleanTime}:00`;
   }
@@ -165,10 +165,10 @@ class DBService {
   async getSubcontractors() {
     const isSA = this.isSuperAdminRole;
     const compId = this.currentCompanyId;
-    
+
     let query = supabase.from('subcontractors').select('*');
-    
-    // SSOT: If a company is selected, filter by it. 
+
+    // SSOT: If a company is selected, filter by it.
     // If no company is selected and user is SuperAdmin, show all.
     if (compId) {
       query = query.eq('company_id', compId);
@@ -176,9 +176,9 @@ class DBService {
       console.warn('DBService: getSubcontractors called without companyId and user is not SuperAdmin');
       return [];
     }
-    
+
     const { data, error } = await query;
-    
+
     if (error) {
       console.error('Error fetching subcontractors:', error);
       throw error;
@@ -191,7 +191,7 @@ class DBService {
   async addUser(worker: any) {
     await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
-    
+
     // 1. Check if worker already exists within THIS company (Option A)
     const { data: existingWorker } = await supabase
       .from('workers')
@@ -210,7 +210,7 @@ class DBService {
         .select('plan_code')
         .eq('company_id', compId)
         .maybeSingle();
-      
+
       const planCode = viewData?.plan_code || 'free';
       const planConfig = getPlanConfig(planCode);
 
@@ -245,10 +245,10 @@ class DBService {
          company_id: compId,
          role: worker.role || 'operator'
        }, { onConflict: 'auth_id, company_id' });
-       
+
        if (assocErr) throw assocErr;
     } else {
-       // Legacy/Pending: We might need a way to link by email if auth_id is missing, 
+       // Legacy/Pending: We might need a way to link by email if auth_id is missing,
        // but for now the repair_user_companies RPC handles this on first login.
        console.log('Worker found/created but no auth_id yet. Association will trigger on first login.');
     }
@@ -260,7 +260,7 @@ class DBService {
     await this.enforceActionPolicy('write_domain_data');
     const mappedUpdates = this.mapAppWorkerToSupabase(updates);
     const worker = await this.getUserById(id);
-    
+
     // SSOT: If role changed, update user_companies as well
     if (updates.role && worker?.authId) {
       await supabase.from('user_companies')
@@ -340,7 +340,7 @@ class DBService {
   async getUsers() {
     const isSA = this.isSuperAdminRole;
     const compId = this.currentCompanyId;
-    
+
     // Opzione A (Siloed): La tabella `workers` è la fonte di verità operativa.
     // Ogni record appartiene a una sola azienda via `company_id`.
     if (compId) {
@@ -383,13 +383,13 @@ class DBService {
       return null;
     }
     if (!data || data.length === 0) return null;
-    
+
     // Default to the first profile found if we don't have a company context yet
-    const initialWorker = data[0]; 
+    const initialWorker = data[0];
 
     // SSOT Context & Repair logic for hydration
     let { data: contexts, error: ctxErr } = await supabase.rpc('get_user_session_context', { target_auth_id: authId });
-    
+
     // Fallback if parameter mismatch or first call failed
     if (ctxErr || !contexts || contexts.length === 0) {
       console.warn("[DBService] Primary context fetch failed/empty, trying fallback without parameters...", ctxErr);
@@ -417,7 +417,7 @@ class DBService {
 
     // Set active company and sync context role if not already superadmin
     const activeCompId = (availableCompanies.length > 0 ? availableCompanies[0].id : null) || initialWorker.company_id;
-    
+
     // Now resolve the specific worker profile for this company (if multiple exist)
     const activeWorkerData = data.find(w => w.company_id === activeCompId) || initialWorker;
     const user = this.mapSupabaseWorker(activeWorkerData);
@@ -430,7 +430,7 @@ class DBService {
     if (activeCompId) {
       this.setCompanyId(activeCompId);
       user.companyId = activeCompId;
-      
+
       const compContext = availableCompanies.find((c: any) => c.id === activeCompId);
       if (compContext && !saContext) {
         user.role = compContext.role;
@@ -451,7 +451,7 @@ class DBService {
         console.error('Error fetching initial subscription status:', e);
       }
     }
-    
+
     return user;
   }
 
@@ -479,17 +479,17 @@ class DBService {
     vatNumber?: string;
     sendEmail?: boolean;
   }) {
-    const { 
-      companyName, 
-      adminName, 
-      username, 
-      password, 
-      email, 
-      phone, 
-      address, 
-      city, 
-      country, 
-      vatNumber, 
+    const {
+      companyName,
+      adminName,
+      username,
+      password,
+      email,
+      phone,
+      address,
+      city,
+      country,
+      vatNumber,
       sendEmail = true
     } = data;
 
@@ -530,8 +530,8 @@ class DBService {
     // STEP 1 — CREATE COMPANY (PENDING)
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
-      .insert([{ 
-        name: companyName, 
+      .insert([{
+        name: companyName,
         status: 'pending',
         email: email || null,
         phone: phone || null,
@@ -541,7 +541,7 @@ class DBService {
         vat_number: vatNumber || null
       }])
       .select();
-      
+
     if (companyError) {
       if (companyError.code === '23505') {
         const errMsg = companyError.message || '';
@@ -596,7 +596,7 @@ class DBService {
           created_at: new Date().toISOString()
         }], { onConflict: 'company_id, name' })
         .select();
-      
+
       if (clientError) throw clientError;
 
       if (clientData && clientData.length > 0) {
@@ -613,14 +613,14 @@ class DBService {
             is_internal: true,
             created_at: new Date().toISOString()
           }], { onConflict: 'company_id, title' });
-          
+
         if (projError) throw projError;
       }
 
       // STAB-6 FIX: Removed no-op update({}) call
 
       // STEP 4 — FINALIZE (ACTIVE)
-      await supabase.from('companies').update({ 
+      await supabase.from('companies').update({
         status: 'active'
       }).eq('id', newCompanyId);
 
@@ -634,7 +634,7 @@ class DBService {
       }
 
       return this.mapSupabaseWorker(userData);
-      
+
     } catch (err: any) {
       // MVP Phase 1 Rollback
       try {
@@ -680,7 +680,7 @@ class DBService {
 
     // Single reconciliation rule: prevent retry if DB truth is already active
     const { data: compCheck } = await supabase.from('companies').select('status').eq('id', companyId).single();
-    
+
     const { count: workerCount } = await supabase
       .from('workers')
       .select('*', { count: 'exact', head: true })
@@ -740,7 +740,7 @@ class DBService {
           created_at: new Date().toISOString()
         }], { onConflict: 'company_id, name' })
         .select();
-      
+
       if (clientError) throw clientError;
 
       if (clientData && clientData.length > 0) {
@@ -757,14 +757,14 @@ class DBService {
             is_internal: true,
             created_at: new Date().toISOString()
           }], { onConflict: 'company_id, title' });
-          
+
         if (projError) throw projError;
       }
 
       await supabase.from('companies').update({}).eq('id', companyId);
 
       // STEP 4 — FINALIZE (ACTIVE)
-      await supabase.from('companies').update({ 
+      await supabase.from('companies').update({
         status: 'active'
       }).eq('id', companyId);
 
@@ -782,8 +782,8 @@ class DBService {
       if (retryBlocks.length > 4) {
         prevErrorText = retryBlocks[0] + '--- [Truncated older retries] ---\n\n--- Retry at' + retryBlocks.slice(-3).join('--- Retry at');
       }
-      
-      
+
+
       /* setup_error update skipped */
       throw err;
     } finally {
@@ -870,7 +870,7 @@ class DBService {
     }
     if (!data) return null;
     const comp = this.mapSupabaseCompany(data);
-    
+
     // Single Source of Truth for frontend details
     const { data: access } = await supabase.from('vw_access_control').select('*').eq('company_id', companyId).maybeSingle();
     const opsRaw = data.company_operational_state;
@@ -883,7 +883,7 @@ class DBService {
        operationalMode: opState?.mode || 'normal',
        operationalJustification: opState?.justification || ''
     };
-    
+
     return comp;
   }
 
@@ -950,13 +950,13 @@ class DBService {
       .eq('role', 'admin');
 
     const adminAuthIds = memberships?.map(m => m.auth_id) || [];
-    const { data: workers } = adminAuthIds.length > 0 
+    const { data: workers } = adminAuthIds.length > 0
       ? await supabase.from('workers').select('id, name, username, auth_id').in('auth_id', adminAuthIds)
       : { data: [] };
 
     return companies.map(c => {
       const comp = this.mapSupabaseCompany(c);
-      
+
       const access = accessControls?.find(a => a.company_id === c.id);
       const opsRaw = c.company_operational_state;
       const opState = Array.isArray(opsRaw) ? opsRaw[0] : opsRaw;
@@ -1022,7 +1022,7 @@ class DBService {
         justification: justification,
         updated_at: new Date().toISOString()
       });
-    
+
     if (error) throw error;
   }
 
@@ -1035,7 +1035,7 @@ class DBService {
         reason: reason,
         updated_at: new Date().toISOString()
       });
-    
+
     if (error) throw error;
   }
 
@@ -1044,7 +1044,7 @@ class DBService {
       .from('company_commercial_overrides')
       .delete()
       .eq('company_id', companyId);
-    
+
     if (error) throw error;
   }
 
@@ -1058,7 +1058,7 @@ class DBService {
         updated_at: new Date().toISOString()
       })
       .eq('company_id', companyId);
-      
+
     if (error) throw error;
   }
 
@@ -1135,7 +1135,7 @@ class DBService {
     }
     // 2. Elimina i report della ditta
     await supabase.from('reports').delete().eq('company_id', id);
-    
+
     // 2.5 Elimina le comunicazioni interne e le ricevute
     const { data: comms } = await supabase.from('internal_communications').select('id').eq('company_id', id);
     if (comms && comms.length > 0) {
@@ -1146,13 +1146,13 @@ class DBService {
 
     // 3. SSOT: Elimina le associazioni degli utenti, ma NON i profili worker globali
     await supabase.from('user_companies').delete().eq('company_id', id);
-    
+
     // 4. Elimina dati specifici del tenant
     await supabase.from('subcontractors').delete().eq('company_id', id);
     await supabase.from('projects').delete().eq('company_id', id);
     await supabase.from('clients').delete().eq('company_id', id);
     await supabase.from('workers').delete().eq('company_id', id);
-    
+
     // 5. Elimina la ditta
     const { error } = await supabase.from('companies').delete().eq('id', id);
     if (error) throw error;
@@ -1217,10 +1217,10 @@ class DBService {
   async loginUser(username: string, password?: string) {
     if (!password) return null;
     const cleanUsername = username.trim();
-    
+
     // 1. Usa la nuova RPC per ottenere l'email dall'username
     let { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
-    
+
     console.log(`[DBService] RPC Result for ${cleanUsername}:`, { userEmail, emailError });
 
     // FALLBACK: Se la RPC fallisce (magari perché l'utente non è 'active'), proviamo una query diretta
@@ -1231,7 +1231,7 @@ class DBService {
         .select('email, status')
         .eq('username', cleanUsername)
         .maybeSingle();
-      
+
       if (fallbackWorker) {
         console.warn(`[DBService] User found via fallback but might be inactive. Status: ${fallbackWorker.status}`);
         userEmail = fallbackWorker.email;
@@ -1263,20 +1263,20 @@ class DBService {
     // 3. ROBUST FETCH: Implementiamo un retry pattern come suggerito per gestire timing issues
     let workerData = null;
     let workerErr = null;
-    
+
     for (let i = 0; i < 3; i++) {
       const res = await supabase
         .from('workers')
         .select('*')
         .eq('auth_id', authData.user.id)
         .maybeSingle();
-        
+
       if (res.data) {
         workerData = res.data;
         console.log("[DBService] Worker profile found at attempt", i+1);
         break;
       }
-      
+
       workerErr = res.error;
       console.warn(`[DBService] Worker fetch attempt ${i+1} failed:`, res.error);
       // Aspetta 150ms prima del prossimo tentativo
@@ -1292,7 +1292,7 @@ class DBService {
 
     // NEW: SSOT Company Context & Repair logic
     let { data: contexts, error: rpcError } = await supabase.rpc('get_user_session_context');
-    
+
     if (rpcError) console.error("RPC Context Error:", rpcError);
 
     if (!contexts || contexts.length === 0) {
@@ -1309,17 +1309,17 @@ class DBService {
 
     if (availableCompanies.length > 0) {
       this.setCompanyId(availableCompanies[0].id);
-      
+
       const userContext = contexts?.find((c: any) => c.cid === availableCompanies[0].id) || {};
-      
+
       const user = this.mapSupabaseWorker(workerData, userContext.cname);
       user.availableCompanies = availableCompanies;
-      
+
       // Check if truly superadmin via user_roles for extra safety
       const isSA = await this.checkIsSuperAdmin(user.id);
       this.setIsSuperAdmin(isSA);
       if (isSA) user.role = 'superadmin';
-      
+
       return user;
     }
 
@@ -1396,7 +1396,7 @@ class DBService {
       role: w.role,
       status: w.status,
       username: w.username,
-      // SSOT per Offline Workers: Senza auth_id, user_companies non può mapparli. 
+      // SSOT per Offline Workers: Senza auth_id, user_companies non può mapparli.
       // company_id in workers è l'unico legame rimasto per il personale non registrato.
       company_id: w.companyId || this.currentCompanyId,
       subcontractor_id: w.subcontractorId,
@@ -1450,12 +1450,12 @@ class DBService {
     };
   }
 
-  
+
 
   private async enforceActionPolicy(action: CompanyAction) {
     this.requireCompanyId();
     if (this.isSuperAdminRole && !this.currentCompanyId) return; // SuperAdmins managing global stuff
-    
+
     const { data: comp, error } = await supabase.from('companies').select('status').eq('id', this.currentCompanyId).single();
     if (error) {
       console.error('Error fetching company status in enforceActionPolicy:', error);
@@ -1469,12 +1469,12 @@ class DBService {
   async getClients() {
     await this.checkAuthSession();
     const compId = this.requireCompanyId();
-    
+
     if (!compId && !this.isSuperAdminRole) {
       console.warn('DBService: getClients called without companyId');
       return [];
     }
-    
+
     const { data, error } = await supabase
       .from('clients')
       .select('*')
@@ -1573,14 +1573,14 @@ class DBService {
   async getProjects() {
     await this.checkAuthSession();
     const compId = this.requireCompanyId();
-    
+
     const { data, error } = await supabase
       .from('projects')
       .select('*')
       .eq('company_id', compId);
 
     if (error) throw error;
-    
+
     return data.map(p => this.mapSupabaseProject(p));
   }
 
@@ -1636,7 +1636,7 @@ class DBService {
   }
 
   // --- Sezione Comunicazioni Interne (Workflow v3) ---
-  
+
   private mapSupabaseComm(c: any, userId: string): InternalCommunication {
     return {
       id: c.id,
@@ -1672,13 +1672,13 @@ class DBService {
     return data?.parent_id || id;
   }
 
-  async getCommunications(filters: { 
+  async getCommunications(filters: {
     type?: 'inbox' | 'working' | 'completed';
     projectId?: string;
   } = {}): Promise<InternalCommunication[]> {
     const compId = this.requireCompanyId();
     const userId = this.requireUserId();
-    
+
     // V2: Use RPC for server-side filtering
     const { data, error } = await supabase.rpc('get_filtered_communications', {
       p_user_id: userId,
@@ -1698,14 +1698,14 @@ class DBService {
       .select('communication_id')
       .eq('user_id', userId)
       .in('communication_id', commIds);
-    
+
     const readIds = new Set(receipts?.map(r => r.communication_id) || []);
 
     const mapped = (data || []).map((c: any) => {
       const isRead = readIds.has(c.id);
-      const needsAction = (c.status === 'open' || c.status === 'acknowledged') && 
+      const needsAction = (c.status === 'open' || c.status === 'acknowledged') &&
                           (c.target_type === 'all' || c.target_id === userId || !isRead);
-      
+
       return {
         ...this.mapSupabaseComm(c, userId),
         isRead,
@@ -1743,7 +1743,7 @@ class DBService {
       .select('communication_id')
       .eq('user_id', userId)
       .in('communication_id', commIds);
-    
+
     const readIds = new Set(receipts?.map(r => r.communication_id) || []);
 
     return (data || []).map(c => ({
@@ -1786,7 +1786,7 @@ class DBService {
 
     if (!messages) return;
 
-    const unreadInThread = messages.filter(m => 
+    const unreadInThread = messages.filter(m =>
       (m.target_id === userId || m.target_type === 'all')
     );
 
@@ -1796,7 +1796,7 @@ class DBService {
         .select('communication_id')
         .eq('user_id', userId)
         .in('communication_id', unreadInThread.map(m => m.id));
-      
+
       const existingIds = new Set(existing?.map(e => e.communication_id) || []);
       const toMark = unreadInThread.filter(m => !existingIds.has(m.id));
 
@@ -1968,7 +1968,7 @@ class DBService {
     const rootId = await this.getRootId(id);
     const { error } = await supabase
       .from('internal_communications')
-      .update({ 
+      .update({
         status: 'acknowledged',
         is_acknowledged: true,
         acknowledged_at: new Date().toISOString()
@@ -1982,7 +1982,7 @@ class DBService {
     const rootId = await this.getRootId(id);
     const { error } = await supabase
       .from('internal_communications')
-      .update({ 
+      .update({
         status: 'in_progress',
         assigned_to: userId
       })
@@ -1992,7 +1992,7 @@ class DBService {
 
   async closeComm(id: string, userId: string) {
     const rootId = await this.getRootId(id);
-    
+
     // Security check: only the sender can close the communication
     const { data: root } = await supabase
       .from('internal_communications')
@@ -2006,7 +2006,7 @@ class DBService {
 
     const { error } = await supabase
       .from('internal_communications')
-      .update({ 
+      .update({
         status: 'closed',
         closed_at: new Date().toISOString()
       })
@@ -2040,8 +2040,8 @@ class DBService {
     const compId = this.requireCompanyId();
     const { error } = await supabase
       .from('communication_read_receipts')
-      .upsert({ 
-        communication_id: communicationId, 
+      .upsert({
+        communication_id: communicationId,
         user_id: userId,
         company_id: compId
       });
@@ -2051,7 +2051,7 @@ class DBService {
   async getUnreadCount(): Promise<number> {
     const userId = this.requireUserId();
     const compId = this.requireCompanyId();
-    
+
     const { count, error } = await supabase
       .from('internal_communications')
       .select('id', { count: 'exact', head: true })
@@ -2059,7 +2059,7 @@ class DBService {
       .is('parent_id', null)
       .in('status', ['open', 'acknowledged'])
       .or(`target_type.eq.all,target_id.eq.${userId}`);
-      
+
     // STAB-2 FIX: Standard error handling instead of IIFE throw
     if (error) throw error;
     return count || 0;
@@ -2068,10 +2068,10 @@ class DBService {
 
   private mapSupabaseReport(r: any): any {
     const expensesList = Array.isArray(r.expenses)
-      ? r.expenses.map((e: any) => ({ 
+      ? r.expenses.map((e: any) => ({
           id: e.id,
-          type: e.type || '', 
-          amount: Number(e.amount) || 0, 
+          type: e.type || '',
+          amount: Number(e.amount) || 0,
           description: e.description || '',
           notes: e.description || '', // per retrocompatibilità UI finché non l'aggiorniamo
           km: e.km !== null ? Number(e.km) : undefined,
@@ -2087,10 +2087,10 @@ class DBService {
     const exHours = Number(r.overtime_hours) || 0;
     const fHours = Number(r.festive_hours) || 0;
     const nHours = Number(r.night_hours) || 0;
-    
+
     // total_hours è la source of truth dal DB (inserito manualmente o calcolato)
     const computedTotal = Number(r.total_hours) || 0;
-      
+
     // Le ordinarie sono sempre ricavate per sottrazione per garantire la congruenza matematica
     const computedOrdinary = Math.max(0, computedTotal - exHours - fHours - nHours);
 
@@ -2116,10 +2116,10 @@ class DBService {
         const awExHours = Number(aw.overtime_hours) || 0;
         const awFHours = Number(aw.festive_hours) || 0;
         const awNHours = Number(aw.night_hours) || 0;
-        
+
         // aw.hours è la source of truth dal DB per le ore totali del worker
         const awTotal = Number(aw.hours) || 0;
-          
+
         const awOrdinary = Math.max(0, awTotal - awExHours - awFHours - awNHours);
 
         return {
@@ -2163,7 +2163,7 @@ class DBService {
     const { data, error } = await query;
 
     if (error) throw error;
-    
+
     return (data || []).map(r => this.mapSupabaseReport(r));
   }
 
@@ -2172,8 +2172,8 @@ class DBService {
     const totalHours = this.calculateTotalHours(reportData.startTime, reportData.endTime, reportData.breakHours, reportData.manualTotalHours);
 
     // Mappatura robusta per le 4 categorie orarie del modello V3 flat-rate
-    const oHours = reportData.ordinaryHours !== undefined 
-      ? Number(reportData.ordinaryHours) 
+    const oHours = reportData.ordinaryHours !== undefined
+      ? Number(reportData.ordinaryHours)
       : Math.max(0, totalHours - (reportData.overtimeHours || 0) - (reportData.festiveHours || 0) - (reportData.nightHours || 0));
 
     const newReport: any = {
@@ -2226,8 +2226,8 @@ class DBService {
     if (additionalWorkers.length > 0) {
       const workersToAdd = additionalWorkers.map((aw: any) => {
         const hours = this.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours, aw.manualTotalHours);
-        const awOHours = aw.ordinaryHours !== undefined 
-          ? Number(aw.ordinaryHours) 
+        const awOHours = aw.ordinaryHours !== undefined
+          ? Number(aw.ordinaryHours)
           : Math.max(0, hours - (aw.overtimeHours || 0) - (aw.festiveHours || 0) - (aw.nightHours || 0));
 
         return {
@@ -2264,7 +2264,7 @@ class DBService {
   async deleteReports(ids: string[]) {
     if (!ids || ids.length === 0) return;
     const compId = this.requireCompanyId();
-    
+
     // First verify all IDs belong to this company
     const { data: validReports } = await supabase
       .from('reports')
@@ -2283,7 +2283,7 @@ class DBService {
       .from('rapportini_workers')
       .delete()
       .in('rapportino_id', validIds);
-    
+
     if (workersError) {
       console.error('Error deleting report workers:', workersError);
       throw workersError;
@@ -2308,11 +2308,11 @@ class DBService {
     updatesData.totalHours = this.calculateTotalHours(updatesData.startTime, updatesData.endTime, updatesData.breakHours, updatesData.manualTotalHours);
 
     // Mappatura robusta per le 4 categorie orarie del modello V3 flat-rate
-    const oHours = updatesData.ordinaryHours !== undefined 
-      ? Number(updatesData.ordinaryHours) 
+    const oHours = updatesData.ordinaryHours !== undefined
+      ? Number(updatesData.ordinaryHours)
       : Math.max(0, updatesData.totalHours - (updatesData.overtimeHours || 0) - (updatesData.festiveHours || 0) - (updatesData.nightHours || 0));
 
-    const sbObj = {
+    const sbObj: Record<string, any> = {
       project_id: updatesData.projectId,
       created_by: updatesData.userId,
       date: updatesData.date,
@@ -2328,9 +2328,12 @@ class DBService {
       ordinary_hours: oHours,
       overtime_hours: updatesData.overtimeHours || 0,
       festive_hours: updatesData.festiveHours || 0,
-      night_hours: updatesData.nightHours || 0,
-      invoice_status: updatesData.invoiceStatus || 'Pending'
+      night_hours: updatesData.nightHours || 0
     };
+
+    if (updatesData.invoiceStatus !== undefined) {
+      sbObj.invoice_status = updatesData.invoiceStatus;
+    }
 
     const compId = this.requireCompanyId();
     // STAB-4 FIX: Merged invoice_status into single update call
@@ -2371,8 +2374,8 @@ class DBService {
       if (additionalWorkers.length > 0) {
         const workersToAdd = additionalWorkers.map((aw: any) => {
           const hours = this.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours, aw.manualTotalHours);
-          const awOHours = aw.ordinaryHours !== undefined 
-            ? Number(aw.ordinaryHours) 
+          const awOHours = aw.ordinaryHours !== undefined
+            ? Number(aw.ordinaryHours)
             : Math.max(0, hours - (aw.overtimeHours || 0) - (aw.festiveHours || 0) - (aw.nightHours || 0));
 
           return {
@@ -2428,7 +2431,7 @@ class DBService {
   }
 
   async getProjectBillingSummary(
-    startDate?: string, 
+    startDate?: string,
     endDate?: string,
     clientId?: string,
     projectId?: string
@@ -2466,7 +2469,7 @@ class DBService {
   }
 
   async getProjectBillingTotals(
-    startDate?: string, 
+    startDate?: string,
     endDate?: string,
     clientId?: string,
     projectId?: string
@@ -2503,7 +2506,7 @@ class DBService {
 
     async getSummary(dateFrom?: string, dateTo?: string): Promise<ReportSummary[]> {
       await this.checkAuthSession();
-      
+
       const [reports, projects, clients, workers] = await Promise.all([
         this.getReports(dateFrom, dateTo),
         this.getProjects(),
@@ -2585,7 +2588,7 @@ class DBService {
         additionalWorkers.forEach((aw: any, idx: number) => {
           const awUser = workerMap.get(aw.userId);
           const awOvertimeHours = aw.overtimeHours || 0;
-          
+
           // Revenue calculations are handled inside awFinancials
           // Billing Engine per gli AW
           const awFinancials = calculateFinancials({
@@ -2644,7 +2647,7 @@ class DBService {
     }
 
       // METODI EXPORT TRACKING
-      
+
       async markReportsAsExported(reportIds: string[]) {
         if (!reportIds || reportIds.length === 0) return;
         await this.checkAuthSession();

@@ -17,7 +17,7 @@ export const reports = {
   margin: "MARŻA",
   workValue: "WARTOŚĆ PRACY",
   valueCostDiff: "RÓŻNICA",
-  adminStatusTitle: "Status fakturowania",
+  adminStatusTitle: "Status administracyjny",
   archiveAndDelete: "Archiwizuj i usuń",
   exportAndProceed: "Eksportuj i kontynuuj",
   skipExportAndDelete: "Pomiń eksport",

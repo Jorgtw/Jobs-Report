@@ -17,7 +17,7 @@ export const reports = {
   margin: "MARJ",
   workValue: "İŞ DEĞERİ",
   valueCostDiff: "FARK",
-  adminStatusTitle: "Faturalandırma Durumu",
+  adminStatusTitle: "İdari Durum",
   archiveAndDelete: "Arşivle ve Kaldır",
   exportAndProceed: "Dışa Aktar ve Devam Et",
   skipExportAndDelete: "Dışa Aktarmayı Atla",

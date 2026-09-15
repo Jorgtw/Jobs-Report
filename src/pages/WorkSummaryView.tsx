@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Trash2, 
-  ShieldAlert, 
-  FileDown, 
-  FileSpreadsheet, 
-  Filter 
+import {
+  Trash2,
+  ShieldAlert,
+  FileDown,
+  FileSpreadsheet,
+  Filter
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation, localeMap } from '../contexts/LanguageContext';
@@ -61,7 +61,18 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
     dateTo: ''
   });
 
-  const [adminStatus, setAdminStatus] = useState<'Tutti' | 'Fatturato' | 'Pagato' | 'Pending'>('Tutti');
+  const [adminStatus, setAdminStatus] = useState<'Tutti' | 'Pending' | 'ReadyToInvoice' | 'Fatturato' | 'Pagato' | 'NonBillable'>('Tutti');
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'Pending': return t('common.statusPending');
+      case 'ReadyToInvoice': return t('common.statusReadyToInvoice');
+      case 'Fatturato': return t('common.statusInvoiced');
+      case 'Pagato': return t('common.statusPaid');
+      case 'NonBillable': return t('common.statusNonBillable');
+      default: return status;
+    }
+  };
 
   const filteredData = useMemo(() => {
     return summary.filter(s => {
@@ -121,7 +132,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
   const totals = useMemo(() => {
     let revenue = 0;
     let hasPricedProjects = false;
-    
+
     groupedByProject.forEach(g => {
        if (g.revenue > 0) {
            revenue += g.revenue;
@@ -139,7 +150,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
     }, {
       hours: 0, personnelCost: 0, subcontractCost: 0, totalExpenses: 0, totalCost: 0, revenue: 0, margin: 0
     });
-    
+
     acc.revenue = revenue;
     if (hasPricedProjects || revenue > 0) {
        acc.margin = revenue - acc.totalCost;
@@ -166,7 +177,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         if (p) activeFilters['Progetto'] = p.name;
       }
       if (adminStatus !== 'Tutti') {
-        activeFilters['Stato Fatturazione'] = adminStatus;
+        activeFilters[t('reports.adminStatusLabel') || 'Stato Amministrativo'] = getStatusLabel(adminStatus);
       }
 
       const projectsPricing: Record<string, any> = {};
@@ -244,7 +255,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       } else if (exportType === 'excel') {
         await handleExport('excel');
       }
-      
+
       const idsToDelete = Array.from(new Set(filteredData.map(s => s.id.split('_')[0])));
       await db.deleteReports(idsToDelete);
       queryClient.invalidateQueries({ queryKey: ['summary'] });
@@ -328,11 +339,13 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         <div className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
             <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-tight shrink-0">{t('reports.adminStatusTitle')}</label>
-            <div className="flex bg-slate-50 p-0.5 rounded-lg w-full sm:w-auto border border-slate-100">
+            <div className="flex bg-slate-50 p-0.5 rounded-lg w-full sm:w-auto border border-slate-100 flex-wrap gap-0.5">
               <button onClick={() => setAdminStatus('Tutti')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Tutti' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusAll')}</button>
               <button onClick={() => setAdminStatus('Pending')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pending' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusPending')}</button>
+              <button onClick={() => setAdminStatus('ReadyToInvoice')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'ReadyToInvoice' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusReadyToInvoice')}</button>
               <button onClick={() => setAdminStatus('Fatturato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Fatturato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusInvoiced')}</button>
               <button onClick={() => setAdminStatus('Pagato')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'Pagato' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusPaid')}</button>
+              <button onClick={() => setAdminStatus('NonBillable')} className={`flex-1 sm:flex-none px-3 py-1 text-[9px] font-black rounded-md transition-all ${adminStatus === 'NonBillable' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>{t('common.statusNonBillable')}</button>
             </div>
           </div>
 
@@ -343,7 +356,9 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
                 onChange={async (e) => {
                   const val = e.target.value;
                   if (!val) return;
-                  const confirmMsg = t('reports.confirmUpdateStatus').replace('{count}', filteredData.length.toString()).replace('{status}', val === 'Pending' ? t('common.statusPending') : val === 'Fatturato' ? t('common.statusInvoiced') : t('common.statusPaid'));
+                  const confirmMsg = t('reports.confirmUpdateStatus')
+                    .replace('{count}', filteredData.length.toString())
+                    .replace('{status}', getStatusLabel(val));
                   if (!window.confirm(confirmMsg)) {
                     e.target.value = '';
                     return;
@@ -361,8 +376,10 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
               >
                 <option value="">{t('common.update')} {t('reports.statusLabel')} ({filteredData.length})</option>
                 <option value="Pending">{t('common.statusPending')}</option>
+                <option value="ReadyToInvoice">{t('common.statusReadyToInvoice')}</option>
                 <option value="Fatturato">{t('common.statusInvoiced')}</option>
                 <option value="Pagato">{t('common.statusPaid')}</option>
+                <option value="NonBillable">{t('common.statusNonBillable')}</option>
               </select>
             </div>
           )}

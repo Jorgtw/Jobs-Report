@@ -17,7 +17,7 @@ export const reports = {
   margin: "MARGIN",
   workValue: "ARBEJDSVÆRDI",
   valueCostDiff: "DIFFERENCE",
-  adminStatusTitle: "Faktureringsstatus",
+  adminStatusTitle: "Administrativ status",
   archiveAndDelete: "Arkiver og fjern",
   exportAndProceed: "Eksporter og fortsæt",
   skipExportAndDelete: "Spring eksport over",
