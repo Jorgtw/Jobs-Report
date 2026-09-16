@@ -147,6 +147,7 @@ export interface WorkReport {
 
 export interface ReportSummary {
   id: string;
+  reportId?: string;
   date: string;
   projectName: string;
   clientName: string;
@@ -170,6 +171,7 @@ export interface ReportSummary {
   financialAgreement?: string;
   invoiceStatus?: string;
   subcontractorCost?: number;
+  subcontractorId?: string | null;
   personnelCost?: number;
   festiveHours?: number;
   nightHours?: number;

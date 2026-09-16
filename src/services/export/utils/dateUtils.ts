@@ -36,3 +36,34 @@ export function getISOWeekDateRange(year: number, week: number): string {
   // Ritorna es: "09/06/2026 - 15/06/2026"
   return `${formatter.format(isoStart)} - ${formatter.format(isoEnd)}`;
 }
+
+
+
+export function parseDateSafe(dateVal: string | Date | undefined | null): Date | null {
+  if (!dateVal) return null;
+  if (dateVal instanceof Date) {
+    if (isNaN(dateVal.getTime())) return null;
+    return new Date(Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate(), 0, 0, 0, 0));
+  }
+  if (typeof dateVal !== 'string') return null;
+  const trimmed = dateVal.trim();
+  if (!trimmed) return null;
+
+  const isoDatePart = trimmed.split('T')[0];
+  const parts = isoDatePart.split('-').map(Number);
+  if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+    const year = parts[0];
+    const month = parts[1];
+    const day = parts[2];
+    if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+      return null;
+    }
+    const d = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    // Verify impossible dates like 31 Feb
+    if (d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day) {
+      return d;
+    }
+    return null;
+  }
+  return null;
+}

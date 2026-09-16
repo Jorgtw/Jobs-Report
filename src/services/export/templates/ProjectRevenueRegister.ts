@@ -1,6 +1,7 @@
 import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
 import { getCatalogT } from '../i18n-catalog';
+import { ReportStyles } from '../utils/formatters';
 
 export class ProjectRevenueRegister implements ReportTemplate {
   name = 'Project Revenue Register';
@@ -86,10 +87,10 @@ export class ProjectRevenueRegister implements ReportTemplate {
     sheet.getColumn(1).width = 30;
     sheet.getColumn(2).width = 40;
     sheet.getColumn(3).width = 25;
-    sheet.getColumn(4).width = 30;
+    sheet.getColumn(4).width = 32;
     sheet.getColumn(5).width = 25;
     sheet.getColumn(6).width = 20;
 
-    sheet.getColumn(4).numFmt = '#,##0.00';
+    sheet.getColumn(4).numFmt = ReportStyles.currencyFormat;
   }
 }

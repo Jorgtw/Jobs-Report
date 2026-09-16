@@ -9,6 +9,7 @@ export class DashboardCommesse implements ReportTemplate {
 
   async render(workbook: ExcelJS.Workbook, data: ReportData): Promise<void> {
     const t = getCatalogT(data.language);
+
     // --- FOGLIO 1: DASHBOARD COMMESSE ---
     const sheetDash = workbook.addWorksheet(t.sheetDashboard, {
       pageSetup: {
@@ -22,21 +23,24 @@ export class DashboardCommesse implements ReportTemplate {
           top: 0.5, bottom: 0.5,
           header: 0.3, footer: 0.3
         },
-        printTitlesRow: '1:3' // Repeat header
-      }
+        printTitlesRow: '1:4'
+      },
+      views: [
+        { state: 'frozen', xSplit: 2, ySplit: 4 }
+      ]
     });
 
     // Col width setup
     sheetDash.columns = [
       { width: 25 }, // Cliente (A)
       { width: 35 }, // Progetto (B)
-      { width: 12 }, // Ore interne (C)
+      { width: 14 }, // Ore interne (C)
       { width: 18 }, // Costo personale (D)
       { width: 18 }, // Subappalti (E)
       { width: 15 }, // Spese (F)
       { width: 18 }, // Ricavo (G)
       { width: 18 }, // Margine (H)
-      { width: 12 }  // Margine % (I)
+      { width: 14 }  // Margine % (I)
     ];
 
     // Riga 1: Titolo
@@ -49,10 +53,12 @@ export class DashboardCommesse implements ReportTemplate {
     // Riga 2: Info
     sheetDash.mergeCells('A2:I2');
     const subTitleCell = sheetDash.getCell('A2');
-    
-    const dateRange = (data.filters?.startDate && data.filters?.endDate) 
+
+    const dateRange = (data.filters?.startDate && data.filters?.endDate)
       ? `${new Date(data.filters.startDate).toLocaleDateString()} - ${new Date(data.filters.endDate).toLocaleDateString()}`
-      : t.allPeriod;
+      : (data.filters?.['Dal'] && data.filters?.['Al'])
+        ? `${data.filters['Dal']} - ${data.filters['Al']}`
+        : t.allPeriod;
 
     subTitleCell.value = `${t.periodPrefix}${dateRange}  |  ${t.companyPrefix}${data.companyName}  |  ${t.generatedPrefix}${new Date().toLocaleDateString()}`;
     applySubHeaderStyle(subTitleCell);
@@ -60,23 +66,26 @@ export class DashboardCommesse implements ReportTemplate {
 
     sheetDash.getRow(3).height = 10;
 
-    // Intestazioni tabella
+    // Intestazioni tabella principale
     const headersDash = t.dashHeaders;
-    let currentRowDash = 4;
+    const headerRowIdx = 4;
     headersDash.forEach((h, i) => {
-      const cell = sheetDash.getCell(currentRowDash, i + 1);
+      const cell = sheetDash.getCell(headerRowIdx, i + 1);
       cell.value = h;
-      applyTableHeaderStyle(cell, 'center');
+      applyTableHeaderStyle(cell, i <= 1 ? 'left' : 'center');
     });
-    currentRowDash++;
+    sheetDash.getRow(headerRowIdx).height = 22;
 
-    // Calculate aggregated data per project
+    let currentRowDash = 5;
+
+    // Aggregazione dati per progetto
     const projectStats = new Map<string, any>();
     for (const p of data.projects) {
       projectStats.set(p.id, {
         clientId: p.clientId,
         projectName: p.name,
         hours: 0,
+        internalHours: 0,
         personnelCost: 0,
         subcontractorCost: 0,
         expenses: 0,
@@ -91,13 +100,19 @@ export class DashboardCommesse implements ReportTemplate {
       const stats = projectStats.get(r.projectId);
       if (!stats) continue;
 
-      stats.hours += (r.totalHours || 0);
+      const isSub = !!r.subcontractorId;
+      const rHours = r.totalHours || 0;
+
+      stats.hours += rHours;
+      if (!isSub) {
+        stats.internalHours += rHours;
+      }
       stats.personnelCost += (r.personnelCost || 0);
       stats.subcontractorCost += (r.subcontractorCost || 0);
       stats.expenses += (r.totalExpenses || 0);
     }
 
-    let firstDataRow = currentRowDash;
+    const firstDataRow = currentRowDash;
     let hasMissingPersonnelCost = false;
 
     for (const stats of Array.from(projectStats.values())) {
@@ -110,8 +125,7 @@ export class DashboardCommesse implements ReportTemplate {
       }
 
       const row = sheetDash.getRow(currentRowDash);
-      
-      const clientName = data.clients?.find((c: any) => c.id === stats.clientId)?.name || stats.clientId;
+      const clientName = data.clients?.find((c: any) => c.id === stats.clientId)?.name || stats.clientId || '';
 
       row.getCell(1).value = clientName;
       applyDataStyle(row.getCell(1), 'left');
@@ -120,50 +134,52 @@ export class DashboardCommesse implements ReportTemplate {
       applyDataStyle(row.getCell(2), 'left');
 
       const hoursCell = row.getCell(3);
-      hoursCell.value = stats.hours;
-      applyDataStyle(hoursCell);
+      hoursCell.value = Math.round(stats.internalHours * 10) / 10;
+      applyDataStyle(hoursCell, 'center');
       hoursCell.numFmt = '0.0 "h"';
 
       const costCell = row.getCell(4);
-      costCell.value = stats.personnelCost;
-      applyDataStyle(costCell);
-      costCell.numFmt = ReportStyles.currencyFormat; // Con o senza Euro (dipende dal formato. Useremo default senza come discusso, altrimenti '#,##0.00 €')
-      
+      costCell.value = Math.round(stats.personnelCost * 100) / 100;
+      applyDataStyle(costCell, 'center');
+      costCell.numFmt = ReportStyles.currencyFormat;
+
       if (stats.hours > 0 && stats.personnelCost === 0) {
         hasMissingPersonnelCost = true;
       }
 
-      // SUBAPPALTI: FORMULA SUMIFS + costi subappalti orari calcolati dai rapportini
-      // 'Costi Esterni'!F:F (Importo), 'Costi Esterni'!C:C (Cliente), A[Row], 'Costi Esterni'!D:D (Progetto), B[Row]
+      // Subappalti: formula SUMIFS dal foglio Costi Esterni + costi orari subappalti
       const subCell = row.getCell(5);
       const subCost = stats.subcontractorCost || 0;
-      subCell.value = { formula: `SUMIFS('${t.sheetExtCosts}'!F:F, '${t.sheetExtCosts}'!C:C, A${currentRowDash}, '${t.sheetExtCosts}'!D:D, B${currentRowDash}) + ${subCost}`, date1904: false } as any;
-      applyDataStyle(subCell);
+      subCell.value = {
+        formula: `SUMIFS('${t.sheetExtCosts}'!F:F, '${t.sheetExtCosts}'!C:C, A${currentRowDash}, '${t.sheetExtCosts}'!D:D, B${currentRowDash}) + ${subCost}`
+      } as any;
+      applyDataStyle(subCell, 'center');
       subCell.numFmt = ReportStyles.currencyFormat;
 
       const expCell = row.getCell(6);
-      expCell.value = stats.expenses;
-      applyDataStyle(expCell);
+      expCell.value = Math.round(stats.expenses * 100) / 100;
+      applyDataStyle(expCell, 'center');
       expCell.numFmt = ReportStyles.currencyFormat;
 
       const ricCell = row.getCell(7);
-      ricCell.value = stats.ricavo;
-      applyDataStyle(ricCell);
+      ricCell.value = Math.round(stats.ricavo * 100) / 100;
+      applyDataStyle(ricCell, 'center');
       ricCell.numFmt = ReportStyles.currencyFormat;
 
-      // FORMULA Margine: Ricavo (G) - Costo (D) - Subappalti (E) - Spese (F)
+      // Margine = G - D - E - F
       const margCell = row.getCell(8);
       margCell.value = { formula: `G${currentRowDash}-D${currentRowDash}-E${currentRowDash}-F${currentRowDash}` } as any;
-      applyDataStyle(margCell);
+      applyDataStyle(margCell, 'center');
       margCell.numFmt = ReportStyles.currencyFormat;
       margCell.font = { name: 'Arial', size: 10, bold: true };
 
-      // FORMULA Margine %: Margine (H) / Ricavo (G)
+      // Margine % = Margine / Ricavo
       const percCell = row.getCell(9);
       percCell.value = { formula: `IFERROR(H${currentRowDash}/G${currentRowDash}, 0)` } as any;
-      applyDataStyle(percCell);
+      applyDataStyle(percCell, 'center');
       percCell.numFmt = '0.0%';
 
+      sheetDash.getRow(currentRowDash).height = 20;
       currentRowDash++;
     }
 
@@ -178,7 +194,7 @@ export class DashboardCommesse implements ReportTemplate {
     totLabelCell.alignment = { vertical: 'middle', horizontal: 'left' };
     totLabelCell.border = ReportStyles.borders.standard;
 
-    sheetDash.getCell(`B${currentRowDash}`).border = ReportStyles.borders.standard; 
+    sheetDash.getCell(`B${currentRowDash}`).border = ReportStyles.borders.standard;
 
     const colsToSum = ['C', 'D', 'E', 'F', 'G', 'H'];
     colsToSum.forEach(col => {
@@ -196,18 +212,19 @@ export class DashboardCommesse implements ReportTemplate {
       else cell.numFmt = ReportStyles.currencyFormat;
     });
 
-    // Totale Margine %: Totale Margine (H) / Totale Ricavo (G)
+    // Totale Margine %
     const totPercCell = sheetDash.getCell(`I${currentRowDash}`);
-    totPercCell.value = { formula: `IFERROR(H${currentRowDash}/G${currentRowDash}, 0)`, date1904: false } as any;
+    totPercCell.value = { formula: `IFERROR(H${currentRowDash}/G${currentRowDash}, 0)` } as any;
     totPercCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
     totPercCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
     totPercCell.border = ReportStyles.borders.standard;
     totPercCell.alignment = { vertical: 'middle', horizontal: 'center' };
     totPercCell.numFmt = '0.0%';
 
+    sheetDash.getRow(currentRowDash).height = 24;
     currentRowDash += 2;
 
-    // Footer note
+    // Note esplicative
     const noteCell = sheetDash.getCell(`A${currentRowDash}`);
     let footerText = t.dashNote.replace('{extSheet}', t.sheetExtCosts);
     if (hasMissingPersonnelCost) {
@@ -218,122 +235,94 @@ export class DashboardCommesse implements ReportTemplate {
     if (hasMissingPersonnelCost) {
       noteCell.font = { name: 'Arial', size: 9, italic: true, bold: true, color: { argb: 'FFFF0000' } };
     }
-    sheetDash.getRow(currentRowDash).height = hasMissingPersonnelCost ? 30 : 15;
+    sheetDash.getRow(currentRowDash).height = hasMissingPersonnelCost ? 28 : 16;
+    currentRowDash += 2;
 
+    // --- SEZIONE: RIEPILOGO STATI AMMINISTRATIVI ---
+    const statusCodes = ['Pending', 'ReadyToInvoice', 'Fatturato', 'Pagato', 'NonBillable'] as const;
 
+    sheetDash.mergeCells(`A${currentRowDash}:C${currentRowDash}`);
+    const statusSecTitle = sheetDash.getCell(`A${currentRowDash}`);
+    statusSecTitle.value = t.dashStatusSummaryTitle;
+    statusSecTitle.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+    statusSecTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
+    statusSecTitle.alignment = { vertical: 'middle', horizontal: 'left' };
+    sheetDash.getRow(currentRowDash).height = 24;
+    currentRowDash++;
 
-    // --- FOGLIO 2: COSTI ESTERNI / SUBAPPALTI ---
-    const sheetExt = workbook.addWorksheet(t.sheetExtCosts, {
-      pageSetup: {
-        paperSize: 9, 
-        orientation: 'landscape',
-        fitToPage: true,
-        fitToWidth: 1,
-        fitToHeight: 0,
-        margins: {
-          left: 0.5, right: 0.5,
-          top: 0.5, bottom: 0.5,
-          header: 0.3, footer: 0.3
-        },
-        printTitlesRow: '1:3' 
-      }
-    });
-
-    sheetExt.columns = [
-      { width: 15 }, // Data
-      { width: 25 }, // Fornitore
-      { width: 25 }, // Cliente
-      { width: 35 }, // Progetto
-      { width: 40 }, // Descrizione
-      { width: 15 }  // Importo
-    ];
-
-    // Riga 1: Titolo
-    sheetExt.mergeCells('A1:F1');
-    const extTitleCell = sheetExt.getCell('A1');
-    extTitleCell.value = t.extTitle;
-    applyHeaderStyle(extTitleCell);
-    sheetExt.getRow(1).height = 30;
-
-    // Riga 2: Info
-    sheetExt.mergeCells('A2:F2');
-    const extSubTitleCell = sheetExt.getCell('A2');
-    extSubTitleCell.value = t.extSubtitle;
-    extSubTitleCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FFFFFFFF' } };
-    extSubTitleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryBlue } };
-    extSubTitleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-    sheetExt.getRow(2).height = 20;
-
-    sheetExt.getRow(3).height = 10;
-
-    // Intestazioni
-    const extHeaders = t.extHeaders;
-    let extRow = 4;
-    extHeaders.forEach((h, i) => {
-      const cell = sheetExt.getCell(extRow, i + 1);
+    // Intestazioni tabella stati
+    const statusHeaders = t.dashStatusHeaders;
+    statusHeaders.forEach((h, i) => {
+      const cell = sheetDash.getCell(currentRowDash, i + 1);
       cell.value = h;
-      applyTableHeaderStyle(cell, i === 5 ? 'center' : 'left');
+      applyTableHeaderStyle(cell, i === 0 ? 'left' : 'center');
     });
-    extRow++;
+    sheetDash.getRow(currentRowDash).height = 20;
+    currentRowDash++;
 
-    const firstExtDataRow = extRow;
+    const firstStatusRow = currentRowDash;
 
-    if (data.externalCosts && data.externalCosts.length > 0) {
-      // Sort external costs by date
-      const sortedExtCosts = [...data.externalCosts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    for (const code of statusCodes) {
+      const row = sheetDash.getRow(currentRowDash);
+      const label = t.adminStatusLabels[code] || code;
 
-      for (const cost of sortedExtCosts) {
-        const row = sheetExt.getRow(extRow);
-        
-        const clientName = data.clients?.find((c: any) => c.id === cost.clientId)?.name || cost.clientId;
-        const project = data.projects.find(p => p.id === cost.projectId);
-        const projectName = project?.name || cost.projectId;
+      // Filtra le voci con questo stato (considerando Pending come fallback)
+      const matching = data.summaries.filter(s => (s.invoiceStatus || 'Pending') === code);
 
-        row.getCell(1).value = new Date(cost.date).toLocaleDateString();
-        applyDataStyle(row.getCell(1), 'left');
+      // Conteggio distinto dei rapportini (evitando duplicazioni AW indipendentemente da underscore nell'ID)
+      const distinctReportsCount = new Set(matching.map(s => s.reportId || s.id.replace(/_main$|_aw_\d+$/, ''))).size;
 
-        row.getCell(2).value = cost.supplierName || '';
-        applyDataStyle(row.getCell(2), 'left');
+      // Somma ore effettive
+      const totalHours = matching.reduce((sum, s) => sum + (s.totalHours || 0), 0);
 
-        row.getCell(3).value = clientName;
-        applyDataStyle(row.getCell(3), 'left');
+      // Col 1: Stato
+      const c1 = row.getCell(1);
+      c1.value = label;
+      applyDataStyle(c1, 'left');
 
-        row.getCell(4).value = projectName;
-        applyDataStyle(row.getCell(4), 'left');
+      // Col 2: Numero rapportini
+      const c2 = row.getCell(2);
+      c2.value = distinctReportsCount;
+      applyDataStyle(c2, 'center');
+      c2.numFmt = '#,##0';
 
-        row.getCell(5).value = cost.description || '';
-        applyDataStyle(row.getCell(5), 'left');
+      // Col 3: Totale ore
+      const c3 = row.getCell(3);
+      c3.value = Math.round(totalHours * 10) / 10;
+      applyDataStyle(c3, 'center');
+      c3.numFmt = '0.0 "h"';
 
-        const amtCell = row.getCell(6);
-        amtCell.value = cost.amount || 0;
-        applyDataStyle(amtCell);
-        amtCell.numFmt = ReportStyles.currencyFormat;
-
-        extRow++;
-      }
+      row.height = 19;
+      currentRowDash++;
     }
 
-    const lastExtDataRow = extRow - 1;
+    const lastStatusRow = currentRowDash - 1;
 
-    // Totale Costi Esterni
-    sheetExt.mergeCells(`A${extRow}:E${extRow}`);
-    const totExtLabel = sheetExt.getCell(`A${extRow}`);
-    totExtLabel.value = t.extTotal;
-    totExtLabel.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
-    totExtLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
-    totExtLabel.alignment = { vertical: 'middle', horizontal: 'right' };
-    totExtLabel.border = ReportStyles.borders.standard;
+    // Totale Sezione Stati
+    const totStatusRow = sheetDash.getRow(currentRowDash);
+    totStatusRow.height = 22;
 
-    const totExtAmt = sheetExt.getCell(`F${extRow}`);
-    if (firstExtDataRow <= lastExtDataRow) {
-      totExtAmt.value = { formula: `SUM(F${firstExtDataRow}:F${lastExtDataRow})`, date1904: false } as any;
-    } else {
-      totExtAmt.value = 0;
-    }
-    totExtAmt.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
-    totExtAmt.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
-    totExtAmt.alignment = { vertical: 'middle', horizontal: 'center' };
-    totExtAmt.border = ReportStyles.borders.standard;
-    totExtAmt.numFmt = ReportStyles.currencyFormat;
+    const totStLabel = totStatusRow.getCell(1);
+    totStLabel.value = t.empSummaryTotal;
+    totStLabel.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    totStLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
+    totStLabel.alignment = { vertical: 'middle', horizontal: 'left' };
+    totStLabel.border = ReportStyles.borders.standard;
+
+    const totStCount = totStatusRow.getCell(2);
+    totStCount.value = { formula: `SUM(B${firstStatusRow}:B${lastStatusRow})` } as any;
+    totStCount.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    totStCount.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
+    totStCount.alignment = { vertical: 'middle', horizontal: 'center' };
+    totStCount.border = ReportStyles.borders.standard;
+    totStCount.numFmt = '#,##0';
+
+    const totStHours = totStatusRow.getCell(3);
+    totStHours.value = { formula: `SUM(C${firstStatusRow}:C${lastStatusRow})` } as any;
+    totStHours.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    totStHours.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
+    totStHours.alignment = { vertical: 'middle', horizontal: 'center' };
+    totStHours.border = ReportStyles.borders.standard;
+    totStHours.numFmt = '0.0 "h"';
   }
 }

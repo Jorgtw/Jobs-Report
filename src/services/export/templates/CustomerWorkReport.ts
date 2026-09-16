@@ -2,8 +2,10 @@ import * as ExcelJS from 'exceljs';
 import { ReportData, ReportTemplate } from '../ReportEngine';
 import { getCatalogT } from '../i18n-catalog';
 import { applyHeaderStyle, applySubHeaderStyle, applyTableHeaderStyle, applyDataStyle, ReportStyles } from '../utils/formatters';
+import { parseDateSafe } from '../utils/dateUtils';
 
 export class CustomerWorkReport implements ReportTemplate {
+
   name = 'Customer Work Report';
   type = 'OPERATIVE' as const;
 
@@ -22,26 +24,31 @@ export class CustomerWorkReport implements ReportTemplate {
           header: 0.3, footer: 0.3
         },
         printTitlesRow: '1:3' // Repeat header on every page
-      }
+      },
+      views: [
+        { state: 'frozen', ySplit: 2 }
+      ]
     });
 
     // Col width setup
     sheet.columns = [
-      { width: 15 }, // Date
-      { width: 20 }, // Worker
-      { width: 35 }, // Activity
-      { width: 10 }, // Hours
-      { width: 10 }, // Start
-      { width: 10 }, // End
-      { width: 10 }  // Break
+      { width: 15 }, // Date (A)
+      { width: 22 }, // Worker (B)
+      { width: 35 }, // Activity (C)
+      { width: 12 }, // Hours (D)
+      { width: 10 }, // Start (E)
+      { width: 10 }, // End (F)
+      { width: 10 }  // Break (G)
     ];
 
     // Build Header
-    const clientName = data.filters?.['Cliente'] || t.allClients;
-      
-    const dateRange = (data.filters?.['Dal'] && data.filters?.['Al']) 
-      ? `${data.filters['Dal']} - ${data.filters['Al']}`
-      : t.allPeriod;
+    const clientName = data.filters?.['Cliente'] || data.filters?.clientId || t.allClients;
+
+    const dateRange = (data.filters?.startDate && data.filters?.endDate)
+      ? `${new Date(data.filters.startDate).toLocaleDateString()} - ${new Date(data.filters.endDate).toLocaleDateString()}`
+      : (data.filters?.['Dal'] && data.filters?.['Al'])
+        ? `${data.filters['Dal']} - ${data.filters['Al']}`
+        : t.allPeriod;
 
     // Riga 1: Titolo principale
     sheet.mergeCells('A1:G1');
@@ -96,18 +103,27 @@ export class CustomerWorkReport implements ReportTemplate {
       headers.forEach((h, i) => {
         const cell = sheet.getCell(currentRow, i + 1);
         cell.value = h;
-        applyTableHeaderStyle(cell, i === 2 ? 'left' : 'center');
+        applyTableHeaderStyle(cell, i <= 2 ? 'left' : 'center');
       });
+      sheet.getRow(currentRow).height = 20;
       currentRow++;
 
       let projectHours = 0;
 
       for (const r of reports) {
         const row = sheet.getRow(currentRow);
-        // Date
+
+        // Date (reale Excel)
         const dateCell = row.getCell(1);
-        dateCell.value = new Date(r.date).toLocaleDateString();
-        applyDataStyle(dateCell);
+        const parsedDate = parseDateSafe(r.date);
+        if (parsedDate) {
+          dateCell.value = parsedDate;
+          dateCell.numFmt = 'dd/mm/yyyy';
+        } else {
+          dateCell.value = '';
+        }
+        applyDataStyle(dateCell, 'center');
+
 
         const workerCell = row.getCell(2);
         workerCell.value = r.userName || r.userId || t.unspecifiedWorker;
@@ -118,25 +134,26 @@ export class CustomerWorkReport implements ReportTemplate {
         applyDataStyle(descCell, 'left');
 
         const hoursCell = row.getCell(4);
-        hoursCell.value = r.totalHours || 0;
-        applyDataStyle(hoursCell);
+        hoursCell.value = Math.round((r.totalHours || 0) * 10) / 10;
+        applyDataStyle(hoursCell, 'center');
         hoursCell.numFmt = '0.0 "h"';
 
         const startCell = row.getCell(5);
         startCell.value = r.startTime || '';
-        applyDataStyle(startCell);
+        applyDataStyle(startCell, 'center');
 
         const endCell = row.getCell(6);
         endCell.value = r.endTime || '';
-        applyDataStyle(endCell);
+        applyDataStyle(endCell, 'center');
 
         const breakCell = row.getCell(7);
-        breakCell.value = r.breakHours || 0;
-        applyDataStyle(breakCell);
+        breakCell.value = Math.round((r.breakHours || 0) * 10) / 10;
+        applyDataStyle(breakCell, 'center');
         breakCell.numFmt = '0.0 "h"';
 
         projectHours += (r.totalHours || 0);
         grandTotalHours += (r.totalHours || 0);
+        row.height = 20;
         currentRow++;
       }
 
@@ -150,13 +167,14 @@ export class CustomerWorkReport implements ReportTemplate {
       totLabelCell.border = ReportStyles.borders.standard;
 
       const totValCell = sheet.getCell(`D${currentRow}`);
-      totValCell.value = projectHours;
+      totValCell.value = Math.round(projectHours * 10) / 10;
       totValCell.font = { name: 'Arial', size: 10, bold: true };
       totValCell.alignment = { vertical: 'middle', horizontal: 'center' };
       totValCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.lightGray } };
       totValCell.border = ReportStyles.borders.standard;
       totValCell.numFmt = '0.0 "h"';
 
+      sheet.getRow(currentRow).height = 22;
       currentRow += 2; // Spazio vuoto
     }
 
@@ -167,15 +185,15 @@ export class CustomerWorkReport implements ReportTemplate {
     grandLabelCell.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
     grandLabelCell.alignment = { vertical: 'middle', horizontal: 'right' };
     grandLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
-    
+
     const grandValCell = sheet.getCell(`D${currentRow}`);
-    grandValCell.value = grandTotalHours;
+    grandValCell.value = Math.round(grandTotalHours * 10) / 10;
     grandValCell.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
     grandValCell.alignment = { vertical: 'middle', horizontal: 'center' };
     grandValCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ReportStyles.colors.primaryDarkBlue } };
     grandValCell.numFmt = '0.0 "h"';
     sheet.getRow(currentRow).height = 25;
-    
+
     currentRow += 3;
 
     // Firme

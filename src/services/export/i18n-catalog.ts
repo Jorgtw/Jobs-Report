@@ -1,10 +1,12 @@
 export interface CatalogTranslations {
   // Sheet names
   sheetDashboard: string;
+  sheetEmpSummary: string;
   sheetExtCosts: string;
   sheetCustomerWork: string;
   sheetWeekly: string;
   sheetMonthly: string;
+  sheetWorkerPrefix: string;
   sheetBilling: string;
   sheetEntries: string;
   sheetRevenue: string;
@@ -32,26 +34,42 @@ export interface CatalogTranslations {
   noAccessories: string;
   periodUndefined: string;
 
+  // Administrative Status Labels
+  adminStatusLabels: {
+    Pending: string;
+    ReadyToInvoice: string;
+    Fatturato: string;
+    Pagato: string;
+    NonBillable: string;
+  };
+
   // DashboardCommesse (Sheet 1)
   dashTitle: string;
   dashHeaders: string[]; // 9 cols
   dashTotal: string;
   dashNote: string; // use {extSheet} placeholder
   dashWarning: string;
+  dashStatusSummaryTitle: string;
+  dashStatusHeaders: string[]; // 3 cols: Stato, Numero rapportini, Totale ore
 
-  // Costi Esterni (Sheet 2)
+  // EmployeeSummaryReport (Sheet 2)
+  empSummaryTitle: string;
+  empSummaryHeaders: string[]; // 7 cols
+  empSummaryTotal: string;
+
+  // Costi Esterni (Sheet 3)
   extTitle: string;
   extSubtitle: string;
   extHeaders: string[]; // 6 cols
   extTotal: string;
 
-  // CustomerWorkReport (Sheet 3)
+  // CustomerWorkReport (Sheet 4)
   custTitle: string;
   custHeaders: string[]; // 7 cols
   custProjTotalPrefix: string;
   custGrandTotal: string;
 
-  // WeeklyReport (Sheet 4)
+  // WeeklyReport (Legacy)
   weekTitle: string;
   weekNumberPrefix: string;
   weekHeaders: string[]; // 4 cols
@@ -59,11 +77,11 @@ export interface CatalogTranslations {
   weekGrandTotalPrefix: string;
   weekPeriodTotal: string;
 
-  // EmployeeMonthlyReport (Sheet 5)
-  monthTitle: string;
-  monthHeaders: string[]; // 6 cols
-  monthTotalPrefix: string;
-  monthGrandTotal: string;
+  // EmployeeReport (Sheet 5)
+  workerReportTitle: string;
+  workerHeaders: string[]; // 9 cols
+  workerTotalPrefix: string;
+  workerGrandTotal: string;
   signEmployee: string;
   signManager: string;
   signDate: string;
@@ -90,10 +108,12 @@ export interface CatalogTranslations {
 const catalogs: Record<string, CatalogTranslations> = {
   it: {
     sheetDashboard: 'Dashboard',
+    sheetEmpSummary: 'Riepilogo Dipendenti',
     sheetExtCosts: 'Costi Esterni',
     sheetCustomerWork: 'Rapporto Lavori',
     sheetWeekly: 'Report Settimanale',
-    sheetMonthly: 'Report Mensile',
+    sheetMonthly: 'Report Dipendente',
+    sheetWorkerPrefix: 'Dipendente ',
     sheetBilling: 'Allegato Fatturazione',
     sheetEntries: 'Registro Rapportini',
     sheetRevenue: 'Registro Ricavi',
@@ -120,11 +140,25 @@ const catalogs: Record<string, CatalogTranslations> = {
     noAccessories: 'Nessuna spesa accessoria registrata in questo periodo.',
     periodUndefined: 'Periodo non definito',
 
+    adminStatusLabels: {
+      Pending: 'Da verificare',
+      ReadyToInvoice: 'Pronto da fatturare',
+      Fatturato: 'Fatturato',
+      Pagato: 'Pagato',
+      NonBillable: 'Non fatturabile'
+    },
+
     dashTitle: 'DASHBOARD COMMESSE — Vista Titolare',
     dashHeaders: ['Cliente', 'Progetto', 'Ore interne', 'Costo personale', 'Subappalti', 'Spese', 'Ricavo', 'Margine', 'Margine %'],
     dashTotal: 'TOTALE COMMESSE',
     dashNote: "Margine = Ricavo - Costo personale - Subappalti - Spese. Subappalti collegati in automatico al foglio '{extSheet}' (SUMIFS per Cliente + Progetto). Documento ad uso interno: non destinato al cliente.",
     dashWarning: '\nATTENZIONE: Margine calcolato senza costo personale per alcune commesse (costo interno non disponibile).',
+    dashStatusSummaryTitle: 'RIEPILOGO STATI AMMINISTRATIVI',
+    dashStatusHeaders: ['Stato amministrativo', 'Numero rapportini', 'Totale ore'],
+
+    empSummaryTitle: 'RIEPILOGO DIPENDENTI',
+    empSummaryHeaders: ['Dipendente', 'Ore ordinarie', 'Ore extra', 'Ore festive', 'Ore notturne', 'Totale ore', 'Costo personale'],
+    empSummaryTotal: 'TOTALE',
 
     extTitle: 'COSTI ESTERNI / SUBAPPALTI',
     extSubtitle: 'Registro costi di terzi (subappaltatori, tecnici esterni, artigiani) — non tracciati a ore',
@@ -143,10 +177,10 @@ const catalogs: Record<string, CatalogTranslations> = {
     weekGrandTotalPrefix: 'TOTALE COMPLESSIVO CONTRIBUTO COLLEGATO A ',
     weekPeriodTotal: 'TOTALE PERIODO',
 
-    monthTitle: 'REPORT MENSILE DIPENDENTE',
-    monthHeaders: ['Data', 'Cliente', 'Progetto / Attività', 'Ore ord.', 'Straord.', 'Spese sostenute'],
-    monthTotalPrefix: 'TOTALE MESE ',
-    monthGrandTotal: 'TOTALE MESE',
+    workerReportTitle: 'REPORT DIPENDENTE',
+    workerHeaders: ['Data', 'Cliente', 'Progetto / Attività', 'Ore ordinarie', 'Ore extra', 'Ore festive', 'Ore notturne', 'Totale ore', 'Spese sostenute'],
+    workerTotalPrefix: 'TOTALE ',
+    workerGrandTotal: 'TOTALE',
     signEmployee: 'Firma dipendente: ___________________________',
     signManager: 'Firma responsabile: ___________________________',
     signDate: 'Data: ____________________',
@@ -161,22 +195,24 @@ const catalogs: Record<string, CatalogTranslations> = {
       'Rif. Rapportino', 'Data', 'Settimana (ISO)', 'Ora Inizio', 'Ora Fine', 'Ore Pausa', 'Ore Totali',
       'Ore Ordinarie', 'Straordinario', 'Notturne', 'Festive', 'Cliente', 'Progetto/Commessa',
       'Descrizione Attività', 'Tipo Attività', 'Dipendente', 'Colleghi Aggiuntivi', 'Km Percorsi',
-      'Spese', 'Dettaglio Spese', 'Stato', 'Note'
+      'Spese', 'Dettaglio Spese', 'Stato amministrativo', 'Note'
     ],
 
     revTitle: 'REGISTRO RICAVI / COMMESSE (PROJECT REVENUE REGISTER)',
     revSubtitle: 'USO INTERNO AMMINISTRAZIONE — Non da inviare al cliente | Sorgente dati per Dashboard Commesse',
-    revHeaders: ['Cliente', 'Progetto / Commessa', 'Metodo Fatturazione', 'Valore Concordato / Ricavo', 'Periodo', 'Stato Commessa'],
+    revHeaders: ['Cliente', 'Progetto / Commessa', 'Metodo Fatturazione', 'Tariffa oraria / Prezzo concordato', 'Periodo', 'Stato Commessa'],
     revMethodFixed: 'Forfait (Fixed)',
     revMethodHourly: 'A consuntivo (Hourly)',
     revStatusActive: 'Attivo'
   },
   da: {
     sheetDashboard: 'Dashboard',
+    sheetEmpSummary: 'Medarbejderoversigt',
     sheetExtCosts: 'Eksterne Omkostninger',
     sheetCustomerWork: 'Arbejdsrapport',
     sheetWeekly: 'Ugerapport',
-    sheetMonthly: 'Månedlig Rapport',
+    sheetMonthly: 'Medarbejderrapport',
+    sheetWorkerPrefix: 'Medarbejder ',
     sheetBilling: 'Faktureringsbilag',
     sheetEntries: 'Arbejdsrapporter',
     sheetRevenue: 'Indtægtsregister',
@@ -203,11 +239,25 @@ const catalogs: Record<string, CatalogTranslations> = {
     noAccessories: 'Ingen ekstra udgifter registreret i denne periode.',
     periodUndefined: 'Udefineret periode',
 
+    adminStatusLabels: {
+      Pending: 'Skal verificeres',
+      ReadyToInvoice: 'Klar til fakturering',
+      Fatturato: 'Faktureret',
+      Pagato: 'Betalt',
+      NonBillable: 'Ikke-fakturerbar'
+    },
+
     dashTitle: 'PROJEKTOVERSIGT — Ejer Visning',
     dashHeaders: ['Klient', 'Projekt', 'Interne timer', 'Personaleomkostninger', 'Underleverandører', 'Udgifter', 'Indtægt', 'Margin', 'Margin %'],
     dashTotal: 'PROJEKTER I ALT',
     dashNote: 'Margin = Indtægt - Personaleomkostninger - Underleverandører - Udgifter. Underleverandører linkes automatisk til fanebladet "{extSheet}" (SUMIFS pr. Klient + Projekt). Internt dokument: ikke til kunden.',
     dashWarning: '\nBEMÆRK: Margin beregnet uden personaleomkostninger for visse projekter (intern omkostning ikke tilgængelig).',
+    dashStatusSummaryTitle: 'OVERSIGT OVER ADMINISTRATIVE STATUSER',
+    dashStatusHeaders: ['Administrativ status', 'Antal rapporter', 'Timer i alt'],
+
+    empSummaryTitle: 'MEDARBEJDEROVERSIGT',
+    empSummaryHeaders: ['Medarbejder', 'Alm. timer', 'Overtid', 'Helligdagstimer', 'Nattetimer', 'Timer i alt', 'Personaleomkostninger'],
+    empSummaryTotal: 'I ALT',
 
     extTitle: 'EKSTERNE OMKOSTNINGER / UNDERLEVERANDØRER',
     extSubtitle: 'Register over tredjepartsomkostninger (underleverandører, eksterne teknikere, håndværkere) — ikke sporet i timer',
@@ -226,10 +276,10 @@ const catalogs: Record<string, CatalogTranslations> = {
     weekGrandTotalPrefix: 'SAMLET BIDRAG FOR ',
     weekPeriodTotal: 'PERIODETOTAL',
 
-    monthTitle: 'MÅNEDLIG MEDARBEJDERRAPPORT',
-    monthHeaders: ['Dato', 'Klient', 'Projekt / Aktivitet', 'Alm. timer', 'Overtid', 'Afholdte udgifter'],
-    monthTotalPrefix: 'MÅNEDSTOTAL ',
-    monthGrandTotal: 'MÅNEDSTOTAL',
+    workerReportTitle: 'MEDARBEJDERRAPPORT',
+    workerHeaders: ['Dato', 'Klient', 'Projekt / Aktivitet', 'Alm. timer', 'Overtid', 'Helligdagstimer', 'Nattetimer', 'Timer i alt', 'Afholdte udgifter'],
+    workerTotalPrefix: 'TOTAL ',
+    workerGrandTotal: 'TOTAL',
     signEmployee: 'Underskrift medarbejder: ___________________________',
     signManager: 'Underskrift leder: ___________________________',
     signDate: 'Dato: ____________________',
@@ -244,22 +294,24 @@ const catalogs: Record<string, CatalogTranslations> = {
       'Rapporteringsref.', 'Dato', 'Uge (ISO)', 'Starttid', 'Sluttid', 'Pause (timer)', 'Timer i alt',
       'Alm. timer', 'Overtid', 'Nattekørsel', 'Helligdag', 'Klient', 'Projekt',
       'Aktivitetsbeskrivelse', 'Aktivitetstype', 'Medarbejder', 'Yderligere kolleger', 'Kørte km',
-      'Udgifter', 'Udgiftsdetaljer', 'Status', 'Noter'
+      'Udgifter', 'Udgiftsdetaljer', 'Administrativ status', 'Noter'
     ],
 
     revTitle: 'INDTÆGTER / PROJEKTREGISTER',
     revSubtitle: 'INTERNT BRUG AMMINISTRATION — Sendes ikke til kunden | Datakilde for Projektoversigt',
-    revHeaders: ['Klient', 'Projekt', 'Faktureringsmetode', 'Aftalt værdi / Indtægt', 'Periode', 'Projektstatus'],
+    revHeaders: ['Klient', 'Projekt', 'Faktureringsmetode', 'Timesats / Aftalt pris', 'Periode', 'Projektstatus'],
     revMethodFixed: 'Fast pris (Fixed)',
     revMethodHourly: 'Efter regning (Hourly)',
     revStatusActive: 'Aktiv'
   },
   en: {
     sheetDashboard: 'Dashboard',
+    sheetEmpSummary: 'Employee Summary',
     sheetExtCosts: 'External Costs',
     sheetCustomerWork: 'Work Report',
     sheetWeekly: 'Weekly Report',
-    sheetMonthly: 'Monthly Report',
+    sheetMonthly: 'Worker Report',
+    sheetWorkerPrefix: 'Worker ',
     sheetBilling: 'Billing Attachment',
     sheetEntries: 'Work Entries',
     sheetRevenue: 'Revenue Register',
@@ -286,11 +338,25 @@ const catalogs: Record<string, CatalogTranslations> = {
     noAccessories: 'No accessory expenses recorded in this period.',
     periodUndefined: 'Undefined period',
 
+    adminStatusLabels: {
+      Pending: 'To verify',
+      ReadyToInvoice: 'Ready to invoice',
+      Fatturato: 'Invoiced',
+      Pagato: 'Paid',
+      NonBillable: 'Non-billable'
+    },
+
     dashTitle: 'PROJECT DASHBOARD — Owner View',
     dashHeaders: ['Client', 'Project', 'Internal Hours', 'Personnel Cost', 'Subcontractors', 'Expenses', 'Revenue', 'Margin', 'Margin %'],
     dashTotal: 'TOTAL PROJECTS',
     dashNote: 'Margin = Revenue - Personnel cost - Subcontractors - Expenses. Subcontractors automatically linked to sheet "{extSheet}" (SUMIFS by Client + Project). Internal document: not for client.',
     dashWarning: '\nWARNING: Margin calculated without personnel cost for some projects (internal cost not available).',
+    dashStatusSummaryTitle: 'ADMINISTRATIVE STATUS SUMMARY',
+    dashStatusHeaders: ['Administrative Status', 'Report Count', 'Total Hours'],
+
+    empSummaryTitle: 'EMPLOYEE SUMMARY',
+    empSummaryHeaders: ['Employee', 'Ordinary Hours', 'Overtime Hours', 'Holiday Hours', 'Night Hours', 'Total Hours', 'Personnel Cost'],
+    empSummaryTotal: 'TOTAL',
 
     extTitle: 'EXTERNAL COSTS / SUBCONTRACTORS',
     extSubtitle: 'Register of third-party costs (subcontractors, external technicians, artisans) — not tracked by hours',
@@ -309,10 +375,10 @@ const catalogs: Record<string, CatalogTranslations> = {
     weekGrandTotalPrefix: 'TOTAL CONTRIBUTION FOR ',
     weekPeriodTotal: 'TOTAL PERIOD',
 
-    monthTitle: 'EMPLOYEE MONTHLY REPORT',
-    monthHeaders: ['Date', 'Client', 'Project / Activity', 'Ord. hours', 'Overtime', 'Expenses incurred'],
-    monthTotalPrefix: 'MONTH TOTAL ',
-    monthGrandTotal: 'MONTH TOTAL',
+    workerReportTitle: 'WORKER REPORT',
+    workerHeaders: ['Date', 'Client', 'Project / Activity', 'Ordinary Hours', 'Overtime Hours', 'Holiday Hours', 'Night Hours', 'Total Hours', 'Expenses Incurred'],
+    workerTotalPrefix: 'TOTAL ',
+    workerGrandTotal: 'TOTAL',
     signEmployee: 'Employee signature: ___________________________',
     signManager: 'Manager signature: ___________________________',
     signDate: 'Date: ____________________',
@@ -327,22 +393,24 @@ const catalogs: Record<string, CatalogTranslations> = {
       'Report Ref.', 'Date', 'Week (ISO)', 'Start Time', 'End Time', 'Break Hours', 'Total Hours',
       'Ordinary Hours', 'Overtime', 'Night Hours', 'Holiday Hours', 'Client', 'Project/Job',
       'Activity Description', 'Activity Type', 'Employee', 'Additional Colleagues', 'Km Traveled',
-      'Expenses', 'Expense Details', 'Status', 'Notes'
+      'Expenses', 'Expense Details', 'Administrative Status', 'Notes'
     ],
 
     revTitle: 'PROJECT REVENUE REGISTER',
     revSubtitle: 'INTERNAL USE ADMINISTRATION — Not to be sent to client | Data source for Project Dashboard',
-    revHeaders: ['Client', 'Project / Job', 'Billing Method', 'Agreed Value / Revenue', 'Period', 'Project Status'],
+    revHeaders: ['Client', 'Project / Job', 'Billing Method', 'Hourly Rate / Agreed Price', 'Period', 'Project Status'],
     revMethodFixed: 'Fixed Price',
     revMethodHourly: 'Time & Material (Hourly)',
     revStatusActive: 'Active'
   },
   es: {
     sheetDashboard: 'Dashboard',
+    sheetEmpSummary: 'Resumen Empleados',
     sheetExtCosts: 'Costes Externos',
     sheetCustomerWork: 'Parte de Trabajo',
     sheetWeekly: 'Informe Semanal',
-    sheetMonthly: 'Informe Mensual',
+    sheetMonthly: 'Informe Empleado',
+    sheetWorkerPrefix: 'Empleado ',
     sheetBilling: 'Anexo Facturación',
     sheetEntries: 'Registro Partes',
     sheetRevenue: 'Registro Ingresos',
@@ -369,11 +437,25 @@ const catalogs: Record<string, CatalogTranslations> = {
     noAccessories: 'Sin gastos accesorios registrados en este periodo.',
     periodUndefined: 'Periodo no definido',
 
+    adminStatusLabels: {
+      Pending: 'Por verificar',
+      ReadyToInvoice: 'Listo para facturar',
+      Fatturato: 'Facturado',
+      Pagato: 'Pagado',
+      NonBillable: 'No facturable'
+    },
+
     dashTitle: 'PANEL DE PROYECTOS — Vista Propietario',
     dashHeaders: ['Cliente', 'Proyecto', 'Horas Internas', 'Coste Personal', 'Subcontratas', 'Gastos', 'Ingreso', 'Margen', 'Margen %'],
     dashTotal: 'TOTAL PROYECTOS',
     dashNote: 'Margen = Ingreso - Coste personal - Subcontratas - Gastos. Subcontratas vinculadas automáticamente a la hoja "{extSheet}" (SUMIFS por Cliente + Proyecto). Documento interno: no para el cliente.',
     dashWarning: '\nATENCIÓN: Margen calculado sin coste personal para algunos proyectos (coste interno no disponible).',
+    dashStatusSummaryTitle: 'RESUMEN DE ESTADOS ADMINISTRATIVOS',
+    dashStatusHeaders: ['Estado administrativo', 'Número de partes', 'Total horas'],
+
+    empSummaryTitle: 'RESUMEN DE EMPLEADOS',
+    empSummaryHeaders: ['Empleado', 'Horas ordinarias', 'Horas extra', 'Horas festivas', 'Horas nocturnas', 'Total horas', 'Coste personal'],
+    empSummaryTotal: 'TOTAL',
 
     extTitle: 'COSTES EXTERNOS / SUBCONTRATAS',
     extSubtitle: 'Registro de costes de terceros (subcontratistas, técnicos externos, artesanos) — no rastreados por horas',
@@ -392,10 +474,10 @@ const catalogs: Record<string, CatalogTranslations> = {
     weekGrandTotalPrefix: 'CONTRIBUCIÓN TOTAL DE ',
     weekPeriodTotal: 'TOTAL PERIODO',
 
-    monthTitle: 'INFORME MENSUAL DEL TRABAJADOR',
-    monthHeaders: ['Fecha', 'Cliente', 'Proyecto / Actividad', 'Horas ord.', 'Horas ext.', 'Gastos incurridos'],
-    monthTotalPrefix: 'TOTAL MES ',
-    monthGrandTotal: 'TOTAL MES',
+    workerReportTitle: 'INFORME DEL EMPLEADO',
+    workerHeaders: ['Fecha', 'Cliente', 'Proyecto / Actividad', 'Horas ordinarias', 'Horas extra', 'Horas festivas', 'Horas nocturnas', 'Total horas', 'Gastos incurridos'],
+    workerTotalPrefix: 'TOTAL ',
+    workerGrandTotal: 'TOTAL',
     signEmployee: 'Firma trabajador: ___________________________',
     signManager: 'Firma responsable: ___________________________',
     signDate: 'Fecha: ____________________',
@@ -408,24 +490,26 @@ const catalogs: Record<string, CatalogTranslations> = {
     entriesTitle: 'REGISTRO DE PARTES DE TRABAJO',
     entriesHeaders: [
       'Ref. Parte', 'Fecha', 'Semana (ISO)', 'Hora Inicio', 'Hora Fin', 'Horas Pausa', 'Horas Totales',
-      'Horas Ordinarie', 'Horas Ext.', 'Horas Nocturnas', 'Horas Festivas', 'Cliente', 'Proyecto/Obra',
+      'Horas Ordinarias', 'Horas Extra', 'Horas Nocturnas', 'Horas Festivas', 'Cliente', 'Proyecto/Obra',
       'Descripción Actividad', 'Tipo Actividad', 'Trabajador', 'Compañeros Adicionales', 'Km Recorridos',
-      'Gastos', 'Detalle Gastos', 'Estado', 'Notas'
+      'Gastos', 'Detalle Gastos', 'Estado administrativo', 'Notas'
     ],
 
     revTitle: 'REGISTRO DE INGRESOS / PROYECTOS',
     revSubtitle: 'USO INTERNO ADMINISTRACIÓN — No enviar al cliente | Fuente de datos para Panel de Proyectos',
-    revHeaders: ['Cliente', 'Proyecto / Obra', 'Método Facturación', 'Valor Acordado / Ingreso', 'Periodo', 'Estado Proyecto'],
+    revHeaders: ['Cliente', 'Proyecto / Obra', 'Método Facturación', 'Tarifa horaria / Precio acordado', 'Periodo', 'Estado Proyecto'],
     revMethodFixed: 'Precio Fijo (Fixed)',
     revMethodHourly: 'Por Administración (Hourly)',
     revStatusActive: 'Activo'
   },
   pl: {
     sheetDashboard: 'Pulpit',
+    sheetEmpSummary: 'Podsumowanie Pracowników',
     sheetExtCosts: 'Koszty Zewnętrzne',
     sheetCustomerWork: 'Raport Pracy',
     sheetWeekly: 'Raport Tygodniowy',
-    sheetMonthly: 'Raport Miesięczny',
+    sheetMonthly: 'Raport Pracownika',
+    sheetWorkerPrefix: 'Pracownik ',
     sheetBilling: 'Załącznik Faktury',
     sheetEntries: 'Rejestr Raportów',
     sheetRevenue: 'Rejestr Przychodu',
@@ -452,11 +536,25 @@ const catalogs: Record<string, CatalogTranslations> = {
     noAccessories: 'Brak zarejestrowanych wydatków w tym okresie.',
     periodUndefined: 'Okres nieokreślony',
 
+    adminStatusLabels: {
+      Pending: 'Do weryfikacji',
+      ReadyToInvoice: 'Gotowe do fakturowania',
+      Fatturato: 'Zafakturowane',
+      Pagato: 'Opłacone',
+      NonBillable: 'Niefakturowalne'
+    },
+
     dashTitle: 'PULPIT PROJEKTÓW — Widok Właściciela',
     dashHeaders: ['Klient', 'Projekt', 'Godziny wewnętrzne', 'Koszt personelu', 'Podwykonawcy', 'Wydatki', 'Przychód', 'Marża', 'Marża %'],
     dashTotal: 'RAZEM PROJEKTY',
     dashNote: 'Marża = Przychód - Koszt personelu - Podwykonawcy - Wydatki. Podwykonawcy automatycznie powiązani z arkuszem "{extSheet}" (SUMIFS dla Klient + Projekt). Dokument wewnętrzny: nie dla klienta.',
     dashWarning: '\nUWAGA: Marża obliczona bez kosztów personelu dla niektórych projektów (koszt wewnętrzny niedostępny).',
+    dashStatusSummaryTitle: 'PODSUMOWANIE STANÓW ADMINISTRACYJNYCH',
+    dashStatusHeaders: ['Stan administracyjny', 'Liczba raportów', 'Godziny razem'],
+
+    empSummaryTitle: 'PODSUMOWANIE PRACOWNIKÓW',
+    empSummaryHeaders: ['Pracownik', 'Godz. zwykłe', 'Nadgodziny', 'Godz. świąteczne', 'Godz. nocne', 'Godziny razem', 'Koszt personelu'],
+    empSummaryTotal: 'RAZEM',
 
     extTitle: 'KOSZTY ZEWNĘTRZNE / PODWYKONAWCY',
     extSubtitle: 'Rejestr kosztów podmiotów trzecich (podwykonawcy, technicy zewnętrzni, rzemieślnicy) — nieśledzone godzinowo',
@@ -475,10 +573,10 @@ const catalogs: Record<string, CatalogTranslations> = {
     weekGrandTotalPrefix: 'CAŁKOWITY WKŁAD DLA ',
     weekPeriodTotal: 'SUMA OKRESU',
 
-    monthTitle: 'MIESIĘCZNY RAPORT PRACOWNIKA',
-    monthHeaders: ['Data', 'Klient', 'Projekt / Czynność', 'Godz. zwykłe', 'Nadgodziny', 'Poniesione wydatki'],
-    monthTotalPrefix: 'SUMA MIESIĄCA ',
-    monthGrandTotal: 'SUMA MIESIĄCA',
+    workerReportTitle: 'RAPORT PRACOWNIKA',
+    workerHeaders: ['Data', 'Klient', 'Projekt / Czynność', 'Godz. zwykłe', 'Nadgodziny', 'Godz. świąteczne', 'Godz. nocne', 'Godziny razem', 'Poniesione wydatki'],
+    workerTotalPrefix: 'RAZEM ',
+    workerGrandTotal: 'RAZEM',
     signEmployee: 'Podpis pracownika: ___________________________',
     signManager: 'Podpis przełożonego: ___________________________',
     signDate: 'Data: ____________________',
@@ -493,22 +591,24 @@ const catalogs: Record<string, CatalogTranslations> = {
       'Ref. Raportu', 'Data', 'Tydzień (ISO)', 'Czas Start', 'Czas Koniec', 'Godz. Przerwy', 'Godziny Razem',
       'Godz. Zwykłe', 'Nadgodziny', 'Godz. Nocne', 'Godz. Świąteczne', 'Klient', 'Projekt/Zlecenie',
       'Opis Czynności', 'Typ Czynności', 'Pracownik', 'Dodatkowi Koledzy', 'Przebieg Km',
-      'Wydatki', 'Szczegóły Wydatków', 'Status', 'Uwagi'
+      'Wydatki', 'Szczegóły Wydatków', 'Stan administracyjny', 'Uwagi'
     ],
 
     revTitle: 'REJESTR PRZYCHODÓW / PROJEKTÓW',
     revSubtitle: 'TYLKO DO UŻYTKU WEWNĘTRZNEGO — Nie wysyłać do klienta | Źródło danych dla Pulpitu Projektów',
-    revHeaders: ['Klient', 'Projekt / Zlecenie', 'Metoda Rozliczenia', 'Uzgodniona Wartość / Przychód', 'Okres', 'Status Projektu'],
+    revHeaders: ['Klient', 'Projekt / Zlecenie', 'Metoda Rozliczenia', 'Stawka godzinowa / Uzgodniona cena', 'Okres', 'Status Projektu'],
     revMethodFixed: 'Ryczałt (Fixed)',
     revMethodHourly: 'Wg stawek (Hourly)',
     revStatusActive: 'Aktywny'
   },
   tr: {
     sheetDashboard: 'Kontrol Paneli',
+    sheetEmpSummary: 'Çalışan Özeti',
     sheetExtCosts: 'Dış Maliyetler',
     sheetCustomerWork: 'İş Raporu',
     sheetWeekly: 'Haftalık Rapor',
-    sheetMonthly: 'Aylık Rapor',
+    sheetMonthly: 'Çalışan Raporu',
+    sheetWorkerPrefix: 'Çalışan ',
     sheetBilling: 'Fatura Eki',
     sheetEntries: 'Rapor Kayıtları',
     sheetRevenue: 'Gelir Kaydı',
@@ -535,11 +635,25 @@ const catalogs: Record<string, CatalogTranslations> = {
     noAccessories: 'Bu dönemde kayda değer ek gider bulunamadı.',
     periodUndefined: 'Belirsiz dönem',
 
+    adminStatusLabels: {
+      Pending: 'Doğrulanacak',
+      ReadyToInvoice: 'Faturalamaya hazır',
+      Fatturato: 'Faturalandı',
+      Pagato: 'Ödendi',
+      NonBillable: 'Faturalanamaz'
+    },
+
     dashTitle: 'PROJE KONTROL PANELİ — Yönetici Görünümü',
     dashHeaders: ['Müşteri', 'Proje', 'İç Saatler', 'Personel Maliyeti', 'Taşeronlar', 'Giderler', 'Gelir', 'Marj', 'Marj %'],
     dashTotal: 'TOPLAM PROJELER',
     dashNote: 'Marj = Gelir - Personel maliyeti - Taşeronlar - Giderler. Taşeronlar otomatik olarak "{extSheet}" sayfasına bağlanır (Müşteri + Proje bazında SUMIFS). İç doküman: müşteriye özel değildir.',
     dashWarning: '\nUYARI: Bazı projeler için personel maliyeti olmadan hesaplanmış marj (iç maliyet mevcut değil).',
+    dashStatusSummaryTitle: 'İDARİ DURUM ÖZETİ',
+    dashStatusHeaders: ['İdari durum', 'Rapor sayısı', 'Toplam saat'],
+
+    empSummaryTitle: 'ÇALIŞAN ÖZETİ',
+    empSummaryHeaders: ['Çalışan', 'Normal saat', 'Fazla mesai', 'Tatil saatleri', 'Gece saatleri', 'Toplam saat', 'Personel maliyeti'],
+    empSummaryTotal: 'TOPLAM',
 
     extTitle: 'DIŞ MALİYETLER / TAŞERONLAR',
     extSubtitle: 'Üçüncü taraf maliyetler kaydı (taşeronlar, dış teknisyenler, zanaatkarlar) — saatlik takip edilmez',
@@ -558,10 +672,10 @@ const catalogs: Record<string, CatalogTranslations> = {
     weekGrandTotalPrefix: 'TOPLAM KATKI: ',
     weekPeriodTotal: 'DÖNEM TOPLAMI',
 
-    monthTitle: 'AYLIK PERSONEL RAPORU',
-    monthHeaders: ['Tarih', 'Müşteri', 'Proje / Aktivite', 'Nor. saat', 'Fazla mesai', 'Yapılan giderler'],
-    monthTotalPrefix: 'AY TOPLAMI ',
-    monthGrandTotal: 'AY TOPLAMI',
+    workerReportTitle: 'ÇALIŞAN RAPORU',
+    workerHeaders: ['Tarih', 'Müşteri', 'Proje / Aktivite', 'Normal saat', 'Fazla mesai', 'Tatil saatleri', 'Gece saatleri', 'Toplam saat', 'Yapılan giderler'],
+    workerTotalPrefix: 'TOPLAM ',
+    workerGrandTotal: 'TOPLAM',
     signEmployee: 'Personel İmzası: ___________________________',
     signManager: 'Yönetici İmzası: ___________________________',
     signDate: 'Tarih: ____________________',
@@ -576,12 +690,12 @@ const catalogs: Record<string, CatalogTranslations> = {
       'Rapor Ref.', 'Tarih', 'Hafta (ISO)', 'Başlangıç', 'Bitiş', 'Mola Saati', 'Toplam Saat',
       'Normal Saat', 'Fazla Mesai', 'Gece Saati', 'Tatil Saati', 'Müşteri', 'Proje/İş',
       'Aktivite Açıklaması', 'Aktivite Türü', 'Çalışan', 'Ek Çalışma Arkadaşları', 'Gidilen Km',
-      'Giderler', 'Gider Detayı', 'Durum', 'Notlar'
+      'Giderler', 'Gider Detayı', 'İdari durum', 'Notlar'
     ],
 
     revTitle: 'GELİRLER / PROJELER KAYDI',
     revSubtitle: 'YALNIZCA İÇ YÖNETİM KULLANIMI — Müşteriye gönderilmez | Proje Kontrol Paneli veri kaynağı',
-    revHeaders: ['Müşteri', 'Proje / İş', 'Faturalama Yöntemi', 'Anlaşılan Değer / Gelir', 'Dönem', 'Proje Durumu'],
+    revHeaders: ['Müşteri', 'Proje / İş', 'Faturalama Yöntemi', 'Saatlik Ücret / Anlaşılan Fiyat', 'Dönem', 'Proje Durumu'],
     revMethodFixed: 'Sabit Fiyat (Fixed)',
     revMethodHourly: 'Saatlik / Gerçekleşen (Hourly)',
     revStatusActive: 'Aktif'

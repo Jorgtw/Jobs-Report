@@ -19,8 +19,9 @@ import { WorkSummaryExportService } from '../services/export/WorkSummaryExport';
 import { ReportBuilderConfig, WorkSession } from '../services/export/ReportBuilder';
 import { ProfessionalReportEngine } from '../services/export/ReportEngine';
 import { DashboardCommesse } from '../services/export/templates/DashboardCommesse';
+import { EmployeeSummaryReport } from '../services/export/templates/EmployeeSummaryReport';
+import { ExternalCostsReport } from '../services/export/templates/ExternalCostsReport';
 import { CustomerWorkReport } from '../services/export/templates/CustomerWorkReport';
-import { WeeklyReport } from '../services/export/templates/WeeklyReport';
 import { EmployeeMonthlyReport } from '../services/export/templates/EmployeeMonthlyReport';
 import { BillingAttachment } from '../services/export/templates/BillingAttachment';
 import { WorkEntriesRegister } from '../services/export/templates/WorkEntriesRegister';
@@ -222,8 +223,9 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       } else {
         const engine = new ProfessionalReportEngine();
         engine.registerTemplate('dashboard', new DashboardCommesse());
+        engine.registerTemplate('emp_summary', new EmployeeSummaryReport());
+        engine.registerTemplate('external_costs', new ExternalCostsReport());
         engine.registerTemplate('customer', new CustomerWorkReport());
-        engine.registerTemplate('weekly', new WeeklyReport());
         engine.registerTemplate('monthly', new EmployeeMonthlyReport());
         engine.registerTemplate('billing', new BillingAttachment());
         engine.registerTemplate('entries', new WorkEntriesRegister());

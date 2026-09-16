@@ -2548,6 +2548,7 @@ class DBService {
 
         summaries.push({
           id: r.id + '_main',
+          reportId: r.id,
           date: r.date,
           projectName: project?.name || 'Sconosciuto',
           projectId: project?.id,
@@ -2605,6 +2606,7 @@ class DBService {
 
           summaries.push({
             id: r.id + '_aw_' + idx,
+            reportId: r.id,
             date: r.date,
             projectName: project?.name || 'Sconosciuto',
             projectId: project?.id,
