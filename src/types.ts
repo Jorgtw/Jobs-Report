@@ -109,6 +109,7 @@ export interface AdditionalWorker {
   breakHours: number;
   manualTotalHours?: number;
   totalHours: number;
+  ordinaryHours?: number;
   // NUOVI CAMPI PER GESTIONE ECONOMICA
   hourlyRate?: number;
   totalCost?: number;
@@ -132,6 +133,7 @@ export interface WorkReport {
   breakHours: number;
   manualTotalHours?: number;
   totalHours: number;
+  ordinaryHours?: number;
   teamTotalHours?: number;
   description: string;
   notes: string;

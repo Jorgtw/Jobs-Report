@@ -24,7 +24,14 @@ import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
 import { useSubcontractors } from '../hooks/useSubcontractors';
 import { useComplianceReportController } from '../hooks/useComplianceReportController';
-import { exportToPDF, exportToExcel, generateInterventionPDF } from '../services/exportService';
+import { 
+  exportToPDF, 
+  exportToExcel, 
+  exportWorkerToPDF, 
+  exportWorkerToExcel, 
+  WorkerExportRow, 
+  generateInterventionPDF 
+} from '../services/exportService';
 import { 
   inputClasses, 
   filterInputClasses, 
@@ -178,13 +185,29 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const firstDayMonthStr = firstDayMonth.toISOString().split('T')[0];
 
+    const isWorker = authService.isOperator(user);
+
     return reports.filter((r: WorkReport) => {
-      if (filters.projectId && r.projectId !== filters.projectId) return false;
-      if (filters.userId) {
+      // Per il ruolo Worker/Operator: mostra solo i rapportini con ore personali > 0
+      if (isWorker) {
+        let personalHours = 0;
+        if (r.userId === user.id && (r.totalHours || 0) > 0) {
+          personalHours = r.totalHours || 0;
+        } else {
+          const aw = (r.additionalWorkers || []).find((w: AdditionalWorker) => w.userId === user.id && (w.totalHours || 0) > 0);
+          if (aw) {
+            personalHours = aw.totalHours || 0;
+          }
+        }
+        if (personalHours <= 0) return false;
+      } else if (filters.userId) {
         const isAuthor = r.userId === filters.userId;
         const isHelper = (r.additionalWorkers || []).some((aw: AdditionalWorker) => aw.userId === filters.userId);
         if (!isAuthor && !isHelper) return false;
       }
+
+      if (filters.projectId && r.projectId !== filters.projectId) return false;
+
       if (filters.search) {
         const s = filters.search.toLowerCase();
         const inDesc = r.description.toLowerCase().includes(s);
@@ -204,7 +227,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       }
       return true;
     });
-  }, [reports, filters, projects]);
+  }, [reports, filters, projects, user]);
 
   const addWorker = () => {
     setFormData({
@@ -416,6 +439,127 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     setIsModalOpen(true);
   };
 
+  const getWorkerExportRows = (): WorkerExportRow[] => {
+    return filteredReports
+      .map(r => {
+        let ordinaryHours = 0;
+        let overtimeHours = 0;
+        let festiveHours = 0;
+        let nightHours = 0;
+        let totalHours = 0;
+
+        if (r.userId === user.id && (r.totalHours || 0) > 0) {
+          totalHours = r.totalHours || 0;
+          overtimeHours = r.overtimeHours || 0;
+          festiveHours = r.festiveHours || 0;
+          nightHours = r.nightHours || 0;
+          ordinaryHours = r.ordinaryHours !== undefined ? r.ordinaryHours : Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
+        } else {
+          const aw = (r.additionalWorkers || []).find((w: AdditionalWorker) => w.userId === user.id && (w.totalHours || 0) > 0);
+          if (aw) {
+            totalHours = aw.totalHours || 0;
+            overtimeHours = aw.overtimeHours || 0;
+            festiveHours = aw.festiveHours || 0;
+            nightHours = aw.nightHours || 0;
+            ordinaryHours = aw.ordinaryHours !== undefined ? aw.ordinaryHours : Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
+          }
+        }
+
+        if (totalHours <= 0) return null;
+
+        const proj = projects.find(p => p.id === r.projectId);
+        const client = clients.find(c => c.id === proj?.clientId);
+
+        let dateFormatted = r.date;
+        if (r.date && r.date.includes('-')) {
+          const [y, m, d] = r.date.split('-');
+          if (y && m && d) {
+            dateFormatted = `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+          }
+        }
+
+        return {
+          date: r.date,
+          dateFormatted,
+          clientName: client?.name || '---',
+          projectName: proj?.name || '---',
+          description: r.description || '',
+          ordinaryHours: Math.round(ordinaryHours * 100) / 100,
+          overtimeHours: Math.round(overtimeHours * 100) / 100,
+          festiveHours: Math.round(festiveHours * 100) / 100,
+          nightHours: Math.round(nightHours * 100) / 100,
+          totalHours: Math.round(totalHours * 100) / 100
+        };
+      })
+      .filter((r): r is WorkerExportRow => r !== null)
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  };
+
+  const getExportPeriodText = (rows: WorkerExportRow[]): string => {
+    if (filters.dateRange === 'today') {
+      const [y, m, d] = new Date().toISOString().split('T')[0].split('-');
+      return `${d}/${m}/${y}`;
+    }
+    if (filters.dateRange === 'custom' && (filters.dateFrom || filters.dateTo)) {
+      const fromFormatted = filters.dateFrom ? filters.dateFrom.split('-').reverse().join('/') : '';
+      const toFormatted = filters.dateTo ? filters.dateTo.split('-').reverse().join('/') : '';
+      return `${fromFormatted || '...'} - ${toFormatted || '...'}`;
+    }
+    if (rows.length > 0) {
+      return `${rows[0].dateFormatted} - ${rows[rows.length - 1].dateFormatted}`;
+    }
+    return '---';
+  };
+
+  const handleExportPDF = () => {
+    const isWorker = authService.isOperator(user);
+    if (isWorker) {
+      const workerRows = getWorkerExportRows();
+      const periodText = getExportPeriodText(workerRows);
+      exportWorkerToPDF(workerRows, lang, user.name, periodText);
+    } else {
+      const personalRows = filteredReports.map(r => {
+        const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
+        const [y, m, d] = (r.date || '').split('-');
+        return {
+          date: y && m && d ? `${d}/${m}/${y.substring(2)}` : r.date,
+          projectName: projects.find(p => p.id === r.projectId)?.name || '---',
+          clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
+          workerName: user.name,
+          description: r.description || '',
+          hours: pours,
+          hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
+          paid: null
+        };
+      });
+      exportToPDF(personalRows, lang, user.name);
+    }
+  };
+
+  const handleExportExcel = () => {
+    const isWorker = authService.isOperator(user);
+    if (isWorker) {
+      const workerRows = getWorkerExportRows();
+      const periodText = getExportPeriodText(workerRows);
+      exportWorkerToExcel(workerRows, lang, user.name, periodText);
+    } else {
+      const personalRows = filteredReports.map(r => {
+        const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
+        return {
+          date: new Date(r.date).toLocaleDateString(localeMap[lang]),
+          projectName: projects.find(p => p.id === r.projectId)?.name || '---',
+          clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
+          workerName: user.name,
+          description: r.description || '',
+          hours: pours,
+          hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
+          paid: null
+        };
+      });
+      exportToExcel(personalRows, lang);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -424,45 +568,14 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           {user.role !== 'admin' && (
             <div className="flex gap-2 w-full sm:w-auto">
               <button
-                onClick={() => {
-                  const personalRows = filteredReports.map(r => {
-                    const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
-                    const [y, m, d] = (r.date || '').split('-');
-                    return {
-                      date: y && m && d ? `${d}/${m}/${y.substring(2)}` : r.date,
-                      projectName: projects.find(p => p.id === r.projectId)?.name || '---',
-                      clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
-                      workerName: user.name,
-                      description: r.description || '',
-                      hours: pours,
-                      hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
-                      paid: null
-                    };
-                  });
-                  exportToPDF(personalRows, lang, user.name);
-                }}
+                onClick={handleExportPDF}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-indigo-700 transition-all uppercase tracking-tight"
                 title={t('reports.personalExportPDF')}
               >
                 <FileDown size={14} className="mr-1.5" /> {t('reports.personalExportPDF')}
               </button>
               <button
-                onClick={() => {
-                  const personalRows = filteredReports.map(r => {
-                    const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
-                    return {
-                      date: new Date(r.date).toLocaleDateString(localeMap[lang]),
-                      projectName: projects.find(p => p.id === r.projectId)?.name || '---',
-                      clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
-                      workerName: user.name,
-                      description: r.description || '',
-                      hours: pours,
-                      hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
-                      paid: null
-                    };
-                  });
-                  exportToExcel(personalRows, lang);
-                }}
+                onClick={handleExportExcel}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-emerald-600 text-white text-[10px] font-black rounded-xl shadow-md hover:bg-emerald-700 transition-all uppercase tracking-tight"
                 title={t('reports.personalExportExcel')}
               >
@@ -521,7 +634,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            {user.role !== 'operator' && (
+            {!authService.isOperator(user) && (
               <div className="flex flex-col gap-0.5">
                 <label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('reports.worker')}</label>
                 <select value={filters.userId} onChange={e => setFilters({ ...filters, userId: e.target.value })} className={filterInputClasses}>

@@ -267,6 +267,313 @@ export const exportToExcel = async (exportRows: any[], lang: Language) => {
   }
 };
 
+export interface WorkerExportRow {
+  date: string;
+  dateFormatted: string;
+  clientName: string;
+  projectName: string;
+  description: string;
+  ordinaryHours: number;
+  overtimeHours: number;
+  festiveHours: number;
+  nightHours: number;
+  totalHours: number;
+}
+
+const workerExportI18n: Record<string, {
+  title: string;
+  worker: string;
+  period: string;
+  generatedOn: string;
+  date: string;
+  client: string;
+  project: string;
+  description: string;
+  ordinary: string;
+  overtime: string;
+  festive: string;
+  night: string;
+  total: string;
+  grandTotal: string;
+}> = {
+  it: {
+    title: 'Rapportino Ore',
+    worker: 'Dipendente',
+    period: 'Periodo',
+    generatedOn: 'Generato il',
+    date: 'Data',
+    client: 'Cliente',
+    project: 'Progetto/Cantiere',
+    description: 'Descrizione',
+    ordinary: 'Ore ordinarie',
+    overtime: 'Ore straordinarie',
+    festive: 'Ore festive',
+    night: 'Ore notturne',
+    total: 'Totale ore',
+    grandTotal: 'TOTALE GENERALE'
+  },
+  en: {
+    title: 'Hours Timesheet',
+    worker: 'Worker',
+    period: 'Period',
+    generatedOn: 'Generated on',
+    date: 'Date',
+    client: 'Client',
+    project: 'Project/Site',
+    description: 'Description',
+    ordinary: 'Ordinary hours',
+    overtime: 'Overtime hours',
+    festive: 'Festive hours',
+    night: 'Night hours',
+    total: 'Total hours',
+    grandTotal: 'GRAND TOTAL'
+  },
+  da: {
+    title: 'Timeseddel',
+    worker: 'Medarbejder',
+    period: 'Periode',
+    generatedOn: 'Genereret den',
+    date: 'Dato',
+    client: 'Kunde',
+    project: 'Projekt/Byggeplads',
+    description: 'Beskrivelse',
+    ordinary: 'Normaltimer',
+    overtime: 'Overtimer',
+    festive: 'Helligdagstimer',
+    night: 'Nattimer',
+    total: 'Timer i alt',
+    grandTotal: 'SAMLET TOTAL'
+  },
+  es: {
+    title: 'Parte de Horas',
+    worker: 'Trabajador',
+    period: 'Período',
+    generatedOn: 'Generado el',
+    date: 'Fecha',
+    client: 'Cliente',
+    project: 'Proyecto/Obra',
+    description: 'Descripción',
+    ordinary: 'Horas ordinarias',
+    overtime: 'Horas extraordinarias',
+    festive: 'Horas festivas',
+    night: 'Horas nocturnas',
+    total: 'Total horas',
+    grandTotal: 'TOTAL GENERAL'
+  },
+  pl: {
+    title: 'Karta Godzin',
+    worker: 'Pracownik',
+    period: 'Okres',
+    generatedOn: 'Wygenerowano dnia',
+    date: 'Data',
+    client: 'Klient',
+    project: 'Projekt/Budowa',
+    description: 'Opis',
+    ordinary: 'Godziny standardowe',
+    overtime: 'Nadgodziny',
+    festive: 'Godziny świąteczne',
+    night: 'Godziny nocne',
+    total: 'Suma godzin',
+    grandTotal: 'SUMA CAŁKOWITA'
+  },
+  tr: {
+    title: 'Çalışma Saatleri Raporu',
+    worker: 'Çalışan',
+    period: 'Dönem',
+    generatedOn: 'Oluşturulma tarihi',
+    date: 'Tarih',
+    client: 'Müşteri',
+    project: 'Proje/Şantiye',
+    description: 'Açıklama',
+    ordinary: 'Normal saatler',
+    overtime: 'Fazla mesai saatleri',
+    festive: 'Tatil saatleri',
+    night: 'Gece saatleri',
+    total: 'Toplam saat',
+    grandTotal: 'GENEL TOPLAM'
+  }
+};
+
+export const exportWorkerToPDF = async (
+  rows: WorkerExportRow[],
+  lang: Language,
+  userName: string,
+  periodText?: string
+) => {
+  const h = workerExportI18n[lang] || workerExportI18n.it;
+  const locale = localeMap[lang] || 'it-IT';
+  const doc = new jsPDF('l', 'mm', 'a4');
+  const now = new Date().toLocaleString(locale);
+
+  doc.setFontSize(16);
+  doc.setTextColor(30, 64, 175);
+  doc.text(`${h.title} - ${userName}`, 14, 18);
+
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${h.worker}: ${userName}`, 14, 26);
+  doc.text(`${h.period}: ${periodText || '---'}`, 14, 31);
+  doc.text(`${h.generatedOn}: ${now}`, 14, 36);
+
+  const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const totalOrdinary = rows.reduce((sum, r) => sum + r.ordinaryHours, 0);
+  const totalOvertime = rows.reduce((sum, r) => sum + r.overtimeHours, 0);
+  const totalFestive = rows.reduce((sum, r) => sum + r.festiveHours, 0);
+  const totalNight = rows.reduce((sum, r) => sum + r.nightHours, 0);
+  const grandTotal = rows.reduce((sum, r) => sum + r.totalHours, 0);
+
+  const tableData = rows.map(r => [
+    r.dateFormatted,
+    r.clientName,
+    r.projectName,
+    r.description,
+    NumberFormat.format(r.ordinaryHours),
+    NumberFormat.format(r.overtimeHours),
+    NumberFormat.format(r.festiveHours),
+    NumberFormat.format(r.nightHours),
+    NumberFormat.format(r.totalHours)
+  ]);
+
+  tableData.push([
+    '',
+    '',
+    '',
+    h.grandTotal,
+    NumberFormat.format(totalOrdinary),
+    NumberFormat.format(totalOvertime),
+    NumberFormat.format(totalFestive),
+    NumberFormat.format(totalNight),
+    NumberFormat.format(grandTotal)
+  ]);
+
+  autoTable(doc, {
+    startY: 42,
+    head: [[
+      h.date,
+      h.client,
+      h.project,
+      h.description,
+      h.ordinary,
+      h.overtime,
+      h.festive,
+      h.night,
+      h.total
+    ]],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 8.5 },
+    bodyStyles: { fontSize: 8, cellPadding: 2.5 },
+    columnStyles: {
+      0: { cellWidth: 24 },
+      1: { cellWidth: 38 },
+      2: { cellWidth: 38 },
+      3: { cellWidth: 'auto' },
+      4: { halign: 'right', cellWidth: 22 },
+      5: { halign: 'right', cellWidth: 22 },
+      6: { halign: 'right', cellWidth: 20 },
+      7: { halign: 'right', cellWidth: 20 },
+      8: { halign: 'right', cellWidth: 22, fontStyle: 'bold' }
+    },
+    didParseCell: function (data) {
+      if (data.row.index === tableData.length - 1) {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [240, 244, 248];
+        if (data.column.index >= 4) {
+          data.cell.styles.textColor = [30, 64, 175];
+        }
+      }
+    }
+  });
+
+  const cleanName = userName.replace(/\s+/g, '_');
+  const fileName = `JobsReport_Ore_${cleanName}_${new Date().toISOString().split('T')[0]}.pdf`;
+  const pdfBlob = doc.output('blob');
+  await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
+};
+
+export const exportWorkerToExcel = async (
+  rows: WorkerExportRow[],
+  lang: Language,
+  userName: string,
+  _periodText?: string
+) => {
+  try {
+    const h = workerExportI18n[lang] || workerExportI18n.it;
+
+    const totalOrdinary = rows.reduce((sum, r) => sum + r.ordinaryHours, 0);
+    const totalOvertime = rows.reduce((sum, r) => sum + r.overtimeHours, 0);
+    const totalFestive = rows.reduce((sum, r) => sum + r.festiveHours, 0);
+    const totalNight = rows.reduce((sum, r) => sum + r.nightHours, 0);
+    const grandTotal = rows.reduce((sum, r) => sum + r.totalHours, 0);
+
+    const worksheetData = rows.map(r => ({
+      [h.date]: r.dateFormatted,
+      [h.client]: r.clientName,
+      [h.project]: r.projectName,
+      [h.description]: r.description,
+      [h.ordinary]: r.ordinaryHours,
+      [h.overtime]: r.overtimeHours,
+      [h.festive]: r.festiveHours,
+      [h.night]: r.nightHours,
+      [h.total]: r.totalHours
+    }));
+
+    worksheetData.push({
+      [h.date]: '',
+      [h.client]: '',
+      [h.project]: '',
+      [h.description]: h.grandTotal,
+      [h.ordinary]: Math.round(totalOrdinary * 100) / 100,
+      [h.overtime]: Math.round(totalOvertime * 100) / 100,
+      [h.festive]: Math.round(totalFestive * 100) / 100,
+      [h.night]: Math.round(totalNight * 100) / 100,
+      [h.total]: Math.round(grandTotal * 100) / 100
+    });
+
+    const worksheet = utils.json_to_sheet(worksheetData);
+
+    const range = utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+      for (let C = 4; C <= 8; ++C) {
+        const cell_address = { c: C, r: R };
+        const cell_ref = utils.encode_cell(cell_address);
+        if (worksheet[cell_ref]) {
+          worksheet[cell_ref].t = 'n';
+          worksheet[cell_ref].z = '#,##0.00';
+        }
+      }
+    }
+
+    const maxWidths = worksheetData.reduce((acc: any, row: any) => {
+      Object.keys(row).forEach((key, i) => {
+        const value = row[key] ? row[key].toString() : '';
+        const length = Math.max(value.length, key.length);
+        if (!acc[i] || length > acc[i]) acc[i] = length;
+      });
+      return acc;
+    }, []);
+    worksheet['!cols'] = maxWidths.map((w: number) => ({ wch: Math.max(w + 3, 12) }));
+
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, h.title);
+
+    const cleanName = userName.replace(/\s+/g, '_');
+    const fileName = `JobsReport_Ore_${cleanName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const excelBuffer = write(workbook, { bookType: 'xlsx', type: 'array' });
+    await saveAndShareFile(excelBuffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  } catch (err: any) {
+    console.error("Worker Excel export error:", err);
+    const alertMsg = lang === 'it' ? "Errore scaricando l'Excel: " :
+                    (lang === 'es' ? "Error al descargar el Excel: " :
+                    (lang === 'pl' ? "Błąd podczas pobierania programu Excel: " :
+                    (lang === 'tr' ? "Excel indirilirken hata oluştu: " :
+                    (lang === 'da' ? "Fejl under download af Excel: " :
+                    "Error downloading Excel: "))));
+    alert(alertMsg + err.message);
+  }
+};
+
 export const generateCompliancePDF = async (
   report: any,
   photos: string[],
