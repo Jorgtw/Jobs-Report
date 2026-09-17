@@ -29,28 +29,29 @@ export default async function handler(req: any, res: any) {
   const token = authHeader.replace('Bearer ', '');
   
   try {
-    console.log('API: Verifying requester token...');
+    // 1. Authenticate Requester from Bearer Token
     const { data: { user: requesterAuthUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !requesterAuthUser) {
-      console.error('API: Auth error or user not found:', authError);
+      console.error('API: Auth error or requester user not found:', authError?.message);
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
-    console.log('API: Requester identified:', requesterAuthUser.email);
 
-    console.log('API: Fetching requester role for auth_id:', requesterAuthUser.id);
+    // 2. Fetch Requester Profile from Database
     const { data: requesterData, error: requesterDbError } = await supabaseAdmin
       .from('workers')
-      .select('id, role')
+      .select('id, role, company_id')
       .eq('auth_id', requesterAuthUser.id)
-      .single();
+      .maybeSingle();
 
     if (requesterDbError || !requesterData) {
       console.error('API: Requester role lookup failed:', requesterDbError);
       return res.status(403).json({ error: 'Requester not found in database' });
     }
 
-    // SEC-4 FIX: Check superadmin via user_roles table (the SSOT for superadmin status)
+    // 3. Robust Superadmin Check (SSOT: user_roles table or workers.role)
+    const isSuperAdminByRole = requesterData.role?.toLowerCase() === 'superadmin';
+    
     const { data: saRoleData } = await supabaseAdmin
       .from('user_roles')
       .select('role')
@@ -58,7 +59,35 @@ export default async function handler(req: any, res: any) {
       .eq('role', 'superadmin')
       .maybeSingle();
 
-    const isSuperAdmin = !!saRoleData;
+    const { data: saAuthRoleData } = !saRoleData ? await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', requesterAuthUser.id)
+      .eq('role', 'superadmin')
+      .maybeSingle() : { data: null };
+
+    const isSuperAdmin = isSuperAdminByRole || !!saRoleData || !!saAuthRoleData;
+
+    // 4. Retrieve Requester's Administrative Companies (for non-Superadmin)
+    const adminCompanyIds = new Set<string>();
+    if (requesterData.role?.toLowerCase() === 'admin' && requesterData.company_id) {
+      adminCompanyIds.add(requesterData.company_id);
+    }
+    
+    const { data: requesterAdminMemberships } = await supabaseAdmin
+      .from('user_companies')
+      .select('company_id')
+      .eq('auth_id', requesterAuthUser.id)
+      .eq('role', 'admin');
+
+    requesterAdminMemberships?.forEach(m => {
+      if (m.company_id) adminCompanyIds.add(m.company_id);
+    });
+
+    // Rule: Non-superadmins must have Admin role in at least one company. Worker/Supervisor have no authorization.
+    if (!isSuperAdmin && adminCompanyIds.size === 0) {
+      return res.status(403).json({ error: 'Unauthorized: Insufficient permissions (Admin or Superadmin required)' });
+    }
 
     const { targetUserId, updates, action = 'update' } = req.body;
     const { companyId } = updates || {};
@@ -66,20 +95,10 @@ export default async function handler(req: any, res: any) {
     // --- CREATE NEW USER ---
     if (action === 'create' || action === 'create_idempotent') {
       const { name, username, password, email, role, status } = updates;
-      
       const targetCompanyId = companyId;
 
-      if (!isSuperAdmin) {
-        const { data: membership } = await supabaseAdmin
-          .from('user_companies')
-          .select('role')
-          .eq('auth_id', requesterAuthUser.id)
-          .eq('company_id', targetCompanyId)
-          .single();
-
-        if (membership?.role !== 'admin' && membership?.role !== 'supervisor') {
-          return res.status(403).json({ error: 'Insufficient permissions for this company' });
-        }
+      if (!isSuperAdmin && (!targetCompanyId || !adminCompanyIds.has(targetCompanyId))) {
+        return res.status(403).json({ error: 'Insufficient permissions for this company' });
       }
 
       let authId: string | null = null;
@@ -160,99 +179,151 @@ export default async function handler(req: any, res: any) {
         return res.status(400).json({ error: 'Missing targetUserId or updates' });
       }
 
-      console.log('API: Update request for targetUserId:', targetUserId);
-      const { data: targetData, error: targetDbError } = await supabaseAdmin
+      // Server-side retrieval of target worker from Database (never trust client payload)
+      const { data: targetWorker, error: targetDbError } = await supabaseAdmin
         .from('workers')
-        .select('auth_id, email')
+        .select('id, auth_id, email, company_id, name, username, role, status')
         .eq('id', targetUserId)
-        .single();
+        .maybeSingle();
 
-      if (targetDbError || !targetData) {
+      if (targetDbError || !targetWorker) {
         console.error('API: Target user lookup failed:', targetDbError);
         return res.status(404).json({ error: 'Target user not found' });
       }
 
+      // 1. Superadmin Protection: Company Admins cannot modify a Superadmin account
+      const { data: targetSuperadminCheck } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', targetWorker.id)
+        .eq('role', 'superadmin')
+        .maybeSingle();
+
+      const isTargetSuperAdmin = (
+        targetWorker.role?.toLowerCase() === 'superadmin' ||
+        !!targetSuperadminCheck
+      );
+
+      if (isTargetSuperAdmin && !isSuperAdmin) {
+        return res.status(403).json({ error: 'Unauthorized: Company admins cannot modify superadmin accounts' });
+      }
+
+      // 2. Check Company Authorization:
+      // Superadmin can edit any company; Admin can ONLY edit users of their authorized company
       if (!isSuperAdmin) {
-        // Ricava le ditte in cui il requester è admin o supervisor
-        const { data: requesterCompanies } = await supabaseAdmin
-          .from('user_companies')
-          .select('company_id')
-          .eq('auth_id', requesterAuthUser.id)
-          .in('role', ['admin', 'supervisor']);
-          
-        const reqCompanyIds = requesterCompanies?.map(c => c.company_id) || [];
-        
-        if (reqCompanyIds.length === 0) {
-           return res.status(403).json({ error: 'Unauthorized: No administrative companies found' });
+        let isAuthorized = false;
+        if (targetWorker.company_id && adminCompanyIds.has(targetWorker.company_id)) {
+          isAuthorized = true;
+        } else if (targetWorker.auth_id) {
+          const { data: targetCompanies } = await supabaseAdmin
+            .from('user_companies')
+            .select('company_id')
+            .eq('auth_id', targetWorker.auth_id)
+            .in('company_id', Array.from(adminCompanyIds));
+
+          if (targetCompanies && targetCompanies.length > 0) {
+            isAuthorized = true;
+          }
         }
 
-        // Controlla se il target appartiene ad almeno una di queste ditte
-        const { data: targetCompanies } = await supabaseAdmin
-          .from('user_companies')
-          .select('company_id')
-          .eq('auth_id', targetData.auth_id)
-          .in('company_id', reqCompanyIds);
-
-        if (!targetCompanies || targetCompanies.length === 0) {
+        if (!isAuthorized) {
           return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
         }
       }
 
-      let currentAuthId = targetData.auth_id;
+      // 3. Handle sensitive Auth updates (email / password) with strict verification
+      const isAuthUpdate = !!(updates.email || updates.password);
+      if (isAuthUpdate) {
+        // Strict requirement: target worker MUST have an auth_id. Never fallback to admin auth_id!
+        if (!targetWorker.auth_id) {
+          return res.status(400).json({ 
+            error: 'Target worker has no linked Auth account (auth_id is missing)' 
+          });
+        }
 
-      // Provision Auth user if missing during update
-      if (!currentAuthId && (updates.email || updates.password)) {
-        console.log(`API: Update requested but auth_id missing for ${targetData.email}. Provisioning...`);
-        const { data: authListData } = await supabaseAdmin.auth.admin.listUsers();
-        const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === (updates.email || targetData.email).toLowerCase());
+        // Verify target auth account exists in Supabase Auth system
+        const { data: targetAuthData, error: authLookupErr } = await supabaseAdmin.auth.admin.getUserById(targetWorker.auth_id);
+        if (authLookupErr || !targetAuthData?.user) {
+          return res.status(400).json({ 
+            error: 'Target worker auth account not found in Auth system' 
+          });
+        }
 
-        if (existingAuthUser) {
-          currentAuthId = existingAuthUser.id;
+        // Safety safeguard: never inadvertently overwrite admin's auth credentials when modifying another worker
+        if (targetWorker.auth_id === requesterAuthUser.id && targetWorker.id !== requesterData.id) {
+          return res.status(400).json({ 
+            error: 'Security violation: Target worker auth_id matches administrator auth_id' 
+          });
+        }
+
+        const authUpdates: any = {};
+        if (updates.email && updates.email !== targetWorker.email) {
+          authUpdates.email = updates.email;
+          authUpdates.email_confirm = true;
+        }
+        if (updates.password) {
+          authUpdates.password = updates.password;
+        }
+
+        if (Object.keys(authUpdates).length > 0) {
+          const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
+            targetWorker.auth_id,
+            authUpdates
+          );
+
+          if (authUpdateError) {
+            console.error('API: Auth update error:', authUpdateError.message);
+            return res.status(500).json({ 
+              error: `Failed to update user in Auth: ${authUpdateError.message}`, 
+              detailed: authUpdateError
+            });
+          }
+        }
+      }
+
+      // 4. Strict Field Whitelist for database update
+      const ALLOWED_FIELDS = [
+        'name',
+        'username',
+        'email',
+        'phone',
+        'address',
+        'hourly_rate',
+        'overtime_hourly_rate',
+        'extra_cost',
+        'internal_note',
+        'status',
+        'subcontractor_id'
+      ];
+
+      const dbUpdates: any = {};
+      for (const field of ALLOWED_FIELDS) {
+        if (updates[field] !== undefined) {
+          dbUpdates[field] = updates[field];
+        }
+      }
+
+      // Role assignment security:
+      if (updates.role) {
+        const requestedRole = updates.role.toLowerCase();
+        if (isSuperAdmin) {
+          dbUpdates.role = requestedRole;
         } else {
-          const { data: newAuth, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: updates.email || targetData.email,
-            password: updates.password || Math.random().toString(36).slice(-12),
-            email_confirm: true,
-            user_metadata: { name: updates.name || targetData.name }
-          });
-          if (createError) return res.status(500).json({ error: `Auth provisioning failed: ${createError.message}` });
-          currentAuthId = newAuth.user.id;
-        }
-        // Save the new auth_id immediately
-        await supabaseAdmin.from('workers').update({ auth_id: currentAuthId }).eq('id', targetUserId);
-      }
-
-      const authUpdates: any = {};
-      if (updates.email && updates.email !== targetData.email) {
-        authUpdates.email = updates.email;
-        authUpdates.email_confirm = true;
-      }
-      if (updates.password) authUpdates.password = updates.password;
-
-      if ((authUpdates.email || authUpdates.password) && currentAuthId) {
-        console.log('API: Syncing with Supabase Auth for auth_id:', currentAuthId);
-        const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
-          currentAuthId,
-          authUpdates
-        );
-
-        if (authUpdateError) {
-          console.error('API: Auth update error:', authUpdateError);
-          return res.status(500).json({ 
-            error: `Failed to update user in Auth: ${authUpdateError.message}`, 
-            detailed: authUpdateError
-          });
+          if (['operator', 'supervisor', 'admin'].includes(requestedRole)) {
+            dbUpdates.role = requestedRole;
+          } else {
+            return res.status(403).json({ error: 'Unauthorized: Invalid or privileged role assignment' });
+          }
         }
       }
 
-      const dbUpdates: any = { ...updates };
-      delete dbUpdates.password;
-      delete dbUpdates.password_hash;
-      delete dbUpdates.companyId;
+      // Company change is strictly Superadmin-only
+      if (updates.company_id && isSuperAdmin) {
+        dbUpdates.company_id = updates.company_id;
+      }
 
-      // Ensure status and role are never empty for company admins
-      if (!dbUpdates.status && !targetData.status) dbUpdates.status = 'active';
-      if (!dbUpdates.role && !targetData.role) dbUpdates.role = 'admin';
+      if (!dbUpdates.status && !targetWorker.status) dbUpdates.status = 'active';
+      if (!dbUpdates.role && !targetWorker.role) dbUpdates.role = 'operator';
 
       const { error: finalDbError } = await supabaseAdmin
         .from('workers')
@@ -261,12 +332,6 @@ export default async function handler(req: any, res: any) {
 
       if (finalDbError) {
         console.error('API: Database update error:', finalDbError);
-        if (authUpdates.email && targetData.auth_id) {
-          await supabaseAdmin.auth.admin.updateUserById(targetData.auth_id, {
-            email: targetData.email,
-            email_confirm: true
-          });
-        }
         return res.status(500).json({ error: 'Update failed in database.', detailed: finalDbError });
       }
 
@@ -278,12 +343,12 @@ export default async function handler(req: any, res: any) {
       const { targetUserId } = req.body;
       if (!targetUserId) return res.status(400).json({ error: 'Missing targetUserId' });
 
-      // 1. Fetch worker data
+      // 1. Fetch worker data from database
       const { data: worker, error: workerErr } = await supabaseAdmin
         .from('workers')
-        .select('id, email, name, auth_id, username')
+        .select('id, email, name, auth_id, username, company_id')
         .eq('id', targetUserId)
-        .single();
+        .maybeSingle();
 
       if (workerErr || !worker) {
         return res.status(404).json({ error: 'User not found in database' });
@@ -293,69 +358,40 @@ export default async function handler(req: any, res: any) {
         return res.status(400).json({ error: 'User has no email address' });
       }
 
+      // Check Company Authorization
+      if (!isSuperAdmin) {
+        let isAuthorized = false;
+        if (worker.company_id && adminCompanyIds.has(worker.company_id)) {
+          isAuthorized = true;
+        } else if (worker.auth_id) {
+          const { data: targetCompanies } = await supabaseAdmin
+            .from('user_companies')
+            .select('company_id')
+            .eq('auth_id', worker.auth_id)
+            .in('company_id', Array.from(adminCompanyIds));
+
+          if (targetCompanies && targetCompanies.length > 0) {
+            isAuthorized = true;
+          }
+        }
+
+        if (!isAuthorized) {
+          return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
+        }
+      }
+
       let currentAuthId = worker.auth_id;
 
-      // 2. If no auth_id, check if user exists in Auth by email or create them
+      // If no auth_id, check if user exists in Auth by email
       if (!currentAuthId) {
-        console.log(`API: Worker ${worker.email} has no auth_id. Checking Auth list...`);
         const { data: authListData } = await supabaseAdmin.auth.admin.listUsers();
         const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === worker.email.toLowerCase());
 
         if (existingAuthUser) {
           currentAuthId = existingAuthUser.id;
+          await supabaseAdmin.from('workers').update({ auth_id: currentAuthId }).eq('id', worker.id);
         } else {
-          console.log(`API: Creating new Auth user for ${worker.email}`);
-          const { data: newAuth, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: worker.email,
-            password: worker.password || Math.random().toString(36).slice(-12),
-            email_confirm: true,
-            user_metadata: { name: worker.name }
-          });
-
-          if (createError) {
-            console.error('API: Auth creation failed:', createError);
-            return res.status(500).json({ error: `Failed to provision Auth account: ${createError.message}` });
-          }
-          currentAuthId = newAuth.user.id;
-        }
-
-        // Sync auth_id and missing data back to workers table
-        const repairData: any = { auth_id: currentAuthId };
-        if (!worker.status) repairData.status = 'active';
-        if (!worker.role) repairData.role = 'admin'; // Assume admin for company creators
-        
-        await supabaseAdmin.from('workers').update(repairData).eq('id', worker.id);
-      } else {
-        // Even if auth_id exists, ensure status and role are populated
-        if (!worker.status || !worker.role) {
-           await supabaseAdmin.from('workers').update({ 
-             status: worker.status || 'active',
-             role: worker.role || 'admin'
-           }).eq('id', worker.id);
-        }
-      }
-
-      if (!isSuperAdmin) {
-        const { data: requesterCompanies } = await supabaseAdmin
-          .from('user_companies')
-          .select('company_id')
-          .eq('auth_id', requesterAuthUser.id)
-          .in('role', ['admin', 'supervisor']);
-          
-        const reqCompanyIds = requesterCompanies?.map(c => c.company_id) || [];
-        
-        if (reqCompanyIds.length === 0) {
-           return res.status(403).json({ error: 'Unauthorized: No administrative companies found' });
-        }
-
-        const { data: targetCompanies } = await supabaseAdmin
-          .from('user_companies')
-          .select('company_id')
-          .eq('auth_id', currentAuthId)
-          .in('company_id', reqCompanyIds);
-
-        if (!targetCompanies || targetCompanies.length === 0) {
-          return res.status(403).json({ error: 'Unauthorized: Company mismatch' });
+          return res.status(400).json({ error: 'Target worker has no linked Auth account (auth_id is missing)' });
         }
       }
 
@@ -368,15 +404,8 @@ export default async function handler(req: any, res: any) {
         }
       });
       
-      if (linkError) {
-        console.error('[API] Supabase Link Generation Error:', linkError);
-        throw linkError;
-      }
-      
-      console.log(`[API] Link generated successfully. action_link: ${linkData.properties.action_link ? 'YES' : 'NO'}`);
-
       if (linkError || !linkData?.properties?.action_link) {
-        console.error('RECOVERY_LINK_GENERATION_FAILED', linkError);
+        console.error('[API] Supabase Link Generation Error:', linkError);
         return res.status(500).json({ success: false, error: 'RECOVERY_LINK_FAILED' });
       }
 
@@ -412,7 +441,6 @@ export default async function handler(req: any, res: any) {
 
       const emailText = `Ciao ${worker.name},\n\nEcco le tue credenziali:\nUsername: ${username}\nPassword: ${password}\n\nAccedi qui: ${linkData.properties.action_link}`;
 
-      console.log(`[API] Attempting to send email via Resend to: ${worker.email}`);
       const resendPayload = {
         from: 'Jobs Report <no-reply@jobs-report.app>',
         to: [worker.email],
@@ -431,7 +459,6 @@ export default async function handler(req: any, res: any) {
       });
 
       const resendData = await resendResponse.json();
-      console.log('[API] Resend Response:', { status: resendResponse.status, data: resendData });
 
       if (!resendResponse.ok) {
         console.error('RESEND_SEND_FAILED', resendData);
