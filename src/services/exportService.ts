@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { utils, write } from 'xlsx';
+import ExcelJS from 'exceljs';
 import { Language, TranslationKey, resolveKey } from '../i18n';
 import { db } from './dbService';
 import { supabase } from './supabase';
@@ -284,6 +285,7 @@ const workerExportI18n: Record<string, {
   title: string;
   worker: string;
   period: string;
+  company: string;
   generatedOn: string;
   date: string;
   client: string;
@@ -295,11 +297,14 @@ const workerExportI18n: Record<string, {
   night: string;
   total: string;
   grandTotal: string;
+  page: string;
+  of: string;
 }> = {
   it: {
-    title: 'Rapportino Ore',
+    title: 'REPORT DIPENDENTE',
     worker: 'Dipendente',
     period: 'Periodo',
+    company: 'Azienda',
     generatedOn: 'Generato il',
     date: 'Data',
     client: 'Cliente',
@@ -310,12 +315,15 @@ const workerExportI18n: Record<string, {
     festive: 'Ore festive',
     night: 'Ore notturne',
     total: 'Totale ore',
-    grandTotal: 'TOTALE GENERALE'
+    grandTotal: 'TOTALE GENERALE',
+    page: 'Pagina',
+    of: 'di'
   },
   en: {
-    title: 'Hours Timesheet',
-    worker: 'Worker',
+    title: 'EMPLOYEE REPORT',
+    worker: 'Employee',
     period: 'Period',
+    company: 'Company',
     generatedOn: 'Generated on',
     date: 'Date',
     client: 'Client',
@@ -326,12 +334,15 @@ const workerExportI18n: Record<string, {
     festive: 'Festive hours',
     night: 'Night hours',
     total: 'Total hours',
-    grandTotal: 'GRAND TOTAL'
+    grandTotal: 'GRAND TOTAL',
+    page: 'Page',
+    of: 'of'
   },
   da: {
-    title: 'Timeseddel',
+    title: 'MEDARBEJDER RAPPORT',
     worker: 'Medarbejder',
     period: 'Periode',
+    company: 'Virksomhed',
     generatedOn: 'Genereret den',
     date: 'Dato',
     client: 'Kunde',
@@ -342,12 +353,15 @@ const workerExportI18n: Record<string, {
     festive: 'Helligdagstimer',
     night: 'Nattimer',
     total: 'Timer i alt',
-    grandTotal: 'SAMLET TOTAL'
+    grandTotal: 'SAMLET TOTAL',
+    page: 'Side',
+    of: 'af'
   },
   es: {
-    title: 'Parte de Horas',
-    worker: 'Trabajador',
+    title: 'INFORME DE EMPLEADO',
+    worker: 'Empleado',
     period: 'Período',
+    company: 'Empresa',
     generatedOn: 'Generado el',
     date: 'Fecha',
     client: 'Cliente',
@@ -358,12 +372,15 @@ const workerExportI18n: Record<string, {
     festive: 'Horas festivas',
     night: 'Horas nocturnas',
     total: 'Total horas',
-    grandTotal: 'TOTAL GENERAL'
+    grandTotal: 'TOTAL GENERAL',
+    page: 'Página',
+    of: 'de'
   },
   pl: {
-    title: 'Karta Godzin',
+    title: 'RAPORT PRACOWNIKA',
     worker: 'Pracownik',
     period: 'Okres',
+    company: 'Firma',
     generatedOn: 'Wygenerowano dnia',
     date: 'Data',
     client: 'Klient',
@@ -374,12 +391,15 @@ const workerExportI18n: Record<string, {
     festive: 'Godziny świąteczne',
     night: 'Godziny nocne',
     total: 'Suma godzin',
-    grandTotal: 'SUMA CAŁKOWITA'
+    grandTotal: 'SUMA CAŁKOWITA',
+    page: 'Strona',
+    of: 'z'
   },
   tr: {
-    title: 'Çalışma Saatleri Raporu',
+    title: 'ÇALIŞAN RAPORU',
     worker: 'Çalışan',
     period: 'Dönem',
+    company: 'Şirket',
     generatedOn: 'Oluşturulma tarihi',
     date: 'Tarih',
     client: 'Müşteri',
@@ -390,7 +410,9 @@ const workerExportI18n: Record<string, {
     festive: 'Tatil saatleri',
     night: 'Gece saatleri',
     total: 'Toplam saat',
-    grandTotal: 'GENEL TOPLAM'
+    grandTotal: 'GENEL TOPLAM',
+    page: 'Sayfa',
+    of: '/'
   }
 };
 
@@ -398,41 +420,62 @@ export const exportWorkerToPDF = async (
   rows: WorkerExportRow[],
   lang: Language,
   userName: string,
-  periodText?: string
+  periodText?: string,
+  companyName?: string
 ) => {
   const h = workerExportI18n[lang] || workerExportI18n.it;
   const locale = localeMap[lang] || 'it-IT';
+  const cleanUserName = userName.trim();
   const doc = new jsPDF('l', 'mm', 'a4');
+  if (typeof (doc as any).setCharSpace === 'function') {
+    (doc as any).setCharSpace(0);
+  }
   const now = new Date().toLocaleString(locale);
 
+  // --- Title & Header ---
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.setTextColor(30, 64, 175);
-  doc.text(`${h.title} - ${userName}`, 14, 18);
+  doc.setTextColor(32, 62, 108); // #203E6C
+  if (typeof (doc as any).setCharSpace === 'function') {
+    (doc as any).setCharSpace(0);
+  }
+  doc.text(h.title, 14, 16);
+  if (typeof (doc as any).setCharSpace === 'function') {
+    (doc as any).setCharSpace(0);
+  }
 
-  doc.setFontSize(9);
-  doc.setTextColor(100);
-  doc.text(`${h.worker}: ${userName}`, 14, 26);
-  doc.text(`${h.period}: ${periodText || '---'}`, 14, 31);
-  doc.text(`${h.generatedOn}: ${now}`, 14, 36);
+  // --- Subtitle: Dipendente | Periodo | Azienda ---
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9.5);
+  doc.setTextColor(71, 85, 105); // #475569
+  const subtitle = `${h.worker}: ${cleanUserName}   |   ${h.period}: ${periodText || '---'}   |   ${h.company}: ${companyName || '---'}`;
+  doc.text(subtitle, 14, 23);
 
-  const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184); // #94A3B8
+  doc.text(`${h.generatedOn}: ${now}`, 14, 28);
 
-  const totalOrdinary = rows.reduce((sum, r) => sum + r.ordinaryHours, 0);
-  const totalOvertime = rows.reduce((sum, r) => sum + r.overtimeHours, 0);
-  const totalFestive = rows.reduce((sum, r) => sum + r.festiveHours, 0);
-  const totalNight = rows.reduce((sum, r) => sum + r.nightHours, 0);
-  const grandTotal = rows.reduce((sum, r) => sum + r.totalHours, 0);
+  const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-  const tableData = rows.map(r => [
+  const sortedRows = [...rows].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+  const totalOrdinary = sortedRows.reduce((sum, r) => sum + r.ordinaryHours, 0);
+  const totalOvertime = sortedRows.reduce((sum, r) => sum + r.overtimeHours, 0);
+  const totalFestive = sortedRows.reduce((sum, r) => sum + r.festiveHours, 0);
+  const totalNight = sortedRows.reduce((sum, r) => sum + r.nightHours, 0);
+  const grandTotal = sortedRows.reduce((sum, r) => sum + r.totalHours, 0);
+
+  const tableData = sortedRows.map(r => [
     r.dateFormatted,
     r.clientName,
     r.projectName,
     r.description,
-    NumberFormat.format(r.ordinaryHours),
-    NumberFormat.format(r.overtimeHours),
-    NumberFormat.format(r.festiveHours),
-    NumberFormat.format(r.nightHours),
-    NumberFormat.format(r.totalHours)
+    NumberFormat.format(r.ordinaryHours) + ' h',
+    NumberFormat.format(r.overtimeHours) + ' h',
+    NumberFormat.format(r.festiveHours) + ' h',
+    NumberFormat.format(r.nightHours) + ' h',
+    NumberFormat.format(r.totalHours) + ' h'
   ]);
 
   tableData.push([
@@ -440,15 +483,15 @@ export const exportWorkerToPDF = async (
     '',
     '',
     h.grandTotal,
-    NumberFormat.format(totalOrdinary),
-    NumberFormat.format(totalOvertime),
-    NumberFormat.format(totalFestive),
-    NumberFormat.format(totalNight),
-    NumberFormat.format(grandTotal)
+    NumberFormat.format(totalOrdinary) + ' h',
+    NumberFormat.format(totalOvertime) + ' h',
+    NumberFormat.format(totalFestive) + ' h',
+    NumberFormat.format(totalNight) + ' h',
+    NumberFormat.format(grandTotal) + ' h'
   ]);
 
   autoTable(doc, {
-    startY: 42,
+    startY: 32,
     head: [[
       h.date,
       h.client,
@@ -462,32 +505,53 @@ export const exportWorkerToPDF = async (
     ]],
     body: tableData,
     theme: 'grid',
-    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 8.5 },
-    bodyStyles: { fontSize: 8, cellPadding: 2.5 },
+    headStyles: {
+      fillColor: [142, 169, 214], // #8EA9D6
+      textColor: [32, 62, 108],   // #203E6C
+      fontStyle: 'bold',
+      fontSize: 8,
+      halign: 'center',
+      valign: 'middle'
+    },
+    bodyStyles: {
+      fontSize: 8,
+      cellPadding: 2,
+      textColor: [30, 41, 59] // #1E293B
+    },
     columnStyles: {
-      0: { cellWidth: 24 },
-      1: { cellWidth: 38 },
-      2: { cellWidth: 38 },
-      3: { cellWidth: 'auto' },
-      4: { halign: 'right', cellWidth: 22 },
-      5: { halign: 'right', cellWidth: 22 },
-      6: { halign: 'right', cellWidth: 20 },
-      7: { halign: 'right', cellWidth: 20 },
-      8: { halign: 'right', cellWidth: 22, fontStyle: 'bold' }
+      0: { halign: 'center', cellWidth: 22 },
+      1: { halign: 'left', cellWidth: 36 },
+      2: { halign: 'left', cellWidth: 38 },
+      3: { halign: 'left', cellWidth: 'auto' },
+      4: { halign: 'right', cellWidth: 20 },
+      5: { halign: 'right', cellWidth: 24 },
+      6: { halign: 'right', cellWidth: 18 },
+      7: { halign: 'right', cellWidth: 18 },
+      8: { halign: 'right', cellWidth: 20, fontStyle: 'bold' }
     },
     didParseCell: function (data) {
-      if (data.row.index === tableData.length - 1) {
+      if (data.section === 'body' && data.row.index === tableData.length - 1) {
         data.cell.styles.fontStyle = 'bold';
-        data.cell.styles.fillColor = [240, 244, 248];
-        if (data.column.index >= 4) {
-          data.cell.styles.textColor = [30, 64, 175];
-        }
+        data.cell.styles.fillColor = [217, 225, 242]; // #D9E1F2
+        data.cell.styles.textColor = [32, 62, 108];   // #203E6C
       }
     }
   });
 
-  const cleanName = userName.replace(/\s+/g, '_');
-  const fileName = `JobsReport_Ore_${cleanName}_${new Date().toISOString().split('T')[0]}.pdf`;
+  // Count pages only after the complete table has been laid out.
+  const pageCount = doc.getNumberOfPages();
+  for (let page = 1; page <= pageCount; page++) {
+    doc.setPage(page);
+    doc.setCharSpace(0);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`${h.page} ${page} ${h.of} ${pageCount}`, doc.internal.pageSize.getWidth() - 20, doc.internal.pageSize.getHeight() - 8, { align: 'right' });
+  }
+
+  const cleanNameForFile = cleanUserName.replace(/\s+/g, '_');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const fileName = `JobsReport_Ore_${cleanNameForFile}_${todayStr}.pdf`;
   const pdfBlob = doc.output('blob');
   await saveAndShareFile(pdfBlob, fileName, 'application/pdf');
 };
@@ -496,72 +560,292 @@ export const exportWorkerToExcel = async (
   rows: WorkerExportRow[],
   lang: Language,
   userName: string,
-  _periodText?: string
+  periodText?: string,
+  companyName?: string
 ) => {
   try {
     const h = workerExportI18n[lang] || workerExportI18n.it;
+    const cleanUserName = userName.trim();
 
-    const totalOrdinary = rows.reduce((sum, r) => sum + r.ordinaryHours, 0);
-    const totalOvertime = rows.reduce((sum, r) => sum + r.overtimeHours, 0);
-    const totalFestive = rows.reduce((sum, r) => sum + r.festiveHours, 0);
-    const totalNight = rows.reduce((sum, r) => sum + r.nightHours, 0);
-    const grandTotal = rows.reduce((sum, r) => sum + r.totalHours, 0);
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'JobsReport';
+    workbook.lastModifiedBy = cleanUserName;
+    workbook.created = new Date();
+    workbook.modified = new Date();
 
-    const worksheetData = rows.map(r => ({
-      [h.date]: r.dateFormatted,
-      [h.client]: r.clientName,
-      [h.project]: r.projectName,
-      [h.description]: r.description,
-      [h.ordinary]: r.ordinaryHours,
-      [h.overtime]: r.overtimeHours,
-      [h.festive]: r.festiveHours,
-      [h.night]: r.nightHours,
-      [h.total]: r.totalHours
-    }));
-
-    worksheetData.push({
-      [h.date]: '',
-      [h.client]: '',
-      [h.project]: '',
-      [h.description]: h.grandTotal,
-      [h.ordinary]: Math.round(totalOrdinary * 100) / 100,
-      [h.overtime]: Math.round(totalOvertime * 100) / 100,
-      [h.festive]: Math.round(totalFestive * 100) / 100,
-      [h.night]: Math.round(totalNight * 100) / 100,
-      [h.total]: Math.round(grandTotal * 100) / 100
+    const sheetName = 'Rapportino Ore';
+    const worksheet = workbook.addWorksheet(sheetName, {
+      views: [{ state: 'frozen', xSplit: 0, ySplit: 4, activeCell: 'A5', showGridLines: true }]
     });
 
-    const worksheet = utils.json_to_sheet(worksheetData);
+    // Setup column definitions & widths
+    worksheet.columns = [
+      { key: 'date', width: 13 },
+      { key: 'client', width: 24 },
+      { key: 'project', width: 26 },
+      { key: 'description', width: 42 },
+      { key: 'ordinary', width: 16 },
+      { key: 'overtime', width: 17 },
+      { key: 'festive', width: 15 },
+      { key: 'night', width: 15 },
+      { key: 'total', width: 16 }
+    ];
 
-    const range = utils.decode_range(worksheet['!ref'] || 'A1');
-    for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-      for (let C = 4; C <= 8; ++C) {
-        const cell_address = { c: C, r: R };
-        const cell_ref = utils.encode_cell(cell_address);
-        if (worksheet[cell_ref]) {
-          worksheet[cell_ref].t = 'n';
-          worksheet[cell_ref].z = '#,##0.00';
+    // --- ROW 1: Header Title ---
+    worksheet.mergeCells('A1:I1');
+    const r1 = worksheet.getRow(1);
+    r1.height = 28; // ~34px
+    const c1 = worksheet.getCell('A1');
+    c1.value = h.title;
+    c1.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF203E6C' }
+    };
+    c1.font = {
+      name: 'Arial',
+      size: 18,
+      bold: true,
+      color: { argb: 'FFFFFFFF' }
+    };
+    c1.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // --- ROW 2: Subtitle Info ---
+    worksheet.mergeCells('A2:I2');
+    const r2 = worksheet.getRow(2);
+    r2.height = 22; // ~26px
+    const c2 = worksheet.getCell('A2');
+    const subtitleText = `${h.worker}: ${cleanUserName}   |   ${h.period}: ${periodText || '---'}   |   ${h.company}: ${companyName || '---'}`;
+    c2.value = subtitleText;
+    c2.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF203E6C' }
+    };
+    c2.font = {
+      name: 'Arial',
+      size: 11,
+      italic: true,
+      color: { argb: 'FFFFFFFF' }
+    };
+    c2.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // --- ROW 3: Thin separator ---
+    const r3 = worksheet.getRow(3);
+    r3.height = 8;
+
+    // --- ROW 4: Column Headers ---
+    const r4 = worksheet.getRow(4);
+    r4.height = 24;
+    const headerLabels = [
+      h.date,
+      h.client,
+      h.project,
+      h.description,
+      h.ordinary,
+      h.overtime,
+      h.festive,
+      h.night,
+      h.total
+    ];
+
+    headerLabels.forEach((label, idx) => {
+      const cell = r4.getCell(idx + 1);
+      cell.value = label;
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF8EA9D6' }
+      };
+      cell.font = {
+        name: 'Arial',
+        size: 10.5,
+        bold: true,
+        color: { argb: 'FF203E6C' }
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFB0C4DE' } },
+        bottom: { style: 'thin', color: { argb: 'FF203E6C' } },
+        left: { style: 'thin', color: { argb: 'FFB0C4DE' } },
+        right: { style: 'thin', color: { argb: 'FFB0C4DE' } }
+      };
+    });
+
+    // AutoFilter on row 4
+    worksheet.autoFilter = {
+      from: { row: 4, column: 1 },
+      to: { row: 4, column: 9 }
+    };
+
+    // Sort rows chronologically
+    const sortedRows = [...rows].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+    let totalOrdinary = 0;
+    let totalOvertime = 0;
+    let totalFestive = 0;
+    let totalNight = 0;
+    let grandTotal = 0;
+
+    // --- DATA ROWS (Row 5 onwards) ---
+    sortedRows.forEach((item, index) => {
+      const rowNum = 5 + index;
+      const row = worksheet.getRow(rowNum);
+      row.height = 20;
+
+      totalOrdinary += item.ordinaryHours;
+      totalOvertime += item.overtimeHours;
+      totalFestive += item.festiveHours;
+      totalNight += item.nightHours;
+      grandTotal += item.totalHours;
+
+      // Parse Date for true Excel Date
+      let dateVal: Date | string = item.dateFormatted;
+      if (item.date && item.date.includes('-')) {
+        const [y, m, d] = item.date.split('-').map(Number);
+        if (y && m && d) {
+          dateVal = new Date(Date.UTC(y, m - 1, d));
         }
       }
+
+      // Col 1: Date
+      const cellDate = row.getCell(1);
+      cellDate.value = dateVal;
+      if (dateVal instanceof Date) {
+        cellDate.numFmt = 'dd/mm/yyyy';
+      }
+      cellDate.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // Col 2: Client
+      const cellClient = row.getCell(2);
+      cellClient.value = item.clientName || '---';
+      cellClient.alignment = { horizontal: 'left', vertical: 'middle' };
+
+      // Col 3: Project
+      const cellProj = row.getCell(3);
+      cellProj.value = item.projectName || '---';
+      cellProj.alignment = { horizontal: 'left', vertical: 'middle' };
+
+      // Col 4: Description
+      const cellDesc = row.getCell(4);
+      cellDesc.value = item.description || '';
+      cellDesc.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+
+      // Col 5: Ordinary
+      const cellOrd = row.getCell(5);
+      cellOrd.value = item.ordinaryHours;
+      cellOrd.numFmt = '#,##0.0 "h"';
+      cellOrd.alignment = { horizontal: 'right', vertical: 'middle' };
+
+      // Col 6: Overtime
+      const cellOvt = row.getCell(6);
+      cellOvt.value = item.overtimeHours;
+      cellOvt.numFmt = '#,##0.0 "h"';
+      cellOvt.alignment = { horizontal: 'right', vertical: 'middle' };
+
+      // Col 7: Festive
+      const cellFst = row.getCell(7);
+      cellFst.value = item.festiveHours;
+      cellFst.numFmt = '#,##0.0 "h"';
+      cellFst.alignment = { horizontal: 'right', vertical: 'middle' };
+
+      // Col 8: Night
+      const cellNgt = row.getCell(8);
+      cellNgt.value = item.nightHours;
+      cellNgt.numFmt = '#,##0.0 "h"';
+      cellNgt.alignment = { horizontal: 'right', vertical: 'middle' };
+
+      // Col 9: Total
+      const cellTot = row.getCell(9);
+      cellTot.value = item.totalHours;
+      cellTot.numFmt = '#,##0.0 "h"';
+      cellTot.alignment = { horizontal: 'right', vertical: 'middle' };
+
+      // Common styling for data cells
+      for (let c = 1; c <= 9; c++) {
+        const cell = row.getCell(c);
+        cell.font = { name: 'Arial', size: 10, color: { argb: 'FF1E293B' } };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+        };
+      }
+    });
+
+    // --- TOTAL ROW ---
+    const totalRowNum = 5 + sortedRows.length;
+    const totalRow = worksheet.getRow(totalRowNum);
+    totalRow.height = 24;
+
+    totalRow.getCell(1).value = null;
+    totalRow.getCell(2).value = null;
+    totalRow.getCell(3).value = null;
+
+    const totalDescCell = totalRow.getCell(4);
+    totalDescCell.value = h.grandTotal;
+    totalDescCell.alignment = { horizontal: 'right', vertical: 'middle' };
+
+    const totalsData = [
+      { col: 5, val: Math.round(totalOrdinary * 100) / 100 },
+      { col: 6, val: Math.round(totalOvertime * 100) / 100 },
+      { col: 7, val: Math.round(totalFestive * 100) / 100 },
+      { col: 8, val: Math.round(totalNight * 100) / 100 },
+      { col: 9, val: Math.round(grandTotal * 100) / 100 }
+    ];
+
+    totalsData.forEach(td => {
+      const cell = totalRow.getCell(td.col);
+      cell.value = td.val;
+      cell.numFmt = '#,##0.0 "h"';
+      cell.alignment = { horizontal: 'right', vertical: 'middle' };
+    });
+
+    for (let c = 1; c <= 9; c++) {
+      const cell = totalRow.getCell(c);
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD9E1F2' }
+      };
+      cell.font = {
+        name: 'Arial',
+        size: 10.5,
+        bold: true,
+        color: { argb: 'FF203E6C' }
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF203E6C' } },
+        bottom: { style: 'double', color: { argb: 'FF203E6C' } },
+        left: { style: 'thin', color: { argb: 'FFB0C4DE' } },
+        right: { style: 'thin', color: { argb: 'FFB0C4DE' } }
+      };
     }
 
-    const maxWidths = worksheetData.reduce((acc: any, row: any) => {
-      Object.keys(row).forEach((key, i) => {
-        const value = row[key] ? row[key].toString() : '';
-        const length = Math.max(value.length, key.length);
-        if (!acc[i] || length > acc[i]) acc[i] = length;
-      });
-      return acc;
-    }, []);
-    worksheet['!cols'] = maxWidths.map((w: number) => ({ wch: Math.max(w + 3, 12) }));
+    // --- Page Setup for Professional Printing ---
+    worksheet.pageSetup = {
+      orientation: 'landscape',
+      paperSize: 9, // A4
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 0,
+      margins: {
+        left: 0.4,
+        right: 0.4,
+        top: 0.5,
+        bottom: 0.5,
+        header: 0.3,
+        footer: 0.3
+      }
+    };
 
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, h.title);
+    const cleanNameForFile = cleanUserName.replace(/\s+/g, '_');
+    const todayStr = new Date().toISOString().split('T')[0];
+    const fileName = `JobsReport_Ore_${cleanNameForFile}_${todayStr}.xlsx`;
 
-    const cleanName = userName.replace(/\s+/g, '_');
-    const fileName = `JobsReport_Ore_${cleanName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    const excelBuffer = write(workbook, { bookType: 'xlsx', type: 'array' });
-    await saveAndShareFile(excelBuffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const buffer = await workbook.xlsx.writeBuffer();
+    await saveAndShareFile(buffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   } catch (err: any) {
     console.error("Worker Excel export error:", err);
     const alertMsg = lang === 'it' ? "Errore scaricando l'Excel: " :

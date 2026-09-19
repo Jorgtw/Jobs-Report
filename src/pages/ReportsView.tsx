@@ -453,7 +453,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           overtimeHours = r.overtimeHours || 0;
           festiveHours = r.festiveHours || 0;
           nightHours = r.nightHours || 0;
-          ordinaryHours = r.ordinaryHours !== undefined ? r.ordinaryHours : Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
+          ordinaryHours = Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
         } else {
           const aw = (r.additionalWorkers || []).find((w: AdditionalWorker) => w.userId === user.id && (w.totalHours || 0) > 0);
           if (aw) {
@@ -461,7 +461,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
             overtimeHours = aw.overtimeHours || 0;
             festiveHours = aw.festiveHours || 0;
             nightHours = aw.nightHours || 0;
-            ordinaryHours = aw.ordinaryHours !== undefined ? aw.ordinaryHours : Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
+            ordinaryHours = Math.max(0, totalHours - overtimeHours - festiveHours - nightHours);
           }
         }
 
@@ -513,10 +513,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const handleExportPDF = () => {
     const isWorker = authService.isOperator(user);
+    const companyName = user.companyName || user.availableCompanies?.find(c => c.id === user.companyId)?.name || '';
     if (isWorker) {
       const workerRows = getWorkerExportRows();
       const periodText = getExportPeriodText(workerRows);
-      exportWorkerToPDF(workerRows, lang, user.name, periodText);
+      exportWorkerToPDF(workerRows, lang, user.name, periodText, companyName);
     } else {
       const personalRows = filteredReports.map(r => {
         const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
@@ -538,10 +539,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const handleExportExcel = () => {
     const isWorker = authService.isOperator(user);
+    const companyName = user.companyName || user.availableCompanies?.find(c => c.id === user.companyId)?.name || '';
     if (isWorker) {
       const workerRows = getWorkerExportRows();
       const periodText = getExportPeriodText(workerRows);
-      exportWorkerToExcel(workerRows, lang, user.name, periodText);
+      exportWorkerToExcel(workerRows, lang, user.name, periodText, companyName);
     } else {
       const personalRows = filteredReports.map(r => {
         const pours = r.userId === user.id ? r.totalHours : (r.additionalWorkers?.find(aw => aw.userId === user.id)?.totalHours || 0);
