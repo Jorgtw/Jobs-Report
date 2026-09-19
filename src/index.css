@@ -4,6 +4,37 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  background-color: #e7efe8;
+}
+
+/* Readable neutral headings; semantic colors and light text on dark panels
+   retain their original palette. No spacing or control behavior changes. */
+@layer utilities {
+  :is(label, h1, h2, h3, h4, thead, thead tr, th):is(
+    .text-slate-400, .text-slate-500, .text-slate-600,
+    .text-gray-400, .text-gray-500, .text-gray-600
+  ) {
+    color: #1e293b;
+    font-weight: 700;
+  }
+
+  label:is(.text-slate-400, .text-gray-400) {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Segmented choices: emphasize the existing selected state without
+     introducing borders that change the dimensions of the buttons. */
+  :is(.bg-slate-100, .bg-gray-100) > button.bg-white {
+    outline: 1px solid currentColor;
+    outline-offset: -1px;
+  }
+
+  :is(.bg-slate-100, .bg-gray-100) > button:is(.text-slate-400, .text-gray-400) {
+    color: #475569;
+  }
 }
 
 /* Blocca lo scroll del body quando una modal (identificata dall'overlay con blur) è aperta */

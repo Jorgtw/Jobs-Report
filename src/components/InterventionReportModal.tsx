@@ -263,7 +263,7 @@ export const InterventionReportModal: React.FC<InterventionReportModalProps> = (
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center sm:p-4">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-white sm:rounded-3xl p-6 w-full h-full sm:h-auto sm:max-w-2xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-200 overflow-y-auto sm:max-h-[95vh]">
+      <div className="bg-slate-50 sm:rounded-3xl p-6 w-full h-full sm:h-auto sm:max-w-2xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-200 overflow-y-auto sm:max-h-[95vh]">
         
         {/* Header */}
         <div className="flex justify-between items-center mb-6 border-b pb-4">

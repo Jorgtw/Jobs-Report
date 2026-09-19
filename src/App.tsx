@@ -59,7 +59,7 @@ export const canUserAccessProject = (project: Partial<Project>, userId: string) 
 // --- Shared Styles ---
 export const inputClasses = "flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-sm disabled:bg-slate-50";
 export const filterInputClasses = "flex-1 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 shadow-sm text-xs disabled:bg-slate-50";
-export const modalClasses = "bg-white sm:rounded-3xl p-4 sm:p-8 w-full h-full sm:h-auto sm:max-w-4xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 overflow-y-auto sm:max-h-[95vh]";
+export const modalClasses = "bg-slate-50 sm:rounded-3xl p-4 sm:p-8 w-full h-full sm:h-auto sm:max-w-4xl relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-300 overflow-y-auto sm:max-h-[95vh]";
 
 export const FullWidthField: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({ label, children, className = "" }) => (
   <div className={`flex flex-col gap-1 ${className}`}>

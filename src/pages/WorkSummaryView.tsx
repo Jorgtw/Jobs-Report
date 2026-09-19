@@ -401,7 +401,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
       {isArchiveModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !isDeleting && setIsArchiveModalOpen(false)}></div>
-          <div className="bg-white sm:rounded-3xl p-6 w-full h-full sm:h-auto sm:max-w-md relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-200 overflow-y-auto">
+          <div className="bg-slate-50 sm:rounded-3xl p-6 w-full h-full sm:h-auto sm:max-w-md relative z-10 shadow-2xl animate-in sm:zoom-in-95 duration-200 overflow-y-auto">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center text-rose-600 mb-4">
                 <ShieldAlert size={32} />
