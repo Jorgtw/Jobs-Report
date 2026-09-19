@@ -41,10 +41,20 @@ assert.equal(sheet.getCell('D18').value, 'TOTALE GENERALE');
 assert.equal(sheet.getCell('E18').value, 91.5);
 assert.equal(sheet.getCell('I18').value, 91.5);
 for (const column of ['F', 'G', 'H']) assert.equal(sheet.getCell(`${column}18`).value, 0);
+assert.deepEqual(['E', 'F', 'G', 'H', 'I'].map(c => sheet.getCell(`${c}4`).value),
+  ['Ordinarie', 'Straordinarie', 'Festive', 'Notturne', 'Totale']);
+for (const column of ['E', 'F', 'G', 'H', 'I']) {
+  for (const row of [5, 18]) assert.equal(sheet.getCell(`${column}${row}`).numFmt.split(';')[2], '');
+}
+await service.exportWorkerToExcel(rows, 'en', 'Test Worker');
+await workbook.xlsx.load(saved.data);
+assert.deepEqual(['E', 'F', 'G', 'H', 'I'].map(c => workbook.getWorksheet('Rapportino Ore').getCell(`${c}4`).value),
+  ['Ordinary', 'Overtime', 'Festive', 'Night', 'Total']);
 
 for (const count of [0, 13, 150]) {
   await service.exportWorkerToPDF(Array.from({ length: count }, (_, i) => rows[i % rows.length]), 'it', 'Test Worker');
   const pdf = Buffer.from(await saved.data.arrayBuffer()).toString('latin1');
+  assert.ok(!pdf.includes('(0,0 h)'));
   const pages = [...pdf.matchAll(/\/Type \/Page\b/g)].length;
   assert.ok(count < 150 || pages > 1);
   for (let page = 1; page <= pages; page++) assert.ok(pdf.includes(`(Pagina ${page} di ${pages})`), `Missing correct footer on page ${page}`);

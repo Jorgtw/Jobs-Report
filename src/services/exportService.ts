@@ -310,11 +310,11 @@ const workerExportI18n: Record<string, {
     client: 'Cliente',
     project: 'Progetto/Cantiere',
     description: 'Descrizione',
-    ordinary: 'Ore ordinarie',
-    overtime: 'Ore straordinarie',
-    festive: 'Ore festive',
-    night: 'Ore notturne',
-    total: 'Totale ore',
+    ordinary: 'Ordinarie',
+    overtime: 'Straordinarie',
+    festive: 'Festive',
+    night: 'Notturne',
+    total: 'Totale',
     grandTotal: 'TOTALE GENERALE',
     page: 'Pagina',
     of: 'di'
@@ -329,11 +329,11 @@ const workerExportI18n: Record<string, {
     client: 'Client',
     project: 'Project/Site',
     description: 'Description',
-    ordinary: 'Ordinary hours',
-    overtime: 'Overtime hours',
-    festive: 'Festive hours',
-    night: 'Night hours',
-    total: 'Total hours',
+    ordinary: 'Ordinary',
+    overtime: 'Overtime',
+    festive: 'Festive',
+    night: 'Night',
+    total: 'Total',
     grandTotal: 'GRAND TOTAL',
     page: 'Page',
     of: 'of'
@@ -348,11 +348,11 @@ const workerExportI18n: Record<string, {
     client: 'Kunde',
     project: 'Projekt/Byggeplads',
     description: 'Beskrivelse',
-    ordinary: 'Normaltimer',
-    overtime: 'Overtimer',
-    festive: 'Helligdagstimer',
-    night: 'Nattimer',
-    total: 'Timer i alt',
+    ordinary: 'Normal',
+    overtime: 'Overtid',
+    festive: 'Helligdag',
+    night: 'Nat',
+    total: 'I alt',
     grandTotal: 'SAMLET TOTAL',
     page: 'Side',
     of: 'af'
@@ -367,11 +367,11 @@ const workerExportI18n: Record<string, {
     client: 'Cliente',
     project: 'Proyecto/Obra',
     description: 'Descripción',
-    ordinary: 'Horas ordinarias',
-    overtime: 'Horas extraordinarias',
-    festive: 'Horas festivas',
-    night: 'Horas nocturnas',
-    total: 'Total horas',
+    ordinary: 'Ordinarias',
+    overtime: 'Extras',
+    festive: 'Festivas',
+    night: 'Nocturnas',
+    total: 'Total',
     grandTotal: 'TOTAL GENERAL',
     page: 'Página',
     of: 'de'
@@ -386,11 +386,11 @@ const workerExportI18n: Record<string, {
     client: 'Klient',
     project: 'Projekt/Budowa',
     description: 'Opis',
-    ordinary: 'Godziny standardowe',
+    ordinary: 'Standardowe',
     overtime: 'Nadgodziny',
-    festive: 'Godziny świąteczne',
-    night: 'Godziny nocne',
-    total: 'Suma godzin',
+    festive: 'Świąteczne',
+    night: 'Nocne',
+    total: 'Suma',
     grandTotal: 'SUMA CAŁKOWITA',
     page: 'Strona',
     of: 'z'
@@ -405,11 +405,11 @@ const workerExportI18n: Record<string, {
     client: 'Müşteri',
     project: 'Proje/Şantiye',
     description: 'Açıklama',
-    ordinary: 'Normal saatler',
-    overtime: 'Fazla mesai saatleri',
-    festive: 'Tatil saatleri',
-    night: 'Gece saatleri',
-    total: 'Toplam saat',
+    ordinary: 'Normal',
+    overtime: 'Fazla mesai',
+    festive: 'Tatil',
+    night: 'Gece',
+    total: 'Toplam',
     grandTotal: 'GENEL TOPLAM',
     page: 'Sayfa',
     of: '/'
@@ -458,6 +458,8 @@ export const exportWorkerToPDF = async (
 
   const NumberFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
+  const formatHours = (hours: number) => hours === 0 ? '' : NumberFormat.format(hours) + ' h';
+
   const sortedRows = [...rows].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
   const totalOrdinary = sortedRows.reduce((sum, r) => sum + r.ordinaryHours, 0);
@@ -471,11 +473,11 @@ export const exportWorkerToPDF = async (
     r.clientName,
     r.projectName,
     r.description,
-    NumberFormat.format(r.ordinaryHours) + ' h',
-    NumberFormat.format(r.overtimeHours) + ' h',
-    NumberFormat.format(r.festiveHours) + ' h',
-    NumberFormat.format(r.nightHours) + ' h',
-    NumberFormat.format(r.totalHours) + ' h'
+    formatHours(r.ordinaryHours),
+    formatHours(r.overtimeHours),
+    formatHours(r.festiveHours),
+    formatHours(r.nightHours),
+    formatHours(r.totalHours)
   ]);
 
   tableData.push([
@@ -483,11 +485,11 @@ export const exportWorkerToPDF = async (
     '',
     '',
     h.grandTotal,
-    NumberFormat.format(totalOrdinary) + ' h',
-    NumberFormat.format(totalOvertime) + ' h',
-    NumberFormat.format(totalFestive) + ' h',
-    NumberFormat.format(totalNight) + ' h',
-    NumberFormat.format(grandTotal) + ' h'
+    formatHours(totalOrdinary),
+    formatHours(totalOvertime),
+    formatHours(totalFestive),
+    formatHours(totalNight),
+    formatHours(grandTotal)
   ]);
 
   autoTable(doc, {
@@ -523,11 +525,11 @@ export const exportWorkerToPDF = async (
       1: { halign: 'left', cellWidth: 36 },
       2: { halign: 'left', cellWidth: 38 },
       3: { halign: 'left', cellWidth: 'auto' },
-      4: { halign: 'right', cellWidth: 20 },
-      5: { halign: 'right', cellWidth: 24 },
-      6: { halign: 'right', cellWidth: 18 },
-      7: { halign: 'right', cellWidth: 18 },
-      8: { halign: 'right', cellWidth: 20, fontStyle: 'bold' }
+      4: { halign: 'right', cellWidth: 19 },
+      5: { halign: 'right', cellWidth: 22 },
+      6: { halign: 'right', cellWidth: 17 },
+      7: { halign: 'right', cellWidth: 17 },
+      8: { halign: 'right', cellWidth: 18, fontStyle: 'bold' }
     },
     didParseCell: function (data) {
       if (data.section === 'body' && data.row.index === tableData.length - 1) {
@@ -584,11 +586,11 @@ export const exportWorkerToExcel = async (
       { key: 'client', width: 24 },
       { key: 'project', width: 26 },
       { key: 'description', width: 42 },
-      { key: 'ordinary', width: 16 },
-      { key: 'overtime', width: 17 },
-      { key: 'festive', width: 15 },
-      { key: 'night', width: 15 },
-      { key: 'total', width: 16 }
+      { key: 'ordinary', width: 14 },
+      { key: 'overtime', width: 15 },
+      { key: 'festive', width: 12 },
+      { key: 'night', width: 12 },
+      { key: 'total', width: 12 }
     ];
 
     // --- ROW 1: Header Title ---
@@ -734,31 +736,31 @@ export const exportWorkerToExcel = async (
       // Col 5: Ordinary
       const cellOrd = row.getCell(5);
       cellOrd.value = item.ordinaryHours;
-      cellOrd.numFmt = '#,##0.0 "h"';
+      cellOrd.numFmt = '#,##0.0 "h";-#,##0.0 "h";;@';
       cellOrd.alignment = { horizontal: 'right', vertical: 'middle' };
 
       // Col 6: Overtime
       const cellOvt = row.getCell(6);
       cellOvt.value = item.overtimeHours;
-      cellOvt.numFmt = '#,##0.0 "h"';
+      cellOvt.numFmt = '#,##0.0 "h";-#,##0.0 "h";;@';
       cellOvt.alignment = { horizontal: 'right', vertical: 'middle' };
 
       // Col 7: Festive
       const cellFst = row.getCell(7);
       cellFst.value = item.festiveHours;
-      cellFst.numFmt = '#,##0.0 "h"';
+      cellFst.numFmt = '#,##0.0 "h";-#,##0.0 "h";;@';
       cellFst.alignment = { horizontal: 'right', vertical: 'middle' };
 
       // Col 8: Night
       const cellNgt = row.getCell(8);
       cellNgt.value = item.nightHours;
-      cellNgt.numFmt = '#,##0.0 "h"';
+      cellNgt.numFmt = '#,##0.0 "h";-#,##0.0 "h";;@';
       cellNgt.alignment = { horizontal: 'right', vertical: 'middle' };
 
       // Col 9: Total
       const cellTot = row.getCell(9);
       cellTot.value = item.totalHours;
-      cellTot.numFmt = '#,##0.0 "h"';
+      cellTot.numFmt = '#,##0.0 "h";-#,##0.0 "h";;@';
       cellTot.alignment = { horizontal: 'right', vertical: 'middle' };
 
       // Common styling for data cells
@@ -798,7 +800,7 @@ export const exportWorkerToExcel = async (
     totalsData.forEach(td => {
       const cell = totalRow.getCell(td.col);
       cell.value = td.val;
-      cell.numFmt = '#,##0.0 "h"';
+      cell.numFmt = '#,##0.0 "h";-#,##0.0 "h";;@';
       cell.alignment = { horizontal: 'right', vertical: 'middle' };
     });
 
