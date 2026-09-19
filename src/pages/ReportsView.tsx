@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 // Triggering Vercel rebuild for professional email flow restoration - 2026-05-15
 import { 
   Plus, 
@@ -50,6 +51,7 @@ interface ReportsViewProps {
 
 const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const { lang, t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined, user?.id);
   const { data: projects = [] } = useProjects(user?.companyId ?? undefined, user?.id);
   const { data: clients = [] } = useClients(user?.companyId ?? undefined, user?.id);
@@ -125,6 +127,16 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     additionalWorkers: [] as AdditionalWorker[],
     activityType: 'work' as 'work' | 'sickness' | 'holiday' | 'internal'
   });
+
+  useEffect(() => {
+    if (searchParams.get('start') !== 'internal') return;
+    const internal = projects.find(p => p.isInternal && p.status === 'active');
+    if (!internal) return;
+    setFormData(f => ({ ...f, activityType: 'internal', projectId: internal.id }));
+    setEditingId(null);
+    setIsModalOpen(true);
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams, projects]);
 
   const handleNewReport = () => {
     setEditingId(null);

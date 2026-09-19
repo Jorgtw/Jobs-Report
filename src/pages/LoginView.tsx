@@ -115,13 +115,14 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('auth.username')}</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('auth.emailOrUsername')}</label>
               <input 
                 required 
+                autoComplete="username" autoCapitalize="none" spellCheck={false}
                 value={username} 
                 onChange={e => setUsername(e.target.value)} 
                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"
-                placeholder={t('auth.usernamePlaceholder')}
+                placeholder={t('auth.emailOrUsername')}
               />
             </div>
 
@@ -136,6 +137,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
                 <input 
                   type={showPassword ? "text" : "password"} 
                   required 
+                  autoComplete="current-password"
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
                   className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"

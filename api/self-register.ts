@@ -16,18 +16,28 @@ export default async function handler(req: any, res: any) {
     auth: { autoRefreshToken: false, persistSession: false }
   });
 
-  const { 
-    companyName, 
-    adminName, 
-    username, 
-    password, 
-    email, 
-    phone, 
-    address, 
-    city, 
-    country = 'Italia', 
-    vatNumber 
-  } = req.body;
+  const body = req.body || {};
+  const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
+  const companyName = text(body.companyName);
+  const email = text(body.email).toLowerCase();
+  const password = typeof body.password === 'string' ? body.password : '';
+  // Retain optional legacy usernames; the new form uses email as username.
+  const username = text(body.username) || email;
+  const adminName = text(body.adminName) || companyName;
+  const phone = text(body.phone);
+  const address = text(body.address);
+  const city = text(body.city);
+  const country = text(body.country);
+  const vatNumber = text(body.vatNumber);
+  if (!companyName || companyName.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+    return res.status(400).json({ error: 'REGISTRATION_INVALID' });
+  }
+  if (password.length < 6 || password.length > 128 || !password.trim()) {
+    return res.status(400).json({ error: 'REGISTRATION_PASSWORD' });
+  }
+  if (body.acceptedTerms !== true) {
+    return res.status(400).json({ error: 'REGISTRATION_TERMS_REQUIRED' });
+  }
 
   let companyId: string | null = null;
   let authIdCreatedByUs: string | null = null;
@@ -35,31 +45,34 @@ export default async function handler(req: any, res: any) {
 
   try {
     // 1. Pre-check: unique name, vat, username
-    const { data: existingComp } = await supabaseAdmin
+    const { data: existingComp, error: companyCheckError } = await supabaseAdmin
       .from('companies')
       .select('id')
       .eq('name', companyName)
       .maybeSingle();
     
+    if (companyCheckError) throw companyCheckError;
     let existingByVat = null;
     if (vatNumber) {
-      const { data: vatCheck } = await supabaseAdmin
+      const { data: vatCheck, error: vatCheckError } = await supabaseAdmin
         .from('companies')
         .select('id')
         .eq('vat_number', vatNumber)
         .maybeSingle();
+      if (vatCheckError) throw vatCheckError;
       existingByVat = vatCheck;
     }
     
-    if (existingComp || existingByVat) return res.status(400).json({ error: 'Azienda o Partita IVA già registrata.' });
+    if (existingComp || existingByVat) return res.status(400).json({ error: 'REGISTRATION_EXISTS' });
 
-    const { data: existingUser } = await supabaseAdmin
+    const { data: existingUser, error: userCheckError } = await supabaseAdmin
       .from('workers')
       .select('id')
       .eq('username', username)
       .maybeSingle();
 
-    if (existingUser) return res.status(400).json({ error: 'Username già in uso.' });
+    if (userCheckError) throw userCheckError;
+    if (existingUser) return res.status(409).json({ error: 'REGISTRATION_EXISTS' });
 
     // 2. Create Company
     const { data: companyData, error: companyError } = await supabaseAdmin
@@ -79,30 +92,17 @@ export default async function handler(req: any, res: any) {
     if (companyError) throw companyError;
     companyId = companyData[0].id;
 
-    // 3. Create or Link Auth User
-    const finalEmail = email || `${username.toLowerCase()}@jobsreport.it`;
-    let authId: string;
-
-    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    if (listError) throw listError;
-    
-    const existingAuthUser = users.find(u => u.email?.toLowerCase() === finalEmail.toLowerCase());
-
-    if (existingAuthUser) {
-      authId = existingAuthUser.id;
-      // Update password for the existing user to match the new one
-      await supabaseAdmin.auth.admin.updateUserById(authId, { password });
-    } else {
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: finalEmail,
-        password,
-        email_confirm: true,
-        user_metadata: { name: adminName }
-      });
-      if (authError) throw authError;
-      authId = authData.user.id;
-      authIdCreatedByUs = authId;
-    }
+    // Only create a new identity. Never relink or change an existing account.
+    const finalEmail = email;
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: finalEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { name: adminName, registration_language: text(body.language) || 'it' }
+    });
+    if (authError) throw authError;
+    authId = authData.user.id;
+    authIdCreatedByUs = authId;
 
     // 4. Create Worker
     const { error: workerError } = await supabaseAdmin.from('workers').upsert({
@@ -119,20 +119,22 @@ export default async function handler(req: any, res: any) {
     if (workerError) throw workerError;
 
     // 5. Create Bridge
-    await supabaseAdmin.from('user_companies').upsert({
+    const { error: bridgeError } = await supabaseAdmin.from('user_companies').upsert({
       auth_id: authId,
       company_id: companyId,
       role: 'admin'
     }, { onConflict: 'auth_id,company_id' });
+    if (bridgeError) throw bridgeError;
 
     // 6. Create Default Data
-    const { data: clientData } = await supabaseAdmin
+    const { data: clientData, error: clientError } = await supabaseAdmin
       .from('clients')
       .insert([{ company_id: companyId, name: `${companyName} - Interno`, status: 'active' }])
       .select();
     
+    if (clientError) throw clientError;
     if (clientData?.[0]) {
-      await supabaseAdmin.from('projects').insert({
+      const { error: projectError } = await supabaseAdmin.from('projects').insert({
         company_id: companyId,
         client_id: clientData[0].id,
         title: 'Rapportino interno',
@@ -140,6 +142,7 @@ export default async function handler(req: any, res: any) {
         economic_type: 'hourly',
         is_internal: true
       });
+      if (projectError) throw projectError;
     }
 
     // 7. Invia email di notifica
@@ -166,8 +169,8 @@ export default async function handler(req: any, res: any) {
           body: JSON.stringify({
             from: 'Jobs Report <onboarding@resend.dev>',
             to: [finalEmail],
-            subject: `Benvenuto su JobsReport - Credenziali per ${companyName}`,
-            text: `Ciao ${adminName},\n\nLa tua azienda "${companyName}" è stata registrata con successo su JobsReport.\n\nEcco le tue credenziali di accesso:\nURL: https://jobs-report.app\nUsername: ${username}\nPassword: ${password}\n\nBuon lavoro!\nIl team di JobsReport`
+            subject: `Benvenuto su JobsReport - ${companyName}`,
+            text: `Ciao ${adminName},\n\nLa tua azienda "${companyName}" è stata registrata con successo su JobsReport.\n\nAccedi con la tua email e la password scelta durante la registrazione:\nURL: https://app.jobs-report.app\nEmail: ${finalEmail}\n\nBuon lavoro!\nIl team di JobsReport`
           })
         });
       }
@@ -198,18 +201,9 @@ export default async function handler(req: any, res: any) {
       console.error(`CRITICAL: Rollback failed for Company ${companyId} during self-register cleanup. Original Error: ${err.message}. Rollback Error:`, rollbackErr);
     }
 
-    // 23505 Unique Violation translation
-    if (err.code === '23505') {
-      const errMsg = err.message || '';
-      if (errMsg.includes('companies_vat_number_key') || errMsg.includes('vat_number')) {
-        return res.status(400).json({ error: 'La Partita IVA risulta già registrata.' });
-      } else if (errMsg.includes('workers_username_key') || errMsg.includes('username')) {
-        return res.status(400).json({ error: 'Questo username è già in uso.' });
-      } else {
-        return res.status(400).json({ error: 'Un elemento fornito è già registrato nel sistema.' });
-      }
+    if (err.code === '23505' || err.code === 'email_exists' || err.code === 'user_already_exists') {
+      return res.status(409).json({ error: 'REGISTRATION_EXISTS' });
     }
-
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'REGISTRATION_FAILED' });
   }
 }

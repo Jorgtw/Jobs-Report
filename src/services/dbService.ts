@@ -907,6 +907,16 @@ class DBService {
   }
 
   async updateCompanyDetails(id: string, details: { name?: string; address?: string; phone?: string; email?: string; vatNumber?: string; city?: string; country?: string }) {
+    if (details.vatNumber !== undefined) {
+      const { error } = await supabase.rpc('complete_company_profile_v1', {
+        p_company_id: id, p_name: details.name ?? null, p_email: details.email ?? null,
+        p_phone: details.phone ?? null, p_address: details.address ?? null,
+        p_city: details.city ?? null, p_country: details.country ?? null,
+        p_vat_number: details.vatNumber,
+      });
+      if (error) throw error;
+      return;
+    }
     // Primary hardened path: Call secure RPC function with strict field whitelist
     const { error: rpcError } = await supabase.rpc('update_company_details_v1', {
       p_company_id: id,
@@ -927,7 +937,6 @@ class DBService {
       if (details.address !== undefined) payload.address = details.address.trim();
       if (details.phone !== undefined) payload.phone = details.phone.trim();
       if (details.email !== undefined) payload.email = details.email.trim();
-      if (details.vatNumber !== undefined) payload.vat_number = details.vatNumber.trim();
       if (details.city !== undefined) payload.city = details.city.trim();
       if (details.country !== undefined) payload.country = details.country.trim();
 
@@ -1226,30 +1235,18 @@ class DBService {
     if (!password) return null;
     const cleanUsername = username.trim();
 
-    // 1. Usa la nuova RPC per ottenere l'email dall'username
-    let { data: userEmail, error: emailError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
-
-    console.log(`[DBService] RPC Result for ${cleanUsername}:`, { userEmail, emailError });
-
-    // FALLBACK: Se la RPC fallisce (magari perché l'utente non è 'active'), proviamo una query diretta
+    // Email is the default for new accounts; existing usernames remain supported.
+    let userEmail: string | null = cleanUsername.includes('@') ? cleanUsername.toLowerCase() : null;
     if (!userEmail) {
-      console.log(`[DBService] RPC null, attempting fallback direct lookup for: ${cleanUsername}`);
-      const { data: fallbackWorker } = await supabase
-        .from('workers')
-        .select('email, status')
-        .eq('username', cleanUsername)
-        .maybeSingle();
-
-      if (fallbackWorker) {
-        console.warn(`[DBService] User found via fallback but might be inactive. Status: ${fallbackWorker.status}`);
-        userEmail = fallbackWorker.email;
+      const lookup = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
+      userEmail = lookup.data;
+      if (!userEmail) {
+        const { data: worker } = await supabase.from('workers')
+          .select('email, status').eq('username', cleanUsername).maybeSingle();
+        if (worker?.status === 'active') userEmail = worker.email;
       }
     }
-
-    if (emailError || !userEmail) {
-      console.error('Non trovo l\'utente o utente non attivo:', emailError);
-      return null;
-    }
+    if (!userEmail) return null;
 
     // 2. Fai il login con Supabase Auth usando l'email ottenuta
     const res = await supabase.auth.signInWithPassword({
@@ -1257,9 +1254,6 @@ class DBService {
       password: password
     });
 
-    console.log("[DBService] LOGIN RESULT RAW:", res);
-    const sessionCheck = await supabase.auth.getSession();
-    console.log("[DBService] SESSION AFTER LOGIN:", sessionCheck);
 
     const { data: authData, error: authError } = res;
 

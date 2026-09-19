@@ -49,6 +49,7 @@ const CommunicationsHub = React.lazy(() => import('./components/CommunicationsHu
 // --- Local Shared Components ---
 import { UpgradeModal } from './components/UpgradeModal';
 import OnboardingGuide from './components/OnboardingGuide';
+import { RegistrationWelcome } from './components/RegistrationWelcome';
 import AIChatAssistant from './components/AIChatAssistant';
 
 export const canUserAccessProject = (project: Partial<Project>, userId: string) => {
@@ -429,6 +430,8 @@ const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile] = useState(window.innerWidth < 768);
   const [isCommsUpgradeOpen, setIsCommsUpgradeOpen] = useState(false);
+  const [registrationWelcomeCompanyId, setRegistrationWelcomeCompanyId] = useState(() => sessionStorage.getItem('registration_welcome'));
+  const showRegistrationWelcome = !!registrationWelcomeCompanyId && registrationWelcomeCompanyId === user?.companyId;
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('onboarding_v1') && window.innerWidth >= 768;
   });
@@ -632,6 +635,12 @@ const App: React.FC = () => {
                         </button>
                       </div>
                     )}
+                    {showRegistrationWelcome && <RegistrationWelcome onComplete={() => {
+                      sessionStorage.removeItem('registration_welcome');
+                      setRegistrationWelcomeCompanyId(null);
+                      setShowOnboarding(false);
+                      localStorage.setItem('onboarding_v1', 'completed');
+                    }} />}
                     <Routes>
                       <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                       <Route path="/reports" element={<ReportsView user={user} />} />
@@ -646,7 +655,7 @@ const App: React.FC = () => {
                       <Route path="/help" element={<HelpView user={user} isMobile={isMobile} t={t} />} />
                       <Route path="*" element={<Navigate to="/reports" />} />
                     </Routes>
-                    {showOnboarding && user && authService.canAccessAdmin(user) && (
+                    {showOnboarding && !showRegistrationWelcome && user && authService.canAccessAdmin(user) && (
                       <OnboardingGuide
                         userRole={user.role}
                         onComplete={() => {

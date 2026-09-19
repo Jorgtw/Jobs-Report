@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { User as UserIcon, Lock, CheckCircle2, Building2, ShieldAlert } from 'lucide-react';
 import { User } from '../types';
 import { db } from '../services/dbService';
@@ -17,10 +18,17 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
   const isDemoAccount = user.username?.toLowerCase().includes('demo') || false;
   const isAdmin = user.role === 'admin' || user.role === 'superadmin';
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'company'>('profile');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'profile' | 'company'>(searchParams.get('tab') === 'company' && isAdmin ? 'company' : 'profile');
+  const [savedVat, setSavedVat] = useState('');
+
+  useEffect(() => {
+    if (isAdmin && searchParams.get('tab') === 'company') setActiveTab('company');
+  }, [searchParams, isAdmin]);
 
   const [passForm, setPassForm] = useState({ newPass: '', confirmPass: '' });
   const [profileForm, setProfileForm] = useState({
+    name: user.name || '',
     email: user.email || '',
     phone: user.phone || '',
     address: user.address || ''
@@ -75,6 +83,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
       db.getCompanyDetails(user.companyId)
         .then(comp => {
           if (comp) {
+            setSavedVat(comp.vatNumber || comp.vat_number || '');
             setCompanyForm({
               name: comp.name || '',
               email: comp.email || '',
@@ -154,9 +163,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
         phone: companyForm.phone,
         address: companyForm.address,
         city: companyForm.city,
-        country: companyForm.country
+        country: companyForm.country,
+        ...(!savedVat && companyForm.vatNumber.trim() ? { vatNumber: companyForm.vatNumber.trim() } : {})
       });
 
+      setSavedVat(companyForm.vatNumber.trim());
       if (user.companyName !== companyForm.name) {
         const updatedUser = { ...user, companyName: companyForm.name };
         if (onUpdate) onUpdate(updatedUser);
@@ -246,6 +257,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
               <h2 className="text-lg font-black text-slate-900 mb-4">{t('auth.profileDetails')}</h2>
               
               <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label htmlFor="profile-name" className="mb-2 block text-xs font-bold text-slate-500">{t('auth.contactNameLabel')}</label>
+                  <input id="profile-name" required value={profileForm.name} onChange={e => setProfileForm({ ...profileForm, name: e.target.value })} disabled={isDemoAccount} className="w-full rounded-xl bg-slate-50 px-4 py-3" autoComplete="name" />
+                </div>
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{t('auth.email')}</label>
                   <input
@@ -373,6 +388,12 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
           </div>
 
           <form onSubmit={handleCompanyUpdate} className="space-y-6">
+            <p className="text-sm text-slate-500">{t('auth.completeProfileLater')}</p>
+            <div>
+              <label htmlFor="company-vat" className="mb-2 block text-sm font-semibold text-slate-700">{t('auth.vatNumber')}</label>
+              <input id="company-vat" value={companyForm.vatNumber} onChange={e => setCompanyForm({ ...companyForm, vatNumber: e.target.value })} disabled={isDemoAccount || companyLoading || !!savedVat} className="w-full rounded-xl bg-slate-50 px-4 py-3 disabled:text-slate-500" />
+              <p className="mt-1 text-xs text-slate-500">{t(savedVat ? 'auth.vatSavedHint' : 'auth.vatLaterHint')}</p>
+            </div>
             <div>
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-4 text-blue-600">
                 {t('auth.editableFieldsSection') || 'Informazioni Modificabili'}
@@ -474,24 +495,6 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-slate-500">
-                      {t('auth.vatNumber') || 'Partita IVA / CVR'}
-                    </label>
-                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100 flex items-center gap-1">
-                      <Lock size={10} /> {t('auth.fixedLabel') || 'Fisso'}
-                    </span>
-                  </div>
-                  <input
-                    type="text"
-                    readOnly
-                    disabled
-                    className="w-full px-4 py-3 rounded-xl bg-slate-100 border-none text-slate-500 font-mono text-sm cursor-not-allowed select-all"
-                    value={companyForm.vatNumber || 'Non specificata'}
-                  />
-                </div>
-
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-500">
