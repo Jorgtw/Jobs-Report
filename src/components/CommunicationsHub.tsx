@@ -179,6 +179,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser }) =>
   // Data for Selects
   const [workers, setWorkers] = useState<AppUser[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const eligibleRecipients = workers.filter(u => u.status === 'active' && u.id !== currentUser.id);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const projectsRef = useRef<Project[]>([]);
@@ -729,7 +730,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser }) =>
                   <div>
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('communications.recipient')}</label>
                     <UserMultiSelect 
-                      users={workers.filter(u => u.id !== currentUser.id)}
+                      users={eligibleRecipients}
                       selectedIds={forwardRecipientIds}
                       onChange={setForwardRecipientIds}
                       placeholder={t('communications.selectUsers')}
@@ -907,7 +908,7 @@ const CommunicationsHub: React.FC<CommunicationsHubProps> = ({ currentUser }) =>
                 {newMsg.targetType === 'user' && (
                   <div className="mb-3">
                     <UserMultiSelect 
-                      users={workers.filter(u => u.id !== currentUser.id)}
+                      users={eligibleRecipients}
                       selectedIds={newMsg.targetIds}
                       onChange={(ids) => setNewMsg(prev => ({ ...prev, targetIds: ids }))}
                       placeholder={t('communications.selectUsers')}
