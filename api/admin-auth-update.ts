@@ -89,8 +89,45 @@ export default async function handler(req: any, res: any) {
       return res.status(403).json({ error: 'Unauthorized: Insufficient permissions (Admin or Superadmin required)' });
     }
 
-    const { targetUserId, updates, action = 'update' } = req.body;
+    const { targetUserId, updates, action = 'update' } = req.body || {};
     const { companyId } = updates || {};
+
+    // Provision access for a saved worker, never by attaching an arbitrary email account.
+    const ensureWorkerAccount = async (worker: any, password?: string) => {
+      if (!worker.email || !worker.company_id) throw new Error('ACCESS_EMAIL_REQUIRED');
+      if (worker.status !== 'active') throw new Error('ACCESS_WORKER_INACTIVE');
+      const { data: protectedRoles, error: roleError } = await supabaseAdmin.from('user_roles')
+        .select('role').in('user_id', [worker.id, worker.auth_id].filter(Boolean)).eq('role', 'superadmin');
+      if (roleError) throw new Error('ACCESS_CHECK_FAILED');
+      if (!isSuperAdmin && (worker.role === 'superadmin' || protectedRoles?.length)) {
+        throw new Error('ACCESS_PROTECTED_ACCOUNT');
+      }
+      let authId = worker.auth_id;
+      if (authId) {
+        if (authId === requesterAuthUser.id && worker.id !== requesterData.id) throw new Error('ACCESS_IDENTITY_MISMATCH');
+        const { data, error } = await supabaseAdmin.auth.admin.getUserById(authId);
+        if (error || !data?.user) throw new Error('ACCESS_ACCOUNT_NOT_FOUND');
+        if (data.user.email?.toLowerCase() !== worker.email.trim().toLowerCase()) throw new Error('ACCESS_IDENTITY_MISMATCH');
+      } else {
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
+          email: worker.email.trim(), email_confirm: true,
+          ...(password ? { password } : {}),
+          user_metadata: { name: worker.name }
+        });
+        if (error || !data?.user) throw new Error('ACCESS_CREATE_FAILED');
+        authId = data.user.id;
+        const { data: linked, error: linkError } = await supabaseAdmin.from('workers')
+          .update({ auth_id: authId }).eq('id', worker.id).select('id').single();
+        if (linkError || !linked) throw new Error('ACCESS_LINK_FAILED');
+      }
+      if (isSuperAdmin || adminCompanyIds.has(worker.company_id)) {
+        const { error: membershipError } = await supabaseAdmin.from('user_companies').upsert({
+          auth_id: authId, company_id: worker.company_id, role: worker.role || 'operator'
+        }, { onConflict: 'auth_id,company_id' });
+        if (membershipError) throw new Error('ACCESS_MEMBERSHIP_FAILED');
+      }
+      return authId;
+    };
     
     // --- CREATE NEW USER ---
     if (action === 'create' || action === 'create_idempotent') {
@@ -122,6 +159,7 @@ export default async function handler(req: any, res: any) {
           
       } else {
         const { data: authListData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) return res.status(500).json({ error: 'Identity registry lookup failed' });
         const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
 
         if (existingAuthUser) {
@@ -179,6 +217,13 @@ export default async function handler(req: any, res: any) {
         return res.status(400).json({ error: 'Missing targetUserId or updates' });
       }
 
+      if (updates.role && !isSuperAdmin && !['operator', 'worker', 'supervisor', 'admin'].includes(updates.role.toLowerCase())) {
+        return res.status(403).json({ error: 'Unauthorized: Invalid or privileged role assignment' });
+      }
+      if (updates.password && (typeof updates.password !== 'string' || updates.password.length < 6)) {
+        return res.status(400).json({ error: 'ACCESS_PASSWORD_TOO_SHORT' });
+      }
+
       // Server-side retrieval of target worker from Database (never trust client payload)
       const { data: targetWorker, error: targetDbError } = await supabaseAdmin
         .from('workers')
@@ -234,12 +279,11 @@ export default async function handler(req: any, res: any) {
       // 3. Handle sensitive Auth updates (email / password) with strict verification
       const isAuthUpdate = !!(updates.email || updates.password);
       if (isAuthUpdate) {
-        // Strict requirement: target worker MUST have an auth_id. Never fallback to admin auth_id!
-        if (!targetWorker.auth_id) {
-          return res.status(400).json({ 
-            error: 'Target worker has no linked Auth account (auth_id is missing)' 
-          });
-        }
+        targetWorker.auth_id = await ensureWorkerAccount({
+          ...targetWorker,
+          email: targetWorker.email || updates.email,
+          status: updates.status || targetWorker.status
+        }, updates.password);
 
         // Verify target auth account exists in Supabase Auth system
         const { data: targetAuthData, error: authLookupErr } = await supabaseAdmin.auth.admin.getUserById(targetWorker.auth_id);
@@ -309,7 +353,7 @@ export default async function handler(req: any, res: any) {
         if (isSuperAdmin) {
           dbUpdates.role = requestedRole;
         } else {
-          if (['operator', 'supervisor', 'admin'].includes(requestedRole)) {
+          if (['operator', 'worker', 'supervisor', 'admin'].includes(requestedRole)) {
             dbUpdates.role = requestedRole;
           } else {
             return res.status(403).json({ error: 'Unauthorized: Invalid or privileged role assignment' });
@@ -335,6 +379,12 @@ export default async function handler(req: any, res: any) {
         return res.status(500).json({ error: 'Update failed in database.', detailed: finalDbError });
       }
 
+      if (dbUpdates.role && targetWorker.auth_id) {
+        const { error: membershipError } = await supabaseAdmin.from('user_companies')
+          .update({ role: dbUpdates.role }).eq('auth_id', targetWorker.auth_id).eq('company_id', targetWorker.company_id);
+        if (membershipError) return res.status(500).json({ error: 'ACCESS_MEMBERSHIP_FAILED' });
+      }
+
       return res.status(200).json({ success: true });
     }
 
@@ -346,7 +396,7 @@ export default async function handler(req: any, res: any) {
       // 1. Fetch worker data from database
       const { data: worker, error: workerErr } = await supabaseAdmin
         .from('workers')
-        .select('id, email, name, auth_id, username, company_id')
+        .select('id, email, name, auth_id, username, company_id, role, status')
         .eq('id', targetUserId)
         .maybeSingle();
 
@@ -380,22 +430,11 @@ export default async function handler(req: any, res: any) {
         }
       }
 
-      let currentAuthId = worker.auth_id;
+      const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+      if (!RESEND_API_KEY) return res.status(503).json({ error: 'ACCESS_EMAIL_NOT_CONFIGURED' });
+      await ensureWorkerAccount(worker);
 
-      // If no auth_id, check if user exists in Auth by email
-      if (!currentAuthId) {
-        const { data: authListData } = await supabaseAdmin.auth.admin.listUsers();
-        const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === worker.email.toLowerCase());
-
-        if (existingAuthUser) {
-          currentAuthId = existingAuthUser.id;
-          await supabaseAdmin.from('workers').update({ auth_id: currentAuthId }).eq('id', worker.id);
-        } else {
-          return res.status(400).json({ error: 'Target worker has no linked Auth account (auth_id is missing)' });
-        }
-      }
-
-      console.log(`[API] Generating recovery link for worker ID: ${targetUserId} (${worker.email})`);
+      console.log(`[API] Generating recovery link for worker ID: ${targetUserId}`);
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: worker.email,
@@ -406,23 +445,23 @@ export default async function handler(req: any, res: any) {
       
       if (linkError || !linkData?.properties?.action_link) {
         console.error('[API] Supabase Link Generation Error:', linkError);
-        return res.status(500).json({ success: false, error: 'RECOVERY_LINK_FAILED' });
+        return res.status(500).json({ success: false, error: 'ACCESS_LINK_GENERATION_FAILED' });
       }
 
-      const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
       const username = worker.username || worker.email;
-      const password = '(usa il bottone qui sotto)';
+      const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]!));
 
       const emailHtml = `
         <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
           <h2 style="color:#1e293b;margin-bottom:16px;">Accesso a Jobs Report</h2>
-          <p style="color:#475569;font-size:15px;">Ciao <strong>${worker.name || 'Utente'}</strong>,</p>
+          <p style="color:#475569;font-size:15px;">Ciao <strong>${escapeHtml(worker.name || 'Utente')}</strong>,</p>
           <p style="color:#475569;font-size:15px;">Il tuo amministratore ti ha inviato le istruzioni per accedere a <strong>Jobs Report</strong>.</p>
           
           <div style="background-color:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #f1f5f9;">
-            <p style="margin:0 0 8px 0;font-size:13px;color:#64748b;font-weight:bold;text-transform:uppercase;letter-spacing:0.05em;">Credenziali Temporanee</p>
-            <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Username:</strong> ${username}</p>
-            <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Password:</strong> ${password}</p>
+            <p style="margin:0 0 8px 0;font-size:13px;color:#64748b;font-weight:bold;">Il tuo accesso</p>
+            <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Username:</strong> ${escapeHtml(username)}</p>
           </div>
 
           <p style="color:#475569;font-size:15px;">Clicca il bottone qui sotto per impostare la tua password definitiva e accedere al sistema:</p>
@@ -434,12 +473,12 @@ export default async function handler(req: any, res: any) {
           </div>
           
           <p style="color:#94a3b8;font-size:11px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px;text-align:center;">
-            Il link è valido per 24 ore. Se non hai richiesto questo accesso, puoi ignorare questa email.<br>
+            Usa il link più recente. Se è scaduto, chiedi un nuovo invio al tuo amministratore.<br>
             © Jobs Report
           </p>
         </div>`;
 
-      const emailText = `Ciao ${worker.name},\n\nEcco le tue credenziali:\nUsername: ${username}\nPassword: ${password}\n\nAccedi qui: ${linkData.properties.action_link}`;
+      const emailText = `Ciao ${worker.name},\n\nUsername: ${username}\n\nImposta la tua password: ${linkData.properties.action_link}\n\nSe il link è scaduto, chiedi un nuovo invio al tuo amministratore.`;
 
       const resendPayload = {
         from: 'Jobs Report <no-reply@jobs-report.app>',
@@ -462,7 +501,7 @@ export default async function handler(req: any, res: any) {
 
       if (!resendResponse.ok) {
         console.error('RESEND_SEND_FAILED', resendData);
-        return res.status(500).json({ error: 'Email sending failed.' });
+        return res.status(502).json({ error: 'ACCESS_EMAIL_SEND_FAILED' });
       }
 
       await supabaseAdmin.from('workers').update({ last_invitation_sent_at: new Date().toISOString() }).eq('id', targetUserId);
@@ -475,6 +514,7 @@ export default async function handler(req: any, res: any) {
 
   } catch (err: any) {
     console.error('Admin Auth Service Error:', err);
+    if (err.message?.startsWith('ACCESS_')) return res.status(400).json({ error: err.message });
     return res.status(500).json({ error: 'Internal server error', message: err.message });
   }
 }

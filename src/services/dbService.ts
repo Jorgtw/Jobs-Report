@@ -253,6 +253,9 @@ class DBService {
        console.log('Worker found/created but no auth_id yet. Association will trigger on first login.');
     }
 
+    if (typeof worker.password === 'string' && worker.password.trim()) {
+      await this.updateUser(workerId!, { password: worker.password });
+    }
     return this.getUserById(workerId!);
   }
 
@@ -261,16 +264,11 @@ class DBService {
     const mappedUpdates = this.mapAppWorkerToSupabase(updates);
     const worker = await this.getUserById(id);
 
-    // SSOT: If role changed, update user_companies as well
-    if (updates.role && worker?.authId) {
-      await supabase.from('user_companies')
-        .update({ role: updates.role })
-        .eq('auth_id', worker.authId)
-        .eq('company_id', this.requireCompanyId());
-    }
-
     // Sync with Supabase Auth via Admin API for sensitive fields
-    const isSensitiveUpdate = !!(updates.email || updates.password);
+    const hasPassword = typeof updates.password === 'string' && updates.password.trim() !== '';
+    const hasEmail = typeof updates.email === 'string' && updates.email.trim() !== '';
+    const isSensitiveUpdate = hasPassword || (hasEmail && updates.email !== worker?.email);
+
     if (isSensitiveUpdate) {
       const token = await this.getAuthToken();
       const response = await fetch(getApiUrl('/api/admin-auth-update'), {
@@ -281,7 +279,11 @@ class DBService {
         },
         body: JSON.stringify({
            targetUserId: id,
-           updates: mappedUpdates
+           updates: {
+             ...mappedUpdates,
+             password: hasPassword ? updates.password : undefined,
+             email: hasEmail ? updates.email : undefined
+           }
         })
       });
       if (!response.ok) {
@@ -300,10 +302,16 @@ class DBService {
         }
         throw new Error(errorMessage);
       }
+      return;
     }
 
     const { error } = await supabase.from('workers').update(mappedUpdates).eq('id', id);
     if (error) throw error;
+    if (updates.role && worker?.authId) {
+      const { error: membershipError } = await supabase.from('user_companies')
+        .update({ role: updates.role }).eq('auth_id', worker.authId).eq('company_id', this.requireCompanyId());
+      if (membershipError) throw membershipError;
+    }
   }
 
   async addSubcontractor(sub: any) {

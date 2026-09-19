@@ -1,4 +1,13 @@
 export const auth = {
+  saveAndSendInstructions: "Kaydet ve talimatları gönder",
+  instructionsSent: "Talimatlar gönderildi. Çalışan e-postadaki bağlantıyı açıp parola seçebilir. Spam klasörünü de kontrol edin.",
+  accessSetupHint: "En az 6 karakterli bir parola belirleyin veya alanı boş bırakıp bağlantıyı gönderin; çalışan kendi parolasını seçsin.",
+  accessPasswordTooShort: "Parola en az 6 karakter olmalıdır.",
+  accessWorkerInactive: "Erişimi etkinleştirmeden önce çalışanı aktif yapıp kaydedin.",
+  accessEmailRequired: "Erişimi etkinleştirmek için geçerli bir e-posta adresi girin.",
+  accessEmailUnavailable: "E-posta gönderilmedi: posta hizmeti kullanılamıyor veya yanlış yapılandırılmış. Doğrudan giriş için parola belirleyip kaydedebilirsiniz.",
+  accessProtectedAccount: "Bu hesap değiştirilemiyor. Kullanıcı bağlantısını doğrulamak için destek alın.",
+  accessSetupFailed: "Erişim etkinleştirilemedi. E-postayı kontrol edin; zaten bir hesaba bağlıysa yinelenen hesap oluşturmadan bağlamak için destek alın.",
   profile: "Profil",
   changePassword: "Şifreyi Değiştir",
   newPassword: "Yeni Şifre",

@@ -1,4 +1,13 @@
 export const auth = {
+  saveAndSendInstructions: "Guardar y enviar instrucciones",
+  instructionsSent: "Instrucciones enviadas. El empleado puede abrir el enlace del correo y elegir una contraseña. Revisa también el correo no deseado.",
+  accessSetupHint: "Define una contraseña de al menos 6 caracteres o deja este campo vacío y envía el enlace para que el empleado elija su contraseña.",
+  accessPasswordTooShort: "La contraseña debe tener al menos 6 caracteres.",
+  accessWorkerInactive: "Activa al empleado y guarda antes de habilitar el acceso.",
+  accessEmailRequired: "Introduce un correo válido para habilitar el acceso.",
+  accessEmailUnavailable: "Correo no enviado: el servicio no está disponible o está mal configurado. Puedes definir y guardar una contraseña para permitir el acceso directo.",
+  accessProtectedAccount: "No se puede modificar esta cuenta. Contacta con soporte para verificar la vinculación del usuario.",
+  accessSetupFailed: "No se pudo habilitar el acceso. Revisa el correo; si ya está asociado a una cuenta, pide ayuda para vincularlo sin duplicados.",
   profile: "Perfil",
   changePassword: "Cambiar Contraseña",
   newPassword: "Nueva Contraseña",

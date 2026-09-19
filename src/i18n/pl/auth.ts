@@ -1,4 +1,13 @@
 export const auth = {
+  saveAndSendInstructions: "Zapisz i wyślij instrukcje",
+  instructionsSent: "Instrukcje wysłane. Pracownik może otworzyć link w e-mailu i wybrać hasło. Sprawdź też folder spam.",
+  accessSetupHint: "Ustaw hasło z co najmniej 6 znakami lub pozostaw puste pole i wyślij link, aby pracownik wybrał własne hasło.",
+  accessPasswordTooShort: "Hasło musi zawierać co najmniej 6 znaków.",
+  accessWorkerInactive: "Ustaw pracownika jako aktywnego i zapisz przed włączeniem dostępu.",
+  accessEmailRequired: "Wpisz poprawny adres e-mail, aby włączyć dostęp.",
+  accessEmailUnavailable: "E-mail nie został wysłany: usługa pocztowa jest niedostępna lub źle skonfigurowana. Możesz ustawić i zapisać hasło do bezpośredniego logowania.",
+  accessProtectedAccount: "Nie można zmienić tego konta. Skontaktuj się z pomocą, aby sprawdzić powiązanie użytkownika.",
+  accessSetupFailed: "Nie udało się włączyć dostępu. Sprawdź e-mail; jeśli jest już przypisany do konta, poproś o pomoc w połączeniu bez duplikatów.",
   profile: "Profil",
   changePassword: "Zmień Hasło",
   newPassword: "Nowe Hasło",

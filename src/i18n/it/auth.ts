@@ -1,4 +1,13 @@
 export const auth = {
+  saveAndSendInstructions: "Salva e invia istruzioni",
+  instructionsSent: "Istruzioni inviate. Il dipendente può aprire il link nell’email e scegliere la password. Controllare anche la posta indesiderata.",
+  accessSetupHint: "Puoi impostare una password di almeno 6 caratteri, oppure lasciare il campo vuoto e inviare il link: il dipendente sceglierà la propria password.",
+  accessPasswordTooShort: "La password deve contenere almeno 6 caratteri.",
+  accessWorkerInactive: "Imposta il dipendente come attivo e salva prima di abilitare l’accesso.",
+  accessEmailRequired: "Inserisci un indirizzo email valido per abilitare l’accesso.",
+  accessEmailUnavailable: "Email non inviata: il servizio di posta non è disponibile o configurato correttamente. Puoi impostare una password e salvarla per consentire l’accesso diretto.",
+  accessProtectedAccount: "Non è possibile modificare questo account. Chiedi assistenza per verificare il collegamento dell’utente.",
+  accessSetupFailed: "Non è stato possibile abilitare l’accesso. Verifica l’email; se è già associata a un account, chiedi assistenza per collegarlo senza creare duplicati.",
   profile: "Profilo",
   changePassword: "Cambia Password",
   newPassword: "Nuova Password",

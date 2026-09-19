@@ -1,4 +1,13 @@
 export const auth = {
+  saveAndSendInstructions: "Gem og send vejledning",
+  instructionsSent: "Vejledningen er sendt. Medarbejderen kan åbne linket i mailen og vælge en adgangskode. Tjek også spam.",
+  accessSetupHint: "Angiv en adgangskode på mindst 6 tegn, eller lad feltet stå tomt og send linket, så medarbejderen selv kan vælge.",
+  accessPasswordTooShort: "Adgangskoden skal indeholde mindst 6 tegn.",
+  accessWorkerInactive: "Sæt medarbejderen som aktiv, og gem før adgang aktiveres.",
+  accessEmailRequired: "Indtast en gyldig e-mailadresse for at aktivere adgang.",
+  accessEmailUnavailable: "Mailen blev ikke sendt: mailtjenesten er utilgængelig eller forkert konfigureret. Du kan angive og gemme en adgangskode til direkte login.",
+  accessProtectedAccount: "Denne konto kan ikke ændres. Kontakt support for at kontrollere brugerens kontotilknytning.",
+  accessSetupFailed: "Adgangen kunne ikke aktiveres. Kontrollér e-mailen; hvis den allerede er tilknyttet en konto, skal support hjælpe med tilknytningen uden dubletter.",
   profile: "Profil",
   changePassword: "Skift adgangskode",
   newPassword: "Ny adgangskode",
