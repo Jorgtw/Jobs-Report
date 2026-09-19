@@ -1,4 +1,11 @@
 export const auth = {
+  sendLoginDetails: "Kaydet ve erişimi gönder",
+  loginDetailsSent: "Bağlantı, kullanıcı adı, parola ve telefon ile PC talimatlarını içeren e-posta gönderildi. Spam klasörünü de kontrol edin.",
+  loginDetailsHint: "Erişimi göndermek için en az 6 karakterli yeni bir parola yazın. Önceki parolanın yerini alır ve e-postaya eklenir. Yalnızca profili düzenlemek için alanı boş bırakıp Kaydet veya Güncelle düğmesine basın.",
+  showAccessPassword: "Parolayı göster",
+  hideAccessPassword: "Parolayı gizle",
+  accessPasswordSavedEmailFailed: "Yeni parola kaydedildi, ancak e-posta gönderilmedi. Aynı parola ile tekrar deneyin veya bilgileri çalışana doğrudan verin.",
+  accessPasswordUpdateFailed: "Parola kaydedilmedi. E-posta gönderilmedi. Başka bir parola seçip tekrar deneyin.",
   saveAndSendInstructions: "Kaydet ve talimatları gönder",
   instructionsSent: "Talimatlar gönderildi. Çalışan e-postadaki bağlantıyı açıp parola seçebilir. Spam klasörünü de kontrol edin.",
   accessSetupHint: "En az 6 karakterli bir parola belirleyin veya alanı boş bırakıp bağlantıyı gönderin; çalışan kendi parolasını seçsin.",

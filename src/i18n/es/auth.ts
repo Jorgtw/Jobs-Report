@@ -1,4 +1,11 @@
 export const auth = {
+  sendLoginDetails: "Guardar y enviar acceso",
+  loginDetailsSent: "Correo enviado con enlace, usuario, contraseña e instrucciones para teléfono y PC. Revisa también el spam.",
+  loginDetailsHint: "Para enviar el acceso, escribe una nueva contraseña de al menos 6 caracteres. Sustituirá la anterior y se incluirá en el correo. Para editar solo la ficha, deja el campo vacío y pulsa Guardar o Actualizar.",
+  showAccessPassword: "Mostrar contraseña",
+  hideAccessPassword: "Ocultar contraseña",
+  accessPasswordSavedEmailFailed: "La nueva contraseña se guardó, pero el correo no se envió. Reintenta con la misma contraseña o entrega los datos al empleado.",
+  accessPasswordUpdateFailed: "La contraseña no se guardó. No se envió ningún correo. Elige otra contraseña e inténtalo de nuevo.",
   saveAndSendInstructions: "Guardar y enviar instrucciones",
   instructionsSent: "Instrucciones enviadas. El empleado puede abrir el enlace del correo y elegir una contraseña. Revisa también el correo no deseado.",
   accessSetupHint: "Define una contraseña de al menos 6 caracteres o deja este campo vacío y envía el enlace para que el empleado elija su contraseña.",

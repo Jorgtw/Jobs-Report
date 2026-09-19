@@ -1,4 +1,11 @@
 export const auth = {
+  sendLoginDetails: "Gem og send adgang",
+  loginDetailsSent: "Mail sendt med link, brugernavn, adgangskode og vejledning til telefon og PC. Tjek også spam.",
+  loginDetailsHint: "Indtast en ny adgangskode på mindst 6 tegn for at sende adgang. Den erstatter den tidligere og medtages i mailen. Lad feltet stå tomt, og tryk Gem eller Opdater for kun at ændre profilen.",
+  showAccessPassword: "Vis adgangskode",
+  hideAccessPassword: "Skjul adgangskode",
+  accessPasswordSavedEmailFailed: "Den nye adgangskode er gemt, men mailen blev ikke sendt. Prøv igen med samme adgangskode, eller giv oplysningerne direkte til medarbejderen.",
+  accessPasswordUpdateFailed: "Adgangskoden blev ikke gemt. Ingen mail blev sendt. Vælg en anden adgangskode, og prøv igen.",
   saveAndSendInstructions: "Gem og send vejledning",
   instructionsSent: "Vejledningen er sendt. Medarbejderen kan åbne linket i mailen og vælge en adgangskode. Tjek også spam.",
   accessSetupHint: "Angiv en adgangskode på mindst 6 tegn, eller lad feltet stå tomt og send linket, så medarbejderen selv kan vælge.",

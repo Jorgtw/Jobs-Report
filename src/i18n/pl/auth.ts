@@ -1,4 +1,11 @@
 export const auth = {
+  sendLoginDetails: "Zapisz i wyślij dostęp",
+  loginDetailsSent: "Wysłano e-mail z linkiem, nazwą użytkownika, hasłem i instrukcjami na telefon i PC. Sprawdź też spam.",
+  loginDetailsHint: "Aby wysłać dostęp, wpisz nowe hasło z co najmniej 6 znakami. Zastąpi poprzednie i zostanie wysłane e-mailem. Aby zmienić tylko dane, pozostaw puste pole i naciśnij Zapisz lub Aktualizuj.",
+  showAccessPassword: "Pokaż hasło",
+  hideAccessPassword: "Ukryj hasło",
+  accessPasswordSavedEmailFailed: "Nowe hasło zapisano, ale e-mail nie został wysłany. Spróbuj ponownie z tym samym hasłem lub przekaż dane pracownikowi.",
+  accessPasswordUpdateFailed: "Nie zapisano hasła. Nie wysłano e-maila. Wybierz inne hasło i spróbuj ponownie.",
   saveAndSendInstructions: "Zapisz i wyślij instrukcje",
   instructionsSent: "Instrukcje wysłane. Pracownik może otworzyć link w e-mailu i wybrać hasło. Sprawdź też folder spam.",
   accessSetupHint: "Ustaw hasło z co najmniej 6 znakami lub pozostaw puste pole i wyślij link, aby pracownik wybrał własne hasło.",

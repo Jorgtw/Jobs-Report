@@ -1336,7 +1336,7 @@ class DBService {
     return user;
   }
 
-  async sendAccessInstructions(id: string): Promise<void> {
+  async sendAccessInstructions(id: string, password?: string): Promise<void> {
     const token = await this.getAuthToken();
     const response = await fetch(getApiUrl('/api/admin-auth-update'), {
       method: 'POST',
@@ -1345,8 +1345,9 @@ class DBService {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-         action: 'generate-recovery-link',
-         targetUserId: id
+         action: password === undefined ? 'generate-recovery-link' : 'send-access',
+         targetUserId: id,
+         password
       })
     });
 

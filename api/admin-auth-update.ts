@@ -389,9 +389,14 @@ export default async function handler(req: any, res: any) {
     }
 
     // --- GENERATE RECOVERY LINK ---
-    if (action === 'generate-recovery-link') {
+    if (action === 'generate-recovery-link' || action === 'send-access') {
       const { targetUserId } = req.body;
       if (!targetUserId) return res.status(400).json({ error: 'Missing targetUserId' });
+      const directAccess = action === 'send-access';
+      const password = directAccess ? req.body.password : undefined;
+      if (directAccess && (typeof password !== 'string' || password.trim().length < 6)) {
+        return res.status(400).json({ error: 'ACCESS_PASSWORD_TOO_SHORT' });
+      }
 
       // 1. Fetch worker data from database
       const { data: worker, error: workerErr } = await supabaseAdmin
@@ -432,20 +437,23 @@ export default async function handler(req: any, res: any) {
 
       const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
       if (!RESEND_API_KEY) return res.status(503).json({ error: 'ACCESS_EMAIL_NOT_CONFIGURED' });
-      await ensureWorkerAccount(worker);
+      const workerAuthId = await ensureWorkerAccount(worker);
 
-      console.log(`[API] Generating recovery link for worker ID: ${targetUserId}`);
-      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'recovery',
-        email: worker.email,
-        options: {
-          redirectTo: `https://jobs-report.vercel.app/`
+      const loginUrl = 'https://jobs-report.vercel.app/';
+      let actionUrl = loginUrl;
+      if (directAccess) {
+        const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(workerAuthId, { password });
+        if (passwordError) return res.status(400).json({ error: 'ACCESS_PASSWORD_UPDATE_FAILED' });
+      } else {
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+          type: 'recovery',
+          email: worker.email,
+          options: { redirectTo: loginUrl }
+        });
+        if (linkError || !linkData?.properties?.action_link) {
+          return res.status(500).json({ success: false, error: 'ACCESS_LINK_GENERATION_FAILED' });
         }
-      });
-      
-      if (linkError || !linkData?.properties?.action_link) {
-        console.error('[API] Supabase Link Generation Error:', linkError);
-        return res.status(500).json({ success: false, error: 'ACCESS_LINK_GENERATION_FAILED' });
+        actionUrl = linkData.properties.action_link;
       }
 
       const username = worker.username || worker.email;
@@ -462,23 +470,29 @@ export default async function handler(req: any, res: any) {
           <div style="background-color:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #f1f5f9;">
             <p style="margin:0 0 8px 0;font-size:13px;color:#64748b;font-weight:bold;">Il tuo accesso</p>
             <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Username:</strong> ${escapeHtml(username)}</p>
+            ${directAccess ? `<p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Password:</strong> <span style="white-space:pre-wrap">${escapeHtml(password)}</span></p>` : ''}
+            <p style="margin:4px 0;font-size:14px;color:#1e293b;"><strong>Link:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
           </div>
 
-          <p style="color:#475569;font-size:15px;">Clicca il bottone qui sotto per impostare la tua password definitiva e accedere al sistema:</p>
+          <p style="color:#475569;font-size:15px;">${directAccess ? 'Usa il nome utente e la password qui sopra per entrare.' : 'Apri il bottone qui sotto per scegliere la tua password.'}</p>
           <div style="text-align:center;margin:32px 0;">
-            <a href="${linkData.properties.action_link}"
+            <a href="${actionUrl}"
                style="display:inline-block;padding:14px 32px;background-color:#2563eb;color:#ffffff;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;box-shadow:0 4px 6px -1px rgba(37, 99, 235, 0.2);">
-              Imposta password e accedi
+              ${directAccess ? 'Apri Jobs Report' : 'Imposta password e accedi'}
             </a>
           </div>
+          <h3>Dal telefono</h3>
+          <ol><li>Tocca «Apri Jobs Report» o il link qui sopra.</li><li>Inserisci il nome utente e la password.</li><li>Tocca «Accedi». Non serve installare nulla.</li></ol>
+          <h3>Dal PC</h3>
+          <ol><li>Apri il link in Chrome, Edge, Safari o Firefox.</li><li>Inserisci lo stesso nome utente e la stessa password.</li><li>Clicca «Accedi».</li></ol>
           
           <p style="color:#94a3b8;font-size:11px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px;text-align:center;">
-            Usa il link più recente. Se è scaduto, chiedi un nuovo invio al tuo amministratore.<br>
+            ${directAccess ? 'Questa password sostituisce quella precedente. Conserva questa email per ritrovare i dati di accesso. Se non riesci a entrare, chiedi al tuo amministratore.' : 'Usa il link più recente. Se è scaduto, chiedi un nuovo invio al tuo amministratore.'}<br>
             © Jobs Report
           </p>
         </div>`;
 
-      const emailText = `Ciao ${worker.name},\n\nUsername: ${username}\n\nImposta la tua password: ${linkData.properties.action_link}\n\nSe il link è scaduto, chiedi un nuovo invio al tuo amministratore.`;
+      const emailText = `Ciao ${worker.name},\n\nLink: ${loginUrl}\nUsername: ${username}\n${directAccess ? `Password: ${password}\nQuesta password sostituisce quella precedente.` : `Scegli la tua password: ${actionUrl}`}\n\nDAL TELEFONO\n1. Tocca il link.\n2. Inserisci nome utente e password.\n3. Tocca Accedi. Non serve installare nulla.\n\nDAL PC\n1. Apri il link in Chrome, Edge, Safari o Firefox.\n2. Inserisci nome utente e password.\n3. Clicca Accedi.\n\nSe non riesci a entrare, chiedi al tuo amministratore.`;
 
       const resendPayload = {
         from: 'Jobs Report <no-reply@jobs-report.app>',
@@ -488,20 +502,23 @@ export default async function handler(req: any, res: any) {
         text: emailText
       };
 
-      const resendResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RESEND_API_KEY}`
-        },
-        body: JSON.stringify(resendPayload)
-      });
-
-      const resendData = await resendResponse.json();
+      let resendResponse: Response;
+      try {
+        resendResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`
+          },
+          body: JSON.stringify(resendPayload)
+        });
+      } catch {
+        return res.status(502).json({ error: directAccess ? 'ACCESS_PASSWORD_SAVED_EMAIL_FAILED' : 'ACCESS_EMAIL_SEND_FAILED' });
+      }
 
       if (!resendResponse.ok) {
-        console.error('RESEND_SEND_FAILED', resendData);
-        return res.status(502).json({ error: 'ACCESS_EMAIL_SEND_FAILED' });
+        console.error('RESEND_SEND_FAILED', resendResponse.status);
+        return res.status(502).json({ error: directAccess ? 'ACCESS_PASSWORD_SAVED_EMAIL_FAILED' : 'ACCESS_EMAIL_SEND_FAILED' });
       }
 
       await supabaseAdmin.from('workers').update({ last_invitation_sent_at: new Date().toISOString() }).eq('id', targetUserId);

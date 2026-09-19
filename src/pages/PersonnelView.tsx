@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Mail, Pencil, Trash2, X, User as UserIcon, AlertCircle } from 'lucide-react';
+import { Plus, Mail, Pencil, Trash2, X, User as UserIcon, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { db } from '../services/dbService';
 import { User, Role, UserStatus } from '../types';
@@ -24,6 +24,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [accessMessage, setAccessMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [sendStatus, setSendStatus] = useState<Record<string, 'success' | 'error'>>({});
 
@@ -58,6 +59,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
 
   const handleEdit = (u: User) => {
     setAccessMessage(null);
+    setShowPassword(false);
     setEditingId(u.id);
     setFormData({
       name: u.name,
@@ -92,20 +94,22 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
       ACCESS_EMAIL_REQUIRED: 'accessEmailRequired',
       ACCESS_EMAIL_NOT_CONFIGURED: 'accessEmailUnavailable',
       ACCESS_EMAIL_SEND_FAILED: 'accessEmailUnavailable',
+      ACCESS_PASSWORD_SAVED_EMAIL_FAILED: 'accessPasswordSavedEmailFailed',
+      ACCESS_PASSWORD_UPDATE_FAILED: 'accessPasswordUpdateFailed',
       ACCESS_PROTECTED_ACCOUNT: 'accessProtectedAccount',
       ACCESS_IDENTITY_MISMATCH: 'accessProtectedAccount'
     };
     return code.startsWith('ACCESS_') ? t(`auth.${messages[code] || 'accessSetupFailed'}`) : `${t('common.saveError')} ${code}`;
   };
 
-  const handleSendInstructions = async (u: { id: string; email?: string }) => {
+  const handleSendInstructions = async (u: { id: string; email?: string }, password: string) => {
     if (!u.email || sendingId) return false;
 
     try {
       setAccessMessage(null);
       setSendingId(u.id);
-      await db.sendAccessInstructions(u.id);
-      setAccessMessage({ type: 'success', text: t('auth.instructionsSent') });
+      await db.sendAccessInstructions(u.id, password);
+      setAccessMessage({ type: 'success', text: t('auth.loginDetailsSent') });
       setSendStatus(prev => ({ ...prev, [u.id]: 'success' }));
       setTimeout(() => setSendStatus(prev => { const next = { ...prev }; delete next[u.id]; return next; }), 3000);
       return true;
@@ -124,13 +128,18 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
     e.preventDefault();
     if (isSaving || sendingId) return;
     const sendInstructions = (e.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'send';
+    if (sendInstructions && formData.password.trim().length < 6) {
+      setAccessMessage({ type: 'error', text: t('auth.accessPasswordTooShort') });
+      return;
+    }
     setIsSaving(true);
     setAccessMessage(null);
     try {
       const isPasswordSet = typeof formData.password === 'string' && formData.password.trim() !== '';
       const data = {
         ...formData,
-        password: isPasswordSet ? formData.password : undefined,
+        // The send endpoint sets the exact password included in the email.
+        password: isPasswordSet && !sendInstructions ? formData.password : undefined,
         subcontractorId: formData.subcontractorId || undefined
       };
       const isSensitive = !!(editingId && (
@@ -158,11 +167,12 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
         setEditingId(savedId);
       }
       setUsers(await db.getUsers());
-      setFormData(prev => ({ ...prev, password: '' }));
       if (sendInstructions && savedId) {
-        const sent = await handleSendInstructions({ id: savedId, email: formData.email });
+        const sent = await handleSendInstructions({ id: savedId, email: formData.email }, formData.password);
         if (!sent) return;
       }
+      setFormData(prev => ({ ...prev, password: '' }));
+      setShowPassword(false);
       setEditingId(null);
       setIsModalOpen(false);
     } catch (err: any) {
@@ -174,6 +184,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
 
   const resetForm = () => {
     setAccessMessage(null);
+    setShowPassword(false);
     const activeCount = users.filter(u => u.status === 'active').length;
     const check = pricingPolicy.checkUserLimit(subStatus?.planCode, activeCount);
     if (!check.allowed) {
@@ -198,6 +209,13 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
       subcontractorId: ''
     });
     setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (isSaving || sendingId) return;
+    setFormData(prev => ({ ...prev, password: '' }));
+    setShowPassword(false);
+    setIsModalOpen(false);
   };
 
   return (
@@ -236,7 +254,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
                 {u.email && (
                   <button
                     disabled={sendingId === u.id || !u.email}
-                    onClick={() => handleSendInstructions(u)}
+                    onClick={() => handleEdit(u)}
                     className={`p-2 rounded-lg transition-all ${sendingId === u.id ? 'bg-slate-100 text-slate-400' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
                     title={t('auth.sendInstructions')}
                   >
@@ -267,11 +285,11 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={closeModal}></div>
           <div className={modalClasses}>
             <div className="flex justify-between items-center mb-6 border-b pb-4">
               <h2 className="text-xl font-bold text-slate-900">{editingId ? t('projects.personnelEdit') : t('projects.personnelNew')}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               {accessMessage && (
@@ -364,19 +382,24 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
                     <FullWidthField label={t('projects.personUsername')}>
                       <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} disabled={isEditingDemo} className={inputClasses} />
                     </FullWidthField>
-                    <FullWidthField label={editingId ? t('auth.resetPassword') : t('projects.personPassword')}>
+                    <FullWidthField label={t('auth.newPassword')}>
                       <div className="space-y-1">
-                        <input
-                          type="password"
-                          autoComplete="new-password"
-                          minLength={6}
-                          value={formData.password}
-                          onChange={e => setFormData({ ...formData, password: e.target.value })}
-                          disabled={isEditingDemo}
-                          className={inputClasses}
-                          placeholder={editingId ? t('auth.passwordChangeHint') : ''}
-                        />
-                        <p className="text-xs text-slate-500 mt-1">{t('auth.accessSetupHint')}</p>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            autoComplete="new-password"
+                            minLength={6}
+                            value={formData.password}
+                            onChange={e => setFormData({ ...formData, password: e.target.value })}
+                            disabled={isEditingDemo}
+                            className={inputClasses}
+                            placeholder={editingId ? t('auth.passwordChangeHint') : ''}
+                          />
+                          <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={t(showPassword ? 'auth.hideAccessPassword' : 'auth.showAccessPassword')} aria-pressed={showPassword} className="shrink-0 p-2 text-slate-600 rounded-lg hover:bg-slate-100">
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">{t('auth.loginDetailsHint')}</p>
                       </div>
                     </FullWidthField>
 
@@ -389,7 +412,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
                           disabled={isSaving || !!sendingId || isEditingDemo}
                           className="w-full px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 shadow-sm"
                         >
-                          <Mail size={16} /> {isSaving || sendingId ? t('auth.sending') : t('auth.saveAndSendInstructions')}
+                          <Mail size={16} /> {isSaving || sendingId ? t('auth.sending') : t('auth.sendLoginDetails')}
                         </button>
                       </div>
                     )}
@@ -406,7 +429,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
                   </div>
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
+                  <button type="button" onClick={closeModal} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
                   <button type="submit" disabled={isSaving || !!sendingId} className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
                     {editingId ? t('common.update') : t('common.save')}
                   </button>

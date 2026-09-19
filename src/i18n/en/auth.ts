@@ -1,4 +1,11 @@
 export const auth = {
+  sendLoginDetails: "Save and send access",
+  loginDetailsSent: "Email sent with the link, username, password, and phone and PC instructions. Also check spam.",
+  loginDetailsHint: "To send access details, enter a new password of at least 6 characters. It replaces the previous password and is included in the email. To edit only the profile, leave it blank and press Save or Update.",
+  showAccessPassword: "Show password",
+  hideAccessPassword: "Hide password",
+  accessPasswordSavedEmailFailed: "The new password was saved, but the email was not sent. Retry with the same password or give the details directly to the employee.",
+  accessPasswordUpdateFailed: "The password was not saved. No email was sent. Choose another password and try again.",
   saveAndSendInstructions: "Save and send instructions",
   instructionsSent: "Instructions sent. The employee can open the email link and choose a password. Also check the spam folder.",
   accessSetupHint: "Set a password of at least 6 characters, or leave this blank and send the link so the employee can choose their own password.",
