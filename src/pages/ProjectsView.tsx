@@ -207,7 +207,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
                     </FullWidthField>
                   </div>
                   <FullWidthField label={t('projects.address')}>
-                    <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputClasses} />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <input type="text" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={`${inputClasses} min-w-0 w-full`} />
+                      {formData.address.trim() && (
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formData.address.trim())}`} target="_blank" rel="noopener noreferrer" aria-label={`Google Maps: ${formData.address}`} title={`Google Maps: ${formData.address}`} className="shrink-0 p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 transition-colors">
+                          <MapPin size={18} />
+                        </a>
+                      )}
+                    </div>
                   </FullWidthField>
                   {!formData.isInternal && (
                     <FullWidthField label={t('projects.billingType')}>
@@ -237,7 +244,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
                       <input type="text" value={formData.siteContactName} onChange={e => setFormData({ ...formData, siteContactName: e.target.value })} className={inputClasses} />
                     </FullWidthField>
                     <FullWidthField label={t('projects.phone')}>
-                      <input type="tel" value={formData.siteContactPhone} onChange={e => setFormData({ ...formData, siteContactPhone: e.target.value })} className={inputClasses} />
+                      <div className="flex items-center gap-2 min-w-0">
+                        <input type="tel" value={formData.siteContactPhone} onChange={e => setFormData({ ...formData, siteContactPhone: e.target.value })} className={`${inputClasses} min-w-0 w-full`} />
+                        {formData.siteContactPhone.trim() && (
+                          <a href={`tel:${formData.siteContactPhone.trim()}`} aria-label={`${t('projects.phone')}: ${formData.siteContactName || formData.siteContactPhone}`} title={formData.siteContactPhone} className="shrink-0 p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 transition-colors">
+                            <Phone size={18} />
+                          </a>
+                        )}
+                      </div>
                     </FullWidthField>
                   </div>
                   <div className="md:col-span-2">
@@ -249,20 +263,27 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
                     <label className="text-[10px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight">{t('projects.assignedPersonnel')}:</label>
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {personnel.map(u => (
-                        <label key={u.id} className="flex items-center gap-2 p-1.5 hover:bg-white rounded-lg transition-colors cursor-pointer group">
-                          <input
-                            type="checkbox"
-                            checked={formData.assignedWorkerIds.includes(u.id)}
-                            onChange={e => {
-                              const newIds = e.target.checked
-                                ? [...formData.assignedWorkerIds, u.id]
-                                : formData.assignedWorkerIds.filter(id => id !== u.id);
-                              setFormData({ ...formData, assignedWorkerIds: newIds });
-                            }}
-                            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-xs font-medium text-slate-700 group-hover:text-blue-600">{u.name}</span>
-                        </label>
+                        <div key={u.id} className="flex items-center gap-2 min-w-0">
+                          <label className="flex flex-1 min-w-0 items-center gap-2 p-1.5 hover:bg-white rounded-lg transition-colors cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={formData.assignedWorkerIds.includes(u.id)}
+                              onChange={e => {
+                                const newIds = e.target.checked
+                                  ? [...formData.assignedWorkerIds, u.id]
+                                  : formData.assignedWorkerIds.filter(id => id !== u.id);
+                                setFormData({ ...formData, assignedWorkerIds: newIds });
+                              }}
+                              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-xs font-medium text-slate-700 group-hover:text-blue-600">{u.name}</span>
+                          </label>
+                          {u.phone?.trim() && (
+                            <a href={`tel:${u.phone.trim()}`} aria-label={`${t('projects.phone')}: ${u.name}`} title={u.phone} className="shrink-0 p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 transition-colors">
+                              <Phone size={18} />
+                            </a>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
