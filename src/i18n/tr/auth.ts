@@ -1,4 +1,7 @@
 export const auth = {
+  updatePassword: "Şifreyi güncelle",
+  demoNoAction: "Bu işlem demo modunda kullanılamaz.",
+  profileDetails: "Profil bilgileri",
   registrationServerError: "Sunucu hatası nedeniyle kayıt tamamlanamadı. Lütfen daha sonra tekrar deneyin.",
   recoverySent: "Kullanıcı adı aktif bir hesapla eşleşirse ilgili e-postaya bir bağlantı gönderilir. Spam klasörünü de kontrol edin.",
   recoveryUsernameRequired: "Önce kurtarmak istediğiniz hesabın kullanıcı adını girin.",

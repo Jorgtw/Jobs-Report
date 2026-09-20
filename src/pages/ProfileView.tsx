@@ -109,7 +109,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
       return;
     }
     if (passForm.newPass.length < 6) {
-      setMessage({ text: t('auth.passwordTooShort') || 'La password deve essere di almeno 6 caratteri', type: 'error' });
+      setMessage({ text: t('auth.accessPasswordTooShort') || 'La password deve essere di almeno 6 caratteri', type: 'error' });
       return;
     }
     try {
@@ -257,7 +257,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{t('workers.phone')}</label>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{t('dashboard.phone')}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none text-slate-900 font-medium focus:ring-2 focus:ring-blue-500"
@@ -267,7 +267,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{t('workers.address')}</label>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{t('dashboard.address')}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none text-slate-900 font-medium focus:ring-2 focus:ring-blue-500"
@@ -414,7 +414,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
 
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                      {t('workers.phone') || t('auth.phone') || 'Telefono'}
+                      {t('dashboard.phone') || t('auth.phone') || 'Telefono'}
                     </label>
                     <input
                       type="text"

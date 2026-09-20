@@ -1,4 +1,7 @@
 export const auth = {
+  updatePassword: "Actualizar contraseña",
+  demoNoAction: "Esta acción no está disponible en modo demo.",
+  profileDetails: "Datos del perfil",
   registrationServerError: "No se pudo completar el registro por un error del servidor. Inténtalo más tarde.",
   recoverySent: "Si el usuario corresponde a una cuenta activa, recibirás un enlace en su email. Revisa también el spam.",
   recoveryUsernameRequired: "Introduce primero el nombre de usuario de la cuenta que deseas recuperar.",

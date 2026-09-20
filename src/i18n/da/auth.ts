@@ -1,4 +1,7 @@
 export const auth = {
+  updatePassword: "Opdater adgangskode",
+  demoNoAction: "Denne handling er ikke tilgængelig i demotilstand.",
+  profileDetails: "Profiloplysninger",
   registrationServerError: "Registreringen kunne ikke gennemføres på grund af en serverfejl. Prøv igen senere.",
   recoverySent: "Hvis brugernavnet tilhører en aktiv konto, sendes et link til kontoens e-mail. Tjek også spam.",
   recoveryUsernameRequired: "Indtast først brugernavnet på den konto, du vil gendanne.",

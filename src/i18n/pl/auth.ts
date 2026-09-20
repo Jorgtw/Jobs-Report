@@ -1,4 +1,7 @@
 export const auth = {
+  updatePassword: "Zaktualizuj hasło",
+  demoNoAction: "Ta operacja jest niedostępna w trybie demonstracyjnym.",
+  profileDetails: "Dane profilu",
   registrationServerError: "Nie udało się ukończyć rejestracji z powodu błędu serwera. Spróbuj ponownie później.",
   recoverySent: "Jeśli nazwa odpowiada aktywnemu kontu, wyślemy link na jego e-mail. Sprawdź też spam.",
   recoveryUsernameRequired: "Najpierw wpisz nazwę użytkownika konta, które chcesz odzyskać.",

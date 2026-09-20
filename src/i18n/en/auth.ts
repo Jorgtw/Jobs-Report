@@ -1,4 +1,7 @@
 export const auth = {
+  updatePassword: "Update password",
+  demoNoAction: "This action is not available in demo mode.",
+  profileDetails: "Profile details",
   registrationServerError: "Registration could not be completed due to a server error. Please try again later.",
   recoverySent: "If the username matches an active account, a link will be sent to its contact email. Check your spam folder too.",
   recoveryUsernameRequired: "First enter the username of the account you want to recover.",
