@@ -140,6 +140,8 @@ export default async function handler(req: any, res: any) {
         company_id: companyId,
         client_id: clientData[0].id,
         title: 'Rapportino interno',
+        site_address: address,
+        created_at: new Date().toISOString(),
         status: 'active',
         economic_type: 'hourly',
         is_internal: true

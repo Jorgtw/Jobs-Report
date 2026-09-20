@@ -19,6 +19,8 @@ Il recupero usa [Supabase generateLink](https://supabase.com/docs/reference/java
 
 ## Verifiche eseguite
 
+- Correzione del 20 settembre: riprodotto errore 23502 durante la creazione del progetto interno, privo di `site_address` e `created_at` obbligatori senza default in produzione. Aggiunti i campi e un test di regressione. Handler corretto verificato contro Supabase reale con azienda temporanea: registrazione, lookup username, login password e lettura del proprio account riusciti. Dati temporanei rimossi; invio email intercettato e soppresso. Il messaggio del server è ora distinto dagli errori di connessione.
+
 - TypeScript frontend e API: superati.
 - Compilazione completa: superata; avvisi preesistenti di traduzione e dimensione bundle.
 - `scripts/test-quick-registration.ts`: validazione username, contatto condiviso con identità distinte, nessuna password nelle email, rollback degli errori simulati.
@@ -32,7 +34,7 @@ Per ripetere il test SQL locale, installare `@electric-sql/pglite` in una cartel
 
 ## Stato e ordine di rilascio
 
-La modifica NON è attiva online. Nessuna migrazione o prova di scrittura è stata eseguita in produzione. La revisione automatica ha rifiutato l’esecuzione della migrazione/prova sul database live senza un’autorizzazione esplicita; richiedere tale autorizzazione prima del rilascio.
+Attiva online dal 20 settembre 2026, commit 098112a. Migrazione applicata con successo dopo autorizzazione dell’utente; verificate le nuove strutture. Pubblicazione Vercel completata per app e landing. Verificati sul sito pubblico il campo username, le indicazioni sull’email condivisa, la validazione delle nuove API e la risposta generica di recupero per un account inesistente. Nessun account reale creato o eliminato durante questi controlli; resta da effettuare una prova completa con account temporanei e consegna email reale.
 
 1. Conservare la versione corrente delle funzioni `handle_new_user_bootstrap` e `get_email_by_username` come riferimento di rollback.
 2. Applicare `supabase_migration_company_usernames.sql`: aggiunge indice, colonna storica, tabelle private e funzioni; non modifica le password o i dati degli account esistenti. Il blocco è transazionale e fallisce in presenza di username in conflitto.

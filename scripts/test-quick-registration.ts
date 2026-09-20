@@ -32,6 +32,11 @@ globalThis.fetch = async (input, init) => {
   }
   if (url.pathname.endsWith('/companies')) return reply([{ id: 'new-company' }]);
   if (url.pathname.endsWith('/clients')) return reply([{ id: 'internal-client' }]);
+  // Production projects require both fields and have no defaults for them.
+  if (url.pathname.endsWith('/projects') && method === 'POST' &&
+      (body.site_address == null || body.created_at == null)) {
+    return reply({ code: '23502', message: 'Missing required project fields' }, 400);
+  }
   if (scenario === 'bridge-fails' && url.pathname.endsWith('/user_companies')) return reply({ code: 'XX001', message: 'bridge failure' }, 400);
   if (scenario === 'project-fails' && url.pathname.endsWith('/projects')) return reply({ code: 'XX002', message: 'project failure' }, 400);
   return reply({});

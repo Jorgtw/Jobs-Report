@@ -1,4 +1,5 @@
 export const auth = {
+  registrationServerError: "Sunucu hatası nedeniyle kayıt tamamlanamadı. Lütfen daha sonra tekrar deneyin.",
   recoverySent: "Kullanıcı adı aktif bir hesapla eşleşirse ilgili e-postaya bir bağlantı gönderilir. Spam klasörünü de kontrol edin.",
   recoveryUsernameRequired: "Önce kurtarmak istediğiniz hesabın kullanıcı adını girin.",
   usernameRules: "3–64 karakter: Latin harfleri, rakamlar, nokta, tire veya alt çizgi. Her şirket için farklı bir kullanıcı adı seçin.",

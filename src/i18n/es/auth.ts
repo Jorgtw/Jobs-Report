@@ -1,4 +1,5 @@
 export const auth = {
+  registrationServerError: "No se pudo completar el registro por un error del servidor. Inténtalo más tarde.",
   recoverySent: "Si el usuario corresponde a una cuenta activa, recibirás un enlace en su email. Revisa también el spam.",
   recoveryUsernameRequired: "Introduce primero el nombre de usuario de la cuenta que deseas recuperar.",
   usernameRules: "De 3 a 64 caracteres: letras, números, punto, guion o guion bajo. Elige un usuario distinto para cada empresa.",

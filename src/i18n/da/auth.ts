@@ -1,4 +1,5 @@
 export const auth = {
+  registrationServerError: "Registreringen kunne ikke gennemføres på grund af en serverfejl. Prøv igen senere.",
   recoverySent: "Hvis brugernavnet tilhører en aktiv konto, sendes et link til kontoens e-mail. Tjek også spam.",
   recoveryUsernameRequired: "Indtast først brugernavnet på den konto, du vil gendanne.",
   usernameRules: "3–64 tegn: bogstaver, tal, punktum, bindestreg eller understregning. Vælg et forskelligt brugernavn til hvert firma.",

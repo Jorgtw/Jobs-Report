@@ -40,7 +40,7 @@ export const RegistrationRequestView: React.FC<{ onLogin: (u: any) => void }> = 
         REGISTRATION_TERMS_REQUIRED: 'auth.registrationTermsRequired',
         REGISTRATION_EXISTS: 'auth.registrationExists',
         REGISTRATION_PASSWORD: 'auth.accessPasswordTooShort',
-        REGISTRATION_FAILED: 'auth.registrationErrorConnection',
+        REGISTRATION_FAILED: 'auth.registrationServerError',
       };
       setErrorMessage(t(created.current ? 'auth.registrationLoginFailed' : (codes[err.message] || 'auth.registrationErrorConnection')));
       setStatus(created.current ? 'created' : 'error');
