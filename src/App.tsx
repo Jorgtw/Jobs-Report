@@ -323,7 +323,7 @@ const AppLayout: React.FC<{
         </button>
         <InstallButton variant="sidebar" />
         <Link
-          to="/privacy"
+          to="/privacy" target="_blank" rel="noopener"
           className="flex items-center justify-center mt-2 py-2 text-[10px] font-bold text-slate-300 hover:text-slate-500 uppercase tracking-widest transition-colors"
         >
           {t('common.privacy')}

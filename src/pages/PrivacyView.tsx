@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from '../contexts/LanguageContext';
 
 const privacyContent: Record<string, {
@@ -118,17 +117,12 @@ const privacyContent: Record<string, {
 };
 
 const PrivacyView: React.FC = () => {
-  const { lang, t } = useTranslation();
+  const { lang } = useTranslation();
   const content = privacyContent[lang] || privacyContent['it'];
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <Link to="/" className="text-sm text-blue-600 hover:underline font-medium">
-            ← {t('common.back')}
-          </Link>
-        </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
           <h1 className="text-2xl font-black text-slate-900 mb-2">{content.title}</h1>
           <p className="text-xs text-slate-400 mb-8 font-medium">{content.lastUpdated}</p>
@@ -141,14 +135,6 @@ const PrivacyView: React.FC = () => {
                 <p className="text-sm text-slate-600 leading-relaxed">{section.body}</p>
               </div>
             ))}
-          </div>
-          <div className="mt-10 pt-6 border-t border-slate-100 text-center">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              ← {t('landing.backToLogin')}
-            </Link>
           </div>
         </div>
       </div>
