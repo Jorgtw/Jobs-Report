@@ -7,7 +7,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
 process.env.RESEND_API_KEY = 'test-mail-key';
 process.env.ADMIN_EMAIL = 'admin@example.test';
 
-const valid = { companyName: '  Test Company  ', email: 'OWNER@EXAMPLE.TEST', password: 'Test-password-42', acceptedTerms: true };
+const valid = { companyName: '  Test Company  ', email: 'OWNER@EXAMPLE.TEST', username: ' Owner.Alfa ', password: 'Test-password-42', acceptedTerms: true };
 type Call = { path: string; method: string; body: any; query: string };
 let calls: Call[] = [];
 let scenario = 'success';
@@ -48,7 +48,7 @@ async function invoke(body: any, mode = 'success', method = 'POST') {
 try {
   console.error = () => {}; // Expected failures below; assertions surface regressions.
   assert.equal((await invoke(valid, 'success', 'GET')).status, 405);
-  for (const invalid of [undefined, { ...valid, companyName: ' ' }, { ...valid, email: 'invalid' }, { ...valid, email: {} }]) {
+  for (const invalid of [{ ...valid, companyName: ' ' }, { ...valid, email: 'invalid' }, { ...valid, email: {} }]) {
     assert.equal((await invoke(invalid)).payload.error, 'REGISTRATION_INVALID');
     assert.equal(calls.length, 0);
   }
@@ -60,7 +60,11 @@ try {
   assert.equal(company.name, 'Test Company');
   for (const field of ['vat_number', 'address', 'city', 'country']) assert.equal(company[field], null);
   const worker = calls.find(c => c.method === 'POST' && c.path.endsWith('/workers'))!.body;
-  assert.equal(worker.username, 'owner@example.test');
+  assert.equal(worker.username, 'owner.alfa');
+  const identity = calls.find(c => c.path === '/auth/v1/admin/users' && c.method === 'POST')!.body;
+  assert.match(identity.email, /@accounts\.jobs-report\.invalid$/);
+  assert.equal(identity.app_metadata.company_account, true);
+  assert.notEqual(identity.email, worker.email);
   assert.equal(worker.email, 'owner@example.test');
   assert.equal(worker.name, 'Test Company');
   assert.equal(worker.auth_id, '11111111-1111-4111-8111-111111111111');
@@ -70,6 +74,12 @@ try {
   assert(!JSON.stringify(emails).includes(valid.password), 'Never send passwords in email');
   assert.equal((await invoke({ ...valid, username: 'existing-style', adminName: 'Owner' })).status, 200);
   assert.equal(calls.find(c => c.path.endsWith('/workers') && c.method === 'POST')!.body.username, 'existing-style');
+  assert.equal((await invoke({ ...valid, username: 'owner.betta', companyName: 'Betta' })).status, 200);
+  assert.notEqual(calls.find(c => c.path === '/auth/v1/admin/users' && c.method === 'POST')!.body.email, identity.email);
+  for (const username of ['', 'ab', 'owner@example.test', 'percent%name', 'a'.repeat(65)]) {
+    assert.equal((await invoke({ ...valid, username })).payload.error, 'REGISTRATION_USERNAME_INVALID');
+    assert.equal(calls.length, 0);
+  }
   assert.equal((await invoke(valid, 'company-exists')).payload.error, 'REGISTRATION_EXISTS');
   assert(!calls.some(c => c.method !== 'GET'));
   assert.equal((await invoke(valid, 'email-exists')).payload.error, 'REGISTRATION_EXISTS');
@@ -81,7 +91,7 @@ try {
     assert(calls.some(c => c.method === 'DELETE' && c.path.endsWith('/user_companies') && c.query.includes('11111111-1111-4111-8111-111111111111')));
     assert(!calls.some(c => c.path === '/emails'));
   }
-  console.log('PASS: validation, 3-field signup, legacy username, duplicate email protection, no emailed passwords, rollback on bridge/project failure. No network used.');
+  console.log('PASS: validation, username signup, independent auth identities for shared contact email, validation, no emailed passwords, rollback on bridge/project failure. No network used.');
 } finally {
   globalThis.fetch = originalFetch;
   console.error = originalError;

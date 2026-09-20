@@ -38,6 +38,7 @@ export interface Subcontractor {
 }
 
 export interface User {
+  accessDeleted?: boolean;
   id: string;
   authId?: string;
   name: string;

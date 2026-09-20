@@ -58,8 +58,8 @@ try {
   console.log = () => {}; console.error = () => {};
   let result = await login('  OWNER@EXAMPLE.TEST  ');
   assert.equal(result.result.id, 'worker');
-  assert(result.calls.includes('signin:owner@example.test'));
-  assert(!result.calls.includes('get_email_by_username'));
+  assert(result.calls.includes('signin:legacy@example.test'));
+  assert(result.calls.includes('get_email_by_username'));
   result = await login('Legacy.Admin');
   assert.equal(result.result.id, 'worker');
   assert(result.calls.includes('get_email_by_username'));
@@ -72,4 +72,4 @@ try {
 } finally {
   console.log = log; console.error = error;
 }
-console.log('PASS: email login, normalization, existing usernames, unknown user, wrong/missing password. No network used.');
+console.log('PASS: exact username lookup including legacy email-shaped usernames, unknown user, wrong/missing password. No network used.');

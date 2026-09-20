@@ -8,7 +8,7 @@ import logoImg from '../assets/logo.png';
 export const RegistrationRequestView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) => {
   const { t, lang, setLang } = useTranslation();
   const [, setSearchParams] = useSearchParams();
-  const [form, setForm] = useState({ companyName: '', email: '', password: '' });
+  const [form, setForm] = useState({ companyName: '', username: '', email: '', password: '' });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'created' | 'error'>('idle');
@@ -29,13 +29,14 @@ export const RegistrationRequestView: React.FC<{ onLogin: (u: any) => void }> = 
         await db.selfRegister({ ...form, companyName: form.companyName.trim(), email, acceptedTerms, language: lang });
         created.current = true;
       }
-      const user = await db.loginUser(email, form.password);
+      const user = await db.loginUser(form.username, form.password);
       if (!user) throw new Error('REGISTRATION_LOGIN_FAILED');
       sessionStorage.setItem('registration_welcome', user.companyId || '');
       await onLogin(user);
     } catch (err: any) {
       const codes: Record<string, string> = {
         REGISTRATION_INVALID: 'auth.registrationInvalid',
+        REGISTRATION_USERNAME_INVALID: 'auth.usernameRules',
         REGISTRATION_TERMS_REQUIRED: 'auth.registrationTermsRequired',
         REGISTRATION_EXISTS: 'auth.registrationExists',
         REGISTRATION_PASSWORD: 'auth.accessPasswordTooShort',
@@ -68,6 +69,11 @@ export const RegistrationRequestView: React.FC<{ onLogin: (u: any) => void }> = 
             <div>
               <label htmlFor="signup-company" className="mb-1.5 block text-sm font-semibold text-slate-700">{t('auth.companyName')}</label>
               <input id="signup-company" name="companyName" required maxLength={160} autoComplete="organization" value={form.companyName} disabled={locked} onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} placeholder={t('auth.companyNamePlaceholder')} className={inputClass} />
+            </div>
+            <div>
+              <label htmlFor="signup-username" className="mb-1.5 block text-sm font-semibold text-slate-700">{t('auth.usernameLabel')}</label>
+              <input id="signup-username" name="username" required minLength={3} maxLength={64} pattern="[a-zA-Z0-9][a-zA-Z0-9._\-]{2,63}" autoComplete="username" autoCapitalize="none" spellCheck={false} value={form.username} disabled={locked} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} aria-describedby="signup-username-hint" className={inputClass} />
+              <p id="signup-username-hint" className="mt-1 text-xs text-slate-500">{t('auth.usernameRules')}</p>
             </div>
             <div>
               <label htmlFor="signup-email" className="mb-1.5 block text-sm font-semibold text-slate-700">{t('auth.email')}</label>

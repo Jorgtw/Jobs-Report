@@ -20,6 +20,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
   });
   const [loading, setLoading] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [recoveryNotice, setRecoveryNotice] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,10 +61,17 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
     }
   };
 
-  const handleForgotPassword = () => {
-    const subject = encodeURIComponent(t('auth.forgotPasswordEmailSubject'));
-    const body = encodeURIComponent(t('auth.forgotPasswordEmailBody').replace('{username}', username || '...').replace('{email}', '...'));
-    window.location.href = `mailto:jtw@live.it?subject=${subject}&body=${body}`;
+  const handleForgotPassword = async () => {
+    setError('');
+    setRecoveryNotice('');
+    if (!username.trim()) { setError(t('auth.recoveryUsernameRequired')); return; }
+    setLoading(true);
+    try {
+      await db.recoverAccount(username.trim());
+      setRecoveryNotice(t('auth.recoverySent'));
+    } catch {
+      setError(t('auth.connectionError'));
+    } finally { setLoading(false); }
   };
 
   return (
@@ -115,21 +123,21 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('auth.emailOrUsername')}</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('auth.username')}</label>
               <input 
                 required 
                 autoComplete="username" autoCapitalize="none" spellCheck={false}
                 value={username} 
                 onChange={e => setUsername(e.target.value)} 
                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"
-                placeholder={t('auth.emailOrUsername')}
+                placeholder={t('auth.username')}
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('auth.password')}</label>
-                <button type="button" onClick={handleForgotPassword} className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors">
+                <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors">
                   {t('auth.forgotPassword')}
                 </button>
               </div>
@@ -153,6 +161,7 @@ export const LoginView: React.FC<{ onLogin: (u: any) => void }> = ({ onLogin }) 
               </div>
             </div>
 
+            {recoveryNotice && <p role="status" className="rounded-xl bg-blue-50 p-3 text-sm text-blue-800">{recoveryNotice}</p>}
             {error && (
               <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[11px] font-bold text-center animate-in slide-in-from-top-2">
                 {error}

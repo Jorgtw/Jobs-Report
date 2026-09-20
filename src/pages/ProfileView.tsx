@@ -125,23 +125,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdate, t }) => {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Preventive email validation
-      if (profileForm.email) {
-        const { data: existingUser } = await supabase
-          .from('workers')
-          .select('id, name')
-          .eq('email', profileForm.email)
-          .maybeSingle();
-
-        if (existingUser && existingUser.id !== user.id) {
-          setProfileMessage({ 
-            text: t('auth.emailAlreadyInUse'), 
-            type: 'error' 
-          });
-          return;
-        }
-      }
-
+      // Contact email may be shared by independent company accounts.
       await db.updateUser(user.id, profileForm);
       const updatedUser = { ...user, ...profileForm };
       if (onUpdate) onUpdate(updatedUser);

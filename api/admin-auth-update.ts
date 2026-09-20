@@ -1,3 +1,4 @@
+import { newAuthEmail, usernamePattern, normalizeUsername, validUsername, assertExclusiveAccount } from './_lib/account-identity.js';
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req: any, res: any) {
@@ -40,11 +41,11 @@ export default async function handler(req: any, res: any) {
     // 2. Fetch Requester Profile from Database
     const { data: requesterData, error: requesterDbError } = await supabaseAdmin
       .from('workers')
-      .select('id, role, company_id')
+      .select('id, role, company_id, status, access_deleted_at')
       .eq('auth_id', requesterAuthUser.id)
       .maybeSingle();
 
-    if (requesterDbError || !requesterData) {
+    if (requesterDbError || !requesterData || requesterData.status !== 'active' || requesterData.access_deleted_at) {
       console.error('API: Requester role lookup failed:', requesterDbError);
       return res.status(403).json({ error: 'Requester not found in database' });
     }
@@ -94,7 +95,8 @@ export default async function handler(req: any, res: any) {
 
     // Provision access for a saved worker, never by attaching an arbitrary email account.
     const ensureWorkerAccount = async (worker: any, password?: string) => {
-      if (!worker.email || !worker.company_id) throw new Error('ACCESS_EMAIL_REQUIRED');
+      if (worker.access_deleted_at) throw new Error('ACCESS_WORKER_INACTIVE');
+      if (!worker.username || !worker.email || !worker.company_id) throw new Error('ACCESS_EMAIL_REQUIRED');
       if (worker.status !== 'active') throw new Error('ACCESS_WORKER_INACTIVE');
       const { data: protectedRoles, error: roleError } = await supabaseAdmin.from('user_roles')
         .select('role').in('user_id', [worker.id, worker.auth_id].filter(Boolean)).eq('role', 'superadmin');
@@ -102,23 +104,28 @@ export default async function handler(req: any, res: any) {
       if (!isSuperAdmin && (worker.role === 'superadmin' || protectedRoles?.length)) {
         throw new Error('ACCESS_PROTECTED_ACCOUNT');
       }
+      await assertExclusiveAccount(supabaseAdmin, worker);
       let authId = worker.auth_id;
       if (authId) {
         if (authId === requesterAuthUser.id && worker.id !== requesterData.id) throw new Error('ACCESS_IDENTITY_MISMATCH');
         const { data, error } = await supabaseAdmin.auth.admin.getUserById(authId);
         if (error || !data?.user) throw new Error('ACCESS_ACCOUNT_NOT_FOUND');
-        if (data.user.email?.toLowerCase() !== worker.email.trim().toLowerCase()) throw new Error('ACCESS_IDENTITY_MISMATCH');
+        // Ownership is established by auth_id and the exclusive company membership, never contact email.
       } else {
         const { data, error } = await supabaseAdmin.auth.admin.createUser({
-          email: worker.email.trim(), email_confirm: true,
+          email: newAuthEmail(), email_confirm: true,
+          app_metadata: { company_account: true },
           ...(password ? { password } : {}),
           user_metadata: { name: worker.name }
         });
         if (error || !data?.user) throw new Error('ACCESS_CREATE_FAILED');
         authId = data.user.id;
         const { data: linked, error: linkError } = await supabaseAdmin.from('workers')
-          .update({ auth_id: authId }).eq('id', worker.id).select('id').single();
-        if (linkError || !linked) throw new Error('ACCESS_LINK_FAILED');
+          .update({ auth_id: authId }).eq('id', worker.id).is('auth_id', null).select('id').single();
+        if (linkError || !linked) {
+          await supabaseAdmin.auth.admin.deleteUser(authId);
+          throw new Error('ACCESS_LINK_FAILED');
+        }
       }
       if (isSuperAdmin || adminCompanyIds.has(worker.company_id)) {
         const { error: membershipError } = await supabaseAdmin.from('user_companies').upsert({
@@ -131,83 +138,47 @@ export default async function handler(req: any, res: any) {
     
     // --- CREATE NEW USER ---
     if (action === 'create' || action === 'create_idempotent') {
-      const { name, username, password, email, role, status } = updates;
+      const { name, password, email, role = 'worker', status = 'active' } = updates || {};
+      const username = normalizeUsername(updates?.username);
       const targetCompanyId = companyId;
-
-      if (!isSuperAdmin && (!targetCompanyId || !adminCompanyIds.has(targetCompanyId))) {
+      if (!targetCompanyId || !validUsername(username) || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+        || typeof password !== 'string' || password.length < 6 || password.length > 128) {
+        return res.status(400).json({ error: 'ACCESS_INVALID_ACCOUNT' });
+      }
+      if (!isSuperAdmin && (!adminCompanyIds.has(targetCompanyId) || !['operator', 'worker', 'supervisor', 'admin'].includes(role))) {
         return res.status(403).json({ error: 'Insufficient permissions for this company' });
       }
-
-      let authId: string | null = null;
-
-      const { data: existingWorker, error: lookupError } = await supabaseAdmin
-        .from('workers')
-        .select('auth_id, company_id')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (lookupError) {
-        return res.status(500).json({ error: 'Identity registry lookup failed' });
-      }
-
-      if (existingWorker && existingWorker.auth_id) {
-        authId = existingWorker.auth_id;
-        const { name: updateName, username: updateUsername } = updates;
-        await supabaseAdmin.from('workers')
-          .update({ name: updateName, username: updateUsername, updated_at: new Date().toISOString() })
-          .eq('auth_id', authId);
-          
-      } else {
-        const { data: authListData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-        if (listError) return res.status(500).json({ error: 'Identity registry lookup failed' });
-        const existingAuthUser = authListData?.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-
-        if (existingAuthUser) {
-          authId = existingAuthUser.id;
-        } else {
-          const { data: authData, error: authCreateError } = await supabaseAdmin.auth.admin.createUser({
-            email,
-            password,
-            email_confirm: true,
-            user_metadata: { name }
-          });
-
-          if (authCreateError) {
-            return res.status(500).json({ error: `Auth creation failed: ${authCreateError.message}` });
-          }
-          authId = authData.user.id;
+      const { data: existing, error: lookupError } = await supabaseAdmin.from('workers')
+        .select('id, auth_id, company_id').ilike('username', usernamePattern(username)).maybeSingle();
+      if (lookupError) throw lookupError;
+      if (existing) {
+        if (action === 'create_idempotent' && existing.company_id === targetCompanyId && existing.auth_id) {
+          return res.status(200).json({ success: true, data: { auth_id: existing.auth_id, company_id: targetCompanyId } });
         }
-
-        // Use UPSERT for workers to be truly idempotent
-        await supabaseAdmin.from('workers').upsert([{
-          name,
-          username,
-          email,
-          phone: updates.phone || null,
-          company_id: targetCompanyId,
-          auth_id: authId,
-          role: role || 'worker',
-          status: status || 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }], { onConflict: 'auth_id, company_id' });
+        return res.status(409).json({ error: 'ACCESS_USERNAME_EXISTS' });
       }
-
-      const { error: bridgeError } = await supabaseAdmin
-        .from('user_companies')
-        .upsert({
-          auth_id: authId,
-          company_id: targetCompanyId,
-          role: role || 'worker'
-        }, { 
-          onConflict: 'auth_id, company_id' 
+      const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: newAuthEmail(), password, email_confirm: true,
+        app_metadata: { company_account: true }, user_metadata: { name }
+      });
+      if (createError || !authData.user) throw new Error('ACCESS_CREATE_FAILED');
+      const authId = authData.user.id;
+      try {
+        const { error: workerError } = await supabaseAdmin.from('workers').insert({
+          name, username, email: email.trim().toLowerCase(), phone: updates.phone || null,
+          company_id: targetCompanyId, auth_id: authId, role, status
         });
-
-      if (bridgeError) {
-        console.error('SSOT Sync Error:', bridgeError);
-        return res.status(500).json({ error: 'Failed to synchronize company membership' });
+        if (workerError) throw workerError;
+        const { error: bridgeError } = await supabaseAdmin.from('user_companies').upsert({
+          auth_id: authId, company_id: targetCompanyId, role
+        }, { onConflict: 'auth_id,company_id' });
+        if (bridgeError) throw bridgeError;
+      } catch (error) {
+        await supabaseAdmin.from('user_companies').delete().eq('auth_id', authId);
+        await supabaseAdmin.from('workers').delete().eq('auth_id', authId);
+        await supabaseAdmin.auth.admin.deleteUser(authId);
+        throw error;
       }
-
       return res.status(200).json({ success: true, data: { auth_id: authId, company_id: targetCompanyId } });
     }
 
@@ -227,11 +198,11 @@ export default async function handler(req: any, res: any) {
       // Server-side retrieval of target worker from Database (never trust client payload)
       const { data: targetWorker, error: targetDbError } = await supabaseAdmin
         .from('workers')
-        .select('id, auth_id, email, company_id, name, username, role, status')
+        .select('id, auth_id, email, company_id, name, username, role, status, access_deleted_at')
         .eq('id', targetUserId)
         .maybeSingle();
 
-      if (targetDbError || !targetWorker) {
+      if (targetDbError || !targetWorker || targetWorker.access_deleted_at) {
         console.error('API: Target user lookup failed:', targetDbError);
         return res.status(404).json({ error: 'Target user not found' });
       }
@@ -259,16 +230,6 @@ export default async function handler(req: any, res: any) {
         let isAuthorized = false;
         if (targetWorker.company_id && adminCompanyIds.has(targetWorker.company_id)) {
           isAuthorized = true;
-        } else if (targetWorker.auth_id) {
-          const { data: targetCompanies } = await supabaseAdmin
-            .from('user_companies')
-            .select('company_id')
-            .eq('auth_id', targetWorker.auth_id)
-            .in('company_id', Array.from(adminCompanyIds));
-
-          if (targetCompanies && targetCompanies.length > 0) {
-            isAuthorized = true;
-          }
         }
 
         if (!isAuthorized) {
@@ -276,8 +237,20 @@ export default async function handler(req: any, res: any) {
         }
       }
 
+      if (updates.company_id && updates.company_id !== targetWorker.company_id) return res.status(400).json({ error: 'ACCESS_IDENTITY_MISMATCH' });
+      if (updates.username !== undefined && updates.username !== targetWorker.username) {
+        updates.username = normalizeUsername(updates.username);
+        if (!validUsername(updates.username)) return res.status(400).json({ error: 'ACCESS_USERNAME_INVALID' });
+      }
+      if (updates.username !== undefined && updates.username !== targetWorker.username) {
+        const { data: conflict, error: conflictError } = await supabaseAdmin.from('workers')
+          .select('id').ilike('username', usernamePattern(updates.username)).neq('id', targetUserId).maybeSingle();
+        if (conflictError) throw conflictError;
+        if (conflict) return res.status(409).json({ error: 'ACCESS_USERNAME_EXISTS' });
+      }
+      await assertExclusiveAccount(supabaseAdmin, targetWorker);
       // 3. Handle sensitive Auth updates (email / password) with strict verification
-      const isAuthUpdate = !!(updates.email || updates.password);
+      const isAuthUpdate = !!updates.password;
       if (isAuthUpdate) {
         targetWorker.auth_id = await ensureWorkerAccount({
           ...targetWorker,
@@ -301,10 +274,6 @@ export default async function handler(req: any, res: any) {
         }
 
         const authUpdates: any = {};
-        if (updates.email && updates.email !== targetWorker.email) {
-          authUpdates.email = updates.email;
-          authUpdates.email_confirm = true;
-        }
         if (updates.password) {
           authUpdates.password = updates.password;
         }
@@ -361,10 +330,6 @@ export default async function handler(req: any, res: any) {
         }
       }
 
-      // Company change is strictly Superadmin-only
-      if (updates.company_id && isSuperAdmin) {
-        dbUpdates.company_id = updates.company_id;
-      }
 
       if (!dbUpdates.status && !targetWorker.status) dbUpdates.status = 'active';
       if (!dbUpdates.role && !targetWorker.role) dbUpdates.role = 'operator';
@@ -401,7 +366,7 @@ export default async function handler(req: any, res: any) {
       // 1. Fetch worker data from database
       const { data: worker, error: workerErr } = await supabaseAdmin
         .from('workers')
-        .select('id, email, name, auth_id, username, company_id, role, status')
+        .select('id, email, name, auth_id, username, company_id, role, status, access_deleted_at')
         .eq('id', targetUserId)
         .maybeSingle();
 
@@ -418,16 +383,6 @@ export default async function handler(req: any, res: any) {
         let isAuthorized = false;
         if (worker.company_id && adminCompanyIds.has(worker.company_id)) {
           isAuthorized = true;
-        } else if (worker.auth_id) {
-          const { data: targetCompanies } = await supabaseAdmin
-            .from('user_companies')
-            .select('company_id')
-            .eq('auth_id', worker.auth_id)
-            .in('company_id', Array.from(adminCompanyIds));
-
-          if (targetCompanies && targetCompanies.length > 0) {
-            isAuthorized = true;
-          }
         }
 
         if (!isAuthorized) {
@@ -439,15 +394,17 @@ export default async function handler(req: any, res: any) {
       if (!RESEND_API_KEY) return res.status(503).json({ error: 'ACCESS_EMAIL_NOT_CONFIGURED' });
       const workerAuthId = await ensureWorkerAccount(worker);
 
-      const loginUrl = 'https://jobs-report.vercel.app/';
+      const loginUrl = 'https://app.jobs-report.app/';
       let actionUrl = loginUrl;
       if (directAccess) {
         const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(workerAuthId, { password });
         if (passwordError) return res.status(400).json({ error: 'ACCESS_PASSWORD_UPDATE_FAILED' });
       } else {
+        const { data: recoveryIdentity, error: identityError } = await supabaseAdmin.auth.admin.getUserById(workerAuthId);
+        if (identityError || !recoveryIdentity.user?.email) throw new Error('ACCESS_ACCOUNT_NOT_FOUND');
         const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
           type: 'recovery',
-          email: worker.email,
+          email: recoveryIdentity.user.email,
           options: { redirectTo: loginUrl }
         });
         if (linkError || !linkData?.properties?.action_link) {

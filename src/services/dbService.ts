@@ -196,7 +196,7 @@ class DBService {
     const { data: existingWorker } = await supabase
       .from('workers')
       .select('id, auth_id, name')
-      .eq('email', worker.email)
+      .eq('username', worker.username?.trim().toLowerCase() || '')
       .eq('company_id', compId)
       .maybeSingle();
 
@@ -267,7 +267,7 @@ class DBService {
     // Sync with Supabase Auth via Admin API for sensitive fields
     const hasPassword = typeof updates.password === 'string' && updates.password.trim() !== '';
     const hasEmail = typeof updates.email === 'string' && updates.email.trim() !== '';
-    const isSensitiveUpdate = hasPassword || (hasEmail && updates.email !== worker?.email);
+    const isSensitiveUpdate = hasPassword || (!!updates.username && updates.username !== worker?.username);
 
     if (isSensitiveUpdate) {
       const token = await this.getAuthToken();
@@ -1142,38 +1142,26 @@ class DBService {
   }
 
   async deleteCompany(id: string) {
-    // 1. Trova tutti i report della ditta
-    const { data: reports } = await supabase.from('reports').select('id').eq('company_id', id);
-    if (reports && reports.length > 0) {
-      const reportIds = reports.map((r: any) => r.id);
-      await supabase.from('rapportini_expenses').delete().in('rapportino_id', reportIds);
-      await supabase.from('rapportini_workers').delete().in('rapportino_id', reportIds);
-      await supabase.from('rapportini_workers').delete().in('report_id', reportIds); // legacy
-    }
-    // 2. Elimina i report della ditta
-    await supabase.from('reports').delete().eq('company_id', id);
-
-    // 2.5 Elimina le comunicazioni interne e le ricevute
-    const { data: comms } = await supabase.from('internal_communications').select('id').eq('company_id', id);
-    if (comms && comms.length > 0) {
-      const commIds = comms.map((c: any) => c.id);
-      await supabase.from('communication_read_receipts').delete().in('communication_id', commIds);
-      await supabase.from('internal_communications').delete().in('id', commIds);
-    }
-
-    // 3. SSOT: Elimina le associazioni degli utenti, ma NON i profili worker globali
-    await supabase.from('user_companies').delete().eq('company_id', id);
-
-    // 4. Elimina dati specifici del tenant
-    await supabase.from('subcontractors').delete().eq('company_id', id);
-    await supabase.from('projects').delete().eq('company_id', id);
-    await supabase.from('clients').delete().eq('company_id', id);
-    await supabase.from('workers').delete().eq('company_id', id);
-
-    // 5. Elimina la ditta
-    const { error } = await supabase.from('companies').delete().eq('id', id);
-    if (error) throw error;
+    await this.deleteAccountResource({ companyId: id });
   }
+
+  private async deleteAccountResource(body: { companyId?: string; workerId?: string }) {
+    const token = await this.getAuthToken();
+    const response = await fetch(getApiUrl('/api/delete-account'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Deletion failed');
+  }
+
+  async recoverAccount(username: string) {
+    const response = await fetch(getApiUrl('/api/recover-account'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username })
+    });
+    if (!response.ok) throw new Error('RECOVERY_UNAVAILABLE');
+  }
+
 
 
   // --- Utility Methods ---
@@ -1235,17 +1223,9 @@ class DBService {
     if (!password) return null;
     const cleanUsername = username.trim();
 
-    // Email is the default for new accounts; existing usernames remain supported.
-    let userEmail: string | null = cleanUsername.includes('@') ? cleanUsername.toLowerCase() : null;
-    if (!userEmail) {
-      const lookup = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
-      userEmail = lookup.data;
-      if (!userEmail) {
-        const { data: worker } = await supabase.from('workers')
-          .select('email, status').eq('username', cleanUsername).maybeSingle();
-        if (worker?.status === 'active') userEmail = worker.email;
-      }
-    }
+    // Resolve the exact account, including legacy email-shaped usernames.
+    const { data: userEmail, error: lookupError } = await supabase.rpc('get_email_by_username', { p_username: cleanUsername });
+    if (lookupError) throw new Error('Access lookup unavailable');
     if (!userEmail) return null;
 
     // 2. Fai il login con Supabase Auth usando l'email ottenuta
@@ -1360,12 +1340,7 @@ class DBService {
 
   async deleteUser(id: string) {
     await this.enforceActionPolicy('write_domain_data');
-    // 1. Remove references from rapportini_workers to avoid foreign key constraints
-    await supabase.from('rapportini_workers').delete().eq('worker_id', id);
-
-    // 2. Delete the user
-    const { error } = await supabase.from('workers').delete().eq('id', id);
-    if (error) throw error;
+    await this.deleteAccountResource({ workerId: id });
   }
 
   private mapSupabaseWorker(w: any, companyName?: string): any {
@@ -1379,6 +1354,7 @@ class DBService {
       username: w.username || '',
       companyId: this.currentCompanyId || w.company_id || null,
       authId: w.auth_id || null,
+      accessDeleted: !!w.access_deleted_at,
       subcontractorId: w.subcontractor_id || null,
       hourlyRate: Number(w.hourly_rate) || 0,
       overtimeHourlyRate: Number(w.overtime_hourly_rate) || 0,
@@ -1398,7 +1374,7 @@ class DBService {
       phone: w.phone,
       role: w.role,
       status: w.status,
-      username: w.username,
+      username: typeof w.username === 'string' ? w.username.trim().toLowerCase() : w.username,
       // SSOT per Offline Workers: Senza auth_id, user_companies non può mapparli.
       // company_id in workers è l'unico legame rimasto per il personale non registrato.
       company_id: w.companyId || this.currentCompanyId,

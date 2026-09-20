@@ -33,7 +33,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
       // Ensure DB context is correct for this component (handle both set and clear)
       db.setCompanyId(user?.companyId ?? null);
       const [u, s] = await Promise.all([db.getUsers(), db.getSubcontractors()]);
-      setUsers(u);
+      setUsers(u.filter(account => !account.accessDeleted));
       setSubcontractors(s);
     };
     load();
@@ -81,8 +81,12 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
 
   const handleDelete = async (id: string) => {
     if (confirm(t('common.confirmDelete'))) {
-      await db.deleteUser(id);
-      setUsers(await db.getUsers());
+      try {
+        await db.deleteUser(id);
+        setUsers((await db.getUsers()).filter(account => !account.accessDeleted));
+      } catch (err: any) {
+        setAccessMessage({ type: 'error', text: accessError(err) });
+      }
     }
   };
 
@@ -97,7 +101,10 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
       ACCESS_PASSWORD_SAVED_EMAIL_FAILED: 'accessPasswordSavedEmailFailed',
       ACCESS_PASSWORD_UPDATE_FAILED: 'accessPasswordUpdateFailed',
       ACCESS_PROTECTED_ACCOUNT: 'accessProtectedAccount',
-      ACCESS_IDENTITY_MISMATCH: 'accessProtectedAccount'
+      ACCESS_IDENTITY_MISMATCH: 'accessProtectedAccount',
+      ACCESS_SHARED_ACCOUNT: 'accessProtectedAccount',
+      ACCESS_USERNAME_INVALID: 'usernameRules',
+      ACCESS_USERNAME_EXISTS: 'registrationExists'
     };
     return code.startsWith('ACCESS_') ? t(`auth.${messages[code] || 'accessSetupFailed'}`) : `${t('common.saveError')} ${code}`;
   };
@@ -166,7 +173,7 @@ const PersonnelView: React.FC<PersonnelViewProps> = ({ user, onImpersonate }) =>
         savedId = saved.id;
         setEditingId(savedId);
       }
-      setUsers(await db.getUsers());
+      setUsers((await db.getUsers()).filter(account => !account.accessDeleted));
       if (sendInstructions && savedId) {
         const sent = await handleSendInstructions({ id: savedId, email: formData.email }, formData.password);
         if (!sent) return;
