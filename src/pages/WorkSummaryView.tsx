@@ -1,3 +1,4 @@
+import { WorkerCompensationReport } from '../services/export/templates/WorkerCompensationReport';
 import React, { useState, useMemo } from 'react';
 import {
   Trash2,
@@ -89,6 +90,19 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
   }, [summary, filters, projects, adminStatus]);
 
 
+
+  const compensationGroups = useMemo(() => {
+    const groups = new Map<string, { key: string; projectName: string; userName: string; method: string; hours: number; quantity: number; unitName?: string; unitRate?: number; cost: number }>();
+    filteredData.forEach(row => {
+      const key = JSON.stringify([row.projectId, row.userId, row.compensationMethod || 'HOURLY', row.unitRate, row.unitName]);
+      const group = groups.get(key) || { key, projectName: row.projectName, userName: row.userName, method: row.compensationMethod || 'HOURLY', hours: 0, quantity: 0, unitRate: row.unitRate, unitName: row.unitName, cost: 0 };
+      group.hours += row.totalHours || 0;
+      group.quantity += row.completedQuantity || 0;
+      group.cost += row.cost || 0;
+      groups.set(key, group);
+    });
+    return [...groups.values()];
+  }, [filteredData]);
 
   const groupedByProject = useMemo(() => {
     const grouped = new Map<string, any>();
@@ -211,7 +225,12 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         nightHours: s.nightHours || 0,
         holidayHours: s.holidayHours || 0,
         hours: s.totalHours || 0,
-        cost: s.personnelCost || s.cost || 0,
+        cost: s.personnelCost ?? s.cost ?? 0,
+        compensationMethod: s.compensationMethod,
+        completedQuantity: s.completedQuantity,
+        unitRate: s.unitRate,
+        unitName: s.unitName,
+        fixedAmount: s.fixedCostRecognized ? s.fixedAmount : undefined,
         materialsCost: s.materialsCost || 0,
         subcontractorCost: s.subcontractorCost || 0,
         expenses: s.totalExpenses || 0,
@@ -224,6 +243,7 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         const engine = new ProfessionalReportEngine();
         engine.registerTemplate('dashboard', new DashboardCommesse());
         engine.registerTemplate('emp_summary', new EmployeeSummaryReport());
+        if (config.includeEconomicData) engine.registerTemplate('compensation', new WorkerCompensationReport());
         engine.registerTemplate('external_costs', new ExternalCostsReport());
         engine.registerTemplate('customer', new CustomerWorkReport());
         engine.registerTemplate('monthly', new EmployeeMonthlyReport());
@@ -480,6 +500,23 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
           <span className={`text-xl font-bold ${totals.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(totals.margin)}</span>
         </div>
       </div>
+
+      {filteredData.some(r => r.compensationMethod && r.compensationMethod !== 'HOURLY') && (
+        <section className="bg-white rounded-2xl border p-4 overflow-x-auto">
+          <h2 className="font-bold mb-2">{t('reports.workerCompensation')}</h2>
+          <p className="text-sm text-slate-500 mb-3">{t('reports.fixedCompensationHelp')}</p>
+          <table className="w-full text-sm"><thead><tr>
+            {[t('common.projects'), t('common.personnel'), t('reports.compensationMethod'), t('reports.totalHoursLabel'), t('reports.completedQuantity'), t('reports.unitRate'), t('reports.compensationCost')].map(h => <th key={h} className="p-2 text-left">{h}</th>)}
+          </tr></thead><tbody>{compensationGroups.map(row => <tr key={row.key} className="border-t">
+            <td className="p-2">{row.projectName}</td><td className="p-2">{row.userName}</td>
+            <td className="p-2">{t(row.method === 'PER_UNIT' ? 'reports.compensationPerUnit' : row.method === 'FIXED_PROJECT' ? 'reports.compensationFixed' : 'reports.compensationHourly')}</td>
+            <td className="p-2">{row.hours.toLocaleString(localeMap[lang])}</td>
+            <td className="p-2">{row.method === 'PER_UNIT' ? `${row.quantity.toLocaleString(localeMap[lang])} ${row.unitName || ''}` : '—'}</td>
+            <td className="p-2">{row.method === 'PER_UNIT' ? formatCurrency(row.unitRate || 0) : '—'}</td>
+            <td className="p-2">{formatCurrency(row.cost)}</td>
+          </tr>)}</tbody></table>
+        </section>
+      )}
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="p-3 border-b border-slate-100 bg-slate-50">

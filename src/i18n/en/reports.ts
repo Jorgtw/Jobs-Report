@@ -1,4 +1,16 @@
 export const reports = {
+  compensationMethod: "Compensation method",
+  compensationHourly: "Hourly",
+  compensationPerUnit: "Per unit",
+  compensationFixed: "Fixed project",
+  unitRate: "Unit rate",
+  unitName: "Unit name (optional)",
+  fixedAmount: "Fixed project amount",
+  completedQuantity: "Completed quantity",
+  workerCompensation: "Worker compensation",
+  compensationCost: "Compensation",
+  fixedCompensationHelp: "Fixed compensation is recognized on the worker’s first report in the project.",
+
   summaryTitle: "Work Summary",
   title: "Work Reports",
   new: "New Report",

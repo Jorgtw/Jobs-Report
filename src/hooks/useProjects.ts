@@ -6,7 +6,7 @@ export const useProjects = (companyId?: string, userId?: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery<Project[], Error>({
-    queryKey: ['projects', companyId],
+    queryKey: ['projects', companyId, userId],
     queryFn: async () => {
       const projects = await db.getProjects();
       return projects || [];
@@ -21,6 +21,7 @@ export const useProjects = (companyId?: string, userId?: string) => {
     mutationFn: (data: any) => db.addProject(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
     },
   });
 
@@ -28,6 +29,7 @@ export const useProjects = (companyId?: string, userId?: string) => {
     mutationFn: ({ id, data }: { id: string; data: any }) => db.updateProject(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
     },
   });
 
@@ -35,6 +37,7 @@ export const useProjects = (companyId?: string, userId?: string) => {
     mutationFn: (id: string) => db.deleteProject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
     },
   });
 

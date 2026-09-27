@@ -1,4 +1,9 @@
+import type { WorkerCompensation } from '../types';
+
 export interface BillingInput {
+  compensation?: WorkerCompensation;
+  completedQuantity?: number;
+  recognizeFixedCost?: boolean;
   totalHours: number;
   overtimeHours: number;
   totalExpenses: number;
@@ -30,7 +35,19 @@ export function calculateFinancials(input: BillingInput): Financials {
   const revenue = input.isInternal ? 0 : input.totalHours * input.sellingPrice;
   
   // Costo
-  const cost = (ordinaryHours * input.hourlyCost) + (input.overtimeHours * input.overtimeCost) + input.extraCost;
+  const terms = input.compensation;
+  const nonNegative = (value: number | undefined) => {
+    if (value === undefined) return 0;
+    if (!Number.isFinite(value) || value < 0) throw new Error('Invalid compensation amount');
+    return value;
+  };
+  // Non-hourly terms replace the hourly wage, overtime and per-report extra.
+  // Expenses and customer revenue remain independent.
+  const cost = terms?.method === 'PER_UNIT'
+    ? nonNegative(input.completedQuantity) * nonNegative(terms.unitRate)
+    : terms?.method === 'FIXED_PROJECT'
+      ? (input.recognizeFixedCost ? nonNegative(terms.fixedAmount) : 0)
+      : (ordinaryHours * input.hourlyCost) + (input.overtimeHours * input.overtimeCost) + input.extraCost;
   
   // Suddivisione Costi
   const personnelCost = input.isSubcontractor ? 0 : cost;

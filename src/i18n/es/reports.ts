@@ -1,4 +1,16 @@
 export const reports = {
+  compensationMethod: "Método de remuneración",
+  compensationHourly: "Por hora",
+  compensationPerUnit: "Por unidad",
+  compensationFixed: "Por proyecto",
+  unitRate: "Tarifa por unidad",
+  unitName: "Unidad (opcional)",
+  fixedAmount: "Importe fijo del proyecto",
+  completedQuantity: "Cantidad completada",
+  workerCompensation: "Remuneración del personal",
+  compensationCost: "Remuneración",
+  fixedCompensationHelp: "El importe fijo se contabiliza en el primer parte del trabajador en el proyecto.",
+
   summaryTitle: "Resumen de Trabajo",
   title: "Partes de Trabajo",
   new: "Nuevo Parte",

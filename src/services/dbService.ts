@@ -1,3 +1,4 @@
+import { getWorkerCompensation, fixedCostEntries, compensationSummary } from './workerCompensation';
 import { ReportSummary, Client, InternalCommunication, CommTargetType, CommType, CommStatus } from '../types';
 import { supabase } from './supabase';
 import { canPerformAction, CompanyAction } from '../utils/companyStatePolicy';
@@ -1527,6 +1528,10 @@ class DBService {
       isInternal: p.is_internal || false,
       notes: p.internal_note || '',
       assignedWorkerIds: p.assigned_worker_ids || [],
+      workerCompensations: Object.fromEntries((p.worker_compensations || []).map((c: any) => [c.worker_id, {
+        method: c.method, unitRate: c.unit_rate == null ? undefined : Number(c.unit_rate),
+        unitName: c.unit_name || undefined, fixedAmount: c.fixed_amount == null ? undefined : Number(c.fixed_amount)
+      }])),
       createdAt: new Date(p.created_at).getTime()
     };
   }
@@ -1555,7 +1560,7 @@ class DBService {
 
     const { data, error } = await supabase
       .from('projects')
-      .select('*')
+      .select('*, worker_compensations:project_worker_compensations(*)')
       .eq('company_id', compId);
 
     if (error) throw error;
@@ -1591,19 +1596,20 @@ class DBService {
       company_id: compId,
       created_at: new Date().toISOString()
     };
-    const { data, error } = await supabase.from('projects').insert([sbObj]).select();
+    const { data, error } = await supabase.rpc('save_project_with_compensations', {
+      p_project_id: null, p_project: sbObj, p_terms: project.workerCompensations ?? null
+    });
     if (error) throw error;
-    return this.mapSupabaseProject(data[0]);
+    return this.mapSupabaseProject(data);
   }
 
   async updateProject(id: string, updates: any) {
     await this.enforceActionPolicy('write_domain_data');
     const compId = this.requireCompanyId();
     const sbObj = this.mapAppProjectToSupabase(updates);
-    const { error } = await supabase.from('projects')
-      .update(sbObj)
-      .eq('id', id)
-      .eq('company_id', compId);
+    const { error } = await supabase.rpc('save_project_with_compensations', {
+      p_project_id: id, p_project: { ...sbObj, company_id: compId }, p_terms: updates.workerCompensations ?? null
+    });
     if (error) throw error;
   }
 
@@ -2086,6 +2092,7 @@ class DBService {
       overtimeHours: exHours,
       festiveHours: fHours,
       nightHours: nHours,
+      completedQuantity: r.completed_quantity == null ? undefined : Number(r.completed_quantity),
       manualTotalHours: r.manual_total_hours != null ? Number(r.manual_total_hours) : undefined,
       description: r.description || '',
       notes: r.travel_notes || r.Notes || '',
@@ -2111,6 +2118,7 @@ class DBService {
           overtimeHours: awExHours,
           festiveHours: awFHours,
           nightHours: awNHours,
+          completedQuantity: aw.completed_quantity == null ? undefined : Number(aw.completed_quantity),
           manualTotalHours: aw.manual_total_hours != null ? Number(aw.manual_total_hours) : undefined,
           hourlyRate: 0,
           totalCost: 0,
@@ -2139,11 +2147,15 @@ class DBService {
     if (dateFrom) query = query.gte('date', dateFrom);
     if (dateTo) query = query.lte('date', dateTo);
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    return (data || []).map(r => this.mapSupabaseReport(r));
+    const reports: any[] = [];
+    const pageSize = 500;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await query.order('id').range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      reports.push(...(data || []));
+      if (!data || data.length < pageSize) break;
+    }
+    return reports.map(r => this.mapSupabaseReport(r));
   }
 
   async addReport(report: any) {
@@ -2163,6 +2175,7 @@ class DBService {
       end_time: this.formatForTime(reportData.endTime),
       break_hours: reportData.breakHours,
       total_hours: totalHours,
+      completed_quantity: reportData.completedQuantity ?? null,
       manual_total_hours: reportData.manualTotalHours !== undefined ? reportData.manualTotalHours : null,
       description: reportData.description,
       "Notes": reportData.notes,
@@ -2216,6 +2229,7 @@ class DBService {
           endTime: this.formatForTimestamp(reportData.date, aw.endTime),
           breakHours: aw.breakHours,
           hours: hours,
+          completed_quantity: aw.completedQuantity ?? null,
           manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
           ordinary_hours: awOHours,
           overtime_hours: aw.overtimeHours || 0,
@@ -2299,6 +2313,7 @@ class DBService {
       end_time: this.formatForTime(updatesData.endTime),
       break_hours: updatesData.breakHours,
       total_hours: updatesData.totalHours,
+      completed_quantity: updatesData.completedQuantity ?? null,
       manual_total_hours: updatesData.manualTotalHours !== undefined ? updatesData.manualTotalHours : null,
       description: updatesData.description,
       "Notes": updatesData.notes,
@@ -2364,6 +2379,7 @@ class DBService {
             endTime: this.formatForTimestamp(updatesData.date, aw.endTime),
             breakHours: aw.breakHours,
             hours: hours,
+            completed_quantity: aw.completedQuantity ?? null,
             manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
             ordinary_hours: awOHours,
             overtime_hours: aw.overtimeHours || 0,
@@ -2487,7 +2503,7 @@ class DBService {
       await this.checkAuthSession();
 
       const [reports, projects, clients, workers] = await Promise.all([
-        this.getReports(dateFrom, dateTo),
+        this.getReports(),
         this.getProjects(),
         this.getClients(),
         this.getUsers()
@@ -2497,7 +2513,8 @@ class DBService {
       const clientMap = new Map(clients.map((c: any) => [c.id, c]));
       const workerMap = new Map(workers.map((w: any) => [w.id, w]));
 
-      return reports.flatMap((r: any) => {
+      const fixedEntries = fixedCostEntries(reports);
+      return reports.filter((r: any) => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)).flatMap((r: any) => {
         const project = projectMap.get(r.projectId);
         const client = clientMap.get(project?.clientId);
         const sellingPrice = Number(project?.sellingPrice) || Number(project?.hourlyRate) || 0;
@@ -2513,7 +2530,12 @@ class DBService {
           : 0;
 
         // Billing Engine: delega tutto il calcolo al guardrail finanziario
+        const terms = getWorkerCompensation(project, r.userId);
+        const recognizeFixedCost = fixedEntries.has(r.id + '_main');
         const financials = calculateFinancials({
+          compensation: terms,
+          completedQuantity: r.completedQuantity,
+          recognizeFixedCost,
           totalHours: r.totalHours || 0,
           overtimeHours: reportOvertimeHours,
           totalExpenses: reportExpenses,
@@ -2527,6 +2549,7 @@ class DBService {
 
         summaries.push({
           id: r.id + '_main',
+          ...compensationSummary(terms, r.completedQuantity, recognizeFixedCost),
           reportId: r.id,
           date: r.date,
           projectName: project?.name || 'Sconosciuto',
@@ -2571,7 +2594,12 @@ class DBService {
 
           // Revenue calculations are handled inside awFinancials
           // Billing Engine per gli AW
+          const awTerms = getWorkerCompensation(project, aw.userId);
+          const awRecognized = fixedEntries.has(r.id + '_aw_' + idx);
           const awFinancials = calculateFinancials({
+            compensation: awTerms,
+            completedQuantity: aw.completedQuantity,
+            recognizeFixedCost: awRecognized,
             totalHours: aw.totalHours || 0,
             overtimeHours: awOvertimeHours,
             totalExpenses: 0,
@@ -2585,6 +2613,7 @@ class DBService {
 
           summaries.push({
             id: r.id + '_aw_' + idx,
+            ...compensationSummary(awTerms, aw.completedQuantity, awRecognized),
             reportId: r.id,
             date: r.date,
             projectName: project?.name || 'Sconosciuto',

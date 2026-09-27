@@ -1,4 +1,16 @@
 export const reports = {
+  compensationMethod: "Aflønningsmetode",
+  compensationHourly: "Pr. time",
+  compensationPerUnit: "Pr. enhed",
+  compensationFixed: "Fast projekt",
+  unitRate: "Enhedspris",
+  unitName: "Enhed (valgfri)",
+  fixedAmount: "Fast projektbeløb",
+  completedQuantity: "Udført antal",
+  workerCompensation: "Medarbejderaflønning",
+  compensationCost: "Vederlag",
+  fixedCompensationHelp: "Fast vederlag medregnes på medarbejderens første rapport i projektet.",
+
   summaryTitle: "Arbejdsoversigt",
   title: "Arbejdsrapporter",
   new: "Ny rapport",

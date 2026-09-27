@@ -1,0 +1,78 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+const modulePath = process.env.PGLITE_MODULE;
+if (!modulePath) throw new Error('Set PGLITE_MODULE to @electric-sql/pglite/dist/index.js');
+const { PGlite } = await import(pathToFileURL(modulePath).href);
+const pg = new PGlite();
+let checks = 0;
+try {
+await pg.exec(fs.readFileSync('scripts/fixtures/company-accounts-schema.sql','utf8'));
+await pg.exec(`
+CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+CREATE FUNCTION public.is_super_admin() RETURNS boolean LANGUAGE sql SECURITY DEFINER AS $$ SELECT EXISTS(SELECT 1 FROM workers WHERE auth_id=auth.uid() AND role='superadmin') $$;
+CREATE FUNCTION public.is_admin_of_company(target uuid) RETURNS boolean LANGUAGE sql SECURITY DEFINER AS $$ SELECT EXISTS(SELECT 1 FROM user_companies WHERE auth_id=auth.uid() AND company_id=target AND role IN ('admin','supervisor','superadmin')) $$;
+ALTER TABLE projects ADD COLUMN client_id uuid, ADD COLUMN title text, ADD COLUMN description text, ADD COLUMN site_address text, ADD COLUMN contact_person text, ADD COLUMN phone text, ADD COLUMN internal_note text, ADD COLUMN status text, ADD COLUMN economic_type text, ADD COLUMN hourly_sale_price numeric, ADD COLUMN total_amount numeric, ADD COLUMN is_internal boolean, ADD COLUMN assigned_worker_ids uuid[], ADD COLUMN created_at timestamptz DEFAULT now();
+GRANT USAGE ON SCHEMA public,auth TO authenticated;
+GRANT SELECT ON workers,user_companies TO authenticated;
+GRANT SELECT,INSERT,UPDATE,DELETE ON projects,reports,rapportini_workers TO authenticated;
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_projects ON projects TO authenticated USING (EXISTS(SELECT 1 FROM user_companies uc WHERE uc.auth_id=auth.uid() AND uc.company_id=projects.company_id) OR is_super_admin());
+ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_reports ON reports TO authenticated USING (EXISTS(SELECT 1 FROM user_companies uc WHERE uc.auth_id=auth.uid() AND uc.company_id=reports.company_id) OR is_super_admin());
+ALTER TABLE rapportini_workers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_helpers ON rapportini_workers TO authenticated USING (EXISTS(SELECT 1 FROM reports r WHERE r.id=rapportino_id));
+`);
+const migration = fs.readFileSync('supabase_migration_worker_compensation.sql','utf8');
+await pg.exec(migration); await pg.exec(migration); // Idempotent.
+const id = n => `00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+await pg.query('INSERT INTO companies(id,name) VALUES($1,$2),($3,$4)',[id(1),'A',id(2),'B']);
+for (const [n,role,company] of [[11,'admin',1],[12,'supervisor',1],[13,'operator',1],[14,'operator',1],[15,'admin',2]]) {
+ await pg.query('INSERT INTO auth.users(id) VALUES($1)',[id(n)]);
+ await pg.query('INSERT INTO workers(id,auth_id,company_id,role) VALUES($1,$1,$2,$3)',[id(n),id(company),role]);
+ await pg.query('INSERT INTO user_companies(auth_id,company_id,role) VALUES($1,$2,$3)',[id(n),id(company),role]);
+}
+await pg.query('INSERT INTO projects(id,company_id,title) VALUES($1,$2,$3),($4,$5,$6)',[id(21),id(1),'Original',id(22),id(2),'Other']);
+await pg.query('INSERT INTO reports(id,company_id,project_id,created_by) VALUES($1,$2,$3,$4)',[id(31),id(1),id(21),id(13)]);
+const as = async n => { await pg.exec('RESET ROLE'); await pg.query("SELECT set_config('request.jwt.claim.sub',$1,false)",[id(n)]); await pg.exec('SET ROLE authenticated'); };
+const fails = async fn => { await assert.rejects(fn); checks++; };
+const payload = {company_id:id(1),title:'Updated',status:'active',is_internal:false,assigned_worker_ids:[]};
+await as(11);
+await pg.query('SELECT save_project_with_compensations($1,$2,$3)',[id(21),payload,{[id(13)]:{method:'PER_UNIT',unitRate:12.5,unitName:'room'},[id(14)]:{method:'FIXED_PROJECT',fixedAmount:900}}]);
+assert.equal((await pg.query('SELECT * FROM project_worker_compensations')).rows.length,2);checks++;
+await fails(() => pg.query('SELECT save_project_with_compensations($1,$2,$3)',[id(21),{...payload,title:'Should roll back'},{[id(13)]:{method:'PER_UNIT',unitRate:-1}}]));
+assert.equal((await pg.query('SELECT title FROM projects WHERE id=$1',[id(21)])).rows[0].title,'Updated');checks++;
+await fails(() => pg.query('INSERT INTO project_worker_compensations(project_id,worker_id) VALUES($1,$2)',[id(21),id(15)]));
+await fails(() => pg.query('SELECT save_project_with_compensations($1,$2,$3)',[id(21),payload,{[id(13)]:{method:'INVALID'}}]));
+await fails(() => pg.query('SELECT save_project_with_compensations($1,$2,$3)',[id(21),payload,{[id(13)]:{method:'PER_UNIT'}}]));
+const inserted = (await pg.query('SELECT save_project_with_compensations(NULL,$1,$2) AS project',[{...payload,title:'New project'},{[id(13)]:{method:'HOURLY'}}])).rows[0].project;
+assert.ok(inserted.created_at);checks++;
+await pg.query('DELETE FROM projects WHERE id=$1',[inserted.id]);
+await pg.query('SELECT save_project_with_compensations($1,$2,NULL)',[id(21),{company_id:id(1),description:'Partial'}]);
+assert.equal((await pg.query('SELECT title FROM projects WHERE id=$1',[id(21)])).rows[0].title,'Updated');checks++;
+await as(13);
+assert.equal((await pg.query('SELECT * FROM project_worker_compensations')).rows.length,1);checks++;
+await fails(() => pg.query('INSERT INTO project_worker_compensations(project_id,worker_id,method,fixed_amount) VALUES($1,$2,$3,$4)',[id(21),id(13),'FIXED_PROJECT',1]));
+assert.equal((await pg.query('UPDATE project_worker_compensations SET unit_rate=1 RETURNING *')).rows.length,0);checks++;
+await pg.query('UPDATE reports SET completed_quantity=2.5 WHERE id=$1',[id(31)]);
+assert.equal(Number((await pg.query('SELECT completed_quantity FROM reports WHERE id=$1',[id(31)])).rows[0].completed_quantity),2.5);checks++;
+await fails(() => pg.query('UPDATE reports SET completed_quantity=-1 WHERE id=$1',[id(31)]));
+await fails(() => pg.query("UPDATE reports SET completed_quantity='NaN' WHERE id=$1",[id(31)]));
+await pg.query('INSERT INTO rapportini_workers(rapportino_id,worker_id,company_id,completed_quantity) VALUES($1,$2,$3,3.25)',[id(31),id(13),id(1)]);
+assert.equal(Number((await pg.query('SELECT completed_quantity FROM rapportini_workers')).rows[0].completed_quantity),3.25);checks++;
+await as(12);
+assert.equal((await pg.query('SELECT * FROM project_worker_compensations')).rows.length,2);checks++;
+assert.equal((await pg.query('UPDATE project_worker_compensations SET unit_rate=1 RETURNING *')).rows.length,0);checks++;
+await pg.query('SELECT save_project_with_compensations($1,$2,NULL)',[id(21),payload]);
+await as(15);
+assert.equal((await pg.query('SELECT * FROM project_worker_compensations')).rows.length,0);checks++;
+await fails(() => pg.query('SELECT save_project_with_compensations($1,$2,NULL)',[id(21),payload]));
+await pg.exec('RESET ROLE; SET ROLE anon');
+await fails(() => pg.query('SELECT * FROM project_worker_compensations'));
+await pg.exec('RESET ROLE');
+await as(11);
+await pg.query('UPDATE reports SET created_by=$1,completed_quantity=10 WHERE id=$2',[id(14),id(31)]);
+assert.equal((await pg.query('SELECT completed_quantity FROM reports WHERE id=$1',[id(31)])).rows[0].completed_quantity,null);checks++;
+assert.equal((await pg.query('SELECT COUNT(*)::int AS n FROM project_worker_compensations WHERE project_id=$1',[id(22)])).rows[0].n,0);checks++;
+console.log(`PASS: ${checks} PostgreSQL checks: repeatable migration, tenant/Worker/Supervisor/Admin RLS, explicit grants, quantities, validation and atomic rollback.`);
+} finally { await pg.close(); }

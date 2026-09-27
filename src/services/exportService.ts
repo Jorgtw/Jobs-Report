@@ -109,6 +109,12 @@ export const exportToPDF = async (
     }
   });
 
+  const quantityRows = exportRows.filter(r => r.completedQuantity !== undefined);
+  if (quantityRows.length) {
+    doc.addPage();
+    doc.text(t('reports.completedQuantity'), 14, 18);
+    autoTable(doc, { startY: 25, head: [[t('reports.date'), t('common.projects'), t('reports.completedQuantity'), t('reports.unitName')]], body: quantityRows.map(r => [r.date, r.projectName, r.completedQuantity, r.unitName || '']) });
+  }
   const cleanSummaryName = t('common.workSummary').replace(/\s+/g, '_');
   const fileName = `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.pdf`;
   const pdfBlob = doc.output('blob');
@@ -251,6 +257,13 @@ export const exportToExcel = async (exportRows: any[], lang: Language) => {
 
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, t('common.workSummary'));
+    const quantityRows = exportRows.filter(r => r.completedQuantity !== undefined);
+    if (quantityRows.length) {
+      utils.book_append_sheet(workbook, utils.aoa_to_sheet([
+        [t('reports.date'), t('common.projects'), t('reports.completedQuantity'), t('reports.unitName')],
+        ...quantityRows.map(r => [r.date, r.projectName, r.completedQuantity, r.unitName || ''])
+      ]), t('reports.completedQuantity').slice(0, 31));
+    }
 
     const cleanSummaryName = t('common.workSummary').replace(/\s+/g, '_');
     const fileName = `JobsReport_${cleanSummaryName}_${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -269,6 +282,8 @@ export const exportToExcel = async (exportRows: any[], lang: Language) => {
 };
 
 export interface WorkerExportRow {
+  completedQuantity?: number;
+  unitName?: string;
   date: string;
   dateFormatted: string;
   clientName: string;
@@ -540,6 +555,15 @@ export const exportWorkerToPDF = async (
     }
   });
 
+  const quantityRows = sortedRows.filter(r => r.completedQuantity !== undefined);
+  if (quantityRows.length) {
+    const t = getT(lang);
+    doc.addPage();
+    doc.text(t('reports.completedQuantity'), 14, 18);
+    autoTable(doc, { startY: 25, head: [[h.date, h.project, t('reports.completedQuantity'), t('reports.unitName')]],
+      body: quantityRows.map(r => [r.dateFormatted, r.projectName, r.completedQuantity ?? 0, r.unitName || '']),
+      styles: { fontSize: 9 }, theme: 'grid' });
+  }
   // Count pages only after the complete table has been laid out.
   const pageCount = doc.getNumberOfPages();
   for (let page = 1; page <= pageCount; page++) {
@@ -842,6 +866,15 @@ export const exportWorkerToExcel = async (
       }
     };
 
+    const quantityRows = rows.filter(r => r.completedQuantity !== undefined);
+    if (quantityRows.length) {
+      const t = getT(lang);
+      const quantities = workbook.addWorksheet(t('reports.completedQuantity').slice(0, 31));
+      quantities.addRow([h.date, h.project, t('reports.completedQuantity'), t('reports.unitName')]);
+      quantityRows.forEach(r => quantities.addRow([r.dateFormatted, r.projectName, r.completedQuantity ?? 0, r.unitName || '']));
+      quantities.columns.forEach(c => { c.width = 25; });
+      quantities.getRow(1).font = { bold: true };
+    }
     const cleanNameForFile = cleanUserName.replace(/\s+/g, '_');
     const todayStr = new Date().toISOString().split('T')[0];
     const fileName = `JobsReport_Ore_${cleanNameForFile}_${todayStr}.xlsx`;

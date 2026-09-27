@@ -120,7 +120,7 @@ export class EmployeeSummaryReport implements ReportTemplate {
 
     // Filtra chi ha 0 ore e ordina alfabeticamente
     const workerList = Array.from(workerMap.values())
-      .filter(w => w.totalHours > 0)
+      .filter(w => w.totalHours > 0 || w.personnelCost !== 0)
       .sort((a, b) => a.name.localeCompare(b.name));
 
     let currentRow = 5;

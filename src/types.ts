@@ -73,6 +73,14 @@ export interface Client {
   createdAt: number;
 }
 
+export type CompensationMethod = 'HOURLY' | 'PER_UNIT' | 'FIXED_PROJECT';
+export interface WorkerCompensation {
+  method: CompensationMethod;
+  unitRate?: number;
+  unitName?: string;
+  fixedAmount?: number;
+}
+
 export interface Project {
   id: string;
   clientId: string;
@@ -89,6 +97,7 @@ export interface Project {
   sellingPrice?: number;
   isInternal?: boolean;
   assignedWorkerIds?: string[];
+  workerCompensations?: Record<string, WorkerCompensation>;
   createdAt: number;
 }
 
@@ -108,6 +117,7 @@ export interface AdditionalWorker {
   startTime: string;
   endTime: string;
   breakHours: number;
+  completedQuantity?: number;
   manualTotalHours?: number;
   totalHours: number;
   ordinaryHours?: number;
@@ -132,6 +142,7 @@ export interface WorkReport {
   startTime: string;
   endTime: string;
   breakHours: number;
+  completedQuantity?: number;
   manualTotalHours?: number;
   totalHours: number;
   ordinaryHours?: number;
@@ -149,6 +160,12 @@ export interface WorkReport {
 }
 
 export interface ReportSummary {
+  compensationMethod?: CompensationMethod;
+  completedQuantity?: number;
+  unitRate?: number;
+  unitName?: string;
+  fixedAmount?: number;
+  fixedCostRecognized?: boolean;
   id: string;
   reportId?: string;
   date: string;

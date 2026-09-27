@@ -86,3 +86,14 @@ Qualsiasi altra forma di calcolo è considerata legacy o errore architetturale.
 ## 9. Principio fondamentale
 
 Se un valore finanziario è calcolato fuori da billingEngine.ts, è un bug.
+
+
+## 10. Compenso per assegnazione lavoratore-progetto
+
+`project_worker_compensations` contiene termini opzionali per la coppia progetto/lavoratore. Nessuna riga significa HOURLY e conserva integralmente le formule precedenti.
+
+- HOURLY: ore ordinarie × tariffa personale + straordinari × tariffa straordinari + extra.
+- PER_UNIT: quantità completata × tariffa per unità. Non aggiunge costi orari/straordinari/extra.
+- FIXED_PROJECT: importo fisso soltanto sulla prima presenza del lavoratore nel progetto (principale oppure aiutante), determinata prima dei filtri; sulle altre presenze il costo è zero. Malattia e ferie non riconoscono il fisso.
+
+La selezione della presenza è in `workerCompensation.ts`; il calcolo degli importi resta in `calculateFinancials()`. Ricavo cliente e spese non dipendono dal metodo di compenso. La classificazione personale/subappaltatore è invariata. Quantità con unità diverse non si sommano insieme. Dettagli operativi e migrazione: `docs/worker-compensation.md`.

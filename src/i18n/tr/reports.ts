@@ -1,4 +1,16 @@
 export const reports = {
+  compensationMethod: "Ücret yöntemi",
+  compensationHourly: "Saatlik",
+  compensationPerUnit: "Birim başına",
+  compensationFixed: "Proje başına",
+  unitRate: "Birim ücret",
+  unitName: "Birim (isteğe bağlı)",
+  fixedAmount: "Sabit proje tutarı",
+  completedQuantity: "Tamamlanan miktar",
+  workerCompensation: "Çalışan ücretleri",
+  compensationCost: "Ücret",
+  fixedCompensationHelp: "Sabit ücret çalışanın projedeki ilk raporunda hesaba katılır.",
+
   summaryTitle: "İş Özeti",
   title: "İş Raporları",
   new: "Yeni Rapor",

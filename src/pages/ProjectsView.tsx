@@ -1,3 +1,5 @@
+import { WorkerCompensationFields } from '../components/WorkerCompensationFields';
+import type { WorkerCompensation } from '../types';
 import React, { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, MapPin, Phone } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -45,6 +47,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
     financialAgreement: 'hourly' as 'hourly' | 'fixed',
     sellingPrice: 0,
     isInternal: false,
+    workerCompensations: {} as Record<string, WorkerCompensation>,
     assignedWorkerIds: [] as string[]
   });
 
@@ -64,6 +67,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
       financialAgreement: p.financialAgreement || 'hourly',
       sellingPrice: p.sellingPrice || 0,
       isInternal: p.isInternal || false,
+      workerCompensations: p.workerCompensations || {},
       assignedWorkerIds: p.assignedWorkerIds || []
     });
     setIsModalOpen(true);
@@ -78,10 +82,12 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const { workerCompensations, ...projectFields } = formData;
+      const payload = user.role === 'admin' || user.role === 'superadmin' ? formData : projectFields;
       if (editingId) {
-        await updateProject.mutateAsync({ id: editingId, data: formData });
+        await updateProject.mutateAsync({ id: editingId, data: payload });
       } else {
-        await createProject.mutateAsync(formData);
+        await createProject.mutateAsync(payload);
       }
       setIsModalOpen(false);
     } catch (error: any) {
@@ -116,6 +122,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
       financialAgreement: 'hourly',
       sellingPrice: 0,
       isInternal,
+      workerCompensations: {},
       assignedWorkerIds: []
     });
     setIsModalOpen(true);
@@ -289,6 +296,15 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
                   </div>
                 </div>
 
+                {(user.role === 'admin' || user.role === 'superadmin') && <div className="space-y-4 border-t pt-4">
+                  <h3 className="font-bold">{t('reports.workerCompensation')}</h3>
+                  <p className="text-sm text-slate-500">{t('reports.fixedCompensationHelp')}</p>
+                  {personnel.filter(w => formData.assignedWorkerIds.length === 0 || formData.assignedWorkerIds.includes(w.id)).map(w => (
+                    <div key={w.id} className="rounded border p-3"><div className="font-semibold mb-2">{w.name}</div>
+                      <WorkerCompensationFields value={formData.workerCompensations[w.id] || { method: 'HOURLY' }} onChange={terms => setFormData(f => ({ ...f, workerCompensations: { ...f.workerCompensations, [w.id]: terms } }))} />
+                    </div>
+                  ))}
+                </div>}
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t mt-4">
                   <div className="flex items-center gap-3">
                     <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">{t('projects.status')}:</label>

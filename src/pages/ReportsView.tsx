@@ -1,3 +1,5 @@
+import { getWorkerCompensation } from '../services/workerCompensation';
+import { CompletedQuantityField } from '../components/CompletedQuantityField';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // Triggering Vercel rebuild for professional email flow restoration - 2026-05-15
@@ -112,6 +114,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   };
 
   const [formData, setFormData] = useState({
+    completedQuantity: undefined as number | undefined,
     projectId: '',
     userId: user.id,
     date: new Date().toISOString().split('T')[0],
@@ -141,6 +144,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const handleNewReport = () => {
     setEditingId(null);
     setFormData({
+      completedQuantity: undefined,
       projectId: '',
       userId: user.id,
       date: new Date().toISOString().split('T')[0],
@@ -211,7 +215,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
             personalHours = aw.totalHours || 0;
           }
         }
-        if (personalHours <= 0) return false;
+        const personalEntry = r.userId === user.id ? r : r.additionalWorkers?.find(w => w.userId === user.id);
+        const nonHourly = getWorkerCompensation(projects.find(p => p.id === r.projectId), user.id).method !== 'HOURLY';
+        if (personalHours <= 0 && !(personalEntry && nonHourly)) return false;
       } else if (filters.userId) {
         const isAuthor = r.userId === filters.userId;
         const isHelper = (r.additionalWorkers || []).some((aw: AdditionalWorker) => aw.userId === filters.userId);
@@ -307,7 +313,10 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...formData, notes: '', teamTotalHours: globalTotalHours };
+    const payload = { ...formData, notes: '', teamTotalHours: globalTotalHours,
+      completedQuantity: getWorkerCompensation(selectedProject, formData.userId).method === 'PER_UNIT' ? formData.completedQuantity : undefined,
+      additionalWorkers: formData.additionalWorkers.map(w => ({ ...w, completedQuantity: getWorkerCompensation(selectedProject, w.userId).method === 'PER_UNIT' ? w.completedQuantity : undefined }))
+    };
     try {
       if (editingId) await updateReport.mutateAsync({ id: editingId, data: payload as any }); else await createReport.mutateAsync(payload as any);
       setIsModalOpen(false);
@@ -320,6 +329,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const handleEdit = (r: WorkReport) => {
     setEditingId(r.id);
     setFormData({
+      completedQuantity: r.completedQuantity,
       projectId: r.projectId,
       userId: r.userId,
       date: r.date,
@@ -433,6 +443,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     }
 
     setFormData({
+      completedQuantity: undefined,
       projectId: r.projectId,
       userId: newUserId,
       date: new Date().toISOString().split('T')[0],
@@ -445,7 +456,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
       nightHours: newNightHours,
       description: r.description,
       expenses: [...(r.expenses || []).map(e => ({ ...e, id: '' }))],
-      additionalWorkers: newAdditionalWorkers,
+      additionalWorkers: newAdditionalWorkers.map(w => ({ ...w, completedQuantity: undefined })),
       activityType: r.activityType || 'work'
     });
     setIsModalOpen(true);
@@ -453,7 +464,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const getWorkerExportRows = (): WorkerExportRow[] => {
     return filteredReports
-      .map(r => {
+      .map<WorkerExportRow | null>(r => {
         let ordinaryHours = 0;
         let overtimeHours = 0;
         let festiveHours = 0;
@@ -477,7 +488,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           }
         }
 
-        if (totalHours <= 0) return null;
+        const personalEntry = r.userId === user.id ? r : r.additionalWorkers?.find(w => w.userId === user.id);
+        const terms = getWorkerCompensation(projects.find(p => p.id === r.projectId), user.id);
+        if (!personalEntry || (totalHours <= 0 && terms.method === 'HOURLY')) return null;
 
         const proj = projects.find(p => p.id === r.projectId);
         const client = clients.find(c => c.id === proj?.clientId);
@@ -493,6 +506,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
         return {
           date: r.date,
           dateFormatted,
+          completedQuantity: terms.method === 'PER_UNIT' ? personalEntry.completedQuantity ?? 0 : undefined,
+          unitName: terms.unitName,
           clientName: client?.name || '---',
           projectName: proj?.name || '---',
           description: r.description || '',
@@ -539,6 +554,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           projectName: projects.find(p => p.id === r.projectId)?.name || '---',
           clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
           workerName: user.name,
+          completedQuantity: getWorkerCompensation(projects.find(p => p.id === r.projectId), user.id).method === 'PER_UNIT' ? (r.userId === user.id ? r.completedQuantity : r.additionalWorkers?.find(w => w.userId === user.id)?.completedQuantity) ?? 0 : undefined,
+          unitName: getWorkerCompensation(projects.find(p => p.id === r.projectId), user.id).unitName,
           description: r.description || '',
           hours: pours,
           hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
@@ -564,6 +581,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           projectName: projects.find(p => p.id === r.projectId)?.name || '---',
           clientName: clients.find(c => c.id === projects.find(p => p.id === r.projectId)?.clientId)?.name || '---',
           workerName: user.name,
+          completedQuantity: getWorkerCompensation(projects.find(p => p.id === r.projectId), user.id).method === 'PER_UNIT' ? (r.userId === user.id ? r.completedQuantity : r.additionalWorkers?.find(w => w.userId === user.id)?.completedQuantity) ?? 0 : undefined,
+          unitName: getWorkerCompensation(projects.find(p => p.id === r.projectId), user.id).unitName,
           description: r.description || '',
           hours: pours,
           hourlyCost: 0, cost: 0, expenses: 0, hourlyRevenue: 0, revenue: 0,
@@ -828,17 +847,18 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                   </div>
                 </FullWidthField>
                 <FullWidthField label={t('reports.headerProject')}>
-                  <select required value={formData.projectId} onChange={e => { const newProjectId = e.target.value; const proj = projects.find(p => p.id === newProjectId); setFormData({ ...formData, projectId: newProjectId, description: (formData.description === '' && proj?.description) ? proj.description : formData.description }); }} className={inputClasses}>
+                  <select required value={formData.projectId} onChange={e => { const newProjectId = e.target.value; const proj = projects.find(p => p.id === newProjectId); setFormData({ ...formData, projectId: newProjectId, completedQuantity: undefined, additionalWorkers: formData.additionalWorkers.map(w => ({ ...w, completedQuantity: undefined })), description: (formData.description === '' && proj?.description) ? proj.description : formData.description }); }} className={inputClasses}>
                     <option value="">{t('common.select')}</option>
                     {projects.filter(p => { if (editingId && p.id === reports.find(r => r.id === editingId)?.projectId) return true; if (!editingId && p.status !== 'active') return false; if (formData.activityType !== 'work') return p.isInternal; if (p.isInternal) return false; if (authService.canAccessAdmin(user)) return true; return canUserAccessProject(p, user.id); }).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </FullWidthField>
                 {user.role === 'admin' && (
-                  <FullWidthField label={t('reports.worker')}><select required value={formData.userId} onChange={e => setFormData({ ...formData, userId: e.target.value })} className={inputClasses}><option value="">{t('common.select')}</option>{personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></FullWidthField>
+                  <FullWidthField label={t('reports.worker')}><select required value={formData.userId} onChange={e => setFormData({ ...formData, completedQuantity: undefined, userId: e.target.value })} className={inputClasses}><option value="">{t('common.select')}</option>{personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></FullWidthField>
                 )}
                 {formData.activityType !== 'work' && (
                   <FullWidthField label={t('reports.activityType')}><select value={formData.activityType} onChange={e => { const newType = e.target.value as any; setFormData({ ...formData, activityType: newType, manualTotalHours: 0, startTime: '', endTime: '', breakHours: 0 }); }} className={inputClasses}><option value="internal">{t('reports.activityInternal')}</option><option value="sickness">{t('reports.activitySickness')}</option><option value="holiday">{t('reports.activityHoliday')}</option></select></FullWidthField>
                 )}
+                <CompletedQuantityField className="md:col-span-2" project={selectedProject} workerId={formData.userId} value={formData.completedQuantity} onChange={completedQuantity => setFormData(f => ({ ...f, completedQuantity }))} />
                 <FullWidthField label={t('reports.headerDate')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
                 <div className="md:col-span-2"><FullWidthField label={t('reports.description')}><textarea required rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
                 {user.role === 'admin' && (
@@ -864,7 +884,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                   </div>
                   {user.role !== 'operator' && formData.additionalWorkers.map((aw, idx) => (
                     <div key={idx} className="bg-white p-2 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center shadow-sm relative pr-10 sm:pr-0">
-                      <div className="col-span-12 sm:col-span-2"><select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value })} className={inputClasses + " w-full"}><option value="">{t('reports.worker')}...</option>{availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
+                      <CompletedQuantityField className="col-span-12" project={selectedProject} workerId={aw.userId} value={aw.completedQuantity} onChange={completedQuantity => updateWorker(idx, { completedQuantity })} />
+                      <div className="col-span-12 sm:col-span-2"><select required value={aw.userId} onChange={e => updateWorker(idx, { userId: e.target.value, completedQuantity: undefined })} className={inputClasses + " w-full"}><option value="">{t('reports.worker')}...</option>{availablePersonnel.filter(u => u.id !== formData.userId).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerStart')}</label><input type="time" value={aw.startTime} onChange={e => updateWorker(idx, { startTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
                       <div className="col-span-6 sm:col-span-2 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerEnd')}</label><input type="time" value={aw.endTime} onChange={e => updateWorker(idx, { endTime: e.target.value })} className={`${inputClasses} w-full text-center px-1 text-[11px] sm:text-sm`} /></div>
                       <div className="col-span-3 sm:col-span-1 flex flex-col gap-0.5"><label className="text-[9px] font-extrabold text-slate-400 uppercase ml-1 tracking-tight sm:hidden">{t('reports.headerBreak')}</label><input type="number" step="0.25" value={aw.breakHours === 0 ? 0 : aw.breakHours || ''} onChange={e => updateWorker(idx, { breakHours: parseFloat(e.target.value) || 0 })} className={`${inputClasses} w-full text-center px-0.5 text-[11px] sm:text-sm`} /></div>

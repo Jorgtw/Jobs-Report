@@ -86,6 +86,25 @@ export class WorkSummaryReportBuilder {
       document.sections.push(this.buildDetailsSection());
     }
 
+    if (this.config.includeEconomicData && this.rawData.some(r => r.compensationMethod && r.compensationMethod !== 'HOURLY')) {
+      document.sections.push({ title: this.t('reports.workerCompensation'), blocks: [{
+        type: ReportBlockType.TABLE,
+        columns: [
+          { key: 'date', header: this.t('reports.headerDate'), type: 'date' },
+          { key: 'projectName', header: this.t('common.projects'), type: 'text' },
+          { key: 'workerName', header: this.t('common.personnel'), type: 'text' },
+          { key: 'method', header: this.t('reports.compensationMethod'), type: 'text' },
+          { key: 'quantity', header: this.t('reports.completedQuantity'), type: 'text' },
+          { key: 'unitRate', header: this.t('reports.unitRate'), type: 'decimal' },
+          { key: 'fixedAmount', header: this.t('reports.fixedAmount'), type: 'decimal' },
+          { key: 'cost', header: this.t('reports.compensationCost'), type: 'decimal' }
+        ],
+        data: this.rawData.map(r => ({ ...r,
+          method: this.t(r.compensationMethod === 'PER_UNIT' ? 'reports.compensationPerUnit' : r.compensationMethod === 'FIXED_PROJECT' ? 'reports.compensationFixed' : 'reports.compensationHourly'),
+          quantity: r.compensationMethod === 'PER_UNIT' ? `${r.completedQuantity || 0} ${r.unitName || ''}` : '—'
+        }))
+      }] });
+    }
     return document;
   }
 

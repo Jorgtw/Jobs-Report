@@ -3,7 +3,7 @@ import { db } from '../services/dbService';
 
 export const useSummary = (companyId?: string, userId?: string) => {
   return useQuery<any[], Error>({
-    queryKey: ['summary', companyId],
+    queryKey: ['summary', companyId, userId],
     queryFn: async () => {
       const summary = await db.getSummary();
       return summary || [];
