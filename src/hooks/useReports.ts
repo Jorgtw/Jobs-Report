@@ -6,7 +6,7 @@ export const useReports = (companyId?: string, userId?: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery<WorkReport[], Error>({
-    queryKey: ['reports', companyId],
+    queryKey: ['reports', companyId, userId],
     queryFn: async () => {
       const reports = await db.getReports();
       return reports || [];
@@ -21,6 +21,7 @@ export const useReports = (companyId?: string, userId?: string) => {
     mutationFn: (data: Omit<WorkReport, 'id'>) => db.addReport(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
     },
   });
@@ -29,6 +30,7 @@ export const useReports = (companyId?: string, userId?: string) => {
     mutationFn: ({ id, data }: { id: string; data: Partial<WorkReport> }) => db.updateReport(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
     },
   });
@@ -37,6 +39,7 @@ export const useReports = (companyId?: string, userId?: string) => {
     mutationFn: (id: string) => db.deleteReport(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
     },
   });

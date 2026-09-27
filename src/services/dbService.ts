@@ -2082,6 +2082,8 @@ class DBService {
     return {
       id: r.id,
       projectId: r.project_id,
+      scheduleId: r.schedule_id || undefined,
+      scheduleDate: r.schedule_date || undefined,
       userId: r.created_by,
       date: r.date,
       startTime: this.extractTimeOnly(r.start_time),
@@ -2168,6 +2170,7 @@ class DBService {
       : Math.max(0, totalHours - (reportData.overtimeHours || 0) - (reportData.festiveHours || 0) - (reportData.nightHours || 0));
 
     const newReport: any = {
+      ...(reportData.scheduleId ? { schedule_id: reportData.scheduleId, schedule_date: reportData.scheduleDate } : {}),
       project_id: reportData.projectId,
       created_by: reportData.userId,
       date: reportData.date,

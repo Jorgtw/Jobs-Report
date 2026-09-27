@@ -10,6 +10,7 @@ import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
 import { inputClasses, modalClasses, FullWidthField, canUserAccessProject } from '../App';
 import Tooltip from '../components/common/Tooltip';
+import { ProjectPlanning } from '../components/ProjectPlanning';
 
 interface ProjectsViewProps {
   user: User;
@@ -183,6 +184,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ user }) => {
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
 
+            {editingId && user.companyId && authService.can(user, 'update', 'projects') && <div className="mb-4"><ProjectPlanning projectId={editingId} companyId={user.companyId} /></div>}
             {authService.can(user, 'update', 'projects') ? (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">

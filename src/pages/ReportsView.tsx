@@ -1,5 +1,7 @@
 import { getWorkerCompensation } from '../services/workerCompensation';
 import { CompletedQuantityField } from '../components/CompletedQuantityField';
+import { calendarService } from '../services/calendarService';
+import { calendarReportDraft, canManageCalendar } from '../services/workCalendar';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // Triggering Vercel rebuild for professional email flow restoration - 2026-05-15
@@ -54,12 +56,14 @@ interface ReportsViewProps {
 const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const { lang, t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: reports = [], createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined, user?.id);
+  const { data: reports = [], isLoading: reportsLoading, createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined, user?.id);
   const { data: projects = [] } = useProjects(user?.companyId ?? undefined, user?.id);
   const { data: clients = [] } = useClients(user?.companyId ?? undefined, user?.id);
   useSubcontractors(user?.companyId ?? undefined, user?.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [calendarLink, setCalendarLink] = useState<{ scheduleId: string; scheduleDate: string } | null>(null);
+  const [calendarError, setCalendarError] = useState('');
 
   const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -135,6 +139,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     if (searchParams.get('start') !== 'internal') return;
     const internal = projects.find(p => p.isInternal && p.status === 'active');
     if (!internal) return;
+    setCalendarLink(null);
     setFormData(f => ({ ...f, activityType: 'internal', projectId: internal.id }));
     setEditingId(null);
     setIsModalOpen(true);
@@ -142,6 +147,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   }, [searchParams, setSearchParams, projects]);
 
   const handleNewReport = () => {
+    setCalendarLink(null);
     setEditingId(null);
     setFormData({
       completedQuantity: undefined,
@@ -313,7 +319,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...formData, notes: '', teamTotalHours: globalTotalHours,
+    if (editingId && !authService.can(user, 'update', 'reports')) return;
+    if (calendarLink && formData.manualTotalHours === undefined && (!formData.startTime || !formData.endTime) && getWorkerCompensation(selectedProject, formData.userId).method === 'HOURLY') {
+      alert(t('calendar.actualHours')); return;
+    }
+    const payload = { ...formData, ...(calendarLink || {}), notes: '', teamTotalHours: globalTotalHours,
       completedQuantity: getWorkerCompensation(selectedProject, formData.userId).method === 'PER_UNIT' ? formData.completedQuantity : undefined,
       additionalWorkers: formData.additionalWorkers.map(w => ({ ...w, completedQuantity: getWorkerCompensation(selectedProject, w.userId).method === 'PER_UNIT' ? w.completedQuantity : undefined }))
     };
@@ -327,6 +337,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   };
 
   const handleEdit = (r: WorkReport) => {
+    setCalendarLink(r.scheduleId && r.scheduleDate ? { scheduleId: r.scheduleId, scheduleDate: r.scheduleDate } : null);
     setEditingId(r.id);
     setFormData({
       completedQuantity: r.completedQuantity,
@@ -348,6 +359,43 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    const scheduleId = searchParams.get('schedule');
+    const date = searchParams.get('date');
+    const reportId = searchParams.get('report');
+    if (!user.companyId || reportsLoading || (!scheduleId && !reportId)) return;
+    let cancelled = false;
+    setCalendarError('');
+    if (reportId) {
+      const report = reports.find(r => r.id === reportId);
+      if (report) handleEdit(report); else setCalendarError(t('calendar.reportUnavailable'));
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setCalendarError(t('calendar.reportUnavailable')); setSearchParams({}, { replace: true }); return;
+    }
+    calendarService.list(user.companyId,date,date).then(items => {
+      if (cancelled) return;
+      const o = items.find(o => o.scheduleId === scheduleId && o.date === date);
+      const workerId = canManageCalendar(user) ? searchParams.get('worker') || user.id : user.id;
+      if (!o) throw new Error('Unavailable');
+      const linkedId = o.reports.find(r => r.workerId === workerId)?.id;
+      const existing = reports.find(r => r.id === linkedId || (r.scheduleId === scheduleId && r.scheduleDate === date && r.userId === workerId));
+      if (linkedId && !existing) throw new Error('Linked report unavailable');
+      if (existing) handleEdit(existing);
+      else {
+        const { scheduleId: id, scheduleDate, ...draft } = calendarReportDraft(o,workerId);
+        setCalendarLink({ scheduleId: id, scheduleDate });
+        setEditingId(null); setFormData(draft); setIsModalOpen(true);
+      }
+      setSearchParams({}, { replace: true });
+    }).catch(() => {
+      if (!cancelled) { setCalendarError(t('calendar.reportUnavailable')); setSearchParams({}, { replace: true }); }
+    });
+    return () => { cancelled = true; };
+  }, [searchParams,user.companyId,user.id,reportsLoading,reports,setSearchParams]);
+
   const handleDelete = async (id: string) => {
     if (confirm(t('common.confirmDelete'))) {
       await deleteReport.mutateAsync(id);
@@ -359,6 +407,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   };
 
   const handleDuplicate = (r: WorkReport) => {
+    setCalendarLink(null);
     setEditingId(null);
 
     // Check if the current logged-in user is one of the additional workers in the copied report
@@ -595,6 +644,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
   return (
     <div className="space-y-6">
+      {calendarError && <p role="alert" className="p-3 bg-red-50 rounded-lg text-red-700">{calendarError}</p>}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900">{t('reports.title')}</h1>
         <div className="flex flex-wrap gap-2 justify-end">
@@ -839,27 +889,29 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {calendarLink && <p className="text-sm p-3 bg-blue-50 rounded-lg text-blue-800">{t('calendar.actualHours')}</p>}
+              <fieldset disabled={!!editingId && !authService.can(user, 'update', 'reports')} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                 <FullWidthField label={t('reports.activityType')} className="md:col-span-2">
                   <div className="flex bg-slate-100 p-1 rounded-xl w-full max-w-xs">
-                    <button type="button" onClick={() => { if (formData.activityType !== 'work') setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityWork')}</button>
-                    <button type="button" onClick={() => { const intProj = projects.find(p => p.isInternal); setFormData({ ...formData, activityType: 'internal', projectId: intProj?.id || '', startTime: '', endTime: '', breakHours: 0, manualTotalHours: 0 }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType !== 'work' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityInternal')} / {t('reports.activityAbsence')}</button>
+                    <button type="button" disabled={!!calendarLink} onClick={() => { if (formData.activityType !== 'work') setFormData({ ...formData, activityType: 'work', projectId: '', startTime: '08:00', endTime: '17:00', breakHours: 1, manualTotalHours: undefined }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType === 'work' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityWork')}</button>
+                    <button type="button" disabled={!!calendarLink} onClick={() => { const intProj = projects.find(p => p.isInternal); setFormData({ ...formData, activityType: 'internal', projectId: intProj?.id || '', startTime: '', endTime: '', breakHours: 0, manualTotalHours: 0 }); }} className={`flex-1 px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${formData.activityType !== 'work' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}>{t('reports.activityInternal')} / {t('reports.activityAbsence')}</button>
                   </div>
                 </FullWidthField>
                 <FullWidthField label={t('reports.headerProject')}>
-                  <select required value={formData.projectId} onChange={e => { const newProjectId = e.target.value; const proj = projects.find(p => p.id === newProjectId); setFormData({ ...formData, projectId: newProjectId, completedQuantity: undefined, additionalWorkers: formData.additionalWorkers.map(w => ({ ...w, completedQuantity: undefined })), description: (formData.description === '' && proj?.description) ? proj.description : formData.description }); }} className={inputClasses}>
+                  <select required disabled={!!calendarLink} value={formData.projectId} onChange={e => { const newProjectId = e.target.value; const proj = projects.find(p => p.id === newProjectId); setFormData({ ...formData, projectId: newProjectId, completedQuantity: undefined, additionalWorkers: formData.additionalWorkers.map(w => ({ ...w, completedQuantity: undefined })), description: (formData.description === '' && proj?.description) ? proj.description : formData.description }); }} className={inputClasses}>
                     <option value="">{t('common.select')}</option>
-                    {projects.filter(p => { if (editingId && p.id === reports.find(r => r.id === editingId)?.projectId) return true; if (!editingId && p.status !== 'active') return false; if (formData.activityType !== 'work') return p.isInternal; if (p.isInternal) return false; if (authService.canAccessAdmin(user)) return true; return canUserAccessProject(p, user.id); }).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    {projects.filter(p => { if ((calendarLink && p.id === formData.projectId) || (editingId && p.id === reports.find(r => r.id === editingId)?.projectId)) return true; if (!editingId && p.status !== 'active') return false; if (formData.activityType !== 'work') return p.isInternal; if (p.isInternal) return false; if (authService.canAccessAdmin(user)) return true; return canUserAccessProject(p, user.id); }).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </FullWidthField>
                 {user.role === 'admin' && (
-                  <FullWidthField label={t('reports.worker')}><select required value={formData.userId} onChange={e => setFormData({ ...formData, completedQuantity: undefined, userId: e.target.value })} className={inputClasses}><option value="">{t('common.select')}</option>{personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></FullWidthField>
+                  <FullWidthField label={t('reports.worker')}><select required disabled={!!calendarLink} value={formData.userId} onChange={e => setFormData({ ...formData, completedQuantity: undefined, userId: e.target.value })} className={inputClasses}><option value="">{t('common.select')}</option>{personnel.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></FullWidthField>
                 )}
                 {formData.activityType !== 'work' && (
                   <FullWidthField label={t('reports.activityType')}><select value={formData.activityType} onChange={e => { const newType = e.target.value as any; setFormData({ ...formData, activityType: newType, manualTotalHours: 0, startTime: '', endTime: '', breakHours: 0 }); }} className={inputClasses}><option value="internal">{t('reports.activityInternal')}</option><option value="sickness">{t('reports.activitySickness')}</option><option value="holiday">{t('reports.activityHoliday')}</option></select></FullWidthField>
                 )}
                 <CompletedQuantityField className="md:col-span-2" project={selectedProject} workerId={formData.userId} value={formData.completedQuantity} onChange={completedQuantity => setFormData(f => ({ ...f, completedQuantity }))} />
-                <FullWidthField label={t('reports.headerDate')}><input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
+                <FullWidthField label={t('reports.headerDate')}><input type="date" required disabled={!!calendarLink} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={inputClasses} /></FullWidthField>
                 <div className="md:col-span-2"><FullWidthField label={t('reports.description')}><textarea required rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClasses} /></FullWidthField></div>
                 {user.role === 'admin' && (
                   <div className="hidden">
@@ -935,6 +987,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                 <div>{editingId && canEditReport(reports.find(r => r.id === editingId)!) && <button type="button" onClick={() => handleDelete(editingId)} className="px-6 py-2.5 font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-2"><Trash2 size={16} /> {t('common.delete')}</button>}</div>
                 <div className="flex gap-3"><button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button><button type="submit" className="px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">{editingId ? t('common.update') : t('common.save')}</button></div>
               </div>
+              </fieldset>
             </form>
           </div>
         </div>

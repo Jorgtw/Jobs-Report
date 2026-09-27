@@ -1,3 +1,9 @@
+import { calendar as daCalendar } from './da/calendar';
+import { calendar as trCalendar } from './tr/calendar';
+import { calendar as plCalendar } from './pl/calendar';
+import { calendar as esCalendar } from './es/calendar';
+import { calendar as enCalendar } from './en/calendar';
+import { calendar as itCalendar } from './it/calendar';
 import { common as itCommon } from './it/common';
 import { auth as itAuth } from './it/auth';
 import { communications as itCommunications } from './it/communications';
@@ -62,6 +68,7 @@ export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
 export type TranslationKey = string;
 
 export const baseIT = {
+  calendar: itCalendar,
   common: itCommon,
   auth: itAuth,
   communications: itCommunications,
@@ -75,10 +82,11 @@ export const baseIT = {
 
 export const allTranslations: Record<Language, any> = {
   it: baseIT,
-  en: { 
-    common: enCommon, 
-    auth: enAuth, 
-    presentation: enPresentation, 
+  en: {
+    calendar: enCalendar,
+  common: enCommon,
+    auth: enAuth,
+    presentation: enPresentation,
     communications: enCommunications,
     projects: enProjects,
     reports: enReports,
@@ -86,10 +94,11 @@ export const allTranslations: Record<Language, any> = {
     landing: enLanding,
     help: enHelp
   },
-  es: { 
-    common: esCommon, 
+  es: {
+    calendar: esCalendar,
+  common: esCommon,
     auth: esAuth,
-    presentation: esPresentation, 
+    presentation: esPresentation,
     communications: esCommunications,
     projects: esProjects,
     reports: esReports,
@@ -97,10 +106,11 @@ export const allTranslations: Record<Language, any> = {
     landing: esLanding,
     help: esHelp
   },
-  pl: { 
-    common: plCommon, 
+  pl: {
+    calendar: plCalendar,
+  common: plCommon,
     auth: plAuth,
-    presentation: plPresentation, 
+    presentation: plPresentation,
     communications: plCommunications,
     projects: plProjects,
     reports: plReports,
@@ -108,10 +118,11 @@ export const allTranslations: Record<Language, any> = {
     landing: plLanding,
     help: plHelp
   },
-  tr: { 
-    common: trCommon, 
+  tr: {
+    calendar: trCalendar,
+  common: trCommon,
     auth: trAuth,
-    presentation: trPresentation, 
+    presentation: trPresentation,
     communications: trCommunications,
     projects: trProjects,
     reports: trReports,
@@ -119,10 +130,11 @@ export const allTranslations: Record<Language, any> = {
     landing: trLanding,
     help: trHelp
   },
-  da: { 
-    common: daCommon, 
+  da: {
+    calendar: daCalendar,
+  common: daCommon,
     auth: daAuth,
-    presentation: daPresentation, 
+    presentation: daPresentation,
     communications: daCommunications,
     projects: daProjects,
     reports: daReports,
@@ -134,7 +146,7 @@ export const allTranslations: Record<Language, any> = {
 
 export const resolveKey = (lang: Language, key: string): string => {
   const parts = key.split('.');
-  
+
   // 1. Prova nella lingua selezionata
   let current: any = allTranslations[lang];
   let found = true;

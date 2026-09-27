@@ -11,6 +11,7 @@ import {
   Globe,
   Building2,
   ClipboardList,
+  CalendarDays,
   ShieldAlert,
   Mail,
   HelpCircle,
@@ -30,6 +31,7 @@ import { audioService } from './services/audioService';
 // --- Lazy-loaded Pages ---
 const HomeView = React.lazy(() => import('./pages/HomeView'));
 const ReportsView = React.lazy(() => import('./pages/ReportsView'));
+const CalendarView = React.lazy(() => import('./pages/CalendarView'));
 const WorkSummaryView = React.lazy(() => import('./pages/WorkSummaryView'));
 const ClientsView = React.lazy(() => import('./pages/ClientsView'));
 const ProjectsView = React.lazy(() => import('./pages/ProjectsView'));
@@ -88,6 +90,7 @@ const getNavLinks = (t: any, user: User | null) => {
     },
     { name: t('common.subcontractors'), path: '/subcontractors', icon: Building2, show: !isSA && authService.can(user, 'read', 'subcontractors'), color: 'bg-cyan-500' },
     { name: t('common.reports'), path: '/reports', icon: FileText, show: !isSA && authService.can(user, 'read', 'reports'), color: 'bg-blue-500' },
+    { name: t('calendar.title'), path: '/calendar', icon: CalendarDays, show: !isSA && !!user, color: 'bg-violet-500' },
     { name: t('common.workSummary'), path: '/work-summary', icon: ClipboardList, show: !isSA && authService.can(user, 'approve', 'reports'), color: 'bg-indigo-500' },
     { name: t('auth.profile'), path: '/profile', icon: UserIcon, show: !!user && !isOperator, color: 'bg-slate-600' },
     { name: t('common.help'), path: '/help', icon: HelpCircle, show: !isSA && !!user && !isOperator, color: 'bg-blue-600' }
@@ -644,6 +647,7 @@ const App: React.FC = () => {
                     <Routes>
                       <Route path="/home" element={<HomeView user={user} isSuperAdmin={isSuperAdmin} />} />
                       <Route path="/reports" element={<ReportsView user={user} />} />
+                      <Route path="/calendar" element={<CalendarView key={`${user.companyId}:${user.id}`} user={user} />} />
                       <Route path="/work-summary" element={authService.can(user, 'approve', 'reports') ? <WorkSummaryView user={user} /> : <Navigate to="/" />} />
                       <Route path="/clients" element={authService.can(user, 'read', 'clients') ? <ClientsView t={t} user={user} /> : <Navigate to="/" />} />
                       <Route path="/projects" element={<ProjectsView user={user} />} />

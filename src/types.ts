@@ -135,6 +135,8 @@ export interface AdditionalWorker {
 }
 
 export interface WorkReport {
+  scheduleId?: string;
+  scheduleDate?: string;
   id: string;
   userId: string;
   projectId: string;
