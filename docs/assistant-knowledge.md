@@ -19,3 +19,7 @@ Revisione del 20 settembre 2026. Le istruzioni in `api/chat-assistant.ts` descri
 Rimosse le restrizioni inventate Business/Premium sugli export e sulle firme, la pausa obbligatoria di un'ora, il rimborso/prorata garantito e la soglia arbitraria di dieci giornate. L'assistente deve dichiarare quando manca un'informazione e non simulare accessi o operazioni sugli account.
 
 Formato: schema JSON imposto al modello; parsing validato prima della risposta HTTP, recupero degli involucri annidati e nessun fallback che mostri JSON malformato. `scripts/test-assistant.ts` verifica questi casi con rete simulata. Provate inoltre domande reali su installazione, piani, account, pausa e impossibilità di consultare dati privati. Le prove riducono il rischio di errori ma non garantiscono ogni futura risposta generativa.
+
+## Calendario — aggiornamento locale 28 settembre 2026
+
+Le istruzioni dell’assistente ora coprono assegnazioni e ricorrenze, eliminazione per ambito, conservazione dei rapportini, colore per progetto, modifiche per singola data, operatore collegato predefinito, collaboratori visibili precompilati e orari suggeriti da verificare. Fonti: `CalendarView.tsx`, `CalendarEditor.tsx`, `workCalendar.ts` e migrazione calendario. Il Worker mantiene la visibilità personale: non vengono esposti colleghi attraverso nuovi accessi.

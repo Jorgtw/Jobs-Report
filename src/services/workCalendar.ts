@@ -1,4 +1,4 @@
-import type { User } from '../types';
+import type { AdditionalWorker, Project, User } from '../types';
 
 export type ScheduleStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled';
 export type ScheduleScope = 'this' | 'following' | 'all';
@@ -58,7 +58,20 @@ export const daysInRange = (from: string, to: string) => {
 export function calendarReportDraft(o: CalendarOccurrence, workerId: string) {
   if (!o.workers.some(w => w.id === workerId) || o.status === 'cancelled') throw new Error('Invalid assignment');
   return { projectId: o.projectId, userId: workerId, date: o.date, description: o.title,
-    scheduleId: o.scheduleId, scheduleDate: o.date, startTime: '', endTime: '', breakHours: 0,
+    scheduleId: o.scheduleId, scheduleDate: o.date, startTime: o.startTime?.slice(0,5) || '', endTime: o.endTime?.slice(0,5) || '', breakHours: 0,
     manualTotalHours: undefined, overtimeHours: 0, festiveHours: 0, nightHours: 0,
-    completedQuantity: undefined, expenses: [], additionalWorkers: [], activityType: 'work' as const };
+    completedQuantity: undefined, expenses: [], additionalWorkers: o.workers.filter(w => w.id !== workerId && !o.reports.some(r => r.workerId === w.id)).map(w => ({ userId: w.id, personName: w.name, startTime: o.startTime?.slice(0,5) || '', endTime: o.endTime?.slice(0,5) || '', breakHours: 0, totalHours: 0, overtimeHours: 0, festiveHours: 0, nightHours: 0 } as AdditionalWorker)), activityType: 'work' as const };
+}
+
+export const calendarProjectTitle = (project?: Pick<Project, 'name' | 'description'>) =>
+  (project?.description?.trim() || project?.name?.trim() || '').slice(0,200);
+export const calendarDefaultWorker = (occurrence: Pick<CalendarOccurrence, 'workers'>, userId: string) =>
+  occurrence.workers.some(worker => worker.id === userId) ? userId : '';
+// Identity-based colour remains stable when filters, dates or status change.
+export function calendarProjectColor(projectId: string) {
+  let hash = 0;
+  for (const character of projectId) hash = (Math.imul(hash,31) + character.charCodeAt(0)) >>> 0;
+  const hue = hash % 360;
+  return { backgroundColor: `hsl(${hue} 78% 95%)`, borderColor: `hsl(${hue} 65% 82%)`,
+    borderLeftColor: `hsl(${hue} 70% 43%)`, color: `hsl(${hue} 65% 23%)` };
 }

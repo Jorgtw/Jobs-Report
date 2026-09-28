@@ -325,7 +325,14 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     }
     const payload = { ...formData, ...(calendarLink || {}), notes: '', teamTotalHours: globalTotalHours,
       completedQuantity: getWorkerCompensation(selectedProject, formData.userId).method === 'PER_UNIT' ? formData.completedQuantity : undefined,
-      additionalWorkers: formData.additionalWorkers.map(w => ({ ...w, completedQuantity: getWorkerCompensation(selectedProject, w.userId).method === 'PER_UNIT' ? w.completedQuantity : undefined }))
+      additionalWorkers: formData.additionalWorkers.map(w => {
+        const assigned = calendarLink ? personnel.find(p => p.id === w.userId) : undefined;
+        return { ...w, ...(assigned ? {
+          personName: assigned.name, personRole: assigned.role,
+          membershipType: assigned.subcontractorId ? 'Subappalto' : 'Interno',
+          subcontractorId: assigned.subcontractorId
+        } : {}), completedQuantity: getWorkerCompensation(selectedProject, w.userId).method === 'PER_UNIT' ? w.completedQuantity : undefined };
+      })
     };
     try {
       if (editingId) await updateReport.mutateAsync({ id: editingId, data: payload as any }); else await createReport.mutateAsync(payload as any);

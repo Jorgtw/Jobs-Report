@@ -20,9 +20,6 @@
 .calendar-event:hover { box-shadow:0 3px 10px #1e40af20; transform:translateY(-1px); }
 .calendar-event:focus-visible,.calendar-close:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
 .calendar-event.is-selected { outline:2px solid #1585ef; outline-offset:1px; }
-.calendar-event.status-in_progress { background:#fff5dc; border-color:#fde5a1; border-left-color:#f2aa16; color:#775018; }
-.calendar-event.status-completed { background:#e2f8ef; border-color:#b5efd5; border-left-color:#10b981; color:#155e49; }
-.calendar-event.status-cancelled { background:#f1f5f9; border-color:#d4dde7; border-left-color:#94a3b8; color:#64748b; }
 .calendar-event-title { font-size:12px; font-weight:750; line-height:1.35; }
 .calendar-event-project { font-size:10px; margin:2px 0 5px; line-height:1.3; }
 .calendar-event-meta { display:flex; align-items:start; gap:4px; font-size:10px; line-height:1.4; margin-top:3px; }
@@ -56,3 +53,5 @@
 .calendar-agenda .calendar-event-meta,.calendar-agenda .calendar-event-project { font-size:12px; }
 @media(min-width:1200px) { .calendar-workspace.has-detail { grid-template-columns:minmax(0,1fr) 300px; } .calendar-detail { position:sticky; top:16px; max-height:calc(100dvh - 100px); overflow-y:auto; } }
 @media(max-width:767px) { .calendar-grid { display:block; } .calendar-weekdays,.calendar-desktop-date { display:none; } .calendar-mobile-date { display:inline; } .calendar-grid .calendar-day.is-empty { display:none; } .calendar-grid .calendar-day { min-height:0; border-right:0; padding:12px; } .calendar-period { font-size:16px; padding:0 2px; } .calendar-toolbar { padding:10px; } .calendar-event { padding:10px; } .calendar-event-title { font-size:14px; } .calendar-event-meta,.calendar-event-project { font-size:12px; } .calendar-event-status { font-size:11px; } .is-today .calendar-mobile-date { color:#087cfa; } }
+.calendar-event.status-cancelled .calendar-event-title { text-decoration:line-through; }
+.calendar-event-status { border-radius:4px; padding:2px 4px; background:#ffffffb3; }

@@ -18,6 +18,11 @@ globalThis.fetch=async(_input,init)=>{
   const prompt=JSON.stringify(request.systemInstruction);
   assert(prompt.includes('NON è pubblicata su Apple App Store'));
   assert(prompt.includes('app.jobs-report.app'));
+  assert(prompt.includes('CALENDARIO ASSEGNAZIONE LAVORI'));
+  assert(prompt.includes('Tutta la serie'));
+  assert(prompt.includes('collaboratori'));
+  assert(prompt.includes('pausa iniziale zero'));
+  assert(prompt.includes('rapportini esistenti vengono conservati'));
   assert(prompt.includes('390.00 EUR/anno'));
   assert(!prompt.includes('Disponibile nei piani Business e superiore'));
   return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:malformed?'invalid':JSON.stringify(reply)}]},finishReason:'STOP'}]}),{status:200});

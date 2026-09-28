@@ -10,7 +10,7 @@ import { useClients } from '../hooks/useClients';
 import { useCalendar } from '../hooks/useCalendar';
 import { db } from '../services/dbService';
 import { calendarService } from '../services/calendarService';
-import { addDays, calendarRange, canManageCalendar, dateObject, daysInRange, localDate } from '../services/workCalendar';
+import { addDays, calendarRange, canManageCalendar, dateObject, daysInRange, localDate, calendarDefaultWorker, calendarProjectColor } from '../services/workCalendar';
 import type { CalendarOccurrence, ScheduleRule } from '../services/workCalendar';
 import { CalendarEditor } from '../components/CalendarEditor';
 import { CalendarDialog } from '../components/CalendarDialog';
@@ -40,7 +40,7 @@ export default function CalendarView({ user }: { user: User }) {
   const personnel: User[] = personnelQuery.data || [];
   const [detail, setDetail] = useState<CalendarOccurrence | null>(null);
   const [reportWorker, setReportWorker] = useState('');
-  const [editor, setEditor] = useState<{ rule: ScheduleRule; workers: string[]; occurrence?: CalendarOccurrence } | null>(null);
+  const [editor, setEditor] = useState<{ rule: ScheduleRule; workers: string[]; occurrence?: CalendarOccurrence; deleteMode?: boolean } | null>(null);
   const [error, setError] = useState('');
   const [opening, setOpening] = useState(false);
   useEffect(() => { setDetail(null); setEditor(null); }, [user.id,user.companyId]);
@@ -58,17 +58,17 @@ export default function CalendarView({ user }: { user: User }) {
     setEditor({ rule: { project_id: filters.project, title: '', notes: '', schedule_type: 'single', start_date: day,
       end_date: day, start_time: null, end_time: null, weekdays: [], status: 'planned' }, workers: [] });
   };
-  const edit = async (o: CalendarOccurrence, duplicate = false) => {
+  const edit = async (o: CalendarOccurrence, duplicate = false, deleteMode = false) => {
     setOpening(true); setError('');
     try {
       const base = await calendarService.rule(user.companyId!,o.scheduleId);
       setDetail(null);
       setEditor(duplicate ? { rule: { ...base.rule, id: undefined, title: o.title, notes: o.notes, status: 'planned',
         schedule_type: 'single', start_date: o.date, end_date: o.date, weekdays: [], start_time: o.startTime, end_time: o.endTime }, workers: o.workers.map(w => w.id) }
-        : { ...base, occurrence: o });
+        : { ...base, occurrence: o, deleteMode });
     } catch { setError(t('calendar.loadError')); } finally { setOpening(false); }
   };
-  const open = (o: CalendarOccurrence) => { setDetail(o); setReportWorker(manager ? o.workers[0]?.id || '' : user.id); };
+  const open = (o: CalendarOccurrence) => { setDetail(o); setReportWorker(calendarDefaultWorker(o,user.id)); };
   const selectFilter = (key: keyof typeof filters, label: string, options: {id: string;name: string}[]) => <label className="text-xs font-medium flex flex-col gap-1 min-w-0">{t(`calendar.${label}`)}<select aria-label={t(`calendar.${label}`)} value={filters[key]} onChange={e => setFilters({ ...filters, [key]:e.target.value })} className="border bg-white rounded-lg p-2 min-h-[44px] text-sm w-full"><option value="">{t('calendar.all')}</option>{options.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select></label>;
   return <div className="calendar-page space-y-4">
     <div className="flex flex-wrap justify-between items-center gap-3"><h1 className="text-2xl font-bold flex items-center gap-2"><CalendarDays className="text-blue-600" />{t(manager ? 'calendar.title' : 'calendar.myJobs')}</h1>{manager && <button className={`${button} !bg-blue-600 text-white flex gap-2 items-center`} onClick={newAssignment}><Plus size={18} />{t('calendar.new')}</button>}</div>
@@ -84,12 +84,11 @@ export default function CalendarView({ user }: { user: User }) {
       {manager && <div className="calendar-weekdays">{Array.from({length:7},(_,i) => <div key={i}>{dateObject(addDays('2026-09-21',i)).toLocaleDateString(localeMap[lang],{weekday:'short'})}</div>)}</div>}
       <div className={manager ? 'calendar-grid' : 'calendar-agenda'}>{daysInRange(range.from,range.to).filter(date => manager || grouped.has(date)).map(date => <section key={date} className={`calendar-day ${date === localDate() ? 'is-today' : ''} ${view === 'month' && date.slice(0,7) !== day.slice(0,7) ? 'outside-month' : ''} ${!grouped.has(date) ? 'is-empty' : ''}`} aria-label={dateLabel(date)}>
         <h3 className="calendar-day-label"><span className={manager ? 'calendar-desktop-date' : 'hidden'}>{dateObject(date).getDate()}</span><span className={manager ? 'calendar-mobile-date' : ''}>{dateLabel(date,true)}</span></h3>
-        <div className="space-y-1.5">{(grouped.get(date)||[]).map(o => <button key={`${o.scheduleId}:${o.date}`} onClick={() => open(o)} className={`calendar-event status-${o.status} ${detail?.scheduleId === o.scheduleId && detail.date === o.date ? 'is-selected' : ''}`} aria-pressed={detail?.scheduleId === o.scheduleId && detail.date === o.date} aria-label={`${t('calendar.open')}: ${o.title}`}>
+        <div className="space-y-1.5">{(grouped.get(date)||[]).map(o => <button key={`${o.scheduleId}:${o.date}`} onClick={() => open(o)} style={calendarProjectColor(o.projectId)} className={`calendar-event status-${o.status} ${detail?.scheduleId === o.scheduleId && detail.date === o.date ? 'is-selected' : ''}`} aria-pressed={detail?.scheduleId === o.scheduleId && detail.date === o.date} aria-label={`${t('calendar.open')}: ${o.title}`}>
           <p className="calendar-event-title">{o.title}</p><p className="calendar-event-project">{o.projectName}</p>
           {manager && <p className="calendar-event-meta"><Users size={12} /><span>{o.workers.map(w => w.name).join(', ')}</span></p>}
           <p className="calendar-event-meta"><Clock3 size={12} /><span>{[o.startTime?.slice(0,5),o.endTime?.slice(0,5)].filter(Boolean).join(' – ') || t('calendar.optionalTime')}</span></p>
           <div className="calendar-event-footer"><span className="calendar-avatars" aria-hidden="true">{o.workers.slice(0,3).map(w => <span key={w.id}>{initials(w.name)}</span>)}{o.workers.length>3 && <span>+{o.workers.length-3}</span>}</span><span className="calendar-event-status">{t(`calendar.${o.status}`)}</span></div>
-          {o.exceptionId && <span className="text-[10px] font-medium">{t('calendar.exception')}</span>}
         </button>)}</div></section>)}</div>
     </>}
     </div>
@@ -97,6 +96,8 @@ export default function CalendarView({ user }: { user: User }) {
       <div className="flex items-center justify-between"><span className="calendar-detail-tag"><CalendarDays size={14} />{t('calendar.planning')}</span><button className="calendar-close" aria-label={t('calendar.close')} onClick={() => setDetail(null)}><X size={20} /></button></div>
       <h2 className="text-xl font-bold text-slate-900 leading-snug" id="calendar-detail-title">{detail.title}</h2>
       <span className={`calendar-status-badge status-${detail.status}`}>{t(`calendar.${detail.status}`)}</span>
+      {detail.exceptionId && <p className="text-xs text-slate-500">{t('calendar.exception')}</p>}
+      {manager && <div className="flex flex-wrap gap-2"><button disabled={opening} className={button} onClick={() => void edit(detail)}>{t('calendar.edit')}</button><button disabled={opening} className={button} onClick={() => void edit(detail,true)}>{t('calendar.duplicate')}</button><button disabled={opening} className={`${button} text-red-700`} onClick={() => void edit(detail,false,true)}>{t('calendar.delete')}</button></div>}
       <dl className="calendar-detail-fields">
         <div><Building2 size={18} /><div><dt>{t('calendar.client')}</dt><dd>{detail.clientName || '—'}</dd></div></div>
         <div><MapPin size={18} /><div><dt>{t('calendar.project')}</dt><dd>{detail.projectName}</dd>{detail.address && <dd className="text-slate-500">{detail.address}</dd>}</div></div>
@@ -104,16 +105,16 @@ export default function CalendarView({ user }: { user: User }) {
         <div><Users size={18} /><div><dt>{t('calendar.workers')}</dt><dd className="calendar-worker-chips">{detail.workers.map(w => <span key={w.id}><b aria-hidden="true">{initials(w.name)}</b>{w.name}</span>)}</dd></div></div>
         {detail.notes && <div><FileText size={18} /><div><dt>{t('calendar.notes')}</dt><dd className="whitespace-pre-wrap">{detail.notes}</dd></div></div>}
       </dl>
-      {manager && <label className="block text-sm">{t('calendar.selectWorker')}<select className="block border rounded-lg p-2 w-full mt-1 min-h-[44px]" value={reportWorker} onChange={e => setReportWorker(e.target.value)}>{detail.workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}</select></label>}
+      {manager && <label className="block text-sm">{t('calendar.selectWorker')}<select className="block border rounded-lg p-2 w-full mt-1 min-h-[44px]" value={reportWorker} onChange={e => setReportWorker(e.target.value)}><option value="">{t('calendar.choose')}</option>{detail.workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}</select></label>}
       {reportWorker && (detail.status !== 'cancelled' || detail.reports.some(r => r.workerId === reportWorker)) && <button className={`${button} !bg-blue-600 text-white w-full`} onClick={() => {
         const report = detail.reports.find(r => r.workerId === reportWorker);
         navigate(report ? `/reports?report=${encodeURIComponent(report.id)}` : `/reports?schedule=${encodeURIComponent(detail.scheduleId)}&date=${detail.date}&worker=${encodeURIComponent(reportWorker)}`);
       }}>{t(detail.reports.some(r => r.workerId === reportWorker) ? 'calendar.openReport' : 'calendar.createReport')}</button>}
       {manager && detail.reports.filter(r => !detail.workers.some(w => w.id === r.workerId)).map(r => <button key={`${r.id}:${r.workerId}`} className={`${button} w-full text-blue-700`} onClick={() => navigate(`/reports?report=${encodeURIComponent(r.id)}`)}>{t('calendar.openReport')} · {personnel.find(w => w.id === r.workerId)?.name || t('calendar.worker')}</button>)}
-      <p className="text-xs text-slate-500">{t('calendar.actualHours')}</p>{manager && <div className="flex gap-2"><button disabled={opening} className={button} onClick={() => void edit(detail)}>{t('calendar.edit')}</button><button disabled={opening} className={button} onClick={() => void edit(detail,true)}>{t('calendar.duplicate')}</button></div>}
+      <p className="text-xs text-slate-500">{t('calendar.actualHours')}</p>
     </div></DetailPanel>}
     </div>
-    {editor && <CalendarEditor initial={editor.rule} workerIds={editor.workers} occurrence={editor.occurrence} projects={projects} clients={clients} personnel={personnel} onClose={() => setEditor(null)} onSave={async (rule,workers,scope,remove) => {
+    {editor && <CalendarEditor deleteMode={editor.deleteMode} initial={editor.rule} workerIds={editor.workers} occurrence={editor.occurrence} projects={projects} clients={clients} personnel={personnel} onClose={() => setEditor(null)} onSave={async (rule,workers,scope,remove) => {
       await calendarService.save(user.companyId!,editor.occurrence?.scheduleId || null,scope,editor.occurrence?.date || null,rule,workers,remove);
       setEditor(null);
       await Promise.all([queryClient.invalidateQueries({queryKey:['calendar']}),queryClient.invalidateQueries({queryKey:['projectPlanning']}),queryClient.invalidateQueries({queryKey:['reports']})]);
