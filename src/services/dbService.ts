@@ -1425,8 +1425,7 @@ class DBService {
       phone: client.mainContactPhone,
       email: client.email,
       internal_note: client.notes,
-      status: client.status,
-      default_hourly_rate: client.defaultHourlyRate === '' ? null : client.defaultHourlyRate
+      status: client.status
     };
   }
 

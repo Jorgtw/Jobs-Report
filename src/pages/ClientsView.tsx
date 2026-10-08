@@ -17,6 +17,8 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
     deleteClient
   } = useClients(user?.companyId ?? undefined, user?.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const isSaving = createClient.isPending || updateClient.isPending;
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -31,6 +33,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
   });
 
   const handleEdit = (c: Client) => {
+    setSaveError(null);
     setEditingId(c.id);
     setFormData({
       name: c.name,
@@ -53,15 +56,23 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
 
   const handleLocalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      await updateClient.mutateAsync({ id: editingId, data: formData });
-    } else {
-      await createClient.mutateAsync(formData);
+    if (isSaving) return;
+    setSaveError(null);
+    try {
+      if (editingId) {
+        await updateClient.mutateAsync({ id: editingId, data: formData });
+      } else {
+        await createClient.mutateAsync(formData);
+      }
+      setIsModalOpen(false);
+    } catch (error: unknown) {
+      const message = error && typeof error === 'object' && 'message' in error ? error.message : null;
+      setSaveError(typeof message === 'string' && message ? message : t('common.saveError'));
     }
-    setIsModalOpen(false);
   };
 
   const resetForm = () => {
+    setSaveError(null);
     setEditingId(null);
     setFormData({
       name: '',
@@ -110,6 +121,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <form onSubmit={handleLocalSubmit} className="space-y-4">
+              {saveError && <p role="alert" className="text-sm text-red-600">{saveError}</p>}
               <div className="flex flex-col gap-y-4 max-w-lg mx-auto">
                 <FullWidthField label={t('projects.clientName')}>
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClasses} />
@@ -144,7 +156,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({ t, user }) => {
                 </div>
                 <div className="flex gap-3 w-full sm:w-auto">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 sm:flex-none px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors">{t('common.cancel')}</button>
-                  <button type="submit" className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
+                  <button type="submit" disabled={isSaving} className="flex-1 sm:flex-none px-10 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
                     {editingId ? t('common.update') : t('common.save')}
                   </button>
                 </div>
