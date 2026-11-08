@@ -1,3 +1,5 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { reportsQueryOptions, summaryQueryOptions } from '../services/reportQueries';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -31,7 +33,8 @@ import { supabase } from '../services/supabase';
 import { UpgradeModal } from '../components/UpgradeModal';
 
 // --- Compact Dashboard component ---
-const CompactDashboard: React.FC = () => {
+const CompactDashboard: React.FC<{ user: User }> = ({ user }) => {
+  const queryClient = useQueryClient();
   const { t, lang } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -53,8 +56,8 @@ const CompactDashboard: React.FC = () => {
       setLoading(true);
       try {
         const [summary, allProjects] = await Promise.all([
-          db.getSummary(),
-          db.getProjects()
+          queryClient.fetchQuery(summaryQueryOptions(queryClient, compId, user.id)),
+          queryClient.fetchQuery({ queryKey: ['projects', compId, user.id], queryFn: () => db.getProjects(), staleTime: 30_000 })
         ]);
 
         const activeProjectsCount = allProjects.filter((p: any) => p.status?.toUpperCase() === 'ATTIVO' || p.status?.toLowerCase() === 'active').length;
@@ -129,11 +132,13 @@ const CompactDashboard: React.FC = () => {
 
 // --- Pending Hours Card for Workers ---
 const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
+  const queryClient = useQueryClient();
   const { t, lang } = useTranslation();
   const [hours, setHours] = useState<number | null>(null);
 
   useEffect(() => {
-    db.getReports().then(reports => {
+    if (!user.companyId) return;
+    queryClient.fetchQuery(reportsQueryOptions(user.companyId, user.id)).then(reports => {
       const filtered = reports.filter(r => (r.invoiceStatus || 'Pending') === 'Pending');
       const total = filtered.reduce((sum: number, r: any) => {
         let h = 0;
@@ -144,7 +149,7 @@ const PendingHoursCard: React.FC<{ user: User }> = ({ user }) => {
       }, 0);
       setHours(total);
     }).catch(console.error);
-  }, [user.id, user.role]);
+  }, [queryClient, user.companyId, user.id, user.role]);
 
   if (hours === null) return null;
 
@@ -353,7 +358,7 @@ const HomeView: React.FC<HomeViewProps> = ({ user, isSuperAdmin }) => {
         </div>
       )}
 
-      {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard /> : (
+      {isSuperAdmin ? <SuperAdminDashboard /> : (authService.can(user, 'approve', 'reports') ? <CompactDashboard user={user} /> : (
         <div className="space-y-3">
           <PendingHoursCard user={user} />
           <Link 

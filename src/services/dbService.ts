@@ -2159,8 +2159,9 @@ class DBService {
     return reports.map(r => this.mapSupabaseReport(r));
   }
 
-  async addReport(report: any) {
-    const { additionalWorkers = [], expenses = [], ...reportData } = report;
+  private async saveReportAtomic(id: string | null, report: any) {
+    await this.enforceActionPolicy('write_domain_data');
+    const { additionalWorkers, expenses, ...reportData } = report;
     const totalHours = this.calculateTotalHours(reportData.startTime, reportData.endTime, reportData.breakHours, reportData.manualTotalHours);
 
     // Mappatura robusta per le 4 categorie orarie del modello V3 flat-rate
@@ -2192,10 +2193,13 @@ class DBService {
       created_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase.from('reports').insert([newReport]).select();
-    if (error) throw error;
-
-    const createdReportId = data[0].id;
+    if (id) {
+      delete newReport.created_at;
+      if (reportData.invoiceStatus === undefined) delete newReport.invoice_status;
+    }
+    const createdReportId = id;
+    let expensesToSave: any[] | null = expenses === undefined && id ? null : [];
+    let workersToSave: any[] | null = additionalWorkers === undefined && id ? null : [];
 
     // Salva le spese
     if (expenses && expenses.length > 0) {
@@ -2213,11 +2217,10 @@ class DBService {
         is_billable: e.isBillable || false,
         billable_amount: e.billableAmount != null ? Number(e.billableAmount) : null
       }));
-      const { error: expErr } = await supabase.from('rapportini_expenses').insert(expensesToAdd);
-      if (expErr) { console.error('Error inserting expenses:', expErr); throw expErr; }
+      expensesToSave = expensesToAdd;
     }
 
-    if (additionalWorkers.length > 0) {
+    if (additionalWorkers && additionalWorkers.length > 0) {
       const workersToAdd = additionalWorkers.map((aw: any) => {
         const hours = this.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours, aw.manualTotalHours);
         const awOHours = aw.ordinaryHours !== undefined
@@ -2246,14 +2249,21 @@ class DBService {
           is_manual_override: aw.isManualOverride || false
         };
       });
-      const { error: insErr } = await supabase.from('rapportini_workers').insert(workersToAdd);
-      if (insErr) {
-        console.error('Error inserting additional workers:', insErr);
-        throw insErr;
-      }
+      workersToSave = workersToAdd;
     }
 
-    return this.mapSupabaseReport({ ...data[0], additionalWorkers, expenses });
+    const { data, error } = await supabase.rpc('save_report_atomic', {
+      p_report_id: id, p_company_id: this.requireCompanyId(), p_report: newReport,
+      p_expenses: expensesToSave, p_workers: workersToSave
+    });
+    // Do not fall back to separate writes: that would reintroduce partial saves.
+    if (error) throw error;
+    if (!data?.id) throw new Error('Report save returned no report');
+    return this.mapSupabaseReport(data);
+  }
+
+  async addReport(report: any) {
+    return this.saveReportAtomic(null, report);
   }
 
   async deleteReports(ids: string[]) {
@@ -2298,108 +2308,7 @@ class DBService {
   }
 
   async updateReport(id: string, updates: any) {
-    await this.enforceActionPolicy('write_domain_data');
-    const { additionalWorkers, expenses, ...updatesData } = updates;
-    updatesData.totalHours = this.calculateTotalHours(updatesData.startTime, updatesData.endTime, updatesData.breakHours, updatesData.manualTotalHours);
-
-    // Mappatura robusta per le 4 categorie orarie del modello V3 flat-rate
-    const oHours = updatesData.ordinaryHours !== undefined
-      ? Number(updatesData.ordinaryHours)
-      : Math.max(0, updatesData.totalHours - (updatesData.overtimeHours || 0) - (updatesData.festiveHours || 0) - (updatesData.nightHours || 0));
-
-    const sbObj: Record<string, any> = {
-      project_id: updatesData.projectId,
-      created_by: updatesData.userId,
-      date: updatesData.date,
-      start_time: this.formatForTime(updatesData.startTime),
-      end_time: this.formatForTime(updatesData.endTime),
-      break_hours: updatesData.breakHours,
-      total_hours: updatesData.totalHours,
-      completed_quantity: updatesData.completedQuantity ?? null,
-      manual_total_hours: updatesData.manualTotalHours !== undefined ? updatesData.manualTotalHours : null,
-      description: updatesData.description,
-      "Notes": updatesData.notes,
-      travel_notes: updatesData.travelNotes || updatesData.notes || null,
-      activity_type: updatesData.activityType || 'work',
-      ordinary_hours: oHours,
-      overtime_hours: updatesData.overtimeHours || 0,
-      festive_hours: updatesData.festiveHours || 0,
-      night_hours: updatesData.nightHours || 0
-    };
-
-    if (updatesData.invoiceStatus !== undefined) {
-      sbObj.invoice_status = updatesData.invoiceStatus;
-    }
-
-    const compId = this.requireCompanyId();
-    // STAB-4 FIX: Merged invoice_status into single update call
-    const { error } = await supabase.from('reports')
-      .update(sbObj)
-      .eq('id', id)
-      .eq('company_id', compId);
-    if (error) throw error;
-
-    // Aggiorna le spese: la strada più sicura è ricrearle
-    if (expenses !== undefined) {
-      const { error: delExpErr } = await supabase.from('rapportini_expenses').delete().eq('rapportino_id', id);
-      if (delExpErr) { console.error('Error deleting old expenses:', delExpErr); throw delExpErr; }
-
-      if (expenses.length > 0) {
-        const expensesToAdd = expenses.map((e: any) => ({
-          company_id: compId,
-          rapportino_id: id,
-          worker_id: e.type === 'CANTIERE' ? null : (e.workerId || updatesData.userId),
-          created_by: updatesData.userId, // Audit tracciabilità
-          type: e.type && ['CANTIERE', 'RIMBORSO', 'KM'].includes(e.type.toUpperCase()) ? e.type.toUpperCase() : 'CANTIERE',
-          description: e.description || e.notes || '',
-          amount: Number(e.amount) || 0,
-          km: (e.type?.toUpperCase() === 'KM' && e.km && Number(e.km) > 0) ? Number(e.km) : null,
-          category: e.category || 'other',
-          vat_rate: e.vatRate != null ? Number(e.vatRate) : 0,
-          is_billable: e.isBillable || false,
-          billable_amount: e.billableAmount != null ? Number(e.billableAmount) : null
-        }));
-        const { error: insExpErr } = await supabase.from('rapportini_expenses').insert(expensesToAdd);
-        if (insExpErr) { console.error('Error inserting new expenses:', insExpErr); throw insExpErr; }
-      }
-    }
-
-    if (additionalWorkers !== undefined) {
-      const { error: delErr } = await supabase.from('rapportini_workers').delete().eq('rapportino_id', id);
-      if (delErr) { console.error('Error deleting workers:', delErr); throw delErr; }
-      if (additionalWorkers.length > 0) {
-        const workersToAdd = additionalWorkers.map((aw: any) => {
-          const hours = this.calculateTotalHours(aw.startTime, aw.endTime, aw.breakHours, aw.manualTotalHours);
-          const awOHours = aw.ordinaryHours !== undefined
-            ? Number(aw.ordinaryHours)
-            : Math.max(0, hours - (aw.overtimeHours || 0) - (aw.festiveHours || 0) - (aw.nightHours || 0));
-
-          return {
-            rapportino_id: id,
-            worker_id: aw.userId,
-            startTime: this.formatForTimestamp(updatesData.date, aw.startTime),
-            endTime: this.formatForTimestamp(updatesData.date, aw.endTime),
-            breakHours: aw.breakHours,
-            hours: hours,
-            completed_quantity: aw.completedQuantity ?? null,
-            manual_total_hours: aw.manualTotalHours !== undefined ? aw.manualTotalHours : null,
-            ordinary_hours: awOHours,
-            overtime_hours: aw.overtimeHours || 0,
-            festive_hours: aw.festiveHours || 0,
-            night_hours: aw.nightHours || 0,
-            hourly_rate: 0,
-            total_cost: 0,
-            person_name: aw.personName || '',
-            person_role: aw.personRole || '',
-            membership_type: aw.membershipType || 'Interno',
-            subcontractor_id: aw.subcontractorId || null,
-            is_manual_override: aw.isManualOverride || false
-          };
-        });
-        const { error: updInsErr } = await supabase.from('rapportini_workers').insert(workersToAdd);
-        if (updInsErr) { console.error('Error inserting workers on update:', updInsErr); throw updInsErr; }
-      }
-    }
+    return this.saveReportAtomic(id, updates);
   }
 
   async bulkUpdateInvoiceStatus(reportIds: string[], newStatus: string) {
@@ -2501,10 +2410,10 @@ class DBService {
     };
   }
 
-    async getSummary(dateFrom?: string, dateTo?: string): Promise<ReportSummary[]> {
+    async getSummary(dateFrom?: string, dateTo?: string, sources?: { reports: any[]; projects: any[]; clients: any[]; workers: any[] }): Promise<ReportSummary[]> {
       await this.checkAuthSession();
 
-      const [reports, projects, clients, workers] = await Promise.all([
+      const [reports, projects, clients, workers] = sources ? [sources.reports, sources.projects, sources.clients, sources.workers] : await Promise.all([
         this.getReports(),
         this.getProjects(),
         this.getClients(),

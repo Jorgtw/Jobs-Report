@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const e=JSON.parse(fs.readFileSync('test_fixtures/workflow-local.json','utf8'));
+const initial={companies:[{id:'test-company',status:'active'}],workers:e.workers,clients:e.clients,projects:e.projects,reports:e.reports,rapportini_expenses:e.expenses,rapportini_workers:e.helpers};
+globalThis.localStorage={getItem:()=>JSON.stringify(initial),setItem:()=>{}};
+await build({stdin:{contents:"export {db} from './src/services/dbService';export {tables,failNext,supabase} from './scripts/fixtures/workflow-supabase';",resolveDir:process.cwd()},outfile:'scratch/workflow-service.mjs',bundle:true,platform:'node',format:'esm',plugins:[{name:'fake-transport',setup(b){b.onResolve({filter:/\/supabase$/},()=>({path:path.resolve('scripts/fixtures/workflow-supabase.ts')}))}}]});
+const {db,tables,failNext,supabase}=await import(pathToFileURL(path.resolve('scratch/workflow-service.mjs')).href);
+db.setCompanyId('test-company');db.setUserId('test-admin');
+const reports=await db.getReports();assert.equal(reports.length,3);assert.equal(reports.reduce((s,r)=>s+r.totalHours,0),20);assert.equal(reports.flatMap(r=>r.expenses).reduce((s,e)=>s+e.amount,0),57.4);
+assert.equal((await db.getReports('2026-11-08','2026-11-08')).length,3);assert.equal((await db.getReports('2026-11-09','2026-11-10')).length,0);
+const r=reports.find(r=>r.description.startsWith('TEST 2'));
+await db.updateReport(r.id,{...r,description:'TEST modifica persistita'});assert.equal((await db.getReports()).find(x=>x.id===r.id).description,'TEST modifica persistita');
+failNext('reports','update');await assert.rejects(db.updateReport(r.id,{...r,description:'NON SALVARE'}));assert.equal(tables.reports.find(x=>x.id===r.id).description,'TEST modifica persistita');
+failNext('rapportini_expenses','insert');await assert.rejects(db.updateReport(r.id,{...r,description:'TEST errore spese'}));
+const remaining=tables.rapportini_expenses.filter(x=>x.rapportino_id===r.id);
+assert.equal(remaining.length,1);assert.equal(remaining[0].amount,12.4);assert.equal(tables.reports.find(x=>x.id===r.id).description,'TEST modifica persistita');
+console.log(JSON.stringify({passed:['3 rapportini:20 ore e 57.40 spese','estremi data inclusivi','periodo vuoto','modifica persistita','errore aggiornamento principale propagato'],expenseFailure:{errorPropagated:true,previousExpenses:1,remainingExpenses:remaining.length,reportDescription:tables.reports.find(x=>x.id===r.id).description},summarySample:(await db.getSummary())[0]},null,2));
+
+const created=await db.addReport({...r,id:undefined,description:'TEST inserimento atomico',expenses:[{type:'CANTIERE',amount:9.5,description:'Nuova spesa'}],additionalWorkers:[{userId:'test-admin',startTime:'08:00',endTime:'10:00',breakHours:0}]});
+assert.equal(created.expenses[0].amount,9.5);assert.equal(created.additionalWorkers[0].totalHours,2);
+const stateBefore=JSON.stringify(tables);failNext('rapportini_workers','insert');await assert.rejects(db.addReport({...r,id:undefined,additionalWorkers:[{userId:'test-admin',startTime:'08:00',endTime:'10:00',breakHours:0}]}));assert.equal(JSON.stringify(tables),stateBefore);
+const originalRpc=supabase.rpc;supabase.rpc=async()=>({data:null,error:{message:'RPC missing'}});await assert.rejects(db.updateReport(r.id,{...r,description:'must not fall back'}));assert.equal(JSON.stringify(tables),stateBefore);supabase.rpc=originalRpc;
+console.log('PASS real dbService: atomic create + mapped helper/expense, failed creation leaves no orphan, missing RPC does not fall back to unsafe writes.');

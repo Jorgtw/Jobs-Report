@@ -27,7 +27,8 @@ import { User, Project, WorkReport, AdditionalWorker, Expense } from '../types';
 import { useReports } from '../hooks/useReports';
 import { useProjects } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
-import { useSubcontractors } from '../hooks/useSubcontractors';
+import { useUsers } from '../hooks/useUsers';
+import { reportPeriod } from '../utils/reportPeriod';
 import { useComplianceReportController } from '../hooks/useComplianceReportController';
 import { 
   exportToPDF, 
@@ -47,7 +48,7 @@ import {
 import { UpgradeModal } from '../components/UpgradeModal';
 import { ComplianceReportModal } from '../components/ComplianceReportModal';
 import { InterventionReportModal } from '../components/InterventionReportModal';
-import { OutputSamplesModal } from '../components/OutputSamplesModal';
+const OutputSamplesModal = React.lazy(() => import('../components/OutputSamplesModal').then(m => ({ default: m.OutputSamplesModal })));
 
 interface ReportsViewProps {
   user: User;
@@ -56,16 +57,25 @@ interface ReportsViewProps {
 const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
   const { lang, t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: reports = [], isLoading: reportsLoading, createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined, user?.id);
+  const [filters, setFilters] = useState({
+    projectId: '',
+    userId: '',
+    search: '',
+    dateRange: (searchParams.get('report') ? 'all' : searchParams.get('date') ? 'custom' : 'month') as 'all' | 'today' | 'week' | 'month' | 'custom',
+    dateFrom: searchParams.get('date') || '',
+    dateTo: searchParams.get('date') || ''
+  });
+  const period = reportPeriod(filters.dateRange, filters.dateFrom, filters.dateTo);
+  const { data: reports = [], isLoading: reportsLoading, error: reportsError, refetch: refetchReports, createReport, updateReport, deleteReport } = useReports(user?.companyId ?? undefined, user?.id, period.dateFrom, period.dateTo);
   const { data: projects = [] } = useProjects(user?.companyId ?? undefined, user?.id);
   const { data: clients = [] } = useClients(user?.companyId ?? undefined, user?.id);
-  useSubcontractors(user?.companyId ?? undefined, user?.id);
+  const { data: allPersonnel = [] } = useUsers(user?.companyId ?? undefined, user?.id);
+  const personnel = useMemo(() => allPersonnel.filter(usr => usr.status === 'active'), [allPersonnel]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [calendarLink, setCalendarLink] = useState<{ scheduleId: string; scheduleDate: string } | null>(null);
   const [calendarError, setCalendarError] = useState('');
 
-  const [personnel, setPersonnel] = useState<User[]>([]);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<'communications' | 'compliance' | 'generic'>('generic');
 
@@ -175,38 +185,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
     handleGenerateCompliance
   } = useComplianceReportController(user, projects, clients, personnel, lang);
 
-  useEffect(() => {
-    if (!user?.companyId) return;
-    db.setCompanyId(user.companyId);
-    db.getUsers().then(u => setPersonnel(u.filter((usr: User) => usr.status === 'active')));
-  }, [user?.companyId]);
+
 
   const canEditReport = (_r: WorkReport) => {
     return authService.can(user, 'update', 'reports');
   };
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    projectId: '',
-    userId: '',
-    search: '',
-    dateRange: 'all' as 'all' | 'today' | 'week' | 'month' | 'custom',
-    dateFrom: '',
-    dateTo: ''
-  });
+
 
   const filteredReports = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-
-    const monday = new Date(now);
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    monday.setDate(diff);
-    const mondayStr = monday.toISOString().split('T')[0];
-
-    const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const firstDayMonthStr = firstDayMonth.toISOString().split('T')[0];
-
     const isWorker = authService.isOperator(user);
 
     return reports.filter((r: WorkReport) => {
@@ -239,19 +226,14 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
         const projName = projects.find((p: Project) => p.id === r.projectId)?.name.toLowerCase() || '';
         if (!inDesc && !inNotes && !projName.includes(s)) return false;
       }
-      if (filters.dateRange === 'today') {
-        if (r.date !== todayStr) return false;
-      } else if (filters.dateRange === 'week') {
-        if (r.date < mondayStr) return false;
-      } else if (filters.dateRange === 'month') {
-        if (r.date < firstDayMonthStr) return false;
-      } else if (filters.dateRange === 'custom') {
-        if (filters.dateFrom && r.date < filters.dateFrom) return false;
-        if (filters.dateTo && r.date > filters.dateTo) return false;
-      }
       return true;
     });
   }, [reports, filters, projects, user]);
+
+  const sortedReports = useMemo(() => [...filteredReports].sort((a, b) => b.date.localeCompare(a.date)), [filteredReports]);
+  const [visibleCount, setVisibleCount] = useState(50);
+  useEffect(() => { setVisibleCount(50); setSelectedReportIds([]); }, [filters]);
+  const visibleReports = sortedReports.slice(0, visibleCount);
 
   const addWorker = () => {
     setFormData({
@@ -768,7 +750,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="sm:hidden divide-y divide-slate-100">
-          {[...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
+          {visibleReports.map(r => {
             const proj = projects.find(p => p.id === r.projectId);
             const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(r.date));
             const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
@@ -811,7 +793,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
               </div>
             );
           })}
-          {reports.length === 0 && <div className="p-8 text-center text-slate-500 text-sm">{t('common.noData')}</div>}
+          {!reportsLoading && !reportsError && filteredReports.length === 0 && <div className="p-8 text-center text-slate-500 text-sm">{t('common.noData')}</div>}
         </div>
 
         <div className="hidden sm:block overflow-x-auto">
@@ -837,7 +819,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {[...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => {
+              {visibleReports.map(r => {
                 const proj = projects.find(p => p.id === r.projectId);
                 const formattedDate = new Intl.DateTimeFormat(localeMap[lang as string] || 'it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(r.date));
                 const totalWorkersCount = 1 + (r.additionalWorkers || []).length;
@@ -881,11 +863,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
                   </tr>
                 );
               })}
-              {reports.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-slate-500 text-xs">{t('common.noData')}</td></tr>}
+              {!reportsLoading && !reportsError && filteredReports.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-slate-500 text-xs">{t('common.noData')}</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
+
+      {reportsError && <div role="alert" className="p-3 text-red-700">{t('common.connectionErrorDescription')} <button type="button" onClick={() => refetchReports()}>{t('common.retryConnection')}</button></div>}
+      {reportsLoading && <p role="status" className="p-3 text-center text-slate-500">{t('common.loading')}</p>}
+      {visibleCount < sortedReports.length && <button type="button" onClick={() => setVisibleCount(n => n + 50)} className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-blue-700">{t('common.loadMore')} ({Math.min(visibleCount, sortedReports.length)}/{sortedReports.length})</button>}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -1022,7 +1008,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ user }) => {
           }}
         />
       )}
-      <OutputSamplesModal isOpen={isSamplesModalOpen} onClose={() => setIsSamplesModalOpen(false)} />
+      {isSamplesModalOpen && <React.Suspense fallback={null}><OutputSamplesModal isOpen={isSamplesModalOpen} onClose={() => setIsSamplesModalOpen(false)} /></React.Suspense>}
     </div>
   );
 };

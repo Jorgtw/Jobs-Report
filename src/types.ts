@@ -154,6 +154,7 @@ export interface WorkReport {
   expenses: Expense[];
   additionalWorkers: AdditionalWorker[];
   activityType?: 'work' | 'sickness' | 'holiday' | 'internal';
+  invoiceStatus?: string;
   exportStatus?: 'new' | 'exported';
   overtimeHours?: number;
   festiveHours?: number;

@@ -1,0 +1,18 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {HashRouter,Routes,Route,Link} from 'react-router-dom';
+import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+import {LanguageProvider,useTranslation} from '../../src/contexts/LanguageContext';
+import ClientsView from '../../src/pages/ClientsView';
+import PersonnelView from '../../src/pages/PersonnelView';
+import ProjectsView from '../../src/pages/ProjectsView';
+import ReportsView from '../../src/pages/ReportsView';
+import WorkSummaryView from '../../src/pages/WorkSummaryView';
+import {db} from '../../src/services/dbService';
+import {tables,requests} from './workflow-supabase';
+import '../../src/index.css';
+const user:any={id:'test-admin',companyId:'test-company',companyName:'TEST Jobs Report',name:'Amministratore TEST',role:'admin',status:'active',username:'testadmin'};
+db.setCompanyId(user.companyId);db.setUserId(user.id);
+const client=new QueryClient({defaultOptions:{queries:{retry:false}}});
+const Shell=()=>{const {t}=useTranslation();return <><header className="p-3 bg-amber-100 font-bold">AMBIENTE TEST LOCALE — dati simulati, nessun collegamento a MK o Supabase</header><nav className="p-3 flex gap-5 bg-white">{[['clients','Clienti'],['personnel','Personale'],['projects','Progetti'],['reports','Rapportini'],['summary','Riepilogo'],['evidence','Verifica dati']].map(([url,label])=><Link key={url} to={'/'+url}>{label}</Link>)}</nav><main className="p-4 bg-slate-50 min-h-screen"><Routes><Route path="/clients" element={<ClientsView user={user} t={t}/>}/><Route path="/personnel" element={<PersonnelView user={user}/>}/><Route path="/projects" element={<ProjectsView user={user}/>}/><Route path="/reports" element={<ReportsView user={user}/>}/><Route path="/summary" element={<WorkSummaryView user={user}/>}/><Route path="/evidence" element={<pre>{JSON.stringify({clients:tables.clients,workers:tables.workers,projects:tables.projects,reports:tables.reports,expenses:tables.rapportini_expenses,helpers:tables.rapportini_workers,requests},null,2)}</pre>}/></Routes></main></>};
+createRoot(document.getElementById('root')!).render(<QueryClientProvider client={client}><LanguageProvider><HashRouter><Shell/></HashRouter></LanguageProvider></QueryClientProvider>);

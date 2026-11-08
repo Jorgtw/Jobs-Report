@@ -1,4 +1,5 @@
 export const common = {
+  loadMore: "Load more",
   plan: "PLAN",
   dashboard: "Dashboard",
   reports: "Work Reports",

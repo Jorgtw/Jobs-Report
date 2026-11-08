@@ -1,0 +1,1 @@
+export const useSubscription=()=>({status:{planCode:'enterprise',planFeatures:{multiworker:true,compliance:true},permissions:{can_create_reports:true}},loading:false,error:null,hasFeature:()=>true,isLimitReached:false,refreshStatus:async()=>{}});

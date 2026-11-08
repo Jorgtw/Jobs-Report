@@ -1,6 +1,4 @@
 import { WorkSummaryReportBuilder, WorkSession, ReportBuilderConfig } from './ReportBuilder';
-import { ExcelRenderer } from './renderers/ExcelRenderer';
-import { PdfRenderer } from './renderers/PdfRenderer';
 
 export class WorkSummaryExportService {
   /**
@@ -14,6 +12,7 @@ export class WorkSummaryExportService {
     const builder = new WorkSummaryReportBuilder(data, config);
     const document = builder.build();
     
+    const { ExcelRenderer } = await import('./renderers/ExcelRenderer');
     const renderer = new ExcelRenderer();
     await renderer.render(document, filename);
   }
@@ -29,6 +28,7 @@ export class WorkSummaryExportService {
     const builder = new WorkSummaryReportBuilder(data, config);
     const document = builder.build();
     
+    const { PdfRenderer } = await import('./renderers/PdfRenderer');
     const renderer = new PdfRenderer();
     await renderer.render(document, filename);
   }

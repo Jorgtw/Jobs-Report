@@ -1,4 +1,5 @@
 export const common = {
+  loadMore: "Carica altri",
   plan: "PIANO",
   dashboard: "Dashboard",
   reports: "Rapportini",

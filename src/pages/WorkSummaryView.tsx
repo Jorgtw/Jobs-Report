@@ -1,4 +1,4 @@
-import { WorkerCompensationReport } from '../services/export/templates/WorkerCompensationReport';
+import { summaryToWorkSession } from '../services/summaryExportData';
 import React, { useState, useMemo } from 'react';
 import {
   Trash2,
@@ -18,15 +18,6 @@ import { useUsers } from '../hooks/useUsers';
 import { useSubcontractors } from '../hooks/useSubcontractors';
 import { WorkSummaryExportService } from '../services/export/WorkSummaryExport';
 import { ReportBuilderConfig, WorkSession } from '../services/export/ReportBuilder';
-import { ProfessionalReportEngine } from '../services/export/ReportEngine';
-import { DashboardCommesse } from '../services/export/templates/DashboardCommesse';
-import { EmployeeSummaryReport } from '../services/export/templates/EmployeeSummaryReport';
-import { ExternalCostsReport } from '../services/export/templates/ExternalCostsReport';
-import { CustomerWorkReport } from '../services/export/templates/CustomerWorkReport';
-import { EmployeeMonthlyReport } from '../services/export/templates/EmployeeMonthlyReport';
-import { BillingAttachment } from '../services/export/templates/BillingAttachment';
-import { WorkEntriesRegister } from '../services/export/templates/WorkEntriesRegister';
-import { ProjectRevenueRegister } from '../services/export/templates/ProjectRevenueRegister';
 import { filterInputClasses, canUserAccessProject } from '../App';
 
 interface WorkSummaryViewProps {
@@ -213,33 +204,21 @@ const WorkSummaryView: React.FC<WorkSummaryViewProps> = ({ user }) => {
         lang: lang as any
       };
 
-      const exportData: WorkSession[] = filteredData.map((s: any) => ({
-        date: s.date,
-        projectId: s.projectId,
-        clientName: s.clientName || '',
-        projectName: s.projectName || '',
-        workerName: s.userName || '',
-        description: s.description || '',
-        ordinaryHours: s.ordinaryHours || 0,
-        extraHours: s.extraHours || 0,
-        nightHours: s.nightHours || 0,
-        holidayHours: s.holidayHours || 0,
-        hours: s.totalHours || 0,
-        cost: s.personnelCost ?? s.cost ?? 0,
-        compensationMethod: s.compensationMethod,
-        completedQuantity: s.completedQuantity,
-        unitRate: s.unitRate,
-        unitName: s.unitName,
-        fixedAmount: s.fixedCostRecognized ? s.fixedAmount : undefined,
-        materialsCost: s.materialsCost || 0,
-        subcontractorCost: s.subcontractorCost || 0,
-        expenses: s.totalExpenses || 0,
-        revenue: s.revenue || 0
-      }));
+      const exportData: WorkSession[] = filteredData.map(summaryToWorkSession);
 
       if (format === 'pdf') {
         await WorkSummaryExportService.exportToPdf(exportData, config);
       } else {
+        const { WorkerCompensationReport } = await import('../services/export/templates/WorkerCompensationReport');
+        const { ProfessionalReportEngine } = await import('../services/export/ReportEngine');
+        const { DashboardCommesse } = await import('../services/export/templates/DashboardCommesse');
+        const { EmployeeSummaryReport } = await import('../services/export/templates/EmployeeSummaryReport');
+        const { ExternalCostsReport } = await import('../services/export/templates/ExternalCostsReport');
+        const { CustomerWorkReport } = await import('../services/export/templates/CustomerWorkReport');
+        const { EmployeeMonthlyReport } = await import('../services/export/templates/EmployeeMonthlyReport');
+        const { BillingAttachment } = await import('../services/export/templates/BillingAttachment');
+        const { WorkEntriesRegister } = await import('../services/export/templates/WorkEntriesRegister');
+        const { ProjectRevenueRegister } = await import('../services/export/templates/ProjectRevenueRegister');
         const engine = new ProfessionalReportEngine();
         engine.registerTemplate('dashboard', new DashboardCommesse());
         engine.registerTemplate('emp_summary', new EmployeeSummaryReport());

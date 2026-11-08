@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,mp3}'],
+        globPatterns: ['index.html', 'assets/*.{js,css,png}', 'icon-192.png', 'icon-512.png', 'favicon.ico'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
         maximumFileSizeToCacheInBytes: 4000000
