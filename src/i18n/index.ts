@@ -1,9 +1,3 @@
-import { calendar as daCalendar } from './da/calendar';
-import { calendar as trCalendar } from './tr/calendar';
-import { calendar as plCalendar } from './pl/calendar';
-import { calendar as esCalendar } from './es/calendar';
-import { calendar as enCalendar } from './en/calendar';
-import { calendar as itCalendar } from './it/calendar';
 import { common as itCommon } from './it/common';
 import { auth as itAuth } from './it/auth';
 import { communications as itCommunications } from './it/communications';
@@ -68,7 +62,6 @@ export type Language = 'it' | 'en' | 'es' | 'pl' | 'tr' | 'da';
 export type TranslationKey = string;
 
 export const baseIT = {
-  calendar: itCalendar,
   common: itCommon,
   auth: itAuth,
   communications: itCommunications,
@@ -83,7 +76,6 @@ export const baseIT = {
 export const allTranslations: Record<Language, any> = {
   it: baseIT,
   en: {
-    calendar: enCalendar,
   common: enCommon,
     auth: enAuth,
     presentation: enPresentation,
@@ -95,7 +87,6 @@ export const allTranslations: Record<Language, any> = {
     help: enHelp
   },
   es: {
-    calendar: esCalendar,
   common: esCommon,
     auth: esAuth,
     presentation: esPresentation,
@@ -107,7 +98,6 @@ export const allTranslations: Record<Language, any> = {
     help: esHelp
   },
   pl: {
-    calendar: plCalendar,
   common: plCommon,
     auth: plAuth,
     presentation: plPresentation,
@@ -119,7 +109,6 @@ export const allTranslations: Record<Language, any> = {
     help: plHelp
   },
   tr: {
-    calendar: trCalendar,
   common: trCommon,
     auth: trAuth,
     presentation: trPresentation,
@@ -131,7 +120,6 @@ export const allTranslations: Record<Language, any> = {
     help: trHelp
   },
   da: {
-    calendar: daCalendar,
   common: daCommon,
     auth: daAuth,
     presentation: daPresentation,

@@ -1,4 +1,6 @@
-# Calendario operativo opzionale
+# Calendario operativo (archivio)
+
+Questa pagina conserva la documentazione della versione precedente al ritiro del modulo. Dopo il deploy dell'app aggiornata, applicare `supabase_retire_work_calendar.sql` per disattivare le API e i trigger del Calendario e conservare tabelle, dati e collegamenti storici.
 
 ## Architettura e scelte
 
