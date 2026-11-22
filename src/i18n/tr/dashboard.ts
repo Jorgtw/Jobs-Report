@@ -77,10 +77,11 @@ export const dashboard = {
   sendingInProgress: "GÖNDERİLİYOR...",
   autoSendActive: "OTOMATİK GÖNDERİM AKTİF",
   sendInstructionsAuto: "TALİMATLARI GÖNDER (OTOMATİK)",
+  accessLimitHelp: "Şirketinizin erişim durumunu kontrol etmek için destek ekibiyle iletişime geçin.",
   freeSupportBanner: {
-    title: "Jobs-Report'u Destekleyin",
-    description: "Tüm özellikler 5 kullanıcıya kadar ücretsiz olarak sunulmaya devam eder. Jobs-Report sizin için faydalıysa, Starter planına geçerek uygulamanın gelişimini destekleyebilir ve 10 kullanıcıya kadar kullanabilirsiniz.",
-    button: "Starter'a Geç"
+    title: "İhtiyaca özel yazılım",
+    description: "Çalışma şeklinize uygun bir özelliğe veya yazılıma mı ihtiyacınız var? Bize neye ihtiyacınız olduğunu anlatın.",
+    button: "Size özel bir çözüm isteyin"
   },
   plans: {
     free: {

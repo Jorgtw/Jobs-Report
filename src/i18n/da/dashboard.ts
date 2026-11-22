@@ -77,10 +77,11 @@ export const dashboard = {
   sendingInProgress: "AFSENDELSE IGANG...",
   autoSendActive: "AUTOMATISK AFSENDELSE AKTIV",
   sendInstructionsAuto: "SEND VEJLEDNING (AUTO)",
+  accessLimitHelp: "Kontakt support for at gennemgå din virksomheds adgang.",
   freeSupportBanner: {
-    title: "Støt Jobs-Report",
-    description: "Alle funktioner forbliver gratis tilgængelige for op til 5 brugere. Hvis Jobs-Report er værdifuld for dig, støtter en opgradering til Starter app-udviklingen og giver dig mulighed for at bruge op til 10 brugere.",
-    button: "Skift til Starter"
+    title: "Skræddersyet software",
+    description: "Mangler du en funktion eller software, der passer til din arbejdsdag? Fortæl os, hvad du har brug for.",
+    button: "Bed om en skræddersyet løsning"
   },
   plans: {
     free: {
