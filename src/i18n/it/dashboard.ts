@@ -64,10 +64,11 @@ export const dashboard = {
   sendingInProgress: "INVIO IN CORSO...",
   autoSendActive: "AUTO-INVIO ATTIVO",
   sendInstructionsAuto: "INVIA ISTRUZIONI (AUTO)",
+  accessLimitHelp: "Contatta l’assistenza per verificare gli accessi della tua azienda.",
   freeSupportBanner: {
-    title: "Sostieni Jobs-Report",
-    description: "Tutte le funzionalità restano disponibili gratuitamente fino a 5 utenti. Se Jobs-Report ti è utile, passando a Starter sostieni lo sviluppo dell’app e puoi utilizzare fino a 10 utenti.",
-    button: "Passa a Starter"
+    title: "Software su misura",
+    description: "Ti serve una funzione o un software adatto al tuo modo di lavorare? Raccontaci cosa ti serve.",
+    button: "Richiedi una soluzione su misura"
   },
   upgradeModal: {
     monthly: 'Mensile',
