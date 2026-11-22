@@ -58,10 +58,11 @@ export const dashboard = {
   sendingInProgress: "SENDING IN PROGRESS...",
   autoSendActive: "AUTO-SEND ACTIVE",
   sendInstructionsAuto: "SEND INSTRUCTIONS (AUTO)",
+  accessLimitHelp: "Contact support to review your company’s access.",
   freeSupportBanner: {
-    title: "Support Jobs-Report",
-    description: "All features remain freely available for up to 5 users. If you find Jobs-Report valuable, upgrading to Starter supports app development and lets you use up to 10 users.",
-    button: "Upgrade to Starter"
+    title: "Custom software",
+    description: "Need a feature or software that fits the way you work? Tell us what you need.",
+    button: "Request a custom solution"
   },
   upgradeModal: {
     monthly: 'Monthly',
