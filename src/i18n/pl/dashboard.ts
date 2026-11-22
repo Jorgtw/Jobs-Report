@@ -77,10 +77,11 @@ export const dashboard = {
   sendingInProgress: "WYSYŁANIE W TOKU...",
   autoSendActive: "AUTO-WYSYŁKA AKTYWNA",
   sendInstructionsAuto: "WYŚLIJ INSTRUKCJĘ (AUTO)",
+  accessLimitHelp: "Skontaktuj się z pomocą techniczną, aby sprawdzić dostęp swojej firmy.",
   freeSupportBanner: {
-    title: "Wesprzyj Jobs-Report",
-    description: "Wszystkie funkcje pozostają bezpłatnie dostępne dla maksymalnie 5 użytkowników. Jeśli Jobs-Report jest dla Ciebie pomocny, przejście na pakiet Starter wspiera rozwój aplikacji i pozwala korzystać z niej do 10 użytkowników.",
-    button: "Przejdź na Starter"
+    title: "Oprogramowanie na miarę",
+    description: "Potrzebujesz funkcji lub oprogramowania dopasowanego do Twojej pracy? Daj nam znać, czego potrzebujesz.",
+    button: "Zapytaj o rozwiązanie na miarę"
   },
   plans: {
     free: {
